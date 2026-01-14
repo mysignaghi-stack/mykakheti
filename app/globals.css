@@ -1,0 +1,140 @@
+/* --- Marquee Animation for Announcement Bar --- */
+@keyframes marquee {
+  0% { transform: translateX(100%); }
+  100% { transform: translateX(-100%); }
+}
+
+.marquee-outer {
+  position: relative;
+  width: 100%;
+  overflow: hidden;
+  min-height: 24px;
+  max-height: 28px;
+  display: flex;
+  align-items: center;
+}
+.marquee-inner {
+  display: inline-block;
+  white-space: nowrap;
+  will-change: transform;
+  animation: marquee 18s linear infinite;
+}
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --primary-dark: #050510;
+  --accent-amber: #f59e0b;
+  --glass-border: rgba(255, 255, 255, 0.08);
+  --glass-bg: rgba(255, 255, 255, 0.03);
+}
+
+/* ძირითადი პარამეტრები */
+* {
+  box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
+}
+
+body {
+  background-color: var(--primary-dark);
+  color: #ffffff;
+  margin: 0;
+  padding: 0;
+  overflow-x: hidden; /* ჰორიზონტალური სქროლის დამალვა */
+  font-family: 'Inter', -apple-system, sans-serif;
+  scroll-behavior: smooth;
+}
+
+/* 🌑 Custom Scrollbar (თქვენი ძველი დიზაინი) */
+::-webkit-scrollbar {
+  width: 5px;
+}
+::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.02);
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(245, 158, 11, 0.2);
+  border-radius: 10px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--accent-amber);
+}
+
+/* კლასი კონკრეტული დივებისთვის (თუ დაგჭირდებათ) */
+.custom-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: var(--accent-amber) transparent;
+}
+
+/* 🚫 No-Scrollbar Utility */
+.no-scrollbar::-webkit-scrollbar { display: none; }
+.no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+/* ✨ Dark Glassmorphism Effect */
+.glass-deep {
+  background: var(--glass-bg);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid var(--glass-border);
+}
+
+/* 🍷 Hero Section Elements */
+.hero-main-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 10;
+  background: linear-gradient(
+    to bottom, 
+    rgba(5, 5, 16, 0.8) 0%, 
+    rgba(5, 5, 16, 0.4) 50%, 
+    var(--primary-dark) 100%
+  );
+}
+
+/* 🍇 Vineyard Parallax Wrapper */
+.vineyard-section-wrapper {
+  position: relative;
+  width: 100%;
+  background-image: url('https://images.unsplash.com/photo-1516594915697-87eb3b1c14ea?q=80&w=2000');
+  background-size: cover;
+  background-position: center;
+  background-attachment: fixed;
+  z-index: 5;
+}
+
+/* ⚠️ Animations (თქვენი ძველი ანიმაციები) */
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-8px); }
+  50% { transform: translateX(8px); }
+  75% { transform: translateX(-8px); }
+}
+
+.animate-shake {
+  animation: shake 0.4s cubic-bezier(.36,.07,.19,.97) both;
+}
+
+@keyframes slide-up {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-slide-up {
+  animation: slide-up 0.6s ease-out forwards;
+}
+
+/* 👇 ახალი ანიმაცია, რომელიც page.tsx-ს სჭირდება (.animate-in კლასისთვის) */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-in {
+  animation: fadeIn 0.5s ease-out forwards;
+}
+
+/* 👇 ტექსტის გასწორების კონფლიქტების ფიქსი (აუცილებელია!) */
+.text-left { text-align: left !important; }
+.text-center { text-align: center !important; }
+.text-right { text-align: right !important; }
