@@ -30,8 +30,12 @@ export default function AddPage() {
   const [bgImage, setBgImage] = useState('');
   const [session, setSession] = useState<Session | null>(null);
   const [authError, setAuthError] = useState('');
+  const [registerError, setRegisterError] = useState('');
+  const [registerMessage, setRegisterMessage] = useState('');
+  const [registerLoading, setRegisterLoading] = useState(false);
   const [images, setImages] = useState<File[]>([]);
   const [previews, setPreviews] = useState<string[]>([]);
+  const [registerData, setRegisterData] = useState({ firstName: '', lastName: '', email: '', phone: '' });
   
   // ✨ Added 'currency' to form state (default: GEL)
   const [formData, setFormData] = useState({ 
@@ -68,6 +72,41 @@ export default function AddPage() {
     await supabase.auth.signOut();
     setSession(null);
     router.refresh();
+  };
+
+  const handleEmailActivation = async (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setRegisterError('');
+    setRegisterMessage('');
+
+    if (!registerData.firstName || !registerData.lastName || !registerData.email || !registerData.phone) {
+      setRegisterError('გთხოვთ შეავსოთ ყველა ველი.');
+      return;
+    }
+
+    setRegisterLoading(true);
+    try {
+      const { error } = await supabase.auth.signInWithOtp({
+        email: registerData.email,
+        options: {
+          data: {
+            first_name: registerData.firstName,
+            last_name: registerData.lastName,
+            phone: registerData.phone,
+          },
+          emailRedirectTo: `${window.location.origin}/auth/callback?redirect=/add`,
+        },
+      });
+
+      if (error) throw error;
+      setRegisterMessage('აქტივაციის ბმული გაიგზავნა თქვენს მითითებულ ელფოსტაზე. გთხოვთ შეამოწმოთ საფოსტო ყუთი.');
+      setRegisterData({ firstName: '', lastName: '', email: '', phone: '' });
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Unknown error';
+      setRegisterError(`ვერ გაიგზავნა ბმული: ${message}`);
+    } finally {
+      setRegisterLoading(false);
+    }
   };
 
 
@@ -178,29 +217,78 @@ export default function AddPage() {
           </div>
 
           {!isAuthenticated && (
-            <div className="mb-8 space-y-3 rounded-2xl border border-amber-500/30 bg-amber-500/10 p-4 text-sm text-amber-50">
-              <p className="font-black uppercase tracking-wide text-[11px]">გთხოვთ გაიაროთ ავტორიზაცია Google ან Facebook-ით, რათა გამოაქვეყნოთ განცხადება.</p>
-              <div className="flex flex-col sm:flex-row gap-3">
-                <button
-                  type="button"
-                  onClick={() => handleOAuth('google')}
-                  className="flex-1 rounded-xl bg-white text-slate-900 font-black py-3 uppercase text-[11px] hover:bg-amber-50 transition"
-                >
-                  Google ავტორიზაცია
-                </button>
-                <button
-                  type="button"
-                  onClick={() => handleOAuth('facebook')}
-                  className="flex-1 rounded-xl bg-[#1877f2] text-white font-black py-3 uppercase text-[11px] hover:bg-[#0f5ccc] transition"
-                >
-                  Facebook ავტორიზაცია
-                </button>
+            <div className="mb-8 space-y-4 rounded-2xl border border-amber-500/30 bg-amber-500/10 p-5 text-sm text-amber-50">
+              <div className="text-center space-y-2">
+                <p className="font-black uppercase tracking-wide text-[11px]">საწყის ეტაპზე საჭიროა ავტორიზაცია ან რეგისტრაცია.</p>
+                <p className="text-[11px] text-white/70">რეგისტრაციის დასრულების შემდეგ ავტომატურად გამოჩნდება განცხადების ფორმა.</p>
               </div>
-              {authError && <p className="text-red-300 text-xs font-semibold">{authError}</p>}
-              <p className="text-[11px] text-white/70">ავტორიზაციის გარეშე ღილაკი „გამოქვეყნება“ გააქტიურებული არ იქნება.</p>
+
+              <div className="grid md:grid-cols-2 gap-3">
+                <div className="space-y-2">
+                  <h3 className="text-[11px] font-black uppercase tracking-wide text-white/70">სწრაფი სოც. ავტორიზაცია</h3>
+                  <div className="flex flex-col gap-2">
+                    <button
+                      type="button"
+                      onClick={() => handleOAuth('google')}
+                      className="rounded-xl bg-white text-slate-900 font-black py-3 uppercase text-[11px] hover:bg-amber-50 transition"
+                    >
+                      Google ავტორიზაცია
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleOAuth('facebook')}
+                      className="rounded-xl bg-[#1877f2] text-white font-black py-3 uppercase text-[11px] hover:bg-[#0f5ccc] transition"
+                    >
+                      Facebook ავტორიზაცია
+                    </button>
+                  </div>
+                  {authError && <p className="text-red-300 text-xs font-semibold">{authError}</p>}
+                </div>
+
+                <form onSubmit={handleEmailActivation} className="space-y-2">
+                  <h3 className="text-[11px] font-black uppercase tracking-wide text-white/70">სწრაფი რეგისტრაცია (Email ლინკი)</h3>
+                  <div className="grid grid-cols-2 gap-2">
+                    <input
+                      className="w-full p-3 rounded-xl bg-white/10 border border-white/10 focus:border-amber-500 outline-none text-white placeholder:text-white/40 text-[12px]"
+                      placeholder="სახელი"
+                      value={registerData.firstName}
+                      onChange={(e: ChangeEvent<HTMLInputElement>) => setRegisterData({ ...registerData, firstName: e.target.value })}
+                    />
+                    <input
+                      className="w-full p-3 rounded-xl bg-white/10 border border-white/10 focus:border-amber-500 outline-none text-white placeholder:text-white/40 text-[12px]"
+                      placeholder="გვარი"
+                      value={registerData.lastName}
+                      onChange={(e: ChangeEvent<HTMLInputElement>) => setRegisterData({ ...registerData, lastName: e.target.value })}
+                    />
+                  </div>
+                  <input
+                    className="w-full p-3 rounded-xl bg-white/10 border border-white/10 focus:border-amber-500 outline-none text-white placeholder:text-white/40 text-[12px]"
+                    placeholder="ელფოსტა"
+                    type="email"
+                    value={registerData.email}
+                    onChange={(e: ChangeEvent<HTMLInputElement>) => setRegisterData({ ...registerData, email: e.target.value })}
+                  />
+                  <input
+                    className="w-full p-3 rounded-xl bg-white/10 border border-white/10 focus:border-amber-500 outline-none text-white placeholder:text-white/40 text-[12px]"
+                    placeholder="ტელეფონი"
+                    value={registerData.phone}
+                    onChange={(e: ChangeEvent<HTMLInputElement>) => setRegisterData({ ...registerData, phone: e.target.value })}
+                  />
+                  <button
+                    type="submit"
+                    disabled={registerLoading}
+                    className="w-full rounded-xl bg-amber-600 text-white font-black py-3 uppercase text-[11px] hover:bg-amber-500 transition disabled:opacity-60"
+                  >
+                    {registerLoading ? 'იგზავნება...' : 'მიიღე აქტივაციის ბმული'}
+                  </button>
+                  {registerError && <p className="text-red-300 text-xs font-semibold">{registerError}</p>}
+                  {registerMessage && <p className="text-emerald-300 text-xs font-semibold">{registerMessage}</p>}
+                </form>
+              </div>
             </div>
           )}
 
+          {isAuthenticated && (
           <form onSubmit={handlePost} className="space-y-6">
             <div className="grid grid-cols-3 md:grid-cols-5 gap-3 mb-8">
                {previews.map((src, i) => (
@@ -273,6 +361,7 @@ export default function AddPage() {
               {loading ? 'მიმდინარეობს ატვირთვა...' : isAuthenticated ? 'გამოქვეყნება 🚀' : 'ავტორიზაცია სჭირდება'}
             </button>
           </form>
+          )}
         </div>
       </div>
     </main>
