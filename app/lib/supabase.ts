@@ -1,4 +1,4 @@
-import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
+import { createBrowserClient } from '@supabase/ssr';
 import type { Database } from '../../types/supabase';
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -8,5 +8,5 @@ if (!supabaseUrl || !supabaseKey) {
   throw new Error('Supabase URL and Key are missing in .env.local file!');
 }
 
-// Client component Supabase instance (uses env + cookies for auth)
-export const supabase = createClientComponentClient<Database>();
+// Client component Supabase instance
+export const supabase = createBrowserClient<Database>(supabaseUrl, supabaseKey);
