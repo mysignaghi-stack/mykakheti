@@ -24,7 +24,7 @@ export default function MastersPage() {
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
-      let q = supabase.from('masters').select('*').eq('is_approved', true).order('rating_avg', { ascending: false });
+      const q = supabase.from('masters').select('*').eq('is_approved', true).order('rating_avg', { ascending: false });
       const { data } = await q;
       setItems((data || []) as Master[]);
       setLoading(false);

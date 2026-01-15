@@ -1,6 +1,8 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import Image from 'next/image';
+import Link from 'next/link';
 import { supabase } from '../../lib/supabase';
 
 interface Congratulations {
@@ -75,9 +77,11 @@ export default function CongratulationsSection() {
             <div key={item.id} className="bg-white/5 backdrop-blur-sm rounded-xl p-4 border border-white/10 hover:border-amber-500/50 transition-all">
               <div className="flex items-start gap-3">
                 {item.image_url && (
-                  <img
+                  <Image
                     src={item.image_url}
-                    className="w-12 h-12 rounded-lg object-cover flex-shrink-0"
+                    width={48}
+                    height={48}
+                    className="rounded-lg object-cover flex-shrink-0"
                     alt="მისალოცი სურათი"
                   />
                 )}
@@ -103,12 +107,12 @@ export default function CongratulationsSection() {
         </div>
 
         <div className="text-center mt-4">
-          <a
+          <Link
             href="/community/congratulations"
             className="inline-block bg-amber-600 text-white px-6 py-2 rounded-full font-black text-xs uppercase italic tracking-widest hover:bg-amber-500 transition-all shadow-lg hover:shadow-amber-500/25"
           >
             ყველა მისალოცი ბარათი →
-          </a>
+          </Link>
         </div>
       </div>
     </section>

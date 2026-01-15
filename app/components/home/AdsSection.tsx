@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Ad } from '../../lib/types';
@@ -26,7 +27,6 @@ const CATEGORIES = ["ყველა", "უძრავი ქონება", 
 const IMPORTANT_CATEGORIES = ["უძრავი ქონება", "ავტო", "დასაქმება", "სოფლის მეურნეობა"];
 
 export default function AdsSection({
-  ads,
   filteredAds,
   isAdmin,
   showArchive,
@@ -130,10 +130,12 @@ export default function AdsSection({
               >
                 {/* Image Container */}
                 <div className="h-56 overflow-hidden relative bg-black/50">
-                  <img 
-                    src={mainImage} 
-                    alt={ad.title} 
-                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" 
+                  <Image
+                    src={mainImage}
+                    alt={ad.title}
+                    fill
+                    sizes="(max-width: 1024px) 100vw, 400px"
+                    className="object-cover transition-transform duration-700 group-hover:scale-110"
                   />
                   
                   <div className="absolute top-3 right-3 bg-black/60 backdrop-blur-md text-white text-[10px] font-black px-3 py-1.5 rounded-xl border border-white/10">

@@ -1,6 +1,7 @@
 'use client';
 import { useEffect, useState } from 'react';
 import type { ChangeEvent, FormEvent } from 'react';
+import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import imageCompression from 'browser-image-compression';
@@ -190,7 +191,16 @@ export default function AddPage() {
   return (
     <main className="min-h-screen relative flex flex-col bg-[#050510] text-white font-sans">
       <div className="fixed inset-0 z-0">
-         {bgImage && <img src={bgImage} className="w-full h-full object-cover opacity-40 transition-opacity duration-1000" alt="" />}
+         {bgImage && (
+           <Image
+             src={bgImage}
+             alt=""
+             fill
+             sizes="100vw"
+             className="object-cover opacity-40 transition-opacity duration-1000"
+             priority
+           />
+         )}
          <div className="absolute inset-0 bg-[#050510]/80 backdrop-blur-[10px]" />
       </div>
 
@@ -293,7 +303,7 @@ export default function AddPage() {
             <div className="grid grid-cols-3 md:grid-cols-5 gap-3 mb-8">
                {previews.map((src, i) => (
                  <div key={i} className="aspect-square rounded-2xl overflow-hidden border border-white/20 relative shadow-xl group">
-                   <img src={src} className="w-full h-full object-cover" alt="" />
+                   <Image src={src} alt="" fill sizes="120px" className="object-cover" />
                    <button type="button" onClick={() => removeImage(i)} className="absolute inset-0 bg-red-600/70 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white font-black text-[10px] uppercase">წაშლა</button>
                  </div>
                ))}

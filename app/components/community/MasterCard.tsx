@@ -1,7 +1,11 @@
 'use client';
 
 import React, { useState } from 'react';
+import Image from 'next/image';
+import type { Database } from '../../../types/supabase';
 import { supabase } from '../../lib/supabase';
+
+type MasterPortfolioRow = Database['public']['Tables']['master_portfolio']['Row'];
 
 interface Master {
   id: string;
@@ -23,12 +27,12 @@ export default function MasterCard({ master }: { master: Master }) {
   const [stars, setStars] = useState(0);
   const [comment, setComment] = useState('');
   const [submitting, setSubmitting] = useState(false);
-  const [portfolio, setPortfolio] = useState<{id:string, media_url:string}[]>([]);
+  const [portfolio, setPortfolio] = useState<MasterPortfolioRow[]>([]);
 
   React.useEffect(() => {
     const load = async () => {
-      const { data } = await supabase.from('master_portfolio').select('id, media_url').eq('master_id', master.id).limit(6);
-      setPortfolio((data || []) as any);
+      const { data } = await supabase.from('master_portfolio').select('id, media_url, master_id').eq('master_id', master.id).limit(6);
+      setPortfolio(data ?? []);
     };
     load();
   }, [master.id]);
@@ -53,9 +57,10 @@ export default function MasterCard({ master }: { master: Master }) {
       if (updErr) throw updErr;
       alert('მიმოხილვა დამატებულია!');
       setStars(0); setComment('');
-    } catch (e: any) {
+    } catch (e: unknown) {
+      const message = e instanceof Error ? e.message : 'შეცდომა შეფასების დამატებისას';
       console.error(e);
-      alert(e?.message || 'შეცდომა შეფასების დამატებისას');
+      alert(message);
     } finally {
       setSubmitting(false);
     }
@@ -66,7 +71,9 @@ export default function MasterCard({ master }: { master: Master }) {
       <div className="flex justify-between items-start">
         <div>
           <div className="flex items-center gap-2">
-            {master.photo_url && (<img src={master.photo_url} className="w-10 h-10 rounded-full object-cover" />)}
+            {master.photo_url && (
+              <Image src={master.photo_url} alt="" width={40} height={40} className="rounded-full object-cover" />
+            )}
             <div>
               <h3 className="font-black text-white text-base italic">{master.full_name}</h3>
               <p className="text-[11px] text-amber-400 uppercase font-black">{master.profession}</p>
@@ -91,7 +98,7 @@ export default function MasterCard({ master }: { master: Master }) {
       {portfolio.length > 0 && (
         <div className="mt-3 grid grid-cols-3 gap-2">
           {portfolio.map(p => (
-            <img key={p.id} src={p.media_url} className="w-full h-20 object-cover rounded" />
+            <Image key={p.id} src={p.media_url} alt="" width={120} height={80} className="w-full h-20 object-cover rounded" />
           ))}
         </div>
       )}

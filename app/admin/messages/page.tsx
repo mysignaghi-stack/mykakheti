@@ -1,11 +1,14 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { supabase } from '../../lib/supabase';
 import Link from 'next/link';
+import type { Database } from '../../../types/supabase';
+import { supabase } from '../../lib/supabase';
+
+type ContactMessageRow = Database['public']['Tables']['contact_messages']['Row'];
 
 export default function AdminMessages() {
-  const [messages, setMessages] = useState<any[]>([]);
+  const [messages, setMessages] = useState<ContactMessageRow[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {

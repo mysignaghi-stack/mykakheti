@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, type FormEvent } from 'react';
 import { supabase } from '../../../lib/supabase';
 
 export default function MastersSubmit() {
@@ -14,7 +14,7 @@ export default function MastersSubmit() {
   const [price_note, setPriceNote] = useState('');
   const [submitted, setSubmitted] = useState(false);
 
-  const submit = async (e: any) => {
+  const submit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!full_name || !profession) return alert('სახელი და პროფესიას აუცილებელია');
     const { error } = await supabase.from('masters').insert({

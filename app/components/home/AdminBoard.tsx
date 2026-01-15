@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import Image from 'next/image';
 import { supabase } from '../../lib/supabase';
 import { AdminPost } from '../../lib/types';
 
@@ -85,9 +86,10 @@ export default function AdminBoard({ isAdmin, children }: AdminBoardProps) {
       setShowForm(false); // დამატების შემდეგ ფორმა დაიკეცოს
       alert('განცხადება დაემატა! 📢');
 
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : 'Unknown error';
       console.error(error);
-      alert('შეცდომა: ' + error.message);
+      alert('შეცდომა: ' + message);
     } finally {
       setIsUploading(false);
     }
@@ -114,7 +116,11 @@ export default function AdminBoard({ isAdmin, children }: AdminBoardProps) {
       <div className="bg-slate-900/40 backdrop-blur-md border border-white/10 rounded-[30px] overflow-hidden relative flex flex-col h-full shadow-2xl group transition-all hover:border-red-500/30">
          {post.media_url && (
             <div className="h-40 w-full bg-black/50 overflow-hidden relative border-b border-white/5 shrink-0">
-               {post.media_type === 'video' ? <video src={post.media_url} controls className="w-full h-full object-cover" /> : <img src={post.media_url} alt="" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />}
+               {post.media_type === 'video' ? (
+                 <video src={post.media_url} controls className="w-full h-full object-cover" />
+               ) : (
+                 <Image src={post.media_url} alt="" fill sizes="280px" className="object-cover group-hover:scale-105 transition-transform duration-700" />
+               )}
                <div className="absolute top-2 left-2 bg-red-600 text-white text-[8px] font-black px-2 py-0.5 rounded shadow">INFO</div>
             </div>
          )}

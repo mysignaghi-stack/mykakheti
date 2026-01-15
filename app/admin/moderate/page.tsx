@@ -1,11 +1,15 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { supabase } from '../../lib/supabase';
+import Image from 'next/image';
 import Link from 'next/link';
+import type { Database } from '../../../types/supabase';
+import { supabase } from '../../lib/supabase';
+
+type AnnouncementRow = Database['public']['Tables']['announcements']['Row'];
 
 export default function ModerateAds() {
-  const [pendingAds, setPendingAds] = useState<any[]>([]);
+  const [pendingAds, setPendingAds] = useState<AnnouncementRow[]>([]);
   const [loading, setLoading] = useState(true);
 
   // 1. დაუდასტურებელი განცხადებების წამოღება
@@ -122,7 +126,7 @@ export default function ModerateAds() {
                 
                 {/* Image Preview with Badge */}
                 <div className="relative w-full md:w-48 h-48 bg-black/40 rounded-[32px] overflow-hidden shrink-0 border border-white/5">
-                  <img src={ad.image_url || '/placeholder.jpg'} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" alt="" />
+                  <Image src={ad.image_url || '/placeholder.jpg'} alt="" fill sizes="192px" className="object-cover group-hover:scale-110 transition-transform duration-700" />
                   {ad.all_images?.length > 1 && (
                     <div className="absolute bottom-4 right-4 bg-amber-600 text-white text-[9px] font-black px-3 py-1 rounded-full shadow-xl">
                       +{ad.all_images.length - 1} ფოტო

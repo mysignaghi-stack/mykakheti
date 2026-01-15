@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 // 👇 Supabase-ის და ტიპების იმპორტი (relative paths)
 import { supabase } from '../../../lib/supabase';
 import { AdminRoute, AdminSchedule, TransportRoute } from '../../../lib/types';
@@ -30,7 +30,7 @@ export default function TransportModal({ isAdmin, onClose, staticSchedule }: Tra
   });
 
   // --- DATA FETCHING (მონაცემების წამოღება) ---
-  const fetchData = async () => {
+  const fetchData = useCallback(async () => {
     if (!isAdmin) return; // მხოლოდ ადმინისტვის
     setLoading(true);
 
@@ -55,7 +55,7 @@ export default function TransportModal({ isAdmin, onClose, staticSchedule }: Tra
       if (routesData) setAdminRoutes(routesData);
       
       if (schedulesData) {
-        const formattedSchedules: AdminSchedule[] = schedulesData.map((s: any) => ({
+        const formattedSchedules: AdminSchedule[] = schedulesData.map((s) => ({
           id: s.id,
           routeId: s.route_id, // ბაზაში: route_id, ჩვენთან: routeId
           departTime: s.depart_time, // ბაზაში: depart_time
@@ -64,18 +64,19 @@ export default function TransportModal({ isAdmin, onClose, staticSchedule }: Tra
         setAdminSchedules(formattedSchedules);
       }
 
-    } catch (error: any) {
-      console.error('Error fetching transport data:', error.message);
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : 'Unknown error';
+      console.error('Error fetching transport data:', message);
       alert('მონაცემების წამოღება ვერ მოხერხდა');
     } finally {
       setLoading(false);
     }
-  };
+  }, [isAdmin]);
 
   // კომპონენტის ჩატვირთვისას წამოიღოს მონაცემები
   useEffect(() => {
     fetchData();
-  }, [isAdmin]);
+  }, [fetchData]);
 
 
   // --- HANDLERS (ფუნქციები) ---
@@ -117,9 +118,10 @@ export default function TransportModal({ isAdmin, onClose, staticSchedule }: Tra
       await fetchData(); // ხელახლა წამოღება
       alert('რეისი წარმატებით დაემატა! ✅');
 
-    } catch (error: any) {
-      console.error('Error adding entry:', error.message);
-      alert('დამატება ვერ მოხერხდა: ' + error.message);
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : 'Unknown error';
+      console.error('Error adding entry:', message);
+      alert('დამატება ვერ მოხერხდა: ' + message);
     } finally {
       setLoading(false);
     }
@@ -136,17 +138,18 @@ export default function TransportModal({ isAdmin, onClose, staticSchedule }: Tra
       if (error) throw error;
       
       await fetchData();
-    } catch (error: any) {
-      alert('წაშლა ვერ მოხერხდა: ' + error.message);
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : 'Unknown error';
+      alert('წაშლა ვერ მოხერხდა: ' + message);
     } finally {
       setLoading(false);
     }
   };
 
   // ✅ სტატუსის შეცვლა (UPDATE)
-  const handleStatusChange = async (id: number, newStatus: string) => {
+  const handleStatusChange = async (id: number, newStatus: AdminSchedule['status']) => {
     // ლოკალურად შეცვლა (სწრაფი UI)
-    setAdminSchedules(prev => prev.map(s => s.id === id ? { ...s, status: newStatus as any } : s));
+    setAdminSchedules(prev => prev.map(s => s.id === id ? { ...s, status: newStatus } : s));
 
     try {
       const { error } = await supabase
@@ -155,7 +158,7 @@ export default function TransportModal({ isAdmin, onClose, staticSchedule }: Tra
         .eq('id', id);
         
       if (error) throw error;
-    } catch (error: any) {
+    } catch {
       alert('სტატუსი ვერ შეიცვალა ბაზაში');
       fetchData(); // უკან დაბრუნება შეცდომის შემთხვევაში
     }
@@ -174,7 +177,7 @@ export default function TransportModal({ isAdmin, onClose, staticSchedule }: Tra
         .eq('id', id);
 
       if (error) throw error;
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Time update failed', error);
     }
   };

@@ -24,7 +24,7 @@ export default function AdminPostForm({ onPostAdded }: AdminPostFormProps) {
     setLoading(true);
 
     try {
-      let mediaUrls: string[] = [];
+      const mediaUrls: string[] = [];
       let mediaType: 'image' | 'video' | 'gallery' | null = null;
 
       if (files.length > 0) {
@@ -69,8 +69,9 @@ export default function AdminPostForm({ onPostAdded }: AdminPostFormProps) {
       onPostAdded(); // სიის განახლება
       alert('წარმატებით დაემატა! ✅');
 
-    } catch (err: any) {
-      alert('შეცდომა: ' + err.message);
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Unknown error';
+      alert('შეცდომა: ' + message);
     } finally {
       setLoading(false);
     }

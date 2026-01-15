@@ -1,13 +1,14 @@
 'use client';
 
 import React, { useState } from 'react';
-import { supabase } from '../../lib/supabase';
+import Image from 'next/image';
 import imageCompression from 'browser-image-compression';
-import { Swiper, SwiperSlide } from 'swiper/react';
 import { Navigation, Pagination } from 'swiper/modules';
+import { Swiper, SwiperSlide } from 'swiper/react';
 import 'swiper/css';
 import 'swiper/css/navigation';
 import 'swiper/css/pagination';
+import { supabase } from '../../lib/supabase';
 import { AdminPost, Ad } from '../../lib/types';
 
 interface AdminSideFrameProps {
@@ -56,37 +57,17 @@ export default function AdminSideFrame({ post, position, isAdmin, onRefresh, con
     setShowForm(true);
   };
 
-  const handleFileUpload = async (file: File) => {
-    // Image compression for better performance
-    let processedFile = file;
-    if (file.type.startsWith('image/')) {
-      const options = {
-        maxSizeMB: 1,
-        maxWidthOrHeight: 800,
-        useWebWorker: true,
-      };
-      processedFile = await imageCompression(file, options);
-    }
-
-    const fileName = `${position}-${Date.now()}-${Math.random().toString(36).substring(7)}`;
-    const { error } = await supabase.storage.from('admin-media').upload(fileName, processedFile);
-    if (error) throw error;
-
-    const { data } = supabase.storage.from('admin-media').getPublicUrl(fileName);
-    return data.publicUrl;
-  };
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.title || !formData.content) return;
 
     setLoading(true);
     try {
-      let mediaUrls: string[] = editingPost?.media_urls || [];
+      const mediaUrls: string[] = editingPost?.media_urls ? [...editingPost.media_urls] : [];
       let mediaType = editingPost?.media_type || null;
 
       if (formData.files.length > 0) {
-        mediaUrls = [];
+        mediaUrls.length = 0;
         for (const file of formData.files) {
           const processedFile = file.type.startsWith('image/') ? await imageCompression(file, {
             maxSizeMB: 1,
@@ -140,8 +121,9 @@ export default function AdminSideFrame({ post, position, isAdmin, onRefresh, con
       onRefresh();
       alert(editingPost ? 'პოსტი განახლდა! ✅' : 'პოსტი დაემატა! ✅');
 
-    } catch (error: any) {
-      alert('შეცდომა: ' + error.message);
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : 'Unknown error';
+      alert('შეცდომა: ' + message);
     } finally {
       setLoading(false);
     }
@@ -174,8 +156,9 @@ export default function AdminSideFrame({ post, position, isAdmin, onRefresh, con
       onRefresh();
       alert('პოსტი წაიშალა! ✅');
 
-    } catch (error: any) {
-      alert('შეცდომა წაშლისას: ' + error.message);
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : 'Unknown error';
+      alert('შეცდომა წაშლისას: ' + message);
     }
   };
 
@@ -300,7 +283,16 @@ export default function AdminSideFrame({ post, position, isAdmin, onRefresh, con
           <h4 className="text-amber-500 font-black text-lg italic">{announcement.title}</h4>
           <p className="text-white/80 text-sm leading-relaxed">{announcement.description}</p>
           {announcement.image_url && (
-            <img src={announcement.image_url} alt="" className="mt-4 rounded-xl w-full h-32 object-cover" />
+            <div className="relative mt-4 w-full h-32 overflow-hidden rounded-xl">
+              <Image
+                src={announcement.image_url}
+                alt=""
+                fill
+                sizes="(max-width: 768px) 100vw, 600px"
+                className="object-cover"
+                priority
+              />
+            </div>
           )}
           <div className="flex gap-2 flex-wrap">
             <span className="px-2 py-1 bg-amber-600/20 text-amber-400 rounded text-xs font-bold">{announcement.category}</span>
@@ -365,21 +357,29 @@ export default function AdminSideFrame({ post, position, isAdmin, onRefresh, con
                   >
                     {(post.media_urls || [post.media_url]).filter(Boolean).map((url, idx) => (
                       <SwiperSlide key={idx}>
-                        <img
-                          src={url!}
-                          alt=""
-                          className="w-full h-full object-cover rounded-xl"
-                        />
+                        <div className="relative w-full h-full">
+                          <Image
+                            src={url!}
+                            alt=""
+                            fill
+                            sizes="(max-width: 768px) 100vw, 800px"
+                            className="object-cover rounded-xl"
+                          />
+                        </div>
                       </SwiperSlide>
                     ))}
                   </Swiper>
                 </div>
               ) : (
-                <img
-                  src={(post.media_urls?.[0] || post.media_url)!}
-                  alt=""
-                  className="w-full h-32 object-cover rounded-xl"
-                />
+                <div className="relative w-full h-32">
+                  <Image
+                    src={(post.media_urls?.[0] || post.media_url)!}
+                    alt=""
+                    fill
+                    sizes="(max-width: 768px) 100vw, 800px"
+                    className="object-cover rounded-xl"
+                  />
+                </div>
               )}
             </div>
           ) : null}

@@ -1,13 +1,17 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import Image from 'next/image';
 import { useParams } from 'next/navigation';
+import type { Database } from '../../../../types/supabase';
 import { supabase } from '../../../lib/supabase';
+
+type LostFoundRow = Database['public']['Tables']['lost_found']['Row'];
 
 export default function LostFoundDetails() {
   const params = useParams();
   const id = params?.id as string;
-  const [item, setItem] = useState<any>(null);
+  const [item, setItem] = useState<LostFoundRow | null>(null);
   const CATEGORY_LABELS: Record<string, string> = {
     document: 'დოკუმენტები',
     pet: 'შინაური ცხოველი',
@@ -38,7 +42,11 @@ export default function LostFoundDetails() {
           <span className={`font-black uppercase ${item.kind==='lost'?'text-red-400':'text-green-400'}`}>{FILTER_LABELS[item.kind as 'lost'|'found']}</span>
           {item.category && (<span className="font-black uppercase text-white/40">{CATEGORY_LABELS[item.category] ?? item.category}</span>)}
         </div>
-        {item.image_url && (<img src={item.image_url} className="w-full max-h-[360px] object-cover rounded-2xl" />)}
+        {item.image_url && (
+          <div className="relative w-full h-[360px] rounded-2xl overflow-hidden">
+            <Image src={item.image_url} alt="" fill sizes="(max-width: 768px) 100vw, 700px" className="object-cover" />
+          </div>
+        )}
         {item.location && (<p className="text-sm text-white/80">ლოკაცია: {item.location}</p>)}
         {item.event_date && (<p className="text-sm text-white/80">თარიღი: {new Date(item.event_date).toLocaleDateString()}</p>)}
         {item.contact && (<p className="text-sm text-white/80">კონტაქტი: {item.contact}</p>)}

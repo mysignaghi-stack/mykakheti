@@ -1,19 +1,20 @@
 'use client';
 import { useState, useEffect, useCallback } from 'react';
-import { supabase } from '../lib/supabase';
 import imageCompression from 'browser-image-compression';
-import { useRouter } from 'next/navigation';
+import Image from 'next/image';
 import Link from 'next/link';
+import type { Database } from '../../types/supabase';
+import { supabase } from '../lib/supabase';
 import { useAdminAuth } from '../hooks/useAdminAuth';
 
-const LOCATIONS = ['თელავი', 'სიღნაღი', 'წნორი', 'ყვარელი', 'გურჯაანი', 'საგარეჯო', 'ლაგოდეხი', 'ახმეტა', 'დედოფლისწყარო'];
+type AnnouncementRow = Database['public']['Tables']['announcements']['Row'];
+type AdminTab = 'moderate' | 'live' | 'community' | 'business' | 'congratulations' | 'visuals';
 const BIZ_CATEGORIES = ['მარნები და ღვინო', 'სასტუმროები', 'რესტორნები და კაფეები', 'ტურისტული მარშრუტები', 'სახელოსნოები', 'სხვა'];
 
 export default function AdminHub() {
-  const router = useRouter();
   const { isAdmin, loading: authLoading, handleAdminLogout } = useAdminAuth();
-  const [activeTab, setActiveTab] = useState<'moderate' | 'live' | 'community' | 'business' | 'congratulations' | 'visuals'>('moderate');
-  const [ads, setAds] = useState<any[]>([]);
+  const [activeTab, setActiveTab] = useState<AdminTab>('moderate');
+  const [ads, setAds] = useState<AnnouncementRow[]>([]);
   const [loading, setLoading] = useState(false);
   const [bgUploading, setBgUploading] = useState(false);
   
@@ -139,7 +140,10 @@ export default function AdminHub() {
       alert('ბიზნესი დაემატა! 🚀');
       setBizData({ name: '', category: BIZ_CATEGORIES[0], address: '', phone: '', description: '' });
       setBizFile(null);
-    } catch (err: any) { alert('შეცდომა: ' + err.message); }
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Unknown error';
+      alert('შეცდომა: ' + message);
+    }
     setLoading(false);
   };
 
@@ -170,9 +174,10 @@ export default function AdminHub() {
         throw dbErr;
       }
       alert('საიტის ფონი შეიცვალა! 🌅');
-    } catch (err: any) {
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Unknown error';
       console.error('ფონის შეცვლის სრული შეცდომა:', err);
-      alert('შეცდომა: ' + err.message);
+      alert('შეცდომა: ' + message);
     }
     setBgUploading(false);
   }
@@ -223,7 +228,7 @@ export default function AdminHub() {
           ].map(tab => (
             <button 
               key={tab.id}
-              onClick={() => setActiveTab(tab.id as any)} 
+              onClick={() => setActiveTab(tab.id as AdminTab)} 
               className={`px-8 py-4 rounded-[28px] font-black uppercase italic text-[10px] tracking-widest transition-all ${activeTab === tab.id ? `${tab.color} text-white shadow-xl scale-105` : 'text-white/30 hover:text-white'}`}
             >
               {tab.label}
@@ -240,7 +245,9 @@ export default function AdminHub() {
                   {ads.map(ad => (
                     <div key={ad.id} className="bg-white/[0.02] backdrop-blur-3xl p-8 rounded-[48px] border border-white/5 flex flex-col md:flex-row gap-8 items-center group hover:border-white/10 transition-all shadow-2xl text-left">
                       <div className="relative w-44 h-44 bg-black/40 rounded-[36px] overflow-hidden shrink-0 border border-white/10">
-                        <img src={ad.image_url} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" alt="" />
+                        {ad.image_url && (
+                          <Image src={ad.image_url} alt="" fill sizes="176px" className="object-cover group-hover:scale-110 transition-transform duration-700" />
+                        )}
                       </div>
                       <div className="flex-grow space-y-3">
                         <h3 className="text-2xl font-black uppercase italic leading-tight">{ad.title}</h3>

@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import Image from 'next/image';
 import { supabase } from '../../lib/supabase';
 
 interface Congratulations {
@@ -43,7 +44,7 @@ export default function CongratulationsPage() {
               <div key={item.id} className="p-5 bg-white/5 rounded-2xl border border-white/10">
                 <div className="flex gap-4 items-start">
                   {item.image_url && (
-                    <img src={item.image_url} className="w-20 h-20 rounded-xl object-cover" />
+                    <Image src={item.image_url} alt="" width={80} height={80} className="rounded-xl object-cover" />
                   )}
                   <div className="flex-1">
                     <div className="flex justify-between items-start mb-2">

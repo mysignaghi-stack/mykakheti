@@ -1,6 +1,7 @@
 'use client';
 import { useEffect, useState } from 'react';
 import type { ChangeEvent, FormEvent } from 'react';
+import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import imageCompression from 'browser-image-compression';
@@ -167,7 +168,7 @@ export default function AdminBusinesses() {
               <div className="grid grid-cols-3 md:grid-cols-6 gap-3">
                  {previews.map((src, i) => (
                    <div key={i} className="aspect-square rounded-2xl overflow-hidden border border-white/10 relative group shadow-2xl">
-                     <img src={src} className="w-full h-full object-cover" alt="" />
+                     <Image src={src} alt="" fill sizes="120px" className="object-cover" />
                      <button type="button" onClick={() => removeImage(i)} className="absolute inset-0 bg-red-600/80 opacity-0 group-hover:opacity-100 transition-all flex items-center justify-center text-white font-black text-[10px] uppercase">წაშლა</button>
                    </div>
                  ))}

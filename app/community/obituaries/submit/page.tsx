@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, type FormEvent } from 'react';
 import { supabase } from '../../../lib/supabase';
 
 export default function ObituariesSubmit() {
@@ -12,7 +12,7 @@ export default function ObituariesSubmit() {
   const [notes, setNotes] = useState('');
   const [submitted, setSubmitted] = useState(false);
 
-  const submit = async (e: any) => {
+  const submit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!full_name) return alert('სახელი აუცილებელია');
     const { error } = await supabase.from('obituaries').insert({

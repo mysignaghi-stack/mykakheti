@@ -1,6 +1,7 @@
 'use client';
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
+import Image from 'next/image';
 import { supabase } from '../../lib/supabase';
 import { formatDistanceToNow } from 'date-fns';
 import { ka } from 'date-fns/locale';
@@ -46,7 +47,6 @@ export default function KakhetianSquare({ isAdmin, controlToken, scrollRef }: Ka
   const [isSoundOn, setIsSoundOn] = useState(true);
   
   const [isUploading, setIsUploading] = useState(false);
-  const [uploadProgress, setUploadProgress] = useState(0);
   
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const [filePreviews, setFilePreviews] = useState<string[]>([]);
@@ -67,20 +67,20 @@ export default function KakhetianSquare({ isAdmin, controlToken, scrollRef }: Ka
   const channelId = useRef(`room_${Date.now()}_${Math.random()}`).current;
 
   // --- Helpers ---
-  const playSound = () => {
+  const playSound = useCallback(() => {
     if (isSoundOn && audioRef.current) {
         audioRef.current.currentTime = 0;
         audioRef.current.play().catch(err => console.log("Audio prevented:", err));
     }
-  };
+  }, [isSoundOn]);
 
-  const scrollToBottom = () => {
+  const scrollToBottom = useCallback(() => {
     // Scroll only the chat container; do not use scrollIntoView to avoid page jumps
     const el = (scrollRef?.current) ?? ownScrollRef.current;
     if (el) {
       el.scrollTo({ top: el.scrollHeight, behavior: 'smooth' });
     }
-  };
+  }, [scrollRef]);
 
   // --- Effects ---
 
@@ -120,7 +120,7 @@ export default function KakhetianSquare({ isAdmin, controlToken, scrollRef }: Ka
     cleanupOldMessages(); // დაუყოვნებლივ გაშვება
     
     return () => clearInterval(cleanupInterval);
-  }, [controlToken]);
+  }, [controlToken, scrollToBottom]);
 
   // 2. REALTIME Subscription
   useEffect(() => {
@@ -151,7 +151,7 @@ export default function KakhetianSquare({ isAdmin, controlToken, scrollRef }: Ka
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [isSoundOn]);
+  }, [channelId, isSoundOn, playSound, scrollToBottom]);
 
   // 3. UI Helpers
   useEffect(() => {
@@ -173,7 +173,7 @@ export default function KakhetianSquare({ isAdmin, controlToken, scrollRef }: Ka
   useEffect(() => {
     const t = setTimeout(scrollToBottom, 30);
     return () => clearTimeout(t);
-  }, [messages]);
+  }, [messages, scrollToBottom]);
 
   // --- Logic Functions ---
 
@@ -204,7 +204,7 @@ export default function KakhetianSquare({ isAdmin, controlToken, scrollRef }: Ka
     setTimeout(() => {
       try {
         // Avoid page scroll when focusing input
-        (inputRef.current as HTMLInputElement | null)?.focus({ preventScroll: true } as any);
+        inputRef.current?.focus({ preventScroll: true });
       } catch {
         inputRef.current?.focus();
       }
@@ -231,20 +231,14 @@ export default function KakhetianSquare({ isAdmin, controlToken, scrollRef }: Ka
     if (isBanned) return alert("თქვენ დაბლოკილი ხართ.");
     if (!msgName || (!msgText && selectedFiles.length === 0)) return;
     
-    // 📍 შევინახოთ scroll პოზიცია გაგზავნამდე (როგორც კონტეინერის, ისე მთლიანი გვერდის)
-    const scrollContainer = scrollRef?.current;
-    const previousScrollTop = scrollContainer?.scrollTop;
-    
     localStorage.setItem('kakheti_username', msgName);
-    setIsUploading(true); setUploadProgress(20);
+    setIsUploading(true);
 
     const uploads = [];
     for (const file of selectedFiles) {
         const res = await handleFileUpload(file);
         if (res) uploads.push(res);
     }
-    setUploadProgress(80);
-
     const baseData = {
         sender_name: msgName,
         parent_id: replyTo?.id || null,
@@ -264,7 +258,7 @@ export default function KakhetianSquare({ isAdmin, controlToken, scrollRef }: Ka
 
     const { data, error } = await supabase.from('square_messages').insert(inserts).select();
     
-    setIsUploading(false); setUploadProgress(100);
+    setIsUploading(false);
     
     if (!error && data) {
         setMessages((prev) => {
@@ -345,7 +339,13 @@ export default function KakhetianSquare({ isAdmin, controlToken, scrollRef }: Ka
 
                         {m.media_url && (
                             <div className="mb-2 rounded-xl overflow-hidden cursor-pointer" onClick={() => setViewingMedia({ url: m.media_url!, type: m.media_type! })}>
-                                {m.media_type === 'image' ? <img src={m.media_url} className="w-full max-h-48 object-cover" alt="" /> : <video src={m.media_url} className="w-full max-h-48" />}
+                                {m.media_type === 'image' ? (
+                                  <div className="relative w-full max-h-48 h-48">
+                                    <Image src={m.media_url} alt="" fill sizes="(max-width: 768px) 100vw, 480px" className="object-cover" />
+                                  </div>
+                                ) : (
+                                  <video src={m.media_url} className="w-full max-h-48" />
+                                )}
                             </div>
                         )}
 
@@ -376,7 +376,10 @@ export default function KakhetianSquare({ isAdmin, controlToken, scrollRef }: Ka
         {filePreviews.length > 0 && (
             <div className="flex gap-2 mb-2 overflow-x-auto">
                 {filePreviews.map((src, i) => (
-                    <div key={i} className="relative w-12 h-12 shrink-0"><img src={src} className="w-full h-full object-cover rounded-lg" alt="" /><button onClick={() => removeSelectedFile(i)} className="absolute -top-1 -right-1 bg-red-500 text-white rounded-full w-3 h-3 flex items-center justify-center text-[8px]">✕</button></div>
+                  <div key={i} className="relative w-12 h-12 shrink-0">
+                    <Image src={src} alt="" width={48} height={48} className="w-full h-full object-cover rounded-lg" />
+                    <button onClick={() => removeSelectedFile(i)} className="absolute -top-1 -right-1 bg-red-500 text-white rounded-full w-3 h-3 flex items-center justify-center text-[8px]">✕</button>
+                  </div>
                 ))}
             </div>
         )}
@@ -430,7 +433,9 @@ export default function KakhetianSquare({ isAdmin, controlToken, scrollRef }: Ka
 
       {viewingMedia && (
         <div className="fixed inset-0 z-[100] bg-black/95 flex items-center justify-center p-4 backdrop-blur-sm" onClick={() => setViewingMedia(null)}>
-            <img src={viewingMedia.url} className="max-w-full max-h-[90vh] rounded-xl shadow-2xl" alt="" />
+            <div className="relative w-full max-w-[90vw] h-[90vh]">
+              <Image src={viewingMedia.url} alt="" fill sizes="90vw" className="object-contain rounded-xl shadow-2xl" />
+            </div>
         </div>
       )}
     </div>

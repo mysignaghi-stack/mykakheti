@@ -30,7 +30,7 @@ export function useWeatherData() {
         }));
         setWeatherData(staticWeatherData);
       }
-    } catch (error) {
+    } catch {
       // Fallback to static data on error
       const staticWeatherData: WeatherItem[] = WEATHER_POINTS.map(point => ({
         name: point.name,

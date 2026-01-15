@@ -1,5 +1,6 @@
 'use client';
 import React, { useEffect } from 'react';
+import Image from 'next/image';
 import Link from 'next/link';
 import { Ad } from '../../lib/types';
 import { LOCATIONS } from '../../lib/constants';
@@ -12,7 +13,6 @@ interface HeroSectionProps {
   setSelectedLocation: (loc: string) => void;
   isLocOpen: boolean;
   setIsLocOpen: (v: boolean) => void;
-  onMapSearch: (service: string) => void;
   locRef: React.RefObject<HTMLDivElement>;
 }
 
@@ -20,7 +20,7 @@ export default function HeroSection({
   searchTerm, setSearchTerm, filteredAds, 
   selectedLocation, setSelectedLocation, 
   isLocOpen, setIsLocOpen, 
-  onMapSearch, locRef
+  locRef
 }: HeroSectionProps) {
   
   // Close dropdown when clicking outside
@@ -100,7 +100,7 @@ export default function HeroSection({
                     <Link key={ad.id} href={`/announcements/${ad.id}`} className="flex items-center gap-4 p-3 bg-white/5 rounded-[22px] border border-white/5 hover:border-amber-500/30 transition-all group/item">
                       <div className="w-16 h-16 rounded-xl overflow-hidden shrink-0">
                         {ad.image_url ? (
-                          <img src={ad.image_url} className="w-full h-full object-cover" alt="" />
+                          <Image src={ad.image_url} alt="" width={64} height={64} className="w-full h-full object-cover" />
                         ) : (
                           <div className="w-full h-full bg-slate-800 flex items-center justify-center p-2 text-center border border-white/5">
                             <span className="text-[7px] font-black uppercase text-white/40 line-clamp-3 leading-tight">{ad.title}</span>

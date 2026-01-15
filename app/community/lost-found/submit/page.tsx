@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, type FormEvent } from 'react';
 import { supabase } from '../../../lib/supabase';
 
 export default function LostFoundSubmit() {
@@ -20,7 +20,7 @@ export default function LostFoundSubmit() {
     found: 'ნაპოვნი',
   };
 
-  const submit = async (e: any) => {
+  const submit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!title) return alert('სათაური აუცილებელია');
     const { error } = await supabase.from('lost_found').insert({
@@ -57,7 +57,7 @@ export default function LostFoundSubmit() {
             ))}
           </div>
           <div className="grid grid-cols-2 gap-3">
-            <select value={category} onChange={e=>setCategory(e.target.value as any)} className="bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-sm text-white">
+            <select value={category} onChange={e=>setCategory(e.target.value as 'document' | 'pet' | 'keys_items' | 'other')} className="bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-sm text-white">
               <option value="document">პირადი დოკუმენტები</option>
               <option value="pet">შინაური ცხოველები</option>
               <option value="keys_items">გასაღები/ნივთები</option>

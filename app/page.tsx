@@ -1,12 +1,7 @@
-// Type for agro details
-interface AgroDetail {
-  place: string;
-  rate: string | number;
-}
-
 'use client';
 
 import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
+import Image from 'next/image';
 import Link from 'next/link';
 import { useAdminAuth } from './hooks/useAdminAuth';
 import { useAdsData } from './hooks/useAdsData';
@@ -30,6 +25,12 @@ import AdminSideFrame from './components/home/AdminSideFrame';
 import ChatPopup from './components/features/ChatPopup';
 import CongratulationsSection from './components/home/CongratulationsSection';
 
+// Type for agro details
+interface AgroDetail {
+  place: string;
+  rate: string | number;
+}
+
 // Helpers
 const getSeasonalContent = () => {
   const month = new Date().getMonth();
@@ -44,8 +45,6 @@ const getSeasonalContent = () => {
 export default function HomePage() {
   const {
     ads,
-    setAds,
-    loading: adsLoading,
     fetchAds,
     archiveAd,
     restoreAd,
@@ -53,9 +52,6 @@ export default function HomePage() {
   } = useAdsData();
   const {
     weatherData,
-    setWeatherData,
-    loading: weatherLoading,
-    fetchWeatherData,
   } = useWeatherData();
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategories, setSelectedCategories] = useState<string[]>(['ყველა']);
@@ -65,7 +61,7 @@ export default function HomePage() {
   const [marqueeText, setMarqueeText] = useState<string>('');
 
   // Fetch background image and marquee text from site_settings
-  const fetchBG = async () => {
+  const fetchBG = useCallback(async () => {
     try {
       const { data: bgData } = await supabase.from('site_settings').select('value').eq('key', 'background_url').single();
       if (bgData?.value) setBgImage(bgData.value);
@@ -77,14 +73,12 @@ export default function HomePage() {
       console.log('Error fetching site settings:', error);
       setMarqueeText('საიტი მუშაობს სატესტო რეჟიმში');
     }
-  };
+  }, []);
 
   // Agro hook
   const {
     agroData,
     setAgroData,
-    loading: agroLoading,
-    fetchAgroData,
     editAgroItem,
     setEditAgroItem,
     selectedAgro,
@@ -99,8 +93,10 @@ export default function HomePage() {
   const [snackbar, setSnackbar] = useState<{ open: boolean; message: string; type?: 'success' | 'error' | 'info' }>({ open: false, message: '', type: 'info' });
   // Loading state for editAgroItem modal
   const [editLoading, setEditLoading] = useState(false);
-  const showSnackbar = (message: string, type: 'success' | 'error' | 'info' = 'info') => setSnackbar({ open: true, message, type });
-  const closeSnackbar = () => setSnackbar(s => ({ ...s, open: false }));
+  const showSnackbar = useCallback((message: string, type: 'success' | 'error' | 'info' = 'info') => {
+    setSnackbar({ open: true, message, type });
+  }, []);
+  const closeSnackbar = useCallback(() => setSnackbar(s => ({ ...s, open: false })), []);
 
   // Snackbar-enabled price update
   const handleUpdatePrice = useCallback(async (e: React.FormEvent) => {
@@ -119,7 +115,6 @@ export default function HomePage() {
   
   const {
     isAdmin,
-    handleAdminLogout,
   } = useAdminAuth();
   
   const [factIndex, setFactIndex] = useState(0);
@@ -169,7 +164,10 @@ export default function HomePage() {
         console.log('Auth session missing or error:', error);
       }
     })();
-  }, []);
+    return () => {
+      clearInterval(factTimer);
+    };
+  }, [fetchAds, fetchBG]);
 
   // Poll for background changes (reduced frequency and only when visible)
   useEffect(() => {
@@ -177,7 +175,7 @@ export default function HomePage() {
     const interval = setInterval(tick, 30000);
     document.addEventListener('visibilitychange', tick);
     return () => clearInterval(interval);
-  }, []);
+  }, [fetchBG]);
 
   const fetchAdminPosts = async () => {
     const { data } = await supabase.from('admin_posts').select('*').order('priority', { ascending: false }).order('created_at', { ascending: false });
@@ -193,20 +191,6 @@ export default function HomePage() {
   // Confirmation modal state
   const [confirmModal, setConfirmModal] = useState<{ open: boolean; message: string; onConfirm: () => Promise<void> } | null>(null);
   const [confirmLoading, setConfirmLoading] = useState(false);
-
-  const handleAdminPostDelete = (id: number) => {
-    setConfirmModal({
-      open: true,
-      message: 'ნამდვილად გსურთ პოსტის წაშლა?',
-      onConfirm: async () => {
-        setConfirmLoading(true);
-        await supabase.from('admin_posts').delete().eq('id', id);
-        fetchAdminPosts();
-        showSnackbar('პოსტი წაიშალა', 'success');
-        setConfirmLoading(false);
-      },
-    });
-  };
 
   const handleMapSearch = (service: string) => {
     const query = encodeURIComponent(service);
@@ -297,7 +281,7 @@ export default function HomePage() {
       window.addEventListener('keydown', handleEsc);
       return () => window.removeEventListener('keydown', handleEsc);
     }
-  }, [editAgroItem]);
+  }, [editAgroItem, setEditAgroItem]);
 
   // Remove inline ConfirmModal, use component below
 
@@ -324,7 +308,16 @@ export default function HomePage() {
     <main className="min-h-screen relative flex flex-col bg-[#050510] overflow-x-hidden text-left selection:bg-amber-500 selection:text-white text-white">
       {/* Background */}
       <div className="fixed inset-0 z-0 pointer-events-none">
-        {bgImage && <img src={bgImage} className="w-full h-full object-cover opacity-7 transition-opacity duration-500" alt="" />}
+        {bgImage && (
+          <Image
+            src={bgImage}
+            alt=""
+            fill
+            sizes="100vw"
+            className="object-cover opacity-7 transition-opacity duration-500"
+            priority
+          />
+        )}
         <div className="absolute inset-0 bg-gradient-to-b from-[#0a0a1f]/30 via-[#050510]/10 to-[#050510]/40 backdrop-blur-[2px]" />
       </div>
 
@@ -432,7 +425,7 @@ export default function HomePage() {
              <HeroSection 
                 searchTerm={searchTerm} setSearchTerm={setSearchTerm} filteredAds={filteredAds}
                 selectedLocation={selectedLocation} setSelectedLocation={setSelectedLocation}
-                isLocOpen={isLocOpen} setIsLocOpen={setIsLocOpen} locRef={locRef as React.RefObject<HTMLDivElement>} onMapSearch={handleMapSearch}
+               isLocOpen={isLocOpen} setIsLocOpen={setIsLocOpen} locRef={locRef as React.RefObject<HTMLDivElement>}
              />
 
             {/* --- Announcement/Marquee Bar (center column, in the middle) --- */}

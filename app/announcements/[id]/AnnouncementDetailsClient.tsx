@@ -1,5 +1,6 @@
 'use client';
 import { useEffect, useState } from 'react';
+import Image from 'next/image';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import type { Database } from '../../types/supabase';
@@ -76,10 +77,12 @@ export default function AnnouncementDetailsClient({ initialAd }: { initialAd: An
         <div className="space-y-6">
           <div className="aspect-[4/3] rounded-[30px] md:rounded-[50px] overflow-hidden border border-white/10 shadow-2xl bg-black/40 group relative">
             {activeImg ? (
-                <img 
-                src={activeImg} 
-                className="w-full h-full object-cover transition-all duration-700 group-hover:scale-105" 
-                alt={ad.title} 
+                <Image
+                  src={activeImg}
+                  alt={ad.title}
+                  fill
+                  sizes="(max-width: 1024px) 100vw, 700px"
+                  className="object-cover transition-all duration-700 group-hover:scale-105"
                 />
             ) : (
                 <div className="w-full h-full flex items-center justify-center bg-slate-900 text-white/20 font-black uppercase italic">ფოტო არ არის</div>
@@ -91,7 +94,7 @@ export default function AnnouncementDetailsClient({ initialAd }: { initialAd: An
                 {/* მთავარი ფოტოც რომ იყოს არჩევაში */}
                 {ad.image_url && (
                     <button onClick={() => setActiveImg(ad.image_url)} className={`w-20 h-20 md:w-24 md:h-24 rounded-[22px] overflow-hidden border-2 shrink-0 transition-all duration-300 ${activeImg === ad.image_url ? 'border-amber-500 scale-105' : 'border-white/10 opacity-60'}`}>
-                        <img src={ad.image_url} className="w-full h-full object-cover" alt="Main" />
+                    <Image src={ad.image_url} alt="Main" width={96} height={96} className="w-full h-full object-cover" />
                     </button>
                 )}
                 {ad.all_images.map((img: string, i: number) => (
@@ -102,7 +105,7 @@ export default function AnnouncementDetailsClient({ initialAd }: { initialAd: An
                     activeImg === img ? 'border-amber-500 scale-105 shadow-lg shadow-amber-500/20' : 'border-white/10 opacity-60 hover:opacity-100'
                     }`}
                 >
-                    <img src={img} className="w-full h-full object-cover" alt="" />
+                  <Image src={img} alt="" width={96} height={96} className="w-full h-full object-cover" />
                 </button>
                 ))}
             </div>

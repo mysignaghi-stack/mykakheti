@@ -1,5 +1,7 @@
 'use client';
 
+import Link from 'next/link';
+
 export default function RulesPage() {
   const rules = [
     {
@@ -33,8 +35,8 @@ export default function RulesPage() {
       <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(circle_at_top,_var(--tw-gradient-stops))] from-amber-600/10 via-transparent to-transparent opacity-50" />
       
       <nav className="relative z-50 px-10 py-10 border-b border-white/5 flex justify-between items-center bg-black/20 backdrop-blur-3xl">
-        <a href="/" className="text-2xl font-black italic tracking-tighter drop-shadow-md">mykakheti<span className="text-amber-500">.ge</span></a>
-        <a href="/" className="bg-white text-black px-10 py-3 rounded-2xl text-[11px] font-black uppercase italic hover:bg-amber-500 hover:text-white transition-all shadow-2xl">← მთავარზე</a>
+        <Link href="/" className="text-2xl font-black italic tracking-tighter drop-shadow-md">mykakheti<span className="text-amber-500">.ge</span></Link>
+        <Link href="/" className="bg-white text-black px-10 py-3 rounded-2xl text-[11px] font-black uppercase italic hover:bg-amber-500 hover:text-white transition-all shadow-2xl">← მთავარზე</Link>
       </nav>
 
       <div className="relative z-10 max-w-5xl mx-auto mt-24 px-8">

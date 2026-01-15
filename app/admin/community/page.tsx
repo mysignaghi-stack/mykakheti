@@ -1,25 +1,61 @@
 'use client';
 
 import { useState } from 'react';
+import type { Database } from '../../../types/supabase';
 import { supabase } from '../../lib/supabase';
 
-export default function AdminCommunityPage() {
-  const [tab, setTab] = useState<'obituaries'|'lostfound'|'masters'>('obituaries');
-  const [pending, setPending] = useState<{type:string, items:any[]}>({type:'', items:[]});
-  const [approved, setApproved] = useState<{type:string, items:any[]}>({type:'', items:[]});
+type CommunityTab = 'obituaries' | 'lostfound' | 'masters';
+type ObituaryRow = Database['public']['Tables']['obituaries']['Row'];
+type LostFoundRow = Database['public']['Tables']['lost_found']['Row'];
+type MasterRow = Database['public']['Tables']['masters']['Row'];
+type CommunityItem = ObituaryRow | LostFoundRow | MasterRow;
+type PendingState = { type: CommunityTab | ''; items: CommunityItem[] };
 
-  async function loadPending(t: 'obituaries'|'lostfound'|'masters') {
-    const table = t === 'lostfound' ? 'lost_found' : t;
-    let q = supabase.from(table).select('*').eq('is_approved', false).order('created_at', { ascending: false });
-    const { data } = await q;
-    setPending({ type: t, items: (data||[]) });
+const getTableName = (t: CommunityTab): 'obituaries' | 'lost_found' | 'masters' => {
+  if (t === 'lostfound') return 'lost_found';
+  return t;
+};
+
+const getItemLabel = (item: CommunityItem) => {
+  if ('title' in item && item.title) return item.title;
+  if ('full_name' in item && item.full_name) return item.full_name;
+  if ('profession' in item && item.profession) return item.profession;
+  return String(item.id);
+};
+
+export default function AdminCommunityPage() {
+  const [tab, setTab] = useState<CommunityTab>('obituaries');
+  const [pending, setPending] = useState<PendingState>({ type: '', items: [] });
+  const [approved, setApproved] = useState<PendingState>({ type: '', items: [] });
+
+  async function loadPending(t: CommunityTab) {
+    if (t === 'lostfound') {
+      const { data } = await supabase.from('lost_found').select('*').eq('is_approved', false).order('created_at', { ascending: false });
+      setPending({ type: t, items: data ?? [] });
+      return;
+    }
+    if (t === 'obituaries') {
+      const { data } = await supabase.from('obituaries').select('*').eq('is_approved', false).order('created_at', { ascending: false });
+      setPending({ type: t, items: data ?? [] });
+      return;
+    }
+    const { data } = await supabase.from('masters').select('*').eq('is_approved', false).order('created_at', { ascending: false });
+    setPending({ type: t, items: data ?? [] });
   }
 
-  async function loadApproved(t: 'obituaries'|'lostfound'|'masters') {
-    const table = t === 'lostfound' ? 'lost_found' : t;
-    let q = supabase.from(table).select('*').eq('is_approved', true).order('created_at', { ascending: false });
-    const { data } = await q;
-    setApproved({ type: t, items: (data||[]) });
+  async function loadApproved(t: CommunityTab) {
+    if (t === 'lostfound') {
+      const { data } = await supabase.from('lost_found').select('*').eq('is_approved', true).order('created_at', { ascending: false });
+      setApproved({ type: t, items: data ?? [] });
+      return;
+    }
+    if (t === 'obituaries') {
+      const { data } = await supabase.from('obituaries').select('*').eq('is_approved', true).order('created_at', { ascending: false });
+      setApproved({ type: t, items: data ?? [] });
+      return;
+    }
+    const { data } = await supabase.from('masters').select('*').eq('is_approved', true).order('created_at', { ascending: false });
+    setApproved({ type: t, items: data ?? [] });
   }
 
   return (
@@ -42,15 +78,26 @@ export default function AdminCommunityPage() {
         <div className="mt-8">
           <h3 className="text-lg font-black uppercase italic text-white/70">დასამტკიცებელი ({pending.items.length})</h3>
           <div className="space-y-2 mt-2">
-            {pending.items.map((it: any) => (
+            {pending.items.map((it) => (
               <div key={it.id} className="p-4 bg-white/5 rounded-2xl border border-white/10 flex justify-between items-center">
                 <div className="text-sm">
-                  <div className="font-black">{it.title || it.full_name || it.profession || it.id}</div>
-                  {it.location && (<div className="text-[11px] text-white/50">{it.location}</div>)}
+                  <div className="font-black">{getItemLabel(it)}</div>
+                  {'location' in it && it.location && (<div className="text-[11px] text-white/50">{it.location}</div>)}
                 </div>
                 <div className="flex gap-2">
-                  <button onClick={async () => { const table = (pending.type === 'lostfound' ? 'lost_found' : pending.type); await supabase.from(table).update({ is_approved: true }).eq('id', it.id); loadPending(pending.type as any); loadApproved(pending.type as any); }} className="bg-green-600 text-white px-3 py-1 rounded">დამტკიცება</button>
-                  <button onClick={async () => { const table = (pending.type === 'lostfound' ? 'lost_found' : pending.type); await supabase.from(table).delete().eq('id', it.id); loadPending(pending.type as any); }} className="bg-red-600/20 text-red-400 px-3 py-1 rounded hover:bg-red-600 hover:text-white">წაშლა</button>
+                  <button onClick={async () => {
+                    if (!pending.type) return;
+                    const table = getTableName(pending.type);
+                    await supabase.from(table).update({ is_approved: true }).eq('id', it.id);
+                    loadPending(pending.type);
+                    loadApproved(pending.type);
+                  }} className="bg-green-600 text-white px-3 py-1 rounded">დამტკიცება</button>
+                  <button onClick={async () => {
+                    if (!pending.type) return;
+                    const table = getTableName(pending.type);
+                    await supabase.from(table).delete().eq('id', it.id);
+                    loadPending(pending.type);
+                  }} className="bg-red-600/20 text-red-400 px-3 py-1 rounded hover:bg-red-600 hover:text-white">წაშლა</button>
                 </div>
               </div>
             ))}
@@ -61,24 +108,25 @@ export default function AdminCommunityPage() {
         <div className="mt-8">
           <h3 className="text-lg font-black uppercase italic text-white/70">დამტკიცებული განცხადებები ({approved.items.length})</h3>
           <div className="space-y-2 mt-2">
-            {approved.items.map((it: any) => (
+            {approved.items.map((it) => (
               <div key={it.id} className="p-4 bg-green-500/5 rounded-2xl border border-green-500/20 flex justify-between items-center">
                 <div className="text-sm">
-                  <div className="font-black">{it.title || it.full_name || it.profession || it.id}</div>
-                  {it.location && (<div className="text-[11px] text-white/50">{it.location}</div>)}
+                  <div className="font-black">{getItemLabel(it)}</div>
+                  {'location' in it && it.location && (<div className="text-[11px] text-white/50">{it.location}</div>)}
                   <div className="text-[10px] text-green-400 font-bold uppercase">დამტკიცებული</div>
                 </div>
                 <div className="flex gap-2">
                   <button onClick={async () => { 
                     if (!confirm('ნამდვილად გსურთ წაშლა? ეს ქმედება შეუქცევადია.')) return;
-                    const table = (approved.type === 'lostfound' ? 'lost_found' : approved.type); 
+                    if (!approved.type) return;
+                    const table = getTableName(approved.type);
                     await supabase.from(table).delete().eq('id', it.id); 
-                    loadApproved(approved.type as any); 
+                    loadApproved(approved.type); 
                   }} className="bg-red-600/20 text-red-400 px-3 py-1 rounded hover:bg-red-600 hover:text-white">წაშლა</button>
                   {approved.type === 'lostfound' && (
                     <button onClick={async () => { 
                       await supabase.from('lost_found').update({ resolved: true }).eq('id', it.id); 
-                      loadApproved(approved.type as any); 
+                      if (approved.type) loadApproved(approved.type); 
                     }} className="bg-blue-600/20 text-blue-400 px-3 py-1 rounded hover:bg-blue-600 hover:text-white">მონიშნე როგორც გადაწყვეტილი</button>
                   )}
                 </div>
@@ -137,7 +185,7 @@ function LostFoundForm() {
   const [location, setLocation] = useState('');
   const [event_date, setEventDate] = useState('');
   const [contact, setContact] = useState('');
-  const [category, setCategory] = useState<'document'|'pet'|'keys_items'|'other'>('other');
+  const [category, setCategory] = useState<'document' | 'pet' | 'keys_items' | 'other'>('other');
   const [reward, setReward] = useState(false);
   const [reward_note, setRewardNote] = useState('');
   const [expires_at, setExpiresAt] = useState('');
@@ -171,7 +219,7 @@ function LostFoundForm() {
         ))}
       </div>
       <div className="grid grid-cols-2 gap-3">
-        <select value={category} onChange={e=>setCategory(e.target.value as any)} className="bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-sm text-white">
+        <select value={category} onChange={e=>setCategory(e.target.value as 'document' | 'pet' | 'keys_items' | 'other')} className="bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-sm text-white">
           <option value="document">პირადი დოკუმენტები</option>
           <option value="pet">შინაური ცხოველები</option>
           <option value="keys_items">გასაღები/ნივთები</option>
