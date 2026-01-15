@@ -3,7 +3,7 @@ import { useState, useEffect, useCallback } from 'react';
 import imageCompression from 'browser-image-compression';
 import Image from 'next/image';
 import Link from 'next/link';
-import type { Database } from '../../types/supabase';
+import type { Database } from '@/types/supabase';
 import { supabase } from '../lib/supabase';
 import { useAdminAuth } from '../hooks/useAdminAuth';
 

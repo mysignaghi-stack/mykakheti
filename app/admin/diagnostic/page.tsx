@@ -40,14 +40,14 @@ export default function AdminDiagnostic() {
         const indicators = getAdminIndicators(user as User);
         setUserInfo({
           id: user.id,
-          email: user.email,
+          email: user.email ?? null,
           role_user_metadata: (user as User).user_metadata?.role ?? null,
           role_app_metadata: (user as User).app_metadata?.role ?? null,
           detected_admin: indicators.detected,
           user_metadata: (user as User).user_metadata ?? null,
           app_metadata: (user as User).app_metadata ?? null,
           created_at: user.created_at,
-          last_sign_in: user.last_sign_in_at
+          last_sign_in: user.last_sign_in_at ?? null
         });
       } else {
         setUserInfo(null);

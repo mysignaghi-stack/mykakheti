@@ -75,7 +75,7 @@ export default function AdminMessages() {
                     <div className="flex items-center gap-3">
                        <h2 className="text-xl font-black text-white italic tracking-tight">{msg.name}</h2>
                        <span className="text-[9px] bg-white/5 px-3 py-1 rounded-full font-black text-white/30 uppercase italic">
-                          {new Date(msg.created_at).toLocaleDateString('ka-GE')}
+                          {msg.created_at ? new Date(msg.created_at).toLocaleDateString('ka-GE') : ''}
                        </span>
                     </div>
                     <p className="text-amber-500 font-black text-xs uppercase tracking-widest italic">{msg.email}</p>

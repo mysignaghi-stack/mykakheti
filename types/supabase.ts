@@ -92,6 +92,42 @@ export type Database = {
         }
         Relationships: []
       }
+      businesses: {
+        Row: {
+          id: string
+          name: string
+          category: string
+          address: string | null
+          phone: string | null
+          description: string | null
+          image_url: string | null
+          all_images: string[] | null
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          name: string
+          category: string
+          address?: string | null
+          phone?: string | null
+          description?: string | null
+          image_url?: string | null
+          all_images?: string[] | null
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          name?: string
+          category?: string
+          address?: string | null
+          phone?: string | null
+          description?: string | null
+          image_url?: string | null
+          all_images?: string[] | null
+          created_at?: string
+        }
+        Relationships: []
+      }
       announcements: {
         Row: {
           all_images: string[] | null
@@ -100,6 +136,7 @@ export type Database = {
           created_at: string | null
           currency: string | null
           description: string | null
+          expires_at: string | null
           id: string
           image_url: string | null
           is_approved: boolean | null
@@ -117,6 +154,7 @@ export type Database = {
           created_at?: string | null
           currency?: string | null
           description?: string | null
+          expires_at?: string | null
           id?: string
           image_url?: string | null
           is_approved?: boolean | null
@@ -132,6 +170,7 @@ export type Database = {
           category?: string
           contact_info?: string | null
           created_at?: string | null
+          expires_at?: string | null
           currency?: string | null
           description?: string | null
           id?: string

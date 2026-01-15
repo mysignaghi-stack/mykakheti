@@ -32,12 +32,12 @@ export default function ModerateAds() {
     const channel = supabase.channel('moderate_realtime')
       .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'announcements' }, (payload) => {
         if (payload.new.is_approved === false) {
-          setPendingAds(prev => [payload.new, ...prev]);
+          setPendingAds(prev => [payload.new as AnnouncementRow, ...prev]);
         }
       })
       .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'announcements' }, (payload) => {
         if (payload.new.is_approved === true) {
-          setPendingAds(prev => prev.filter(ad => ad.id !== payload.new.id));
+          setPendingAds(prev => prev.filter(ad => ad.id !== (payload.new as AnnouncementRow).id));
         }
       })
       .subscribe();
@@ -127,7 +127,7 @@ export default function ModerateAds() {
                 {/* Image Preview with Badge */}
                 <div className="relative w-full md:w-48 h-48 bg-black/40 rounded-[32px] overflow-hidden shrink-0 border border-white/5">
                   <Image src={ad.image_url || '/placeholder.jpg'} alt="" fill sizes="192px" className="object-cover group-hover:scale-110 transition-transform duration-700" />
-                  {ad.all_images?.length > 1 && (
+                  {ad.all_images && ad.all_images.length > 1 && (
                     <div className="absolute bottom-4 right-4 bg-amber-600 text-white text-[9px] font-black px-3 py-1 rounded-full shadow-xl">
                       +{ad.all_images.length - 1} ფოტო
                     </div>

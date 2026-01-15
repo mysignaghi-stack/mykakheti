@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import type { Database } from '../../types/supabase';
+import type { Database } from '@/types/supabase';
 
 type Announcement = Database['public']['Tables']['announcements']['Row'];
 

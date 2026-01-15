@@ -15,7 +15,7 @@ export async function GET(request: Request) {
       throw new Error('Supabase URL and Key are missing in .env.local file!');
     }
 
-    const cookieStore = cookies();
+    const cookieStore = await cookies();
     const supabase = createServerClient<Database>(supabaseUrl, supabaseKey, {
       cookies: {
         get(name) {

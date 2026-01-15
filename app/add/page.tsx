@@ -170,7 +170,7 @@ export default function AddPage() {
 
       const { error: dbError } = await supabase.from('announcements').insert([{ 
         ...formData, 
-        price: parseFloat(formData.price), 
+        price: formData.price, 
         image_url: uploadedUrls[0], 
         all_images: uploadedUrls, 
         is_approved: false,

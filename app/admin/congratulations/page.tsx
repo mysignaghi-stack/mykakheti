@@ -3,17 +3,9 @@
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { supabase } from '../../lib/supabase';
+import type { Database } from '@/types/supabase';
 
-interface Congratulations {
-  id: string;
-  sender_name: string;
-  recipient_name: string;
-  message: string;
-  occasion: string;
-  image_url?: string | null;
-  created_at: string;
-  is_approved: boolean;
-}
+type Congratulations = Database['public']['Tables']['congratulations']['Row'];
 
 export default function CongratulationsAdmin() {
   const [pendingItems, setPendingItems] = useState<Congratulations[]>([]);
@@ -30,13 +22,13 @@ export default function CongratulationsAdmin() {
     const { data: pending } = await supabase
       .from('congratulations')
       .select('*')
-      .eq('is_approved', false)
+      .eq('status', 'pending')
       .order('created_at', { ascending: false });
 
     const { data: approved } = await supabase
       .from('congratulations')
       .select('*')
-      .eq('is_approved', true)
+      .eq('status', 'approved')
       .order('created_at', { ascending: false });
 
     setPendingItems(pending || []);
@@ -47,7 +39,7 @@ export default function CongratulationsAdmin() {
   const approveItem = async (id: string) => {
     const { error } = await supabase
       .from('congratulations')
-      .update({ is_approved: true, approved_at: new Date().toISOString() })
+      .update({ status: 'approved' })
       .eq('id', id);
 
     if (!error) {
@@ -71,7 +63,7 @@ export default function CongratulationsAdmin() {
   const unapproveItem = async (id: string) => {
     const { error } = await supabase
       .from('congratulations')
-      .update({ is_approved: false, approved_at: null })
+      .update({ status: 'pending' })
       .eq('id', id);
 
     if (!error) {
@@ -122,7 +114,7 @@ export default function CongratulationsAdmin() {
                 <div className="flex-1">
                   <div className="flex justify-between items-start mb-2">
                     <div className="font-black text-white text-lg italic">
-                      {item.sender_name} → {item.recipient_name}
+                      {item.sender_name} → {item.receiver_name}
                     </div>
                     <div className="flex gap-2">
                       {activeTab === 'pending' ? (
@@ -151,11 +143,11 @@ export default function CongratulationsAdmin() {
                     </div>
                   </div>
                   <div className="text-amber-400 text-sm font-bold uppercase bg-amber-600/20 px-2 py-1 rounded-full inline-block mb-2">
-                    {item.occasion}
+                    {item.category}
                   </div>
                   <p className="text-white/80 italic leading-relaxed">{item.message}</p>
                   <div className="text-white/40 text-xs mt-2">
-                    {new Date(item.created_at).toLocaleDateString('ka-GE')}
+                    {item.created_at ? new Date(item.created_at).toLocaleDateString('ka-GE') : ''}
                   </div>
                 </div>
               </div>

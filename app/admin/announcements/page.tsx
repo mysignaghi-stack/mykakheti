@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import type { Database } from '../../types/supabase';
+import type { Database } from '@/types/supabase';
 import { supabase } from '../../lib/supabase';
 
 type Announcement = Database['public']['Tables']['announcements']['Row'];
