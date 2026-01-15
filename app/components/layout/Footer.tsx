@@ -1,11 +1,7 @@
 'use client';
 import Link from 'next/link';
 
-interface FooterProps {
-  onShowAdminLogin?: () => void;
-}
-
-export default function Footer({ onShowAdminLogin }: FooterProps) {
+export default function Footer() {
   return (
     <footer className="bg-black/60 backdrop-blur-3xl border-t border-white/5 pt-16 md:pt-24 pb-12 px-6 md:px-10 relative z-50 text-left">
       <div className="max-w-[1700px] mx-auto text-left">

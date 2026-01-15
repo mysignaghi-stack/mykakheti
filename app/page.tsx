@@ -415,15 +415,6 @@ export default function HomePage() {
 
           {/* --- ცენტრალური სვეტი --- */}
           <div className="flex flex-col items-center text-center space-y-8 animate-in fade-in duration-1000 w-full order-1 lg:order-2">
-                        {/* --- Announcement/Marquee Bar (center column, above KakhetianSquare) --- */}
-              <div className="w-full mb-1">
-                <div className="w-full bg-gradient-to-r from-amber-600/80 via-black/80 to-amber-600/80 rounded-full border border-amber-400/30 shadow px-2 py-0.5 marquee-outer">
-                  {/* True infinite marquee */}
-                  <span className="marquee-inner text-sm sm:text-base font-bold italic tracking-widest text-amber-100 drop-shadow-lg">
-                    {marqueeText || 'საიტი მუშაობს სატესტო რეჟიმში'}
-                  </span>
-                </div>
-              </div>
              {/* მობილური ვერსია (მხოლოდ პატარა ეკრანებზე) */}
              <div className="flex flex-col gap-4 w-full lg:hidden">
                  <div className="h-[450px] bg-black/60 backdrop-blur-xl rounded-[30px] border border-white/5">
@@ -443,6 +434,16 @@ export default function HomePage() {
                 selectedLocation={selectedLocation} setSelectedLocation={setSelectedLocation}
                 isLocOpen={isLocOpen} setIsLocOpen={setIsLocOpen} locRef={locRef as React.RefObject<HTMLDivElement>} onMapSearch={handleMapSearch}
              />
+
+            {/* --- Announcement/Marquee Bar (center column, in the middle) --- */}
+            <div className="w-full my-1">
+              <div className="w-full bg-gradient-to-r from-amber-600/80 via-black/80 to-amber-600/80 rounded-full border border-amber-400/30 shadow px-2 py-0.5 marquee-outer">
+                {/* True infinite marquee */}
+                <span className="marquee-inner text-sm sm:text-base font-bold italic tracking-widest text-amber-100 drop-shadow-lg">
+                  {marqueeText || 'საიტი მუშაობს სატესტო რეჟიმში'}
+                </span>
+              </div>
+            </div>
 
             {/* CommunityHub removed: community entry moved to navbar center */}
 

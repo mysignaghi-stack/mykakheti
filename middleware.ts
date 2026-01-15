@@ -1,14 +1,25 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
+import { createMiddlewareClient } from '@supabase/auth-helpers-nextjs';
+import type { Database } from './types/supabase';
 
-export function middleware(_request: NextRequest) {
-  // შენიშვნა:
-  // supabase-js ნაგულისხმევად ინახავს სესიას localStorage-ში და არა cookies-ში,
-  // ამიტომ middleware-დან cookie-ზე დაყრდნობა იწვევს უსასრულო რედირექტს.
-  // ადმინისტრატორის გვერდებზე წვდომას აკონტროლებს კლიენტის მხარე (`useAdminAuth`).
-  return NextResponse.next();
+export async function middleware(req: NextRequest) {
+  const res = NextResponse.next();
+  const supabase = createMiddlewareClient<Database>({ req, res });
+  const {
+    data: { session },
+  } = await supabase.auth.getSession();
+
+  if (!session && req.nextUrl.pathname.startsWith('/upload')) {
+    const redirectUrl = req.nextUrl.clone();
+    redirectUrl.pathname = '/login';
+    redirectUrl.searchParams.set('redirect', req.nextUrl.pathname);
+    return NextResponse.redirect(redirectUrl);
+  }
+
+  return res;
 }
 
 export const config = {
-  matcher: '/admin/:path*',
+  matcher: ['/upload/:path*'],
 };

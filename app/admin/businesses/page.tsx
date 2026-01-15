@@ -1,9 +1,10 @@
 'use client';
-import { useState, useEffect } from 'react';
-import { supabase } from '../../lib/supabase';
-import { useRouter } from 'next/navigation';
+import { useEffect, useState } from 'react';
+import type { ChangeEvent, FormEvent } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import imageCompression from 'browser-image-compression';
+import { supabase } from '../../lib/supabase';
 
 const BUSINESS_CATEGORIES = [
   'მარნები და ღვინო', 
@@ -34,7 +35,7 @@ export default function AdminBusinesses() {
     return () => previews.forEach(url => URL.revokeObjectURL(url));
   }, [previews]);
 
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageChange = (e: ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
     if (images.length + files.length > 5) {
       return alert('მაქსიმუმ 5 ფოტო!');
@@ -49,7 +50,7 @@ export default function AdminBusinesses() {
     setPreviews(prev => prev.filter((_, i) => i !== index));
   };
 
-  const handleUpload = async (e: React.FormEvent) => {
+  const handleUpload = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (images.length === 0) return alert('ატვირთეთ მინიმუმ 1 ფოტო');
     setLoading(true);
@@ -95,8 +96,9 @@ export default function AdminBusinesses() {
         router.refresh();
       }, 3000);
 
-    } catch (err: any) {
-      alert(`შეცდომა: ${err.message}`);
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Unknown error';
+      alert(`შეცდომა: ${message}`);
     } finally {
       setLoading(false);
     }

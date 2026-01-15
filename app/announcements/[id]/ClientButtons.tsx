@@ -1,9 +1,12 @@
 'use client';
 
 import { useState } from 'react';
+import type { Database } from '../../types/supabase';
+
+type Announcement = Database['public']['Tables']['announcements']['Row'];
 
 interface ClientButtonsProps {
-  ad: any;
+  ad: Announcement;
   shareUrl: string;
 }
 
@@ -17,7 +20,7 @@ export default function ClientButtons({ ad, shareUrl }: ClientButtonsProps) {
       setCopied(true);
       alert('ბმული კოპირებულია! ✅'); // დავტოვეთ თქვენი ალერტი
       setTimeout(() => setCopied(false), 2000);
-    } catch (err) {
+    } catch {
       // Fallback
       const textArea = document.createElement("textarea");
       textArea.value = shareUrl;

@@ -1,8 +1,11 @@
 'use client';
-import { useState, useEffect } from 'react';
-import { supabase } from '../lib/supabase';
+import { useEffect, useState } from 'react';
+import type { ChangeEvent, FormEvent } from 'react';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import imageCompression from 'browser-image-compression';
+import type { Session } from '@supabase/supabase-js';
+import { supabase } from '../lib/supabase';
 import { LOCATIONS } from '../lib/constants';
 
 // Flatten nested municipalities → cities → villages into unique label strings for select options.
@@ -25,6 +28,8 @@ export default function AddPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [bgImage, setBgImage] = useState('');
+  const [session, setSession] = useState<Session | null>(null);
+  const [authError, setAuthError] = useState('');
   const [images, setImages] = useState<File[]>([]);
   const [previews, setPreviews] = useState<string[]>([]);
   
@@ -32,6 +37,7 @@ export default function AddPage() {
   const [formData, setFormData] = useState({ 
     title: '', description: '', price: '', phone: '', location: LOCATION_OPTIONS[0] ?? '', category: '', currency: 'GEL' 
   });
+  const isAuthenticated = Boolean(session);
 
   useEffect(() => {
     async function fetchBG() {
@@ -41,7 +47,31 @@ export default function AddPage() {
     fetchBG();
   }, []);
 
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  useEffect(() => {
+    const loadSession = async () => {
+      const { data } = await supabase.auth.getSession();
+      setSession(data.session ?? null);
+    };
+    loadSession();
+  }, []);
+
+  const handleOAuth = async (provider: 'google' | 'facebook') => {
+    setAuthError('');
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider,
+      options: { redirectTo: `${window.location.origin}/auth/callback?redirect=/add` },
+    });
+    if (error) setAuthError('Social ავტორიზაცია ვერ შესრულდა, სცადეთ თავიდან.');
+  };
+
+  const handleSignOut = async () => {
+    await supabase.auth.signOut();
+    setSession(null);
+    router.refresh();
+  };
+
+
+  const handleImageChange = (e: ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
     
     // ✅ 5 ფოტოს მკაცრი ლიმიტი
@@ -67,7 +97,7 @@ export default function AddPage() {
     setPreviews(newPreviews);
   };
 
-  const handlePost = async (e: React.FormEvent) => {
+  const handlePost = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!formData.category || images.length === 0) {
       return alert('გთხოვთ შეავსოთ ყველა ველი და ატვირთოთ მინიმუმ 1 ფოტო');
@@ -75,6 +105,14 @@ export default function AddPage() {
 
     setLoading(true);
     try {
+      const { data: { session: freshSession } } = await supabase.auth.getSession();
+      if (!freshSession) {
+        alert('განცხადების დასამატებლად გთხოვთ გაიაროთ ავტორიზაცია Google ან Facebook-ით.');
+        setLoading(false);
+        return;
+      }
+      setSession(freshSession);
+
       const uploadedUrls: string[] = [];
       
       // ✅ ავტომატური კომპრესია ატვირთვისას
@@ -95,14 +133,16 @@ export default function AddPage() {
         price: parseFloat(formData.price), 
         image_url: uploadedUrls[0], 
         all_images: uploadedUrls, 
-        is_approved: false 
+        is_approved: false,
+        user_id: freshSession.user.id
       }]);
 
       if (dbError) throw dbError;
       alert('თქვენი განცხადება წარმატებით გაიგზავნა მოდერაციაზე! 🚀');
       router.push('/');
-    } catch (err: any) { 
-      alert(`შეცდომა ატვირთვისას: ${err.message}`); 
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Unknown error';
+      alert(`შეცდომა ატვირთვისას: ${message}`); 
     } finally { 
       setLoading(false); 
     }
@@ -116,15 +156,50 @@ export default function AddPage() {
       </div>
 
       <nav className="relative z-50 px-10 py-6 border-b border-white/10 flex justify-between items-center bg-black/40 backdrop-blur-xl">
-        <a href="/" className="text-xl font-black italic tracking-tighter">mykakheti<span className="text-amber-500">.ge</span></a>
-        <a href="/" className="text-[10px] font-black uppercase italic text-white/40 hover:text-white transition-all">← მთავარზე დაბრუნება</a>
+        <Link href="/" className="text-xl font-black italic tracking-tighter">mykakheti<span className="text-amber-500">.ge</span></Link>
+        <div className="flex items-center gap-3">
+          <Link href="/" className="text-[10px] font-black uppercase italic text-white/40 hover:text-white transition-all">← მთავარზე დაბრუნება</Link>
+          {isAuthenticated && (
+            <button
+              type="button"
+              onClick={handleSignOut}
+              className="text-[10px] font-black uppercase italic text-white/70 hover:text-white transition-all bg-white/5 border border-white/10 rounded-full px-3 py-1"
+            >
+              გამოსვლა
+            </button>
+          )}
+        </div>
       </nav>
 
       <div className="relative z-10 max-w-2xl mx-auto w-full px-6 py-20">
         <div className="bg-slate-950/60 backdrop-blur-3xl p-8 md:p-12 rounded-[45px] border border-white/10 shadow-2xl">
-          <div className="text-center mb-10">
+          <div className="text-center mb-6">
             <h1 className="text-3xl font-black uppercase italic tracking-widest text-amber-500 drop-shadow-lg">განცხადების დამატება</h1>
           </div>
+
+          {!isAuthenticated && (
+            <div className="mb-8 space-y-3 rounded-2xl border border-amber-500/30 bg-amber-500/10 p-4 text-sm text-amber-50">
+              <p className="font-black uppercase tracking-wide text-[11px]">გთხოვთ გაიაროთ ავტორიზაცია Google ან Facebook-ით, რათა გამოაქვეყნოთ განცხადება.</p>
+              <div className="flex flex-col sm:flex-row gap-3">
+                <button
+                  type="button"
+                  onClick={() => handleOAuth('google')}
+                  className="flex-1 rounded-xl bg-white text-slate-900 font-black py-3 uppercase text-[11px] hover:bg-amber-50 transition"
+                >
+                  Google ავტორიზაცია
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleOAuth('facebook')}
+                  className="flex-1 rounded-xl bg-[#1877f2] text-white font-black py-3 uppercase text-[11px] hover:bg-[#0f5ccc] transition"
+                >
+                  Facebook ავტორიზაცია
+                </button>
+              </div>
+              {authError && <p className="text-red-300 text-xs font-semibold">{authError}</p>}
+              <p className="text-[11px] text-white/70">ავტორიზაციის გარეშე ღილაკი „გამოქვეყნება“ გააქტიურებული არ იქნება.</p>
+            </div>
+          )}
 
           <form onSubmit={handlePost} className="space-y-6">
             <div className="grid grid-cols-3 md:grid-cols-5 gap-3 mb-8">
@@ -148,14 +223,14 @@ export default function AddPage() {
             </div>
 
             <div className="space-y-4">
-              <input required className="w-full p-5 bg-white/5 border border-white/10 rounded-2xl outline-none focus:border-amber-500 text-white font-bold transition-all placeholder:text-white/20" placeholder="განცხადების სათაური" onChange={e => setFormData({...formData, title: e.target.value})} />
+              <input required className="w-full p-5 bg-white/5 border border-white/10 rounded-2xl outline-none focus:border-amber-500 text-white font-bold transition-all placeholder:text-white/20" placeholder="განცხადების სათაური" onChange={(e: ChangeEvent<HTMLInputElement>) => setFormData({...formData, title: e.target.value})} />
               
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <select required className="p-5 bg-white text-slate-950 border-none rounded-2xl font-black text-[11px] uppercase italic cursor-pointer shadow-lg outline-none" onChange={e => setFormData({...formData, category: e.target.value})}>
+                <select required className="p-5 bg-white text-slate-950 border-none rounded-2xl font-black text-[11px] uppercase italic cursor-pointer shadow-lg outline-none" onChange={(e: ChangeEvent<HTMLSelectElement>) => setFormData({...formData, category: e.target.value})}>
                   <option value="">აირჩიეთ კატეგორია...</option>
                   {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
                 </select>
-                <select className="p-5 bg-white text-slate-950 border-none rounded-2xl font-black text-[11px] uppercase italic cursor-pointer shadow-lg outline-none" onChange={e => setFormData({...formData, location: e.target.value})}>
+                <select className="p-5 bg-white text-slate-950 border-none rounded-2xl font-black text-[11px] uppercase italic cursor-pointer shadow-lg outline-none" onChange={(e: ChangeEvent<HTMLSelectElement>) => setFormData({...formData, location: e.target.value})}>
                   {LOCATION_OPTIONS.map(loc => <option key={loc} value={loc}>{loc}</option>)}
                 </select>
               </div>
@@ -168,7 +243,7 @@ export default function AddPage() {
                      type="number" 
                      className="w-full p-5 bg-transparent outline-none font-bold text-white placeholder:text-white/20" 
                      placeholder="ფასი" 
-                     onChange={e => setFormData({...formData, price: e.target.value})} 
+                     onChange={(e: ChangeEvent<HTMLInputElement>) => setFormData({...formData, price: e.target.value})} 
                    />
                    <div className="flex bg-black/30 p-1 m-1 rounded-xl">
                       <button 
@@ -188,14 +263,14 @@ export default function AddPage() {
                    </div>
                 </div>
 
-                <input required className="p-5 bg-white/5 border border-white/10 rounded-2xl outline-none focus:border-amber-500 font-bold text-white placeholder:text-white/20" placeholder="ტელეფონი" onChange={e => setFormData({...formData, phone: e.target.value})} />
+                <input required className="p-5 bg-white/5 border border-white/10 rounded-2xl outline-none focus:border-amber-500 font-bold text-white placeholder:text-white/20" placeholder="ტელეფონი" onChange={(e: ChangeEvent<HTMLInputElement>) => setFormData({...formData, phone: e.target.value})} />
               </div>
               
-              <textarea rows={5} className="w-full p-5 bg-white/5 border border-white/10 rounded-2xl outline-none focus:border-amber-500 italic text-white placeholder:text-white/20 resize-none" placeholder="აღწერეთ დეტალურად..." onChange={e => setFormData({...formData, description: e.target.value})} />
+              <textarea rows={5} className="w-full p-5 bg-white/5 border border-white/10 rounded-2xl outline-none focus:border-amber-500 italic text-white placeholder:text-white/20 resize-none" placeholder="აღწერეთ დეტალურად..." onChange={(e: ChangeEvent<HTMLTextAreaElement>) => setFormData({...formData, description: e.target.value})} />
             </div>
 
-            <button type="submit" disabled={loading} className="w-full py-6 bg-amber-600 text-white rounded-[30px] font-black uppercase italic shadow-[0_20px_40px_-10px_rgba(217,119,6,0.4)] hover:bg-amber-500 transition-all active:scale-95 disabled:bg-gray-700">
-              {loading ? 'მიმდინარეობს ატვირთვა...' : 'გამოქვეყნება 🚀'}
+            <button type="submit" disabled={loading || !isAuthenticated} className="w-full py-6 bg-amber-600 text-white rounded-[30px] font-black uppercase italic shadow-[0_20px_40px_-10px_rgba(217,119,6,0.4)] hover:bg-amber-500 transition-all active:scale-95 disabled:bg-gray-700 disabled:cursor-not-allowed">
+              {loading ? 'მიმდინარეობს ატვირთვა...' : isAuthenticated ? 'გამოქვეყნება 🚀' : 'ავტორიზაცია სჭირდება'}
             </button>
           </form>
         </div>

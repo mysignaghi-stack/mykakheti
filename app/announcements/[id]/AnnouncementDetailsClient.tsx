@@ -1,13 +1,17 @@
 'use client';
-import { useState, useEffect } from 'react';
-import { supabase } from '../../lib/supabase';
+import { useEffect, useState } from 'react';
+import Link from 'next/link';
 import { useParams } from 'next/navigation';
-import ClientButtons from './ClientButtons'; // ✅ იმპორტი
+import type { Database } from '../../types/supabase';
+import { supabase } from '../../lib/supabase';
+import ClientButtons from './ClientButtons';
 
-export default function AnnouncementDetailsClient({ initialAd }: { initialAd: any }) {
-  const { id } = useParams();
-  const [ad, setAd] = useState<any>(initialAd);
-  const [activeImg, setActiveImg] = useState(initialAd?.image_url || (initialAd?.all_images && initialAd.all_images[0]));
+type Announcement = Database['public']['Tables']['announcements']['Row'];
+
+export default function AnnouncementDetailsClient({ initialAd }: { initialAd: Announcement | null }) {
+  const { id } = useParams<{ id: string }>();
+  const [ad, setAd] = useState<Announcement | null>(initialAd);
+  const [activeImg, setActiveImg] = useState<string | null>(initialAd?.image_url || initialAd?.all_images?.[0] || null);
   const [shareUrl, setShareUrl] = useState('');
 
   // Share URL-ის დაყენება კლიენტის მხარეს
@@ -23,7 +27,7 @@ export default function AnnouncementDetailsClient({ initialAd }: { initialAd: an
         const { data } = await supabase.from('announcements').select('*').eq('id', id).single();
         if (data) {
           setAd(data);
-          setActiveImg(data.image_url || (data.all_images && data.all_images[0]));
+          setActiveImg(data.image_url || data.all_images?.[0] || null);
         }
       };
       fetchAd();
@@ -46,9 +50,9 @@ export default function AnnouncementDetailsClient({ initialAd }: { initialAd: an
 
       {/* 🧭 Header */}
       <nav className="px-6 md:px-10 py-6 md:py-8 border-b border-white/5 flex justify-between items-center bg-slate-950/60 backdrop-blur-3xl sticky top-0 z-[100]">
-        <a href="/" className="text-xl md:text-2xl font-black italic tracking-tighter">
+        <Link href="/" className="text-xl md:text-2xl font-black italic tracking-tighter">
           mykakheti<span className="text-amber-500">.ge</span>
-        </a>
+        </Link>
 
         <div className="hidden md:block">
           <p className="text-red-500 font-black uppercase italic text-[10px] md:text-[14px] tracking-[0.3em] animate-pulse drop-shadow-[0_0_15px_rgba(220,38,38,1)]">
@@ -56,9 +60,9 @@ export default function AnnouncementDetailsClient({ initialAd }: { initialAd: an
           </p>
         </div>
 
-        <a href="/" className="bg-white/5 border border-white/10 px-6 py-2.5 rounded-xl text-[9px] md:text-[10px] font-black uppercase italic hover:bg-white hover:text-black transition-all">
+        <Link href="/" className="bg-white/5 border border-white/10 px-6 py-2.5 rounded-xl text-[9px] md:text-[10px] font-black uppercase italic hover:bg-white hover:text-black transition-all">
           ← უკან
-        </a>
+        </Link>
       </nav>
 
       {/* მობილური სატესტო წარწერა */}

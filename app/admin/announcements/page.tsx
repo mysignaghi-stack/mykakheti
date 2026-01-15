@@ -1,14 +1,15 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { supabase } from '../../lib/supabase';
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import PollCreator from '../../components/admin/PollCreator';
-import ChallengeCreator from '../../components/admin/ChallengeCreator';
+import type { Database } from '../../types/supabase';
+import { supabase } from '../../lib/supabase';
+
+type Announcement = Database['public']['Tables']['announcements']['Row'];
 
 export default function AdminAnnouncements() {
-  const [pendingAds, setPendingAds] = useState<any[]>([]);
-  const [liveAds, setLiveAds] = useState<any[]>([]);
+  const [pendingAds, setPendingAds] = useState<Announcement[]>([]);
+  const [liveAds, setLiveAds] = useState<Announcement[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => { fetchAllAds(); }, []);
@@ -77,8 +78,89 @@ export default function AdminAnnouncements() {
           </div>
         ) : (
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
-            <div>Pending Ads</div>
-            <div>Live Ads</div>
+            <div className="bg-white/5 rounded-3xl border border-white/10 p-6 space-y-4">
+              <div className="flex items-center justify-between">
+                <h2 className="text-xl font-black text-amber-400">მოლოდინში ({pendingAds.length})</h2>
+                <button onClick={fetchAllAds} className="text-xs font-bold text-white/60 hover:text-white">↻ განახლება</button>
+              </div>
+              {pendingAds.length === 0 ? (
+                <p className="text-white/40 text-sm">მოლოდინში განცხადებები არ არის.</p>
+              ) : (
+                <div className="space-y-3">
+                  {pendingAds.map(ad => (
+                    <div key={ad.id} className="bg-black/40 border border-white/10 rounded-2xl p-4 flex flex-col gap-3">
+                      <div className="flex items-start justify-between gap-3">
+                        <div>
+                          <p className="text-sm uppercase tracking-wide text-white/50">{ad.category}</p>
+                          <h3 className="text-lg font-black text-white">{ad.title}</h3>
+                          <p className="text-white/60 text-sm">{ad.location}</p>
+                        </div>
+                        <div className="text-right text-sm text-white/50">
+                          <p>{new Date(ad.created_at ?? '').toLocaleString('ka-GE')}</p>
+                          <p className="font-black text-amber-400">{ad.price} {ad.currency}</p>
+                        </div>
+                      </div>
+                      <div className="flex gap-3">
+                        <button
+                          onClick={() => approveAd(ad.id)}
+                          className="flex-1 bg-green-600 hover:bg-green-500 text-white rounded-xl py-2 font-black uppercase text-xs"
+                        >
+                          დამტკიცება
+                        </button>
+                        <button
+                          onClick={() => deleteAd(ad.id)}
+                          className="flex-1 bg-red-600 hover:bg-red-500 text-white rounded-xl py-2 font-black uppercase text-xs"
+                        >
+                          წაშლა
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            <div className="bg-white/5 rounded-3xl border border-white/10 p-6 space-y-4">
+              <div className="flex items-center justify-between">
+                <h2 className="text-xl font-black text-green-400">აქტიური ({liveAds.length})</h2>
+                <button onClick={fetchAllAds} className="text-xs font-bold text-white/60 hover:text-white">↻ განახლება</button>
+              </div>
+              {liveAds.length === 0 ? (
+                <p className="text-white/40 text-sm">აქტიური განცხადებები არ არის.</p>
+              ) : (
+                <div className="space-y-3">
+                  {liveAds.map(ad => (
+                    <div key={ad.id} className="bg-black/40 border border-white/10 rounded-2xl p-4 flex flex-col gap-3">
+                      <div className="flex items-start justify-between gap-3">
+                        <div>
+                          <p className="text-sm uppercase tracking-wide text-white/50">{ad.category}</p>
+                          <h3 className="text-lg font-black text-white">{ad.title}</h3>
+                          <p className="text-white/60 text-sm">{ad.location}</p>
+                        </div>
+                        <div className="text-right text-sm text-white/50">
+                          <p>{new Date(ad.created_at ?? '').toLocaleString('ka-GE')}</p>
+                          <p className="font-black text-amber-400">{ad.price} {ad.currency}</p>
+                        </div>
+                      </div>
+                      <div className="flex gap-3">
+                        <Link
+                          href={`/announcements/${ad.id}`}
+                          className="flex-1 bg-white/10 hover:bg-white/20 text-white rounded-xl py-2 font-black uppercase text-xs text-center"
+                        >
+                          ნახვა
+                        </Link>
+                        <button
+                          onClick={() => deleteAd(ad.id)}
+                          className="flex-1 bg-red-600 hover:bg-red-500 text-white rounded-xl py-2 font-black uppercase text-xs"
+                        >
+                          წაშლა
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
         )}
       </div>

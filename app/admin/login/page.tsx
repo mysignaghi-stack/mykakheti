@@ -46,8 +46,9 @@ export default function AdminLogin() {
         await supabase.auth.signOut();
         setError('ადმინისტრატორის წვდომა არ არის');
       }
-    } catch (err) {
-      setError('შეცდომა ავტორიზაციისას');
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'შეცდომა ავტორიზაციისას';
+      setError(message);
     } finally {
       setLoading(false);
     }

@@ -1,70 +1,60 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
+import Link from 'next/link';
+import { User } from '@supabase/supabase-js';
 import { supabase } from '../../lib/supabase';
 import { getAdminIndicators } from '../../lib/adminAuth';
 
+type AdminUserInfo = {
+  id: string;
+  email: string | null;
+  role_user_metadata?: string | null;
+  role_app_metadata?: string | null;
+  detected_admin: boolean;
+  user_metadata: Record<string, unknown> | null;
+  app_metadata: Record<string, unknown> | null;
+  created_at: string;
+  last_sign_in: string | null;
+};
+
 export default function AdminDiagnostic() {
-  const [userInfo, setUserInfo] = useState<any>(null);
-  const [allUsers, setAllUsers] = useState<any[]>([]);
+  const [userInfo, setUserInfo] = useState<AdminUserInfo | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  const [adminAction, setAdminAction] = useState<string>('');
 
   useEffect(() => {
-    checkUserStatus();
-    fetchAllUsers();
+    const run = async () => {
+      setLoading(true);
+      await checkUserStatus();
+      setLoading(false);
+    };
+    run();
   }, []);
 
   const checkUserStatus = async () => {
     try {
-      const { data: { user }, error } = await supabase.auth.getUser();
+      const { data: { user } } = await supabase.auth.getUser();
 
       if (user) {
-        const indicators = getAdminIndicators(user);
+        const indicators = getAdminIndicators(user as User);
         setUserInfo({
           id: user.id,
           email: user.email,
-          role_user_metadata: (user as any).user_metadata?.role,
-          role_app_metadata: (user as any).app_metadata?.role,
+          role_user_metadata: (user as User).user_metadata?.role ?? null,
+          role_app_metadata: (user as User).app_metadata?.role ?? null,
           detected_admin: indicators.detected,
-          user_metadata: (user as any).user_metadata,
-          app_metadata: (user as any).app_metadata,
-          created_at: user.created_at,
-          last_sign_in: user.last_sign_in_at
-        });
-      } else {
+          user_metadata: (user as User).user_metadata ?? null,
+          app_metadata: (user as User).app_metadata ?? null,
           created_at: user.created_at,
           last_sign_in: user.last_sign_in_at
         });
       } else {
         setUserInfo(null);
       }
-    } catch (err: any) {
-      setError('Error: ' + err.message);
-    }
-  };
-
-  const fetchAllUsers = async () => {
-    try {
-      // Note: This requires admin privileges in Supabase
-      // For now, we'll just show current user info
-      await checkUserStatus();
-    } catch (err: any) {
-      console.log('Cannot fetch all users (requires admin privileges)');
-    }
-  };
-
-  const makeAdmin = async (userId: string) => {
-    try {
-      setAdminAction('Processing...');
-      // This would require a server-side function or direct database access
-      // For now, we'll provide instructions
-      alert('გთხოვთ გამოიყენოთ SQL სკრიპტი Supabase Dashboard-ში');
-    } catch (err: any) {
-      setError('Error: ' + err.message);
-    } finally {
-      setAdminAction('');
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Unknown error';
+      setError('Error: ' + message);
     }
   };
 
@@ -100,12 +90,12 @@ export default function AdminDiagnostic() {
         {!userInfo ? (
           <div className="bg-white/5 rounded-xl p-6 text-center">
             <p className="text-white/60 mb-4">არ ხართ ავტორიზებული</p>
-            <a
+            <Link
               href="/admin/login"
               className="inline-block bg-amber-600 text-white px-6 py-3 rounded-lg font-bold hover:bg-amber-500 transition-all"
             >
               შესვლა
-            </a>
+            </Link>
           </div>
         ) : (
           <div className="space-y-6">
