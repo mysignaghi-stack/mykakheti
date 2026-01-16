@@ -52,15 +52,26 @@ export default function TransportModal({ isAdmin, onClose, staticSchedule }: Tra
       if (schedulesError) throw schedulesError;
 
       // 3. State-ის განახლება (ბაზის snake_case-ის გადაყვანა ჩვენს camelCase-ზე)
-      if (routesData) setAdminRoutes(routesData);
+      if (routesData) {
+        const formattedRoutes: AdminRoute[] = routesData.map((r) => ({
+          id: r.id,
+          origin: r.origin,
+          destination: r.destination,
+          price: r.price,
+          stops: r.stops || undefined
+        }));
+        setAdminRoutes(formattedRoutes);
+      }
       
       if (schedulesData) {
-        const formattedSchedules: AdminSchedule[] = schedulesData.map((s) => ({
-          id: s.id,
-          routeId: s.route_id, // ბაზაში: route_id, ჩვენთან: routeId
-          departTime: s.depart_time, // ბაზაში: depart_time
-          status: s.status
-        }));
+        const formattedSchedules: AdminSchedule[] = schedulesData
+          .filter((s) => s.route_id !== null) // Filter out schedules with null route_id
+          .map((s) => ({
+            id: s.id,
+            routeId: s.route_id!, // We know it's not null after filtering
+            departTime: s.depart_time,
+            status: s.status as 'Active' | 'Delayed' | 'Canceled'
+          }));
         setAdminSchedules(formattedSchedules);
       }
 
@@ -306,7 +317,7 @@ export default function TransportModal({ isAdmin, onClose, staticSchedule }: Tra
                                     <td className="p-3">
                                       <select 
                                         value={item.status}
-                                        onChange={(e) => handleStatusChange(item.id, e.target.value)}
+                                        onChange={(e) => handleStatusChange(item.id, e.target.value as AdminSchedule['status'])}
                                         className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wide cursor-pointer outline-none border border-transparent ${
                                           item.status === 'Active' ? 'bg-green-500/20 text-green-400' :
                                           item.status === 'Delayed' ? 'bg-yellow-500/20 text-yellow-400' :

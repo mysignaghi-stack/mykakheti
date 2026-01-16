@@ -6,12 +6,13 @@ import { supabase } from '../../lib/supabase';
 
 interface Congratulations {
   id: string;
-  sender_name: string;
-  recipient_name: string;
+  sender_name: string | null;
+  receiver_name: string;
   message: string;
-  occasion: string;
+  category: string;
+  theme: string;
   image_url?: string | null;
-  created_at: string;
+  created_at: string | null;
 }
 
 export default function CongratulationsPage() {
@@ -49,15 +50,15 @@ export default function CongratulationsPage() {
                   <div className="flex-1">
                     <div className="flex justify-between items-start mb-2">
                       <h3 className="font-black text-white text-lg italic">
-                        {item.sender_name} → {item.recipient_name}
+                        {item.sender_name} → {item.receiver_name}
                       </h3>
                       <span className="text-amber-500 text-sm font-bold uppercase">
-                        {item.occasion}
+                        {item.category}
                       </span>
                     </div>
                     <p className="text-white/80 italic leading-relaxed">{item.message}</p>
                     <div className="text-white/40 text-xs mt-2">
-                      {new Date(item.created_at).toLocaleDateString('ka-GE')}
+                      {item.created_at ? new Date(item.created_at).toLocaleDateString('ka-GE') : ''}
                     </div>
                   </div>
                 </div>

@@ -139,7 +139,7 @@ export default function AdsSection({
                   />
                   
                   <div className="absolute top-3 right-3 bg-black/60 backdrop-blur-md text-white text-[10px] font-black px-3 py-1.5 rounded-xl border border-white/10">
-                    {new Date(ad.created_at).toLocaleDateString('ka-GE')}
+                    {ad.created_at ? new Date(ad.created_at).toLocaleDateString('ka-GE') : 'უცნობი თარიღი'}
                   </div>
                   
                   {ad.category && (
@@ -167,7 +167,7 @@ export default function AdsSection({
 
                   <div className="mt-auto pt-4 border-t border-white/5 flex justify-between items-center">
                     <span className="text-amber-500 font-black text-lg">
-                      {ad.price > 0 ? `${ad.price} ${ad.currency === 'USD' ? '$' : '₾'}` : 'შეთანხმებით'}
+                      {parseFloat(ad.price) > 0 ? `${ad.price} ${ad.currency === 'USD' ? '$' : '₾'}` : 'შეთანხმებით'}
                     </span>
                     <span className="text-[10px] text-white/30 flex items-center gap-1">
                       📍 {(ad.location || '').split(',')[0]}

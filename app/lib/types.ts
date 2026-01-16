@@ -1,17 +1,20 @@
 export interface Ad {
   id: string;
   title: string;
-  description: string;
-  price: number;
-  currency: 'GEL' | 'USD';
+  description: string | null;
+  price: string;
+  currency: string | null;
   location: string;
   category: string;
   image_url: string | null;
-  all_images: string[];
-  contact: string;
-  is_approved: boolean;
-  is_archived: boolean;
-  created_at: string;
+  all_images: string[] | null;
+  contact_info: string | null;
+  phone: string | null;
+  is_approved: boolean | null;
+  is_archived: boolean | null;
+  created_at: string | null;
+  expires_at: string | null;
+  user_id: string | null;
 }
 
 export interface WeatherItem {
@@ -38,8 +41,8 @@ export interface AgroItem {
   price: string;
   color: string;
   icon: string;
-  category: 'grape' | 'grain' | 'other';
-  details: { place: string; rate: string | number }[];
+  category: string;
+  details: { place: string; rate: string | number }[] | null;
 }
 
 // 👇 განახლებული ტიპი ადმინისტრაციის პოსტებისთვის

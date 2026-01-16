@@ -1,7 +1,7 @@
 import { cookies } from 'next/headers';
 import { NextResponse } from 'next/server';
 import { createServerClient } from '@supabase/ssr';
-import type { Database } from '../../types/supabase';
+import type { Database } from '../../../types/supabase';
 
 export async function GET(request: Request) {
   const requestUrl = new URL(request.url);
@@ -18,13 +18,13 @@ export async function GET(request: Request) {
     const cookieStore = await cookies();
     const supabase = createServerClient<Database>(supabaseUrl, supabaseKey, {
       cookies: {
-        get(name) {
+        get(name: string) {
           return cookieStore.get(name)?.value;
         },
-        set(name, value, options) {
+        set(name: string, value: string, options: Record<string, unknown>) {
           cookieStore.set({ name, value, ...options });
         },
-        remove(name, options) {
+        remove(name: string, options: Record<string, unknown>) {
           cookieStore.set({ name, value: '', ...options });
         },
       },

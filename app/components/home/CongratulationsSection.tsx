@@ -7,12 +7,13 @@ import { supabase } from '../../lib/supabase';
 
 interface Congratulations {
   id: string;
-  sender_name: string;
-  recipient_name: string;
+  sender_name: string | null;
+  receiver_name: string;
   message: string;
-  occasion: string;
+  category: string;
+  theme: string;
   image_url?: string | null;
-  created_at: string;
+  created_at: string | null;
 }
 
 const OCCASIONS = ['ყველა', 'დაბადების დღე', 'ქორწილი', 'დამთავრება', 'შობა', 'სხვა'];
@@ -39,7 +40,7 @@ export default function CongratulationsSection() {
 
   const filteredItems = selectedOccasion === 'ყველა' 
     ? items 
-    : items.filter(item => item.occasion === selectedOccasion);
+    : items.filter(item => item.category === selectedOccasion);
 
   if (loading || items.length === 0) return null;
 
@@ -88,17 +89,17 @@ export default function CongratulationsSection() {
                 <div className="flex-1 min-w-0">
                   <div className="flex justify-between items-start mb-1">
                     <div className="font-black text-white text-xs italic truncate">
-                      {item.sender_name} → {item.recipient_name}
+                      {item.sender_name || 'ანონიმი'} → {item.receiver_name}
                     </div>
                     <span className="text-amber-400 text-xs font-bold uppercase bg-amber-600/20 px-2 py-0.5 rounded-full flex-shrink-0 ml-2">
-                      {item.occasion}
+                      {item.category}
                     </span>
                   </div>
                   <p className="text-white/80 text-xs leading-relaxed line-clamp-2">
                     {item.message}
                   </p>
                   <div className="text-white/40 text-xs mt-1">
-                    {new Date(item.created_at).toLocaleDateString('ka-GE')}
+                    {item.created_at ? new Date(item.created_at).toLocaleDateString('ka-GE') : ''}
                   </div>
                 </div>
               </div>

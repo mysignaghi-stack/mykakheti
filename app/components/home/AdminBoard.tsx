@@ -29,7 +29,10 @@ export default function AdminBoard({ isAdmin, children }: AdminBoardProps) {
       .order('created_at', { ascending: false })
       .limit(2); 
     
-    if (!error && data) setPosts(data);
+    if (!error && data) {
+      const validPosts = data.filter(post => post.content !== null) as AdminPost[];
+      setPosts(validPosts);
+    }
   };
 
   useEffect(() => {

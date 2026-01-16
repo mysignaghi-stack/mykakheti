@@ -3,25 +3,25 @@ import type { NextRequest } from 'next/server';
 import { createServerClient } from '@supabase/ssr';
 import type { Database } from './types/supabase';
 
-export async function middleware(req: NextRequest) {
+export async function proxy(req: NextRequest) {
   const res = NextResponse.next();
-  
+
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-  
+
   if (!supabaseUrl || !supabaseKey) {
     return res;
   }
 
   const supabase = createServerClient<Database>(supabaseUrl, supabaseKey, {
     cookies: {
-      get(name) {
+      get(name: string) {
         return req.cookies.get(name)?.value;
       },
-      set(name, value, options) {
+      set(name: string, value: string, options: Record<string, unknown>) {
         res.cookies.set({ name, value, ...options });
       },
-      remove(name, options) {
+      remove(name: string, options: Record<string, unknown>) {
         res.cookies.set({ name, value: '', ...options });
       },
     },

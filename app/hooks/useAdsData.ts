@@ -39,7 +39,6 @@ export function useAdsData() {
 
   return {
     ads,
-    setAds,
     loading,
     fetchAds,
     archiveAd,

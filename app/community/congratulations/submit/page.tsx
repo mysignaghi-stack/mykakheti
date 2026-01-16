@@ -49,7 +49,11 @@ export default function SubmitCongratulations() {
       }
 
       const { error } = await supabase.from('congratulations').insert([{
-        ...formData,
+        sender_name: formData.sender_name,
+        receiver_name: formData.recipient_name,
+        message: formData.message,
+        category: formData.occasion,
+        theme: formData.occasion,
         image_url: imageUrl || null
       }]);
 

@@ -31,7 +31,7 @@ export default function MasterCard({ master }: { master: Master }) {
 
   React.useEffect(() => {
     const load = async () => {
-      const { data } = await supabase.from('master_portfolio').select('id, media_url, master_id').eq('master_id', master.id).limit(6);
+      const { data } = await supabase.from('master_portfolio').select('*').eq('master_id', master.id).limit(6);
       setPortfolio(data ?? []);
     };
     load();

@@ -1,23 +1,30 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '../lib/supabase';
+import type { Database } from '../../types/supabase';
 import { WeatherItem } from '../lib/types';
 import { WEATHER_POINTS } from '../lib/constants';
+
+type WeatherRow = Database['public']['Tables']['weather']['Row'];
 
 export function useWeatherData() {
   const [weatherData, setWeatherData] = useState<WeatherItem[]>([]);
   const [loading, setLoading] = useState(false);
 
-  useEffect(() => {
-    fetchWeatherData();
-  }, []);
-
-  const fetchWeatherData = async () => {
+  const fetchWeatherData = useCallback(async () => {
     setLoading(true);
     try {
       // Try to fetch from Supabase first
       const { data, error } = await supabase.from('weather').select('*').order('created_at', { ascending: false });
       if (!error && data && data.length > 0) {
-        setWeatherData(data);
+        const normalized: WeatherItem[] = (data as WeatherRow[]).map((row) => ({
+          name: row.name,
+          lat: row.lat,
+          lon: row.lon,
+          temp: row.temp ?? 0,
+          icon: row.icon ?? '☀️',
+          glow: row.glow ?? 'text-yellow-400',
+        }));
+        setWeatherData(normalized);
       } else {
         // Fallback to static data if table is empty or doesn't exist
         const staticWeatherData: WeatherItem[] = WEATHER_POINTS.map(point => ({
@@ -43,12 +50,14 @@ export function useWeatherData() {
       setWeatherData(staticWeatherData);
     }
     setLoading(false);
-  };
+  }, []);
+
+  useEffect(() => {
+    fetchWeatherData();
+  }, [fetchWeatherData]);
 
   return {
     weatherData,
     setWeatherData,
-    loading,
-    fetchWeatherData,
   };
 }

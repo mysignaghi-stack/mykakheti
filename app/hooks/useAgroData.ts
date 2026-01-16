@@ -1,7 +1,10 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '../lib/supabase';
+import type { Database } from '../../types/supabase';
 import { AgroItem } from '../lib/types';
 import { DEFAULT_AGRO_DATA } from '../lib/constants';
+
+type AgroRow = Database['public']['Tables']['agro_prices']['Row'];
 
 export function useAgroData() {
   const [agroData, setAgroData] = useState<AgroItem[]>(DEFAULT_AGRO_DATA);
@@ -10,18 +13,28 @@ export function useAgroData() {
   const [selectedAgro, setSelectedAgro] = useState<AgroItem | null>(null);
   const [newPrice, setNewPrice] = useState('');
 
-  useEffect(() => {
-    fetchAgroData();
-  }, []);
-
-  const fetchAgroData = async () => {
+  const fetchAgroData = useCallback(async () => {
     setLoading(true);
     const { data, error } = await supabase.from('agro_prices').select('*');
     if (!error && data) {
-      setAgroData(data);
+      const normalized: AgroItem[] = (data as AgroRow[]).map((row) => ({
+        id: row.id,
+        name: row.name,
+        unit: row.unit,
+        price: row.price,
+        color: row.color,
+        icon: row.icon,
+        category: row.category,
+        details: Array.isArray(row.details) ? (row.details as AgroItem['details']) : null,
+      }));
+      setAgroData(normalized);
     }
     setLoading(false);
-  };
+  }, []);
+
+  useEffect(() => {
+    fetchAgroData();
+  }, [fetchAgroData]);
 
 
 
