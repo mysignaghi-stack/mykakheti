@@ -31,7 +31,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       description: description,
       url: `https://mykakheti.ge/announcements/${id}`,
       siteName: 'MYKAKHETI.GE',
-      images: [{ url: ad.image_url, width: 1200, height: 630 }],
+      images: [{ url: ad.image_url || '/images/default-og.jpg', width: 1200, height: 630 }],
       locale: 'ka_GE',
       type: 'article',
     },
