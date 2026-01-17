@@ -24,7 +24,6 @@ import TransportModal from './components/features/transport/TransportModal';
 import AdminSideFrame from './components/home/AdminSideFrame';
 import ChatPopup from './components/features/ChatPopup';
 import AgroDetailsModal from './components/home/AgroDetailsModal';
-import CommunityEngagementSection from './components/home/CommunityEngagementSection';
 import CommunityWidgets from './components/community/CommunityWidgets';
 
 // Type for agro details
@@ -487,9 +486,6 @@ export default function HomePage() {
           </div>
         </div>
       </section>
-
-      <CommunityEngagementSection />
-
       <AdsSection 
         ads={ads} filteredAds={filteredAds} isAdmin={isAdmin} showArchive={false}
         searchTerm={searchTerm} setSearchTerm={setSearchTerm} selectedCategories={selectedCategories} setSelectedCategories={setSelectedCategories}

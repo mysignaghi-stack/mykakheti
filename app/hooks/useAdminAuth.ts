@@ -12,15 +12,18 @@ export function useAdminAuth() {
   useEffect(() => {
     const checkAdminStatus = async () => {
       try {
-        const { data: { user }, error } = await supabase.auth.getUser();
+        const { data: { session }, error } = await supabase.auth.getSession();
 
         if (error) {
-          console.error('Auth error:', error);
+          console.error('Auth session error:', error);
           setIsAdmin(false);
           setUser(null);
-        } else if (user && isAdminUser(user)) {
+          return;
+        }
+
+        if (session?.user && isAdminUser(session.user)) {
           setIsAdmin(true);
-          setUser(user);
+          setUser(session.user);
         } else {
           setIsAdmin(false);
           setUser(null);

@@ -5,6 +5,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Ad } from '../../lib/types';
+import CommunityEngagementSection from './CommunityEngagementSection';
 
 interface AdsSectionProps {
   ads: Ad[];
@@ -58,7 +59,8 @@ export default function AdsSection({
 
   return (
     <section className="relative z-20 px-4 sm:px-6 md:px-10 max-w-[1800px] mx-auto pb-20">
-      
+      <CommunityEngagementSection className="mb-10" />
+
       {/* ფილტრები და სათაური */}
       <div className="flex flex-col md:flex-row justify-between items-center mb-8 gap-6">
         <h2 className="text-2xl sm:text-3xl font-black text-white uppercase italic tracking-widest drop-shadow-lg flex items-center gap-3">
