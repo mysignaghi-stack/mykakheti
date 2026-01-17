@@ -27,6 +27,18 @@
   --primary-dark: #050510;
   --accent-amber: #f59e0b;
   --glass-border: rgba(255, 255, 255, 0.08);
+  }
+
+  @keyframes fade-soft {
+    from {
+      opacity: 0;
+      transform: translateY(4px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
   --glass-bg: rgba(255, 255, 255, 0.03);
 }
 

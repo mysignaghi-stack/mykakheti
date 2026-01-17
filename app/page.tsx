@@ -25,6 +25,7 @@ import AdminSideFrame from './components/home/AdminSideFrame';
 import ChatPopup from './components/features/ChatPopup';
 import AgroDetailsModal from './components/home/AgroDetailsModal';
 import CommunityEngagementSection from './components/home/CommunityEngagementSection';
+import CommunityWidgets from './components/community/CommunityWidgets';
 
 // Type for agro details
 interface AgroDetail {
@@ -412,6 +413,8 @@ export default function HomePage() {
                 selectedLocation={selectedLocation} setSelectedLocation={setSelectedLocation}
                isLocOpen={isLocOpen} setIsLocOpen={setIsLocOpen} locRef={locRef as React.RefObject<HTMLDivElement>}
              />
+
+              <CommunityWidgets />
 
             {/* --- Announcement/Marquee Bar (center column, in the middle) --- */}
             <div className="w-full my-1">
