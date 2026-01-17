@@ -81,8 +81,8 @@ export default function SubmitCongratulations() {
   return (
     <main className="min-h-screen bg-[#050510] flex items-center justify-center p-6 text-white font-sans">
       <div className="max-w-md w-full">
-        <div className="flex justify-end mb-4">
-          <Link href="/community" className="text-[11px] font-black uppercase italic text-white/50 hover:text-white transition">← სათემო სივრცე</Link>
+        <div className="flex justify-start mb-4">
+          <Link href="/" className="text-[11px] font-black uppercase italic text-white/50 hover:text-white transition">← მთავარი გვერდი</Link>
         </div>
         <div className="bg-white/[0.03] backdrop-blur-3xl rounded-[50px] shadow-[0_32px_64px_-16px_rgba(0,0,0,0.5)] p-10 md:p-14 border border-white/10 relative overflow-hidden">
 
@@ -100,7 +100,7 @@ export default function SubmitCongratulations() {
             </p>
           </div>
 
-          <SubmissionAuthGate redirectPath="/community/congratulations/submit" heading="შესვლის შემდეგ შეძლებთ ბარათის გამოქვეყნებას">
+          <SubmissionAuthGate redirectPath="/community/congratulations/submit" heading="განცხადებების გამოქვეყნება შესაძლებელია გამარტივებული ავტორიზაციის დასრულების შემდეგ.">
             {() => (
               <form onSubmit={handleSubmit} className="space-y-6">
                 <div className="space-y-4">
@@ -167,14 +167,7 @@ export default function SubmitCongratulations() {
             )}
           </SubmissionAuthGate>
 
-          <div className="mt-10 text-center">
-            <Link
-              href="/community/congratulations"
-              className="text-white/20 font-black uppercase italic text-[9px] tracking-widest hover:text-white transition-all border-b border-transparent hover:border-white/10 pb-1"
-            >
-              ← უკან დაბრუნება
-            </Link>
-          </div>
+          <div className="mt-10" />
         </div>
       </div>
     </main>

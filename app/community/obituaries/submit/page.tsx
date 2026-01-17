@@ -47,11 +47,11 @@ export default function ObituariesSubmit() {
   return (
     <main className="min-h-screen bg-[#050510] p-6 md:p-10 text-white">
       <div className="max-w-3xl mx-auto">
-        <div className="flex justify-end mb-4">
-          <Link href="/community" className="text-[11px] font-black uppercase italic text-white/50 hover:text-white transition">← სათემო სივრცე</Link>
+        <div className="flex justify-start mb-4">
+          <Link href="/" className="text-[11px] font-black uppercase italic text-white/50 hover:text-white transition">← მთავარი გვერდი</Link>
         </div>
         <h1 className="text-2xl font-black text-amber-500 uppercase italic mb-6">სამძიმრის გამოქვეყნება</h1>
-        <SubmissionAuthGate redirectPath="/community/obituaries/submit" heading="ავტორიზაციის შემდეგ შეძლებთ სამძიმრის დამატებას">
+        <SubmissionAuthGate redirectPath="/community/obituaries/submit" heading="განცხადებების გამოქვეყნება შესაძლებელია გამარტივებული ავტორიზაციის დასრულების შემდეგ.">
           {() => (
             <form className="space-y-3" onSubmit={submit}>
               <input value={full_name} onChange={e=>setFullName(e.target.value)} placeholder="სრული სახელი" className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-sm text-white" />

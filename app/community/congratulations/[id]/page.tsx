@@ -42,9 +42,11 @@ export default function CongratsDetailsPage() {
     return (
       <main className="min-h-screen bg-[#050510] p-6 md:p-10 text-white">
         <div className="max-w-4xl mx-auto space-y-4">
+          <div className="flex justify-start">
+            <Link href="/" className="text-[11px] font-black uppercase italic text-white/50 hover:text-white transition">← მთავარი გვერდი</Link>
+          </div>
           <div className="flex justify-between items-center">
             <h1 className="text-2xl font-black text-white uppercase italic">მისალოცი</h1>
-            <Link href="/community/congratulations" className="text-[11px] font-black uppercase italic text-white/50 hover:text-white transition">← უკან სიაში</Link>
           </div>
           <div className="bg-white/5 border border-white/10 rounded-2xl p-6 italic text-white/40">ჩანაწერი ვერ მოიძებნა.</div>
         </div>
@@ -55,9 +57,11 @@ export default function CongratsDetailsPage() {
   return (
     <main className="min-h-screen bg-[#050510] p-6 md:p-10 text-white font-sans">
       <div className="max-w-4xl mx-auto space-y-8">
+        <div className="flex justify-start">
+          <Link href="/" className="text-[11px] font-black uppercase italic text-white/50 hover:text-white transition">← მთავარი გვერდი</Link>
+        </div>
         <div className="flex justify-between items-center">
           <h1 className="text-2xl font-black text-amber-500 uppercase italic">მისალოცი ბარათი</h1>
-          <Link href="/community/congratulations" className="text-[11px] font-black uppercase italic text-white/50 hover:text-white transition">← უკან სიაში</Link>
         </div>
 
         <div className="bg-white/[0.03] backdrop-blur-3xl rounded-[40px] border border-white/10 p-8 md:p-12 shadow-2xl space-y-8 relative overflow-hidden">

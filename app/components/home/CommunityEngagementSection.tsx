@@ -22,33 +22,33 @@ const COMMUNITY_CARDS: CommunityCardConfig[] = [
     key: 'obituaries',
     icon: '🕊️',
     submitHref: '/community/obituaries/submit',
-    submitLabel: 'სამძიმრის გამოცხადება',
-    viewHref: '/community/obituaries',
-    viewLabel: '📄 სამძიმრების ნახვა',
+    submitLabel: 'სამძიმრის დამატება',
+    viewHref: '/community/obituaries/submit',
+    viewLabel: 'დამატება',
   },
   {
     key: 'lost-found',
     icon: '🔎',
     submitHref: '/community/lost-found/submit',
-    submitLabel: 'დაკარგული/ნაპოვნი',
-    viewHref: '/community/lost-found',
-    viewLabel: '📄 განცხადებების ნახვა',
+    submitLabel: 'დაკარგული/ნაპოვნის დამატება',
+    viewHref: '/community/lost-found/submit',
+    viewLabel: 'დამატება',
   },
   {
     key: 'masters',
     icon: '🛠️',
     submitHref: '/community/masters/submit',
     submitLabel: 'ოსტატის დამატება',
-    viewHref: '/community/masters',
-    viewLabel: '📄 ოსტატების ნახვა',
+    viewHref: '/community/masters/submit',
+    viewLabel: 'დამატება',
   },
   {
     key: 'congratulations',
     icon: '🎉',
     submitHref: '/community/congratulations/submit',
-    submitLabel: 'მისალოცი ბარათი',
-    viewHref: '/community/congratulations',
-    viewLabel: '📄 მილოცვების ნახვა',
+    submitLabel: 'მისალოცის დამატება',
+    viewHref: '/community/congratulations/submit',
+    viewLabel: 'დამატება',
   },
 ];
 
@@ -66,41 +66,21 @@ export default function CommunityEngagementSection({ className }: CommunityEngag
       <p className="w-full text-white font-bold uppercase tracking-[0.2em] mb-2 leading-tight text-center">
         გამოქვეყნეთ, გააზიარეთ და მიულოცეთ
       </p>
-      <p className="text-white/60 text-[11px] font-semibold text-center mb-4">
-        განცხადებების გამოქვეყნება შესაძლებელია გამარტივებული ავტორიზაციის დასრულების შემდეგ.
-      </p>
-
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 w-full mb-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 w-full">
         {COMMUNITY_CARDS.map((card) => (
           <Link
             key={card.key}
-            href={card.viewHref}
-            className="text-[10px] px-2 py-1 rounded-full border border-white/5 text-white bg-black/60 hover:text-white hover:border-white/10 hover:bg-black/80 text-center font-semibold transition-colors"
+            href={card.submitHref}
+            className="bg-black/60 backdrop-blur-xl rounded-[30px] border border-white/5 p-3 flex flex-col items-center justify-center hover:bg-black/80 transition-all text-center"
           >
-            {card.viewLabel}
+            <span className="text-2xl mb-1">{card.icon}</span>
+            <span className="text-[10px] font-black uppercase tracking-widest text-white block">
+              {card.submitLabel}
+            </span>
+            <span className="mt-1 text-[9px] text-white/50">გააგზავნე მოდერაციაზე</span>
           </Link>
         ))}
       </div>
-
-      <SubmissionAuthGate redirectPath="/" heading="ავტორიზაციის შემდეგ შეძლებთ განცხადების გამოქვეყნებას">
-        {() => (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 w-full">
-            {COMMUNITY_CARDS.map((card) => (
-              <Link
-                key={card.key}
-                href={card.submitHref}
-                className="bg-black/60 backdrop-blur-xl rounded-[30px] border border-white/5 p-3 flex flex-col items-center justify-center hover:bg-black/80 transition-all text-center"
-              >
-                <span className="text-2xl mb-1">{card.icon}</span>
-                <span className="text-[10px] font-black uppercase tracking-widest text-white block">
-                  {card.submitLabel}
-                </span>
-                <span className="mt-1 text-[9px] text-white/50">გააგზავნე მოდერაციაზე</span>
-              </Link>
-            ))}
-          </div>
-        )}
-      </SubmissionAuthGate>
 
       <div className="mt-6">
         <CongratulationsSection />

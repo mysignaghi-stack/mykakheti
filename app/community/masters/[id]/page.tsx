@@ -43,9 +43,11 @@ export default function MasterDetailsPage() {
     return (
       <main className="min-h-screen bg-[#050510] p-6 md:p-10 text-white">
         <div className="max-w-4xl mx-auto space-y-4">
+          <div className="flex justify-start">
+            <Link href="/" className="text-[11px] font-black uppercase italic text-white/50 hover:text-white transition">← მთავარი გვერდი</Link>
+          </div>
           <div className="flex justify-between items-center">
             <h1 className="text-2xl font-black text-amber-500 uppercase italic">ოსტატი</h1>
-            <Link href="/community/masters" className="text-[11px] font-black uppercase italic text-white/50 hover:text-white transition">← უკან სიაში</Link>
           </div>
           <div className="bg-white/5 border border-white/10 rounded-2xl p-6">ოსტატი ვერ მოიძებნა.</div>
         </div>
@@ -56,9 +58,11 @@ export default function MasterDetailsPage() {
   return (
     <main className="min-h-screen bg-[#050510] p-6 md:p-10 text-white">
       <div className="max-w-4xl mx-auto space-y-6">
+        <div className="flex justify-start">
+          <Link href="/" className="text-[11px] font-black uppercase italic text-white/50 hover:text-white transition">← მთავარი გვერდი</Link>
+        </div>
         <div className="flex justify-between items-center">
           <h1 className="text-2xl font-black text-amber-500 uppercase italic">ოსტატის პროფილი</h1>
-          <Link href="/community/masters" className="text-[11px] font-black uppercase italic text-white/50 hover:text-white transition">← უკან სიაში</Link>
         </div>
         
         <MasterCard master={item} />
