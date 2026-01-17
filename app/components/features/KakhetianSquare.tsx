@@ -18,6 +18,7 @@ interface Message {
   media_type?: 'image' | 'video' | null;
   ip_address?: string;
   fingerprint?: string;
+  pending?: boolean;
 }
 
 const MESSAGE_LIMIT = 50; 
@@ -74,11 +75,24 @@ export default function KakhetianSquare({ isAdmin, controlToken, scrollRef }: Ka
     }
   }, [isSoundOn]);
 
-  const scrollToBottom = useCallback(() => {
+  const mergeMessages = useCallback((current: Message[], incoming: Message[]) => {
+    const map = new Map<string, Message>();
+    for (const msg of [...current, ...incoming]) {
+      map.set(msg.id, msg);
+    }
+    return Array.from(map.values()).sort(
+      (a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
+    );
+  }, []);
+
+  const scrollToBottom = useCallback((force = false) => {
     // Scroll only the chat container; do not use scrollIntoView to avoid page jumps
     const el = (scrollRef?.current) ?? ownScrollRef.current;
-    if (el) {
-      el.scrollTo({ top: el.scrollHeight, behavior: 'smooth' });
+    if (!el) return;
+    const distanceFromBottom = el.scrollHeight - el.scrollTop - el.clientHeight;
+    const isNearBottom = distanceFromBottom < 120;
+    if (force || isNearBottom) {
+      el.scrollTo({ top: el.scrollHeight, behavior: force ? 'auto' : 'smooth' });
     }
   }, [scrollRef]);
 
@@ -101,8 +115,8 @@ export default function KakhetianSquare({ isAdmin, controlToken, scrollRef }: Ka
     const fetchMessages = async () => {
       const { data } = await (supabase as any).from('square_messages').select('*').order('created_at', { ascending: true }).limit(MESSAGE_LIMIT);
       if (data) {
-        setMessages(data as Message[]);
-        setTimeout(scrollToBottom, 500);
+        setMessages((prev) => mergeMessages(prev, data as Message[]));
+        setTimeout(() => scrollToBottom(true), 200);
       }
     };
     fetchMessages();
@@ -130,13 +144,9 @@ export default function KakhetianSquare({ isAdmin, controlToken, scrollRef }: Ka
         { event: 'INSERT', schema: 'public', table: 'square_messages' },
         (payload) => {
           const newMsg = payload.new as Message;
-          setMessages((prev) => {
-            // ✅ დუბლიკატების პრევენცია: თუ მესიჯი უკვე არის (მაგალითად, ხელით დავამატეთ გაგზავნისას), აღარ ვამატებთ
-            if (prev.some(m => m.id === newMsg.id)) return prev;
-            return [...prev, newMsg];
-          });
+          setMessages((prev) => mergeMessages(prev, [newMsg]));
           playSound();
-          setTimeout(scrollToBottom, 100);
+          setTimeout(() => scrollToBottom(false), 60);
         }
       )
       .on(
@@ -171,7 +181,7 @@ export default function KakhetianSquare({ isAdmin, controlToken, scrollRef }: Ka
 
   // 4. Autoscroll to bottom on messages update (only chat container)
   useEffect(() => {
-    const t = setTimeout(scrollToBottom, 30);
+    const t = setTimeout(() => scrollToBottom(false), 30);
     return () => clearTimeout(t);
   }, [messages, scrollToBottom]);
 
@@ -229,55 +239,71 @@ export default function KakhetianSquare({ isAdmin, controlToken, scrollRef }: Ka
   const postMessage = async (e: React.FormEvent) => {
     e.preventDefault();
     if (isBanned) return alert("თქვენ დაბლოკილი ხართ.");
-    if (!msgName || (!msgText && selectedFiles.length === 0)) return;
+    const trimmedText = msgText.trim();
+    if (!msgName || (!trimmedText && selectedFiles.length === 0)) return;
     
     localStorage.setItem('kakheti_username', msgName);
+    const tempId = `temp-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+    const optimistic: Message | null = selectedFiles.length === 0 ? {
+      id: tempId,
+      sender_name: msgName,
+      message: trimmedText,
+      created_at: new Date().toISOString(),
+      parent_id: replyTo?.id || null,
+      ip_address: controlToken,
+      fingerprint: 'web',
+      pending: true,
+    } : null;
+
+    if (optimistic) {
+      setMessages((prev) => mergeMessages(prev, [optimistic]));
+      requestAnimationFrame(() => scrollToBottom(true));
+    }
+
     setIsUploading(true);
+    try {
+      const uploads = [];
+      for (const file of selectedFiles) {
+          const res = await handleFileUpload(file);
+          if (res) uploads.push(res);
+      }
+      const baseData = {
+          sender_name: msgName,
+          parent_id: replyTo?.id || null,
+          ip_address: controlToken,
+          fingerprint: 'web'
+      };
 
-    const uploads = [];
-    for (const file of selectedFiles) {
-        const res = await handleFileUpload(file);
-        if (res) uploads.push(res);
-    }
-    const baseData = {
-        sender_name: msgName,
-        parent_id: replyTo?.id || null,
-        ip_address: controlToken,
-        fingerprint: 'web'
-    };
+      const inserts = [];
+      if (uploads.length > 0) {
+          inserts.push({ ...baseData, message: trimmedText, media_url: uploads[0].url, media_type: uploads[0].type });
+          for (let i = 1; i < uploads.length; i++) {
+              inserts.push({ ...baseData, message: '', media_url: uploads[i].url, media_type: uploads[i].type });
+          }
+      } else {
+          inserts.push({ ...baseData, message: trimmedText });
+      }
 
-    const inserts = [];
-    if (uploads.length > 0) {
-        inserts.push({ ...baseData, message: msgText, media_url: uploads[0].url, media_type: uploads[0].type });
-        for (let i = 1; i < uploads.length; i++) {
-            inserts.push({ ...baseData, message: '', media_url: uploads[i].url, media_type: uploads[i].type });
-        }
-    } else {
-        inserts.push({ ...baseData, message: msgText });
-    }
+      const { data, error } = await (supabase as any).from('square_messages').insert(inserts).select();
 
-    const { data, error } = await (supabase as any).from('square_messages').insert(inserts).select();
-    
-    setIsUploading(false);
-    
-    if (!error && data) {
-        setMessages((prev) => {
+        if (!error && data) {
+          setMessages((prev) => {
             const newMsgs = data as Message[];
-            const uniqueMsgs = newMsgs.filter(newMsg => !prev.some(p => p.id === newMsg.id));
-            return [...prev, ...uniqueMsgs];
-        });
-        
-        // 📍 ჩატი ჩამოვიდეს ბოლოში (მთავარი გვერდის scroll არ იცვლება)
-        setTimeout(() => {
-          scrollToBottom();
-        }, 30);
+            const base = optimistic ? prev.filter(m => m.id !== tempId) : prev;
+            return mergeMessages(base, newMsgs);
+          });
+          requestAnimationFrame(() => scrollToBottom(true));
 
-        // გასუფთავება
-        setMsgText(''); setReplyTo(null); setShowEmojis(false);
-        filePreviews.forEach(u => URL.revokeObjectURL(u));
-        setSelectedFiles([]); setFilePreviews([]);
-    } else {
-        alert("შეცდომა გაგზავნისას.");
+          // გასუფთავება
+          setMsgText(''); setReplyTo(null); setShowEmojis(false);
+          filePreviews.forEach(u => URL.revokeObjectURL(u));
+          setSelectedFiles([]); setFilePreviews([]);
+      } else {
+          if (optimistic) setMessages((prev) => prev.filter(m => m.id !== tempId));
+          alert("შეცდომა გაგზავნისას.");
+      }
+    } finally {
+      setIsUploading(false);
     }
   };
 
@@ -341,10 +367,10 @@ export default function KakhetianSquare({ isAdmin, controlToken, scrollRef }: Ka
                             <div className="mb-2 rounded-xl overflow-hidden cursor-pointer" onClick={() => setViewingMedia({ url: m.media_url!, type: m.media_type! })}>
                                 {m.media_type === 'image' ? (
                                   <div className="relative w-full max-h-48 h-48">
-                                    <Image src={m.media_url} alt="" fill sizes="(max-width: 768px) 100vw, 480px" className="object-cover" />
+                                    <Image src={m.media_url} alt="" fill sizes="(max-width: 768px) 100vw, 480px" className="object-cover" onLoad={() => scrollToBottom(false)} />
                                   </div>
                                 ) : (
-                                  <video src={m.media_url} className="w-full max-h-48" />
+                                  <video src={m.media_url} className="w-full max-h-48" onLoadedData={() => scrollToBottom(false)} />
                                 )}
                             </div>
                         )}
