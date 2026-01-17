@@ -35,7 +35,7 @@ export default function TransportModal({ isAdmin, onClose, staticSchedule }: Tra
     setLoading(true);
 
     try {
-      // 1. მარშრუტების წამოღება
+      // 1. მარშრუტების წამოღება (გამოყენებულია as any ბილდის შეცდომის თავიდან ასაცილებლად)
       const { data: routesData, error: routesError } = await (
         supabase.from('transport_routes' as any) as any
       )
@@ -45,8 +45,9 @@ export default function TransportModal({ isAdmin, onClose, staticSchedule }: Tra
       if (routesError) throw routesError;
 
       // 2. განრიგის წამოღება
-      const { data: schedulesData, error: schedulesError } = await supabase
-        .from('transport_schedules')
+      const { data: schedulesData, error: schedulesError } = await (
+        supabase.from('transport_schedules' as any) as any
+      )
         .select('*')
         .order('created_at', { ascending: false });
 
@@ -54,7 +55,8 @@ export default function TransportModal({ isAdmin, onClose, staticSchedule }: Tra
 
       // 3. State-ის განახლება (ბაზის snake_case-ის გადაყვანა ჩვენს camelCase-ზე)
       if (routesData) {
-        const formattedRoutes: AdminRoute[] = routesData.map((r) => ({
+        // 👇 r: any ამატებს ტიპიზაციას, რაც ბილდს აწითლებდა
+        const formattedRoutes: AdminRoute[] = routesData.map((r: any) => ({
           id: r.id,
           origin: r.origin,
           destination: r.destination,
@@ -65,11 +67,12 @@ export default function TransportModal({ isAdmin, onClose, staticSchedule }: Tra
       }
       
       if (schedulesData) {
+        // 👇 s: any ამატებს ტიპიზაციას
         const formattedSchedules: AdminSchedule[] = schedulesData
-          .filter((s) => s.route_id !== null) // Filter out schedules with null route_id
-          .map((s) => ({
+          .filter((s: any) => s.route_id !== null) 
+          .map((s: any) => ({
             id: s.id,
-            routeId: s.route_id!, // We know it's not null after filtering
+            routeId: s.route_id!, 
             departTime: s.depart_time,
             status: s.status as 'Active' | 'Delayed' | 'Canceled'
           }));
@@ -116,8 +119,9 @@ export default function TransportModal({ isAdmin, onClose, staticSchedule }: Tra
       if (routeError) throw routeError;
 
       // 2. განრიგის ჩაწერა (მიბმულია მარშრუტის ID-ზე)
-      const { error: scheduleError } = await supabase
-        .from('transport_schedules')
+      const { error: scheduleError } = await (
+        supabase.from('transport_schedules' as any) as any
+      )
         .insert({
           route_id: routeData.id,
           depart_time: newEntry.departTime || '00:00',
@@ -146,7 +150,6 @@ export default function TransportModal({ isAdmin, onClose, staticSchedule }: Tra
     
     setLoading(true);
     try {
-      // Cascade delete-ის გამო, მარშრუტის წაშლა წაშლის განრიგსაც
       const { error } = await (
         supabase.from('transport_routes' as any) as any
       )
@@ -165,31 +168,30 @@ export default function TransportModal({ isAdmin, onClose, staticSchedule }: Tra
 
   // ✅ სტატუსის შეცვლა (UPDATE)
   const handleStatusChange = async (id: number, newStatus: AdminSchedule['status']) => {
-    // ლოკალურად შეცვლა (სწრაფი UI)
     setAdminSchedules(prev => prev.map(s => s.id === id ? { ...s, status: newStatus } : s));
 
     try {
-      const { error } = await supabase
-        .from('transport_schedules')
+      const { error } = await (
+        supabase.from('transport_schedules' as any) as any
+      )
         .update({ status: newStatus })
         .eq('id', id);
         
       if (error) throw error;
     } catch {
       alert('სტატუსი ვერ შეიცვალა ბაზაში');
-      fetchData(); // უკან დაბრუნება შეცდომის შემთხვევაში
+      fetchData(); 
     }
   };
 
   // ✅ დროის შეცვლა (UPDATE)
   const handleTimeUpdate = async (id: number, newValue: string) => {
-    // ლოკალურად შეცვლა
     setAdminSchedules(prev => prev.map(s => s.id === id ? { ...s, departTime: newValue } : s));
 
-    // Debounce-ის გარეშე პირდაპირ ვაგზავნით (Production-ში ჯობია Debounce)
     try {
-      const { error } = await supabase
-        .from('transport_schedules')
+      const { error } = await (
+        supabase.from('transport_schedules' as any) as any
+      )
         .update({ depart_time: newValue })
         .eq('id', id);
 

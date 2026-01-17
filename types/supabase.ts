@@ -92,42 +92,6 @@ export type Database = {
         }
         Relationships: []
       }
-      businesses: {
-        Row: {
-          id: string
-          name: string
-          category: string
-          address: string | null
-          phone: string | null
-          description: string | null
-          image_url: string | null
-          all_images: string[] | null
-          created_at: string
-        }
-        Insert: {
-          id?: string
-          name: string
-          category: string
-          address?: string | null
-          phone?: string | null
-          description?: string | null
-          image_url?: string | null
-          all_images?: string[] | null
-          created_at?: string
-        }
-        Update: {
-          id?: string
-          name?: string
-          category?: string
-          address?: string | null
-          phone?: string | null
-          description?: string | null
-          image_url?: string | null
-          all_images?: string[] | null
-          created_at?: string
-        }
-        Relationships: []
-      }
       announcements: {
         Row: {
           all_images: string[] | null
@@ -136,7 +100,6 @@ export type Database = {
           created_at: string | null
           currency: string | null
           description: string | null
-          expires_at: string | null
           id: string
           image_url: string | null
           is_approved: boolean | null
@@ -144,7 +107,6 @@ export type Database = {
           location: string
           phone: string | null
           price: string
-          user_id: string | null
           title: string
         }
         Insert: {
@@ -154,7 +116,6 @@ export type Database = {
           created_at?: string | null
           currency?: string | null
           description?: string | null
-          expires_at?: string | null
           id?: string
           image_url?: string | null
           is_approved?: boolean | null
@@ -162,7 +123,6 @@ export type Database = {
           location: string
           phone?: string | null
           price: string
-          user_id?: string | null
           title: string
         }
         Update: {
@@ -170,7 +130,6 @@ export type Database = {
           category?: string
           contact_info?: string | null
           created_at?: string | null
-          expires_at?: string | null
           currency?: string | null
           description?: string | null
           id?: string
@@ -180,7 +139,6 @@ export type Database = {
           location?: string
           phone?: string | null
           price?: string
-          user_id?: string | null
           title?: string
         }
         Relationships: []
@@ -289,6 +247,7 @@ export type Database = {
           created_at: string | null
           email: string | null
           id: string
+          is_read: boolean | null
           message: string | null
           name: string | null
           subject: string | null
@@ -297,6 +256,7 @@ export type Database = {
           created_at?: string | null
           email?: string | null
           id?: string
+          is_read?: boolean | null
           message?: string | null
           name?: string | null
           subject?: string | null
@@ -305,6 +265,7 @@ export type Database = {
           created_at?: string | null
           email?: string | null
           id?: string
+          is_read?: boolean | null
           message?: string | null
           name?: string | null
           subject?: string | null
@@ -676,7 +637,7 @@ export type Database = {
       }
       transport_routes: {
         Row: {
-          created_at: string | null
+          created_at: string
           destination: string
           id: number
           origin: string
@@ -684,7 +645,7 @@ export type Database = {
           stops: string | null
         }
         Insert: {
-          created_at?: string | null
+          created_at?: string
           destination: string
           id?: number
           origin: string
@@ -692,7 +653,7 @@ export type Database = {
           stops?: string | null
         }
         Update: {
-          created_at?: string | null
+          created_at?: string
           destination?: string
           id?: number
           origin?: string

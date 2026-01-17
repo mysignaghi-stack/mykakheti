@@ -22,15 +22,15 @@ export default function AdminBoard({ isAdmin, children }: AdminBoardProps) {
 
   // მონაცემების წამოღება
   const fetchPosts = async () => {
-    // ვიღებთ მხოლოდ ბოლო 2 პოსტს (მარცხენა და მარჯვენა მხარესთვის)
-    const { data, error } = await supabase
-      .from('admin_posts')
+    // 👇 დამატებულია (as any) "Property 'content' does not exist on type 'never'" შეცდომის გამოსასწორებლად
+    const { data, error } = await (supabase.from('admin_posts' as any) as any)
       .select('*')
       .order('created_at', { ascending: false })
       .limit(2); 
     
     if (!error && data) {
-      const validPosts = data.filter(post => post.content !== null) as AdminPost[];
+      // 👇 მონაცემების ფილტრაციისას გამოიყენება (data as any[]), რომ TypeScript-მა დაინახოს 'content' ველი
+      const validPosts = (data as any[]).filter(post => post.content !== null) as AdminPost[];
       setPosts(validPosts);
     }
   };

@@ -1,7 +1,8 @@
-import { createBrowserClient } from '@supabase/ssr';
-import type { Database } from '@/types/supabase';
+import { createClient } from '@supabase/supabase-js';
+import { Database } from '../../types/supabase'; // 👈 ეს იმპორტი აუცილებელია!
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
 
-export const supabase = createBrowserClient<Database>(supabaseUrl, supabaseKey);
+// 👇 აქ Database ტიპის მითითება აგვარებს 'never' შეცდომებს მთელ პროექტში
+export const supabase = createClient<Database>(supabaseUrl, supabaseAnonKey);

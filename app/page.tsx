@@ -47,6 +47,7 @@ const getSeasonalContent = () => {
 
 
 export default function HomePage() {
+  const { isAdmin } = useAdminAuth();
   const {
     ads,
     fetchAds,
@@ -68,13 +69,13 @@ export default function HomePage() {
   const fetchBG = useCallback(async () => {
     try {
       const { data, error } = await supabase
-        .from('site_settings' as any)
+        .from('site_settings')
         .select('key, value')
         .in('key', ['background_url', 'marquee_text']);
 
       if (error) throw error;
 
-      const typedData = data as SiteSettingRow[] | null;
+      const typedData = data as unknown as SiteSettingRow[] | null;
 
       if (typedData) {
         const bg = typedData.find(item => item.key === 'background_url')?.value;
@@ -114,6 +115,45 @@ export default function HomePage() {
     newPrice,
     setNewPrice,
   } = useAgroData();
+  const [editDetails, setEditDetails] = useState<{ place: string; rate: string | number }[]>([]);
+  const [editLoading, setEditLoading] = useState(false);
+  const [snackbar, setSnackbar] = useState<{ open: boolean; message: string; type?: 'success' | 'error' | 'info' }>({ open: false, message: '', type: 'info' });
+
+  const showSnackbar = useCallback((message: string, type: 'success' | 'error' | 'info' = 'info') => {
+    setSnackbar({ open: true, message, type });
+  }, []);
+
+  const closeSnackbar = useCallback(() => {
+    setSnackbar(prev => ({ ...prev, open: false }));
+  }, []);
+
+  const handleUpdatePrice = useCallback(async () => {
+    if (!editAgroItem) {
+      showSnackbar('აირჩიეთ პოზიცია რედაქტირებისთვის', 'error');
+      return;
+    }
+
+    try {
+      const payload = {
+        price: newPrice,
+        details: editDetails,
+      };
+
+      const { error } = await supabase
+        .from('agro_prices')
+        .update(payload)
+        .eq('id', editAgroItem.id);
+
+      if (error) throw error;
+
+      setAgroData(prev => prev.map(item => item.id === editAgroItem.id ? { ...item, price: newPrice, details: editDetails } : item));
+      showSnackbar('ფასი განახლდა', 'success');
+      setEditAgroItem(null);
+    } catch (err) {
+      console.error('Failed to update agro price', err);
+      showSnackbar('ვერ განახლდა ფასი', 'error');
+    }
+  }, [editAgroItem, newPrice, editDetails, setAgroData, showSnackbar]);
   const [isLocOpen, setIsLocOpen] = useState(false);
   const locRef = useRef<HTMLDivElement>(null);
   
@@ -123,6 +163,7 @@ export default function HomePage() {
   const [controlToken, setControlToken] = useState<string>('');
 
   const [adminPosts, setAdminPosts] = useState<AdminPost[]>([]);
+  const [factIndex, setFactIndex] = useState(0);
   // Use separate refs for desktop and mobile KakhetianSquare
   const chatScrollRefDesktop = useRef<HTMLDivElement>(null) as React.RefObject<HTMLDivElement>;
   const chatScrollRefMobile = useRef<HTMLDivElement>(null) as React.RefObject<HTMLDivElement>;
@@ -506,7 +547,7 @@ export default function HomePage() {
           onSubmit={async (e) => {
             e.preventDefault();
             setEditLoading(true);
-            await handleUpdatePrice(e);
+            await handleUpdatePrice();
             setEditLoading(false);
           }}
         />
@@ -520,9 +561,8 @@ export default function HomePage() {
         onClose={() => setConfirmModal(null)}
         loading={confirmLoading}
       />
-
-      {/* Snackbar: modular and accessible */}
-      <SnackbarWrapper open={snackbar.open} message={snackbar.message} type={snackbar.type} onClose={closeSnackbar} />
+  {/* Snackbar: modular and accessible */}
+  <SnackbarWrapper open={snackbar.open} message={snackbar.message} type={snackbar.type} onClose={closeSnackbar} />
 
       <Footer />
     </main>

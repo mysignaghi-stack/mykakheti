@@ -10,6 +10,10 @@ import 'swiper/css/navigation';
 import 'swiper/css/pagination';
 import { supabase } from '../../lib/supabase';
 import { AdminPost, Ad } from '../../lib/types';
+import type { Database } from '@/types/supabase';
+
+type AdminPostInsertPayload = Database['public']['Tables']['admin_posts']['Insert'];
+type AdminPostUpdatePayload = Database['public']['Tables']['admin_posts']['Update'];
 
 interface AdminSideFrameProps {
   post: AdminPost | undefined;
@@ -90,7 +94,7 @@ export default function AdminSideFrame({ post, position, isAdmin, onRefresh, con
         }
       }
 
-      const postData = {
+      const postData: AdminPostInsertPayload = {
         title: formData.title,
         content: formData.content,
         category: formData.category || null,
@@ -106,7 +110,7 @@ export default function AdminSideFrame({ post, position, isAdmin, onRefresh, con
         // Update existing post
         const { error } = await supabase
           .from('admin_posts')
-          .update(postData)
+          .update(postData as AdminPostUpdatePayload)
           .eq('id', editingPost.id);
         if (error) throw error;
       } else {
