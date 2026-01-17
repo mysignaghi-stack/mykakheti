@@ -57,6 +57,7 @@ export default function CommunityWidgets() {
         supabase
           .from("congratulations")
           .select("id, sender_name, receiver_name, message, image_url, status, created_at")
+          .eq("is_approved", true)
           .order("created_at", { ascending: false })
           .limit(5),
       ]);
@@ -89,7 +90,7 @@ export default function CommunityWidgets() {
   const cards: CardConfig[] = useMemo(() => ([
     {
       title: "სამძიმარი",
-      accentClass: "from-gray-700/60 via-slate-900/60 to-gray-900/70",
+      accentClass: "from-gray-400/30 via-slate-900/60 to-white/10",
       link: "/community/obituaries",
       hrefBuilder: (id: string) => `/community/obituaries/${id}`,
       placeholder: "ახალი განცხადებები მალე დაემატება",
@@ -105,14 +106,14 @@ export default function CommunityWidgets() {
       title: "ოსტატები",
       accentClass: "from-blue-700/45 via-black/50 to-blue-900/60",
       link: "/community/masters",
-      hrefBuilder: () => `/community/masters`,
+      hrefBuilder: (id: string) => `/community/masters/${id}`,
       placeholder: "ახალი განცხადებები მალე დაემატება",
     },
     {
       title: "მისალოცები",
-      accentClass: "from-rose-700/45 via-black/50 to-amber-700/55",
+      accentClass: "from-rose-600/40 via-black/60 to-amber-500/40",
       link: "/community/congratulations",
-      hrefBuilder: () => `/community/congratulations`,
+      hrefBuilder: (id: string) => `/community/congratulations/${id}`,
       placeholder: "ახალი განცხადებები მალე დაემატება",
     },
   ]), []);
@@ -123,7 +124,7 @@ export default function CommunityWidgets() {
   const currentCongrats = congrats[congratsIndex] ?? null;
 
   return (
-    <div className="w-full grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
+    <div className="w-full grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
       <WidgetCard
         config={cards[0]}
         highlight={currentObituary}

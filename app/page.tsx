@@ -351,6 +351,10 @@ export default function HomePage() {
 
       <Navbar />
 
+      <div className="relative z-10 w-full px-4 sm:px-6 md:px-10 max-w-[1800px] mx-auto mt-6">
+        <CommunityWidgets />
+      </div>
+
       {/* Community unit moved nearer to announcements */}
 
       {/* Informational grid section, now outside header for independent styling */}
@@ -414,7 +418,6 @@ export default function HomePage() {
                isLocOpen={isLocOpen} setIsLocOpen={setIsLocOpen} locRef={locRef as React.RefObject<HTMLDivElement>}
              />
 
-              <CommunityWidgets />
 
             {/* --- Announcement/Marquee Bar (center column, in the middle) --- */}
             <div className="w-full my-1">

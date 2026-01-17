@@ -14,8 +14,8 @@ interface Master {
   phone?: string | null;
   location?: string | null;
   description?: string | null;
-  rating_avg: number;
-  ratings_count: number;
+  rating_avg: number | null;
+  ratings_count: number | null;
   photo_url?: string | null;
   service_area?: string | null;
   price_note?: string | null;
