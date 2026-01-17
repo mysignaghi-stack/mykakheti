@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, type FormEvent } from 'react';
+import Link from 'next/link';
 import { supabase } from '../../../lib/supabase';
 import SubmissionAuthGate from '../../../components/auth/SubmissionAuthGate';
 
@@ -55,6 +56,9 @@ export default function LostFoundSubmit() {
   return (
     <main className="min-h-screen bg-[#050510] p-6 md:p-10 text-white">
       <div className="max-w-3xl mx-auto">
+        <div className="flex justify-end mb-4">
+          <Link href="/community" className="text-[11px] font-black uppercase italic text-white/50 hover:text-white transition">← სათემო სივრცე</Link>
+        </div>
         <h1 className="text-2xl font-black text-amber-500 uppercase italic mb-6">დაკარგული/ნაპოვნის გამოქვეყნება</h1>
         <SubmissionAuthGate redirectPath="/community/lost-found/submit" heading="ავტორიზაციის შემდეგ შეძლებთ განცხადების გაგზავნას">
           {() => (

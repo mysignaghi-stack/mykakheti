@@ -6,6 +6,9 @@ export default function CommunityIndex() {
   return (
     <main className="min-h-screen bg-[#050510] p-6 md:p-10 text-white">
       <div className="max-w-5xl mx-auto">
+        <div className="flex justify-end mb-4">
+          <Link href="/" className="text-[11px] font-black uppercase italic text-white/50 hover:text-white transition">← მთავარზე დაბრუნება</Link>
+        </div>
         <h1 className="text-2xl font-black text-amber-500 uppercase italic mb-6">სათემო სივრცე</h1>
         <p className="text-white/60 text-sm mb-6">აირჩიეთ თქვენთვის სასურველი განყოფილება ან გამოაგზავნეთ შეკვეთა მოდერაციაზე დასამტკიცებლად.</p>
 

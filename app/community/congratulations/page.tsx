@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import Image from 'next/image';
+import Link from 'next/link';
 import { supabase } from '../../lib/supabase';
 
 interface Congratulations {
@@ -36,6 +37,9 @@ export default function CongratulationsPage() {
   return (
     <main className="min-h-screen bg-[#050510] p-6 md:p-10 text-white">
       <div className="max-w-5xl mx-auto">
+        <div className="flex justify-end mb-4">
+          <Link href="/community" className="text-[11px] font-black uppercase italic text-white/50 hover:text-white transition">← სათემო სივრცე</Link>
+        </div>
         <h1 className="text-2xl font-black text-amber-500 uppercase italic mb-6">მისალოცი ბარათები</h1>
         {loading ? (
           <div className="opacity-50">იტვირთება...</div>

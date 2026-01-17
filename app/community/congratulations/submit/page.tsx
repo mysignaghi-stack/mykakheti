@@ -81,6 +81,9 @@ export default function SubmitCongratulations() {
   return (
     <main className="min-h-screen bg-[#050510] flex items-center justify-center p-6 text-white font-sans">
       <div className="max-w-md w-full">
+        <div className="flex justify-end mb-4">
+          <Link href="/community" className="text-[11px] font-black uppercase italic text-white/50 hover:text-white transition">← სათემო სივრცე</Link>
+        </div>
         <div className="bg-white/[0.03] backdrop-blur-3xl rounded-[50px] shadow-[0_32px_64px_-16px_rgba(0,0,0,0.5)] p-10 md:p-14 border border-white/10 relative overflow-hidden">
 
           <div className="absolute top-0 left-0 w-full h-1.5 bg-gradient-to-r from-transparent via-amber-600 to-transparent" />

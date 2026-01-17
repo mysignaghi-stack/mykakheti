@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import Link from 'next/link';
 import { supabase } from '../../lib/supabase';
 import MasterCard from '../../components/community/MasterCard';
 
@@ -40,6 +41,9 @@ export default function MastersPage() {
   return (
     <main className="min-h-screen bg-[#050510] p-6 md:p-10 text-white">
       <div className="max-w-5xl mx-auto">
+        <div className="flex justify-end mb-4">
+          <Link href="/community" className="text-[11px] font-black uppercase italic text-white/50 hover:text-white transition">← სათემო სივრცე</Link>
+        </div>
         <h1 className="text-2xl font-black text-amber-500 uppercase italic mb-6">ოსტატების ბაზა</h1>
         <div className="grid grid-cols-2 gap-3 mb-6">
           <input value={query} onChange={e => setQuery(e.target.value)} placeholder="სახელი" className="bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-sm text-white focus:border-amber-500 outline-none" />

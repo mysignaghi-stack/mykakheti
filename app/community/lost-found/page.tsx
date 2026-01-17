@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import Image from 'next/image';
+import Link from 'next/link';
 import { supabase } from '../../lib/supabase';
 
 interface LFItem {
@@ -62,6 +63,9 @@ export default function LostFoundPage() {
   return (
     <main className="min-h-screen bg-[#050510] p-6 md:p-10 text-white">
       <div className="max-w-5xl mx-auto">
+        <div className="flex justify-end mb-4">
+          <Link href="/community" className="text-[11px] font-black uppercase italic text-white/50 hover:text-white transition">← სათემო სივრცე</Link>
+        </div>
         <div className="flex justify-between items-center mb-6">
           <h1 className="text-2xl font-black text-amber-500 uppercase italic">დაკარგული და ნაპოვნი</h1>
           <div className="flex gap-2">

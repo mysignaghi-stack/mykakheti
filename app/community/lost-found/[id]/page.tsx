@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import Image from 'next/image';
+import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import type { Database } from '../../../../types/supabase';
 import { supabase } from '../../../lib/supabase';
@@ -37,6 +38,9 @@ export default function LostFoundDetails() {
   return (
     <main className="min-h-screen bg-[#050510] p-6 md:p-10 text-white">
       <div className="max-w-3xl mx-auto space-y-4">
+        <div className="flex justify-end">
+          <Link href="/community/lost-found" className="text-[11px] font-black uppercase italic text-white/50 hover:text-white transition">← უკან სიაში</Link>
+        </div>
         <h1 className="text-2xl font-black text-amber-500 uppercase italic">{item.title}</h1>
         <div className="text-[12px] text-white/60 flex gap-3">
           <span className={`font-black uppercase ${item.kind==='lost'?'text-red-400':'text-green-400'}`}>{FILTER_LABELS[item.kind as 'lost'|'found']}</span>
