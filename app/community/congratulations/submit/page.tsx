@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { supabase } from '../../../lib/supabase';
 import imageCompression from 'browser-image-compression';
+import SubmissionAuthGate from '../../../components/auth/SubmissionAuthGate';
 
 const OCCASIONS = [
   'დაბადების დღე',
@@ -28,6 +29,13 @@ export default function SubmitCongratulations() {
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setLoading(true);
+
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) {
+      alert('ბარათის დასამატებლად საჭიროა გამარტივებული ავტორიზაცია.');
+      setLoading(false);
+      return;
+    }
 
     try {
       let imageUrl = '';
@@ -89,68 +97,72 @@ export default function SubmitCongratulations() {
             </p>
           </div>
 
-          <form onSubmit={handleSubmit} className="space-y-6">
-            <div className="space-y-4">
-              <input
-                type="text"
-                placeholder="თქვენი სახელი"
-                className="w-full p-6 bg-white/5 rounded-[24px] border-2 border-white/5 outline-none transition-all font-black text-center text-xl tracking-widest text-white placeholder:text-white/10 placeholder:tracking-normal focus:border-amber-600 focus:bg-white/10"
-                value={formData.sender_name}
-                onChange={(e) => setFormData({...formData, sender_name: e.target.value})}
-                required
-              />
+          <SubmissionAuthGate redirectPath="/community/congratulations/submit" heading="შესვლის შემდეგ შეძლებთ ბარათის გამოქვეყნებას">
+            {() => (
+              <form onSubmit={handleSubmit} className="space-y-6">
+                <div className="space-y-4">
+                  <input
+                    type="text"
+                    placeholder="თქვენი სახელი"
+                    className="w-full p-6 bg-white/5 rounded-[24px] border-2 border-white/5 outline-none transition-all font-black text-center text-xl tracking-widest text-white placeholder:text-white/10 placeholder:tracking-normal focus:border-amber-600 focus:bg-white/10"
+                    value={formData.sender_name}
+                    onChange={(e) => setFormData({...formData, sender_name: e.target.value})}
+                    required
+                  />
 
-              <input
-                type="text"
-                placeholder="მიმღების სახელი"
-                className="w-full p-6 bg-white/5 rounded-[24px] border-2 border-white/5 outline-none transition-all font-black text-center text-xl tracking-widest text-white placeholder:text-white/10 placeholder:tracking-normal focus:border-amber-600 focus:bg-white/10"
-                value={formData.recipient_name}
-                onChange={(e) => setFormData({...formData, recipient_name: e.target.value})}
-                required
-              />
+                  <input
+                    type="text"
+                    placeholder="მიმღების სახელი"
+                    className="w-full p-6 bg-white/5 rounded-[24px] border-2 border-white/5 outline-none transition-all font-black text-center text-xl tracking-widest text-white placeholder:text-white/10 placeholder:tracking-normal focus:border-amber-600 focus:bg-white/10"
+                    value={formData.recipient_name}
+                    onChange={(e) => setFormData({...formData, recipient_name: e.target.value})}
+                    required
+                  />
 
-              <select
-                className="w-full p-6 bg-white/5 rounded-[24px] border-2 border-white/5 outline-none transition-all font-black text-center text-xl tracking-widest text-white focus:border-amber-600 focus:bg-white/10"
-                value={formData.occasion}
-                onChange={(e) => setFormData({...formData, occasion: e.target.value})}
-              >
-                {OCCASIONS.map(occasion => (
-                  <option key={occasion} value={occasion}>{occasion}</option>
-                ))}
-              </select>
+                  <select
+                    className="w-full p-6 bg-white/5 rounded-[24px] border-2 border-white/5 outline-none transition-all font-black text-center text-xl tracking-widest text-white focus:border-amber-600 focus:bg-white/10"
+                    value={formData.occasion}
+                    onChange={(e) => setFormData({...formData, occasion: e.target.value})}
+                  >
+                    {OCCASIONS.map(occasion => (
+                      <option key={occasion} value={occasion}>{occasion}</option>
+                    ))}
+                  </select>
 
-              <textarea
-                placeholder="მისალოცი ტექსტი"
-                rows={4}
-                className="w-full p-6 bg-white/5 rounded-[24px] border-2 border-white/5 outline-none transition-all font-bold text-center text-lg tracking-wide text-white placeholder:text-white/10 placeholder:tracking-normal focus:border-amber-600 focus:bg-white/10 resize-none"
-                value={formData.message}
-                onChange={(e) => setFormData({...formData, message: e.target.value})}
-                required
-              />
+                  <textarea
+                    placeholder="მისალოცი ტექსტი"
+                    rows={4}
+                    className="w-full p-6 bg-white/5 rounded-[24px] border-2 border-white/5 outline-none transition-all font-bold text-center text-lg tracking-wide text-white placeholder:text-white/10 placeholder:tracking-normal focus:border-amber-600 focus:bg-white/10 resize-none"
+                    value={formData.message}
+                    onChange={(e) => setFormData({...formData, message: e.target.value})}
+                    required
+                  />
 
-              <div className="space-y-2">
-                <label className="block text-white/60 font-bold text-sm text-center">
-                  სურვილისამებრ სურათი (არასავალდებულო)
-                </label>
-                <input
-                  type="file"
-                  accept="image/*"
-                  onChange={(e) => setFile(e.target.files?.[0] || null)}
-                  className="w-full p-4 bg-white/5 rounded-[24px] border-2 border-white/5 outline-none transition-all font-bold text-center text-white file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-bold file:bg-amber-600 file:text-white hover:file:bg-amber-500"
-                />
-              </div>
-            </div>
+                  <div className="space-y-2">
+                    <label className="block text-white/60 font-bold text-sm text-center">
+                      სურვილისამებრ სურათი (არასავალდებულო)
+                    </label>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={(e) => setFile(e.target.files?.[0] || null)}
+                      className="w-full p-4 bg-white/5 rounded-[24px] border-2 border-white/5 outline-none transition-all font-bold text-center text-white file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-bold file:bg-amber-600 file:text-white hover:file:bg-amber-500"
+                    />
+                  </div>
+                </div>
 
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full bg-amber-600 text-white py-6 rounded-[24px] font-black text-xs uppercase italic tracking-widest hover:bg-amber-500 transition-all shadow-[0_20px_40px_-10px_rgba(217,119,6,0.3)] active:scale-95 group disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              <span className="group-hover:tracking-[0.3em] transition-all duration-300">
-                {loading ? 'იგზავნება...' : 'გაგზავნა →'}
-              </span>
-            </button>
-          </form>
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className="w-full bg-amber-600 text-white py-6 rounded-[24px] font-black text-xs uppercase italic tracking-widest hover:bg-amber-500 transition-all shadow-[0_20px_40px_-10px_rgba(217,119,6,0.3)] active:scale-95 group disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <span className="group-hover:tracking-[0.3em] transition-all duration-300">
+                    {loading ? 'იგზავნება...' : 'გაგზავნა →'}
+                  </span>
+                </button>
+              </form>
+            )}
+          </SubmissionAuthGate>
 
           <div className="mt-10 text-center">
             <Link
