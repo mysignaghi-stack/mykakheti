@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import type { Database } from '../../../types/supabase';
+import type { Database } from '@/types/supabase';
 import { supabase } from '../../lib/supabase';
 
 type CommunityTab = 'obituaries' | 'lostfound' | 'masters';
@@ -332,3 +332,5 @@ function MastersForm() {
     </div>
   );
 }
+
+export { supabase };
