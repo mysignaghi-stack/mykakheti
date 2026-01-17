@@ -12,8 +12,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   // ხარვეზის გასწორება: ჯერ ველოდებით params-ს
   const { id } = await params;
 
-  const { data: ad } = await supabase
-    .from('announcements')
+  const { data: ad } = await (supabase.from('announcements' as any) as any)
     .select('*')
     .eq('id', id)
     .single();

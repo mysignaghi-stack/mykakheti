@@ -28,7 +28,7 @@ export default function AdminHub() {
   // Fetch current marquee text from site_settings
   const fetchMarqueeText = async () => {
     setMarqueeLoading(true);
-    const { data } = await supabase.from('site_settings').select('value').eq('key', 'marquee_text').single();
+    const { data } = await (supabase as any).from('site_settings').select('value').eq('key', 'marquee_text').single();
     if (data?.value) setMarqueeText(data.value);
     setMarqueeLoading(false);
   };
@@ -43,7 +43,7 @@ export default function AdminHub() {
   const handleMarqueeSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setMarqueeLoading(true);
-    const { error } = await supabase.from('site_settings').upsert({ key: 'marquee_text', value: marqueeText }, { onConflict: 'key' });
+    const { error } = await (supabase as any).from('site_settings').upsert({ key: 'marquee_text', value: marqueeText }, { onConflict: 'key' });
     setMarqueeLoading(false);
     if (!error) {
       alert('მოძრავი სტრიქონი განახლდა!');
@@ -77,7 +77,7 @@ export default function AdminHub() {
 
   // ✅ მოქმედებები
   const approveAd = async (id: string) => {
-    const { error } = await supabase.from('announcements').update({ is_approved: true }).eq('id', id);
+    const { error } = await (supabase as any).from('announcements').update({ is_approved: true }).eq('id', id);
     if (!error) {
       setAds(prev => prev.filter(ad => ad.id !== id));
     }
@@ -85,7 +85,7 @@ export default function AdminHub() {
 
   const deleteAd = async (id: string) => {
     if(confirm('ნამდვილად გსურთ წაშლა?')) {
-      const { error } = await supabase.from('announcements').delete().eq('id', id);
+      const { error } = await (supabase as any).from('announcements').delete().eq('id', id);
       if (error) {
         alert('შეცდომა წაშლისას: ' + error.message);
       } else {
@@ -96,8 +96,7 @@ export default function AdminHub() {
 
   // 📅 ვადის განახლების ფუნქცია (ახალი)
   const updateExpiry = async (id: string, date: string) => {
-    const { error } = await supabase
-      .from('announcements')
+    const { error } = await (supabase.from('announcements' as any) as any)
       .update({ expires_at: date })
       .eq('id', id);
     if (!error) {
@@ -134,7 +133,7 @@ export default function AdminHub() {
         const { data } = supabase.storage.from('announcements').getPublicUrl(name);
         url = data.publicUrl;
       }
-      const { error } = await supabase.from('businesses').insert([{ ...bizData, image_url: url }]);
+      const { error } = await (supabase as any).from('businesses').insert([{ ...bizData, image_url: url }]);
       if (error) throw error;
       
       alert('ბიზნესი დაემატა! 🚀');
@@ -166,7 +165,7 @@ export default function AdminHub() {
 
       const { data: { publicUrl } } = supabase.storage.from('site-assets').getPublicUrl(fileName);
       console.log('ფონის publicUrl:', publicUrl);
-      const { error: dbErr, data: upsertData, status, statusText } = await supabase.from('site_settings').upsert({ key: 'background_url', value: publicUrl }, { onConflict: 'key' });
+      const { error: dbErr, data: upsertData, status, statusText } = await (supabase as any).from('site_settings').upsert({ key: 'background_url', value: publicUrl }, { onConflict: 'key' });
       console.log('upsert შედეგი:', { dbErr, upsertData, status, statusText });
 
       if (dbErr) {

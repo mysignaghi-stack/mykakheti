@@ -48,7 +48,7 @@ export default function SubmitCongratulations() {
         imageUrl = publicUrl;
       }
 
-      const { error } = await supabase.from('congratulations').insert([{
+      const { error } = await (supabase as any).from('congratulations').insert([{
         sender_name: formData.sender_name,
         receiver_name: formData.recipient_name,
         message: formData.message,

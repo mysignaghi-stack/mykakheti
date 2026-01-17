@@ -25,7 +25,7 @@ export default function AnnouncementDetailsClient({ initialAd }: { initialAd: An
   useEffect(() => {
     if (!initialAd) {
       const fetchAd = async () => {
-        const { data } = await supabase.from('announcements').select('*').eq('id', id).single();
+        const { data } = await (supabase as any).from('announcements').select('*').eq('id', id).single();
         if (data) {
           setAd(data);
           setActiveImg(data.image_url || data.all_images?.[0] || null);

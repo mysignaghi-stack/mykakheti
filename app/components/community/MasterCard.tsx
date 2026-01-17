@@ -31,7 +31,7 @@ export default function MasterCard({ master }: { master: Master }) {
 
   React.useEffect(() => {
     const load = async () => {
-      const { data } = await supabase.from('master_portfolio').select('*').eq('master_id', master.id).limit(6);
+      const { data } = await (supabase as any).from('master_portfolio').select('*').eq('master_id', master.id).limit(6);
       setPortfolio(data ?? []);
     };
     load();
@@ -43,7 +43,7 @@ export default function MasterCard({ master }: { master: Master }) {
     try {
       const fingerprint = typeof window !== 'undefined' ? (localStorage.getItem('fingerprint') || (Math.random().toString(36).slice(2))) : 'web';
       localStorage.setItem('fingerprint', fingerprint);
-      const { error: rateErr } = await supabase.from('master_ratings').insert({
+      const { error: rateErr } = await (supabase as any).from('master_ratings').insert({
         master_id: master.id,
         stars,
         comment,
@@ -53,7 +53,7 @@ export default function MasterCard({ master }: { master: Master }) {
       // update aggregate
       const newCount = (master.ratings_count || 0) + 1;
       const newAvg = ((master.rating_avg || 0) * (master.ratings_count || 0) + stars) / newCount;
-      const { error: updErr } = await supabase.from('masters').update({ rating_avg: newAvg, ratings_count: newCount }).eq('id', master.id);
+      const { error: updErr } = await (supabase as any).from('masters').update({ rating_avg: newAvg, ratings_count: newCount }).eq('id', master.id);
       if (updErr) throw updErr;
       alert('მიმოხილვა დამატებულია!');
       setStars(0); setComment('');

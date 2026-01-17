@@ -73,7 +73,7 @@ export default function AdminBoard({ isAdmin, children }: AdminBoardProps) {
         mediaType = mediaFile.type.startsWith('video') ? 'video' : 'image';
       }
 
-      const { error } = await supabase.from('admin_posts').insert({
+      const { error } = await (supabase as any).from('admin_posts').insert({
         title: newTitle,
         content: newContent,
         media_url: mediaUrl,
@@ -101,7 +101,7 @@ export default function AdminBoard({ isAdmin, children }: AdminBoardProps) {
   // პოსტის წაშლა
   const handleDelete = async (id: number) => {
     if (!confirm('ნამდვილად გსურთ ამ განცხადების წაშლა?')) return;
-    const { error } = await supabase.from('admin_posts').delete().eq('id', id);
+    const { error } = await (supabase as any).from('admin_posts').delete().eq('id', id);
     if (error) alert('წაშლა ვერ მოხერხდა');
   };
 

@@ -27,7 +27,7 @@ export default function AdminMessages() {
 
   async function deleteMessage(id: string) {
     if (confirm('ნამდვილად გსურთ ამ წერილის წაშლა?')) {
-      const { error } = await supabase.from('contact_messages').delete().eq('id', id);
+      const { error } = await (supabase as any).from('contact_messages').delete().eq('id', id);
       if (!error) {
         // ოპტიმისტური განახლება - მაშინვე ვაშლით სიიდან
         setMessages(prev => prev.filter(m => m.id !== id));

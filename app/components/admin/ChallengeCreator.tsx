@@ -19,7 +19,7 @@ export default function ChallengeCreator() {
     }
     setLoading(true);
     try {
-      const { error } = await supabase.from('challenges').insert({
+      const { error } = await (supabase as any).from('challenges').insert({
         title: cleanTitle,
         description: cleanDesc,
         start_at: start || null,

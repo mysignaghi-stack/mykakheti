@@ -109,7 +109,7 @@ export default function LostFoundPage() {
                       }} className="bg-blue-600/20 text-blue-400 px-3 py-1 rounded-xl text-xs hover:bg-blue-600 hover:text-white">გაზიარება</button>
                       <button onClick={async () => {
                         if (!confirm('მონიშვნა როგორც ნაპოვნი/დახურული?')) return;
-                        await supabase.from('lost_found').update({ resolved: true }).eq('id', it.id);
+                        await (supabase as any).from('lost_found').update({ resolved: true }).eq('id', it.id);
                         setItems(prev => prev.filter(p => p.id !== it.id));
                       }} className="bg-green-600/20 text-green-400 px-3 py-1 rounded-xl text-xs hover:bg-green-600 hover:text-white">ნაპოვნია</button>
                     </div>

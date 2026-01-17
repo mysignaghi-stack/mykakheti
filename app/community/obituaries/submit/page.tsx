@@ -15,7 +15,7 @@ export default function ObituariesSubmit() {
   const submit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!full_name) return alert('სახელი აუცილებელია');
-    const { error } = await supabase.from('obituaries').insert({
+    const { error } = await (supabase as any).from('obituaries').insert({
       full_name,
       date_of_death: date_of_death || null,
       funeral_at: funeral_at || null,

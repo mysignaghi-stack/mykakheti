@@ -44,7 +44,7 @@ export default function AdminPostForm({ onPostAdded }: AdminPostFormProps) {
         }
       }
 
-      const { error } = await supabase.from('admin_posts').insert({
+      const { error } = await (supabase as any).from('admin_posts').insert({
         title, 
         content,
         category: category || null,

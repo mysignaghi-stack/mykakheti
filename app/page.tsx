@@ -9,6 +9,7 @@ import { useAgroData } from './hooks/useAgroData';
 import { useWeatherData } from './hooks/useWeatherData';
 import { supabase } from './lib/supabase';
 import { Ad, AdminPost } from './lib/types';
+import type { Tables } from '@/types/helpers';
 import { KAKHETI_FACTS, TRANSPORT_SCHEDULE } from './lib/constants';
 import Navbar from './components/layout/Navbar';
 import Footer from './components/layout/Footer';
@@ -24,12 +25,15 @@ import TransportModal from './components/features/transport/TransportModal';
 import AdminSideFrame from './components/home/AdminSideFrame';
 import ChatPopup from './components/features/ChatPopup';
 import CongratulationsSection from './components/home/CongratulationsSection';
+import AgroDetailsModal from './components/home/AgroDetailsModal';
 
 // Type for agro details
 interface AgroDetail {
   place: string;
   rate: string | number;
 }
+
+type SiteSettingRow = Tables<'site_settings'>;
 
 // Helpers
 const getSeasonalContent = () => {
@@ -63,17 +67,41 @@ export default function HomePage() {
   // Fetch background image and marquee text from site_settings
   const fetchBG = useCallback(async () => {
     try {
-      const { data: bgData } = await supabase.from('site_settings').select('value').eq('key', 'background_url').single();
-      if (bgData?.value) setBgImage(bgData.value);
-      // Fetch marquee text
-      const { data: marqueeData } = await supabase.from('site_settings').select('value').eq('key', 'marquee_text').single();
-      if (marqueeData?.value) setMarqueeText(marqueeData.value);
-      else setMarqueeText('');
+      const { data, error } = await supabase
+        .from('site_settings' as any)
+        .select('key, value')
+        .in('key', ['background_url', 'marquee_text']);
+
+      if (error) throw error;
+
+      const typedData = data as SiteSettingRow[] | null;
+
+      if (typedData) {
+        const bg = typedData.find(item => item.key === 'background_url')?.value;
+        const marquee = typedData.find(item => item.key === 'marquee_text')?.value;
+        setBgImage(bg ?? null);
+        setMarqueeText(marquee ?? '');
+      }
     } catch (error) {
       console.log('Error fetching site settings:', error);
       setMarqueeText('საიტი მუშაობს სატესტო რეჟიმში');
     }
   }, []);
+
+  useEffect(() => {
+    fetchBG();
+
+    const channel = supabase
+      .channel('site_settings_changes')
+      .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'site_settings' }, () => {
+        fetchBG();
+      })
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [fetchBG]);
 
   // Agro hook
   const {
@@ -86,38 +114,6 @@ export default function HomePage() {
     newPrice,
     setNewPrice,
   } = useAgroData();
-
-  const [editDetails, setEditDetails] = useState<AgroDetail[]>([]);
-
-  // Snackbar state
-  const [snackbar, setSnackbar] = useState<{ open: boolean; message: string; type?: 'success' | 'error' | 'info' }>({ open: false, message: '', type: 'info' });
-  // Loading state for editAgroItem modal
-  const [editLoading, setEditLoading] = useState(false);
-  const showSnackbar = useCallback((message: string, type: 'success' | 'error' | 'info' = 'info') => {
-    setSnackbar({ open: true, message, type });
-  }, []);
-  const closeSnackbar = useCallback(() => setSnackbar(s => ({ ...s, open: false })), []);
-
-  // Snackbar-enabled price update
-  const handleUpdatePrice = useCallback(async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!editAgroItem) return;
-    const { error } = await supabase.from('agro_prices').update({ price: newPrice, details: editDetails }).eq('id', editAgroItem.id);
-    if (!error) {
-      setAgroData(prev => prev.map(item => item.id === editAgroItem.id ? { ...item, price: newPrice, details: editDetails } : item));
-      setEditAgroItem(null);
-      setEditDetails([]);
-      showSnackbar('ფასი განახლდა! ✅', 'success');
-    } else {
-      showSnackbar('შეცდომა განახლებისას: ' + error.message, 'error');
-    }
-  }, [editAgroItem, newPrice, editDetails, setAgroData, setEditAgroItem, showSnackbar]);
-  
-  const {
-    isAdmin,
-  } = useAdminAuth();
-  
-  const [factIndex, setFactIndex] = useState(0);
   const [isLocOpen, setIsLocOpen] = useState(false);
   const locRef = useRef<HTMLDivElement>(null);
   
@@ -153,7 +149,6 @@ export default function HomePage() {
     initSecurity();
 
     fetchAds();
-    fetchBG(); // Fetch initial background
     // ...existing code for chat scroll, channel, cleanup, etc...
     // სესიის შემოწმება Supabase-ში
     (async () => {
@@ -167,18 +162,10 @@ export default function HomePage() {
     return () => {
       clearInterval(factTimer);
     };
-  }, [fetchAds, fetchBG]);
-
-  // Poll for background changes (reduced frequency and only when visible)
-  useEffect(() => {
-    const tick = () => { if (typeof document === 'undefined' || !document.hidden) fetchBG(); };
-    const interval = setInterval(tick, 30000);
-    document.addEventListener('visibilitychange', tick);
-    return () => clearInterval(interval);
-  }, [fetchBG]);
+  }, [fetchAds]);
 
   const fetchAdminPosts = async () => {
-    const { data } = await supabase.from('admin_posts').select('*').order('priority', { ascending: false }).order('created_at', { ascending: false });
+    const { data } = await (supabase as any).from('admin_posts').select('*').order('priority', { ascending: false }).order('created_at', { ascending: false });
     if (data) setAdminPosts(data);
   };
 
@@ -505,37 +492,9 @@ export default function HomePage() {
 
       {showTransport && <TransportModal isAdmin={isAdmin} onClose={() => setShowTransport(false)} staticSchedule={TRANSPORT_SCHEDULE} />}
 
-      {selectedAgro && (
-        <div className="fixed inset-0 z-[1000] flex items-center justify-center bg-black/95 backdrop-blur-md p-4 sm:p-6 animate-in fade-in duration-300 text-left" role="dialog" aria-modal="true" aria-label="აგრო დეტალები">
-          <div className="bg-[#0a0a1f] p-8 sm:p-10 rounded-[40px] sm:rounded-[50px] border border-white/10 w-full max-w-lg shadow-2xl relative text-center">
-            <button onClick={() => setSelectedAgro(null)} className="absolute top-6 right-6 sm:top-8 sm:right-8 text-white/30 hover:text-white transition-colors text-xl sm:text-2xl font-black" aria-label="დახურვა">✕</button>
-            <div className="flex flex-col items-center text-center mb-8 sm:mb-10">
-               <span className="text-5xl sm:text-6xl mb-4 drop-shadow-2xl">{selectedAgro.icon}</span>
-               <h2 className={`text-3xl sm:text-4xl font-black uppercase italic tracking-tighter ${selectedAgro.color} drop-shadow-lg text-center`}>{selectedAgro.name}</h2>
-            <p className="text-[10px] sm:text-[11px] font-black text-white/40 uppercase tracking-[0.5em] mt-3 text-center">მიმღები პუნქტები</p>
-            <p className="text-[11px] sm:text-[12px] text-white/50 font-semibold mt-2 leading-snug">ფასები არის საორიენტაციო ხასიათის და შეიძლება შეიცვალოს; დეტალები ასახავს ბოლო დაფიქსირებულ ობიექტებს.</p>
-            </div>
-            <div className="space-y-4">
-               {(selectedAgro.details || []).map((d: AgroDetail, idx: number) => (
-                 <div key={idx} className="flex justify-between items-center bg-white/[0.04] p-5 sm:p-6 rounded-2xl sm:rounded-3xl border border-white/10 hover:bg-white/[0.08] transition-all shadow-xl text-left">
-                    <span className="text-[13px] sm:text-[15px] font-black italic tracking-tight drop-shadow-sm text-left">{d.place}</span>
-                    <span className="text-xl sm:text-2xl font-black text-amber-500 italic text-right">{d.rate}</span>
-                 </div>
-               ))}
-               {(!selectedAgro.details || selectedAgro.details.length === 0) && (
-                   <div className="flex justify-between items-center bg-white/[0.04] p-5 sm:p-6 rounded-2xl sm:rounded-3xl border border-white/10 hover:bg-white/[0.08] transition-all shadow-xl text-left">
-                      <span className="text-[13px] sm:text-[15px] font-black italic tracking-tight drop-shadow-sm text-left">საშუალო საბაზრო ფასი</span>
-                      <span className="text-xl sm:text-2xl font-black text-amber-500 italic text-right">{selectedAgro.price}</span>
-                   </div>
-               )}
-            </div>
-          <p className="mt-6 text-[11px] sm:text-[12px] text-white/40 leading-relaxed">ინფორმაცია განახლდება რეგულარულად; კონკრეტული შეთავაზებები შეიძლება მერყეობდეს ადგილმდებარეობისა და მოცულობის მიხედვით.</p>
-          </div>
-        </div>
-      )}
+      <AgroDetailsModal selectedAgro={selectedAgro} onClose={() => setSelectedAgro(null)} />
 
-
-        <EditAgroModal
+      <EditAgroModal
           open={!!editAgroItem}
           item={editAgroItem}
           newPrice={newPrice}

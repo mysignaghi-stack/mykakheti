@@ -19,8 +19,8 @@ export default function AdminAnnouncements() {
     try {
       // ერთდროულად მოთხოვნა ორივე ტიპის განცხადებაზე
       const [pendingRes, liveRes] = await Promise.all([
-        supabase.from('announcements').select('*').eq('is_approved', false).order('created_at', { ascending: false }),
-        supabase.from('announcements').select('*').eq('is_approved', true).order('created_at', { ascending: false })
+        (supabase as any).from('announcements').select('*').eq('is_approved', false).order('created_at', { ascending: false }),
+        (supabase as any).from('announcements').select('*').eq('is_approved', true).order('created_at', { ascending: false })
       ]);
 
       if (pendingRes.data) setPendingAds(pendingRes.data);
@@ -33,7 +33,7 @@ export default function AdminAnnouncements() {
   }
 
   async function approveAd(id: string) {
-    const { error } = await supabase.from('announcements').update({ is_approved: true }).eq('id', id);
+    const { error } = await (supabase as any).from('announcements').update({ is_approved: true }).eq('id', id);
     if (!error) {
       // ანიმაციური გადასვლისთვის ადგილობრივი სტეიტის განახლება
       const adToApprove = pendingAds.find(a => a.id === id);
@@ -44,7 +44,7 @@ export default function AdminAnnouncements() {
 
   async function deleteAd(id: string) {
     if (confirm('ნამდვილად გსურთ ამ განცხადების წაშლა?')) {
-      const { error } = await supabase.from('announcements').delete().eq('id', id);
+      const { error } = await (supabase as any).from('announcements').delete().eq('id', id);
       if (!error) {
         setPendingAds(prev => prev.filter(a => a.id !== id));
         setLiveAds(prev => prev.filter(a => a.id !== id));

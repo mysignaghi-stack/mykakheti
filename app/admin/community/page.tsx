@@ -108,7 +108,7 @@ export default function AdminCommunityPage() {
                 <button
                   onClick={async () => {
                     if (!pending.type) return;
-                    await supabase.from(getTableName(pending.type)).update({ is_approved: true }).eq('id', it.id);
+                    await (supabase as any).from(getTableName(pending.type)).update({ is_approved: true }).eq('id', it.id);
                     loadData(pending.type);
                   }}
                   className="bg-green-600 text-white text-[10px] font-bold px-4 py-2 rounded-xl"
@@ -131,7 +131,7 @@ function ObituariesForm({ onAdded }: FormProps) {
   const [name, setName] = useState('');
   const submit = async () => {
     if (!name) return;
-    const { error } = await supabase.from('obituaries').insert({ full_name: name });
+    const { error } = await (supabase as any).from('obituaries').insert({ full_name: name });
     if (!error) { setName(''); onAdded(); }
   };
   return (
@@ -146,7 +146,7 @@ function LostFoundForm({ onAdded }: FormProps) {
   const [title, setTitle] = useState('');
   const submit = async () => {
     if (!title) return;
-    const { error } = await supabase.from('lost_found').insert({ title, kind: 'lost', category: 'other' });
+    const { error } = await (supabase as any).from('lost_found').insert({ title, kind: 'lost', category: 'other' });
     if (!error) { setTitle(''); onAdded(); }
   };
   return (
@@ -161,7 +161,7 @@ function MastersForm({ onAdded }: FormProps) {
   const [name, setName] = useState('');
   const submit = async () => {
     if (!name) return;
-    const { error } = await supabase.from('masters').insert({ full_name: name, profession: 'ოსტატი' });
+    const { error } = await (supabase as any).from('masters').insert({ full_name: name, profession: 'ოსტატი' });
     if (!error) { setName(''); onAdded(); }
   };
   return (

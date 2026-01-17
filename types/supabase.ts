@@ -676,7 +676,7 @@ export type Database = {
       }
       transport_routes: {
         Row: {
-          created_at: string
+          created_at: string | null
           destination: string
           id: number
           origin: string
@@ -684,7 +684,7 @@ export type Database = {
           stops: string | null
         }
         Insert: {
-          created_at?: string
+          created_at?: string | null
           destination: string
           id?: number
           origin: string
@@ -692,7 +692,7 @@ export type Database = {
           stops?: string | null
         }
         Update: {
-          created_at?: string
+          created_at?: string | null
           destination?: string
           id?: number
           origin?: string

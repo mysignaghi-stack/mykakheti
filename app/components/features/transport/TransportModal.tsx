@@ -36,8 +36,9 @@ export default function TransportModal({ isAdmin, onClose, staticSchedule }: Tra
 
     try {
       // 1. მარშრუტების წამოღება
-      const { data: routesData, error: routesError } = await supabase
-        .from('transport_routes')
+      const { data: routesData, error: routesError } = await (
+        supabase.from('transport_routes' as any) as any
+      )
         .select('*')
         .order('created_at', { ascending: false });
 
@@ -100,8 +101,9 @@ export default function TransportModal({ isAdmin, onClose, staticSchedule }: Tra
     setLoading(true);
     try {
       // 1. მარშრუტის ჩაწერა
-      const { data: routeData, error: routeError } = await supabase
-        .from('transport_routes')
+      const { data: routeData, error: routeError } = await (
+        supabase.from('transport_routes' as any) as any
+      )
         .insert({
           origin: newEntry.origin,
           destination: newEntry.destination,
@@ -145,7 +147,11 @@ export default function TransportModal({ isAdmin, onClose, staticSchedule }: Tra
     setLoading(true);
     try {
       // Cascade delete-ის გამო, მარშრუტის წაშლა წაშლის განრიგსაც
-      const { error } = await supabase.from('transport_routes').delete().eq('id', id);
+      const { error } = await (
+        supabase.from('transport_routes' as any) as any
+      )
+        .delete()
+        .eq('id', id);
       if (error) throw error;
       
       await fetchData();

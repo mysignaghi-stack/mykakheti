@@ -21,15 +21,14 @@ export default function PollCreator() {
     }
     setLoading(true);
     try {
-      const { data: poll, error: pollErr } = await supabase
-        .from('polls')
+      const { data: poll, error: pollErr } = await (supabase.from('polls' as any) as any)
         .insert({ title: cleanTitle, status: 'draft' })
         .select()
         .single();
       if (pollErr) throw pollErr;
       const pollId = poll.id;
       const rows = cleanOptions.map(text => ({ poll_id: pollId, text }));
-      const { error: optsErr } = await supabase.from('poll_options').insert(rows);
+      const { error: optsErr } = await (supabase as any).from('poll_options').insert(rows);
       if (optsErr) throw optsErr;
       alert('კითხვა შექმნილია!');
       setTitle('');

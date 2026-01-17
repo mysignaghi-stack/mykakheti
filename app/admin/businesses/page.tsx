@@ -77,8 +77,7 @@ export default function AdminBusinesses() {
         uploadedUrls.push(publicUrl);
       }
 
-      const { error } = await supabase
-        .from('businesses')
+      const { error } = await (supabase.from('businesses' as any) as any)
         .insert([{ 
           ...formData, 
           image_url: uploadedUrls[0], // მთავარი ფოტო

@@ -56,8 +56,7 @@ export default function ModerateAds() {
     // სიიდან მაშინვე ვაქრობთ ვიზუალურად
     setPendingAds(prev => prev.filter(ad => ad.id !== id));
     
-    const { error } = await supabase
-      .from('announcements')
+    const { error } = await (supabase.from('announcements' as any) as any)
       .update({ is_approved: true })
       .eq('id', id);
     

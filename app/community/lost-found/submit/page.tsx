@@ -23,7 +23,7 @@ export default function LostFoundSubmit() {
   const submit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!title) return alert('სათაური აუცილებელია');
-    const { error } = await supabase.from('lost_found').insert({
+    const { error } = await (supabase as any).from('lost_found').insert({
       kind, title, category,
       description: description||null,
       location: location||null,

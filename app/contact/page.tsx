@@ -12,7 +12,7 @@ export default function ContactPage() {
     e.preventDefault();
     setLoading(true);
     try {
-      const { error } = await supabase.from('contact_messages').insert([formData]);
+      const { error } = await (supabase as any).from('contact_messages').insert([formData]);
       if (error) throw error;
       setSent(true);
     } catch (err: unknown) {

@@ -37,8 +37,7 @@ export default function CongratulationsAdmin() {
   };
 
   const approveItem = async (id: string) => {
-    const { error } = await supabase
-      .from('congratulations')
+    const { error } = await (supabase.from('congratulations' as any) as any)
       .update({ status: 'approved' })
       .eq('id', id);
 
@@ -61,8 +60,7 @@ export default function CongratulationsAdmin() {
   };
 
   const unapproveItem = async (id: string) => {
-    const { error } = await supabase
-      .from('congratulations')
+    const { error } = await (supabase.from('congratulations' as any) as any)
       .update({ status: 'pending' })
       .eq('id', id);
 

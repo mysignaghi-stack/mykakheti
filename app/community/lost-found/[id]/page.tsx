@@ -26,7 +26,7 @@ export default function LostFoundDetails() {
   useEffect(() => {
     if (!id) return;
     const fetchOne = async () => {
-      const { data } = await supabase.from('lost_found').select('*').eq('id', id).single();
+      const { data } = await (supabase as any).from('lost_found').select('*').eq('id', id).single();
       setItem(data);
     };
     fetchOne();

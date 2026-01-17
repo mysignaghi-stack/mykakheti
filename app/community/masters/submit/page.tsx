@@ -17,7 +17,7 @@ export default function MastersSubmit() {
   const submit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!full_name || !profession) return alert('სახელი და პროფესიას აუცილებელია');
-    const { error } = await supabase.from('masters').insert({
+    const { error } = await (supabase as any).from('masters').insert({
       full_name, profession,
       phone: phone||null, location: location||null, description: description||null,
       photo_url: photo_url||null, service_area: service_area||null, price_note: price_note||null,

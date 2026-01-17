@@ -46,8 +46,8 @@ export default function AddPage() {
 
   useEffect(() => {
     async function fetchBG() {
-      const { data } = await supabase.from('site_settings').select('value').eq('key', 'background_url').single();
-      if (data?.value) setBgImage(data.value);
+      const { data }: any = await ((supabase as any).from('site_settings')).select('value').eq('key', 'background_url').single();
+      if (data && 'value' in data) setBgImage(data.value as string);
     }
     fetchBG();
   }, []);
@@ -168,7 +168,7 @@ export default function AddPage() {
         uploadedUrls.push(publicUrl);
       }
 
-      const { error: dbError } = await supabase.from('announcements').insert([{ 
+      const { error: dbError } = await ((supabase as any).from('announcements')).insert([{ 
         ...formData, 
         price: formData.price, 
         image_url: uploadedUrls[0], 

@@ -93,13 +93,13 @@ export default function KakhetianSquare({ isAdmin, controlToken, scrollRef }: Ka
     
     const checkBan = async () => {
       if (!controlToken) return;
-      const { data } = await supabase.from('banned_users').select('*').eq('ip_address', controlToken).single();
+      const { data } = await (supabase as any).from('banned_users').select('*').eq('ip_address', controlToken).single();
       if (data) setIsBanned(true);
     };
     checkBan();
 
     const fetchMessages = async () => {
-      const { data } = await supabase.from('square_messages').select('*').order('created_at', { ascending: true }).limit(MESSAGE_LIMIT);
+      const { data } = await (supabase as any).from('square_messages').select('*').order('created_at', { ascending: true }).limit(MESSAGE_LIMIT);
       if (data) {
         setMessages(data as Message[]);
         setTimeout(scrollToBottom, 500);
@@ -109,10 +109,10 @@ export default function KakhetianSquare({ isAdmin, controlToken, scrollRef }: Ka
     
     // ავტომატური წაშლა: ძველი მესიჯების წაშლა თუ რაოდენობა აჭარბებს ლიმიტს
     const cleanupOldMessages = async () => {
-      const { data: allMessages } = await supabase.from('square_messages').select('id, created_at').order('created_at', { ascending: false });
+      const { data: allMessages } = await (supabase as any).from('square_messages').select('id, created_at').order('created_at', { ascending: false });
       if (allMessages && allMessages.length > MESSAGE_LIMIT) {
-        const toDelete = allMessages.slice(MESSAGE_LIMIT).map(m => m.id);
-        await supabase.from('square_messages').delete().in('id', toDelete);
+        const toDelete = allMessages.slice(MESSAGE_LIMIT).map((m: any) => m.id);
+        await (supabase as any).from('square_messages').delete().in('id', toDelete);
       }
     };
     // გაშვება ყოველ 5 წუთში
@@ -256,7 +256,7 @@ export default function KakhetianSquare({ isAdmin, controlToken, scrollRef }: Ka
         inserts.push({ ...baseData, message: msgText });
     }
 
-    const { data, error } = await supabase.from('square_messages').insert(inserts).select();
+    const { data, error } = await (supabase as any).from('square_messages').insert(inserts).select();
     
     setIsUploading(false);
     
@@ -283,12 +283,12 @@ export default function KakhetianSquare({ isAdmin, controlToken, scrollRef }: Ka
 
   const handleDelete = async (id: string) => {
       if (!confirm('წავშალოთ?')) return;
-      await supabase.from('square_messages').delete().eq('id', id);
+      await (supabase as any).from('square_messages').delete().eq('id', id);
   };
 
   const handleBan = async (msg: Message) => {
       if (!confirm(`დავბლოკოთ მომხმარებელი? IP: ${msg.ip_address}`)) return;
-      await supabase.from('banned_users').insert([{ ip_address: msg.ip_address }]);
+      await (supabase as any).from('banned_users').insert([{ ip_address: msg.ip_address }]);
       alert("მომხმარებელი დაიბლოკა");
   };
 
