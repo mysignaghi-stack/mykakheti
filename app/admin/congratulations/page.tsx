@@ -19,17 +19,20 @@ export default function CongratulationsAdmin() {
 
   const fetchItems = async () => {
     setLoading(true);
-    const { data: pending } = await supabase
+    const { data: pending, error: pendingError } = await supabase
       .from('congratulations')
       .select('*')
       .eq('is_approved', false)
       .order('created_at', { ascending: false });
 
-    const { data: approved } = await supabase
+    const { data: approved, error: approvedError } = await supabase
       .from('congratulations')
       .select('*')
       .eq('is_approved', true)
       .order('created_at', { ascending: false });
+
+    if (pendingError) console.error('Pending fetch error:', pendingError);
+    if (approvedError) console.error('Approved fetch error:', approvedError);
 
     setPendingItems(pending || []);
     setApprovedItems(approved || []);
@@ -43,6 +46,8 @@ export default function CongratulationsAdmin() {
 
     if (!error) {
       fetchItems();
+    } else {
+      alert(`დადასტურება ვერ მოხერხდა: ${error.message}`);
     }
   };
 
@@ -55,6 +60,8 @@ export default function CongratulationsAdmin() {
 
       if (!error) {
         fetchItems();
+      } else {
+        alert(`წაშლა ვერ მოხერხდა: ${error.message}`);
       }
     }
   };
@@ -66,6 +73,8 @@ export default function CongratulationsAdmin() {
 
     if (!error) {
       fetchItems();
+    } else {
+      alert(`გაუქმება ვერ მოხერხდა: ${error.message}`);
     }
   };
 
