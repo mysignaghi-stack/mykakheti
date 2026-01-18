@@ -1,15 +1,18 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
+import { createPortal } from 'react-dom';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { Ad } from '../../lib/types';
+import type { Database } from '@/types/supabase';
 import CommunityEngagementSection from './CommunityEngagementSection';
 
+type AdRow = Database['public']['Tables']['announcements']['Row'];
+
 interface AdsSectionProps {
-  ads: Ad[];
-  filteredAds: Ad[];
+  ads: AdRow[];
+  filteredAds: AdRow[];
   isAdmin: boolean;
   showArchive: boolean;
   searchTerm: string;
@@ -18,14 +21,66 @@ interface AdsSectionProps {
   setSelectedCategories: (cats: string[]) => void;
   onArchive: (e: React.MouseEvent<HTMLButtonElement>, id: string) => void;
   onRestore: (e: React.MouseEvent<HTMLButtonElement>, id: string) => void;
-  onDelete: (e: React.MouseEvent<HTMLButtonElement>, ad: Ad) => void;
-  onFBShare: (e: React.MouseEvent<HTMLButtonElement>, ad: Ad) => void;
-  onCopyShare: (e: React.MouseEvent<HTMLButtonElement>, ad: Ad) => void;
+  onDelete: (e: React.MouseEvent<HTMLButtonElement>, ad: AdRow) => void;
+  onFBShare: (e: React.MouseEvent<HTMLButtonElement>, ad: AdRow) => void;
+  onCopyShare: (e: React.MouseEvent<HTMLButtonElement>, ad: AdRow) => void;
 }
 
-const CATEGORIES = ["ყველა", "უძრავი ქონება", "ავტო", "დასაქმება", "სოფლის მეურნეობა", "ცხოველები", "ტექნიკა", "ელექტრონიკა", "სამედიცინო", "განათლება", "მომსახურება", "სპორტი", "ტურიზმი", "სამშენებლო", "სასტუმროები", "რესტორნები", "ვაკანსიები", "დრიური საწოლი", "სამუშაო ჯგუფი", "ტურისტული", "ღვინო და მარნები", "კულტურა", "სხვა"];
+type CategoryItem = { value: string; label: string };
 
-const IMPORTANT_CATEGORIES = ["უძრავი ქონება", "ავტო", "დასაქმება", "სოფლის მეურნეობა"];
+const IMPORTANT_CATEGORIES: CategoryItem[] = [
+  { value: 'ყველა', label: 'ყველა' },
+  { value: 'უძრავი ქონება', label: 'უძრავი ქონება 🏠' },
+  { value: 'ავტო', label: 'ავტო 🚗' },
+  { value: 'დასაქმება', label: 'დასაქმება 💼' },
+  { value: 'სოფლის მეურნეობა', label: 'სოფლის მეურნეობა 🌾' },
+  { value: 'ღვინო და მარნები', label: 'ღვინო და მარნები 🍷' },
+];
+
+const CATEGORY_ITEMS: CategoryItem[] = [
+  { value: 'აგრო-მიწები', label: 'აგრო-მიწები 🌾' },
+  { value: 'აგრო-ტექნიკა', label: 'აგრო-ტექნიკა ⚙️' },
+  { value: 'გადაზიდვები', label: 'გადაზიდვები 🚛' },
+  { value: 'გიდის მომსახურება', label: 'გიდის მომსახურება 🗺️' },
+  { value: 'განათლება', label: 'განათლება 🎓' },
+  { value: 'დრიური საწოლი', label: 'დრიური საწოლი 🛏️' },
+  { value: 'ელექტრონიკა', label: 'ელექტრონიკა 🔌' },
+  { value: 'ვაკანსიები', label: 'ვაკანსიები 📌' },
+  { value: 'ვენახის მოვლა', label: 'ვენახის მოვლა 🍇' },
+  { value: 'ვეტერინარია', label: 'ვეტერინარია 🐾' },
+  { value: 'ადგილობრივი პროდუქტები', label: 'ადგილობრივი პროდუქტები 🧀' },
+  { value: 'კულტურა', label: 'კულტურა 🎭' },
+  { value: 'მომსახურება', label: 'მომსახურება 🛎️' },
+  { value: 'მეფუტკრეობა', label: 'მეფუტკრეობა 🐝' },
+  { value: 'ნერგები და თესლები', label: 'ნერგები და თესლები 🌱' },
+  { value: 'რესტორნები', label: 'რესტორნები 🍽️' },
+  { value: 'რთველი', label: 'რთველი 🚜' },
+  { value: 'სამშენებლო', label: 'სამშენებლო 🧱' },
+  { value: 'სამუშაო ჯგუფი', label: 'სამუშაო ჯგუფი 👷' },
+  { value: 'სამედიცინო', label: 'სამედიცინო 🩺' },
+  { value: 'სარიტუალო მომსახურება', label: 'სარიტუალო მომსახურება ⛪' },
+  { value: 'სასუქები და ქიმიკატები', label: 'სასუქები და ქიმიკატები 🧪' },
+  { value: 'სასტუმროები', label: 'სასტუმროები 🏨' },
+  { value: 'სპორტი', label: 'სპორტი 🏟️' },
+  { value: 'ტექნიკა', label: 'ტექნიკა 🛠️' },
+  { value: 'ტრადიციული რეწვა', label: 'ტრადიციული რეწვა 🏺' },
+  { value: 'ტურიზმი', label: 'ტურიზმი 🧳' },
+  { value: 'ტურისტული', label: 'ტურისტული 🧭' },
+  { value: 'ცხოველები', label: 'ცხოველები 🐄' },
+  { value: 'შეშა და სათბობი', label: 'შეშა და სათბობი 🔥' },
+  { value: 'ღვინის ინვენტარი', label: 'ღვინის ინვენტარი 🍷' },
+];
+
+const CATEGORY_MAP = new Map(CATEGORY_ITEMS.map((item) => [item.value, item]));
+IMPORTANT_CATEGORIES.forEach((item) => CATEGORY_MAP.set(item.value, item));
+
+const CATEGORY_LIST: CategoryItem[] = (() => {
+  const unique = Array.from(CATEGORY_MAP.values());
+  const sorted = unique
+    .filter((item) => item.value !== 'ყველა' && item.value !== 'სხვა')
+    .sort((a, b) => a.value.localeCompare(b.value, 'ka'));
+  return [{ value: 'ყველა', label: 'ყველა' }, ...sorted, { value: 'სხვა', label: 'სხვა ✨' }];
+})();
 
 export default function AdsSection({
   filteredAds,
@@ -45,6 +100,12 @@ export default function AdsSection({
   const [visibleCount, setVisibleCount] = useState(12);
   const router = useRouter();
   const [showAllCategories, setShowAllCategories] = useState(false);
+  const [categorySearch, setCategorySearch] = useState('');
+  const [isMounted, setIsMounted] = useState(false);
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
 
   const handleLoadMore = () => {
     setVisibleCount(prev => prev + 12);
@@ -56,6 +117,34 @@ export default function AdsSection({
   
   // მონაცემების დაჭრა
   const currentAds = safeAds.slice(0, visibleCount);
+
+  const normalizedCategorySearch = useMemo(() => {
+    return categorySearch
+      .toLowerCase()
+      .replace(/[^\p{L}\p{N}\s]/gu, '')
+      .trim();
+  }, [categorySearch]);
+
+  const filteredCategories = useMemo(() => {
+    if (!normalizedCategorySearch) return CATEGORY_LIST;
+    return CATEGORY_LIST.filter((item) => {
+      const normalizedLabel = item.label.toLowerCase().replace(/[^\p{L}\p{N}\s]/gu, '');
+      const normalizedValue = item.value.toLowerCase().replace(/[^\p{L}\p{N}\s]/gu, '');
+      return normalizedLabel.includes(normalizedCategorySearch) || normalizedValue.includes(normalizedCategorySearch);
+    });
+  }, [normalizedCategorySearch]);
+
+  const toggleCategory = (value: string) => {
+    if (value === 'ყველა') {
+      setSelectedCategories(['ყველა']);
+      return;
+    }
+    if (selectedCategories.includes(value)) {
+      setSelectedCategories(selectedCategories.filter((c) => c !== value && c !== 'ყველა'));
+    } else {
+      setSelectedCategories([...selectedCategories.filter((c) => c !== 'ყველა'), value]);
+    }
+  };
 
   return (
     <section className="relative z-20 px-4 sm:px-6 md:px-10 max-w-[1800px] mx-auto pb-20">
@@ -76,21 +165,15 @@ export default function AdsSection({
           <div className="flex flex-wrap gap-2 bg-white/5 p-2 rounded-2xl border border-white/10">
             {IMPORTANT_CATEGORIES.map(cat => (
               <button
-                key={cat}
-                onClick={() => {
-                  if (selectedCategories.includes(cat)) {
-                    setSelectedCategories(selectedCategories.filter(c => c !== cat));
-                  } else {
-                    setSelectedCategories([...selectedCategories.filter(c => c !== 'ყველა'), cat]);
-                  }
-                }}
+                key={cat.value}
+                onClick={() => toggleCategory(cat.value)}
                 className={`px-3 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-all ${
-                  selectedCategories.includes(cat) 
+                  selectedCategories.includes(cat.value) 
                     ? 'bg-amber-600 text-white shadow-lg scale-105' 
                     : 'text-white/60 hover:text-white hover:bg-white/5'
                 }`}
               >
-                {cat}
+                {cat.label}
               </button>
             ))}
             <button
@@ -218,8 +301,8 @@ export default function AdsSection({
       )}
 
       {/* All Categories Modal */}
-      {showAllCategories && (
-        <div className="fixed inset-0 z-[2000] flex items-center justify-center bg-black/95 backdrop-blur-md p-4 animate-in fade-in duration-300">
+      {showAllCategories && isMounted && createPortal(
+        <div className="fixed inset-0 z-[99999] flex items-center justify-center bg-black/95 backdrop-blur-md p-4 animate-in fade-in duration-300">
           <div className="bg-[#0a0a1f] p-8 rounded-[40px] border border-white/10 w-full max-w-4xl shadow-2xl relative text-center">
             <button 
               onClick={() => setShowAllCategories(false)} 
@@ -227,33 +310,55 @@ export default function AdsSection({
             >
               ✕
             </button>
-            <h3 className="text-2xl font-black uppercase italic mb-8 tracking-widest text-white">ყველა კატეგორია</h3>
+            <h3 className="text-2xl font-black uppercase italic mb-4 tracking-widest text-white">ყველა კატეგორია</h3>
+            <div className="flex flex-wrap justify-center gap-3 mb-6">
+              <button
+                onClick={() => setShowAllCategories(false)}
+                className="px-4 py-2 rounded-2xl text-xs font-bold uppercase tracking-widest bg-white/5 text-white/70 hover:text-white hover:bg-white/10 transition-all"
+              >
+                უკან დაბრუნება
+              </button>
+              <button
+                onClick={() => router.push('/')}
+                className="px-4 py-2 rounded-2xl text-xs font-bold uppercase tracking-widest bg-amber-600 text-white hover:bg-amber-500 transition-all"
+              >
+                მთავარ გვერდზე დაბრუნება
+              </button>
+            </div>
+            <div className="relative group max-w-md mx-auto mb-6">
+              <input
+                type="text"
+                value={categorySearch}
+                onChange={(e) => setCategorySearch(e.target.value)}
+                placeholder="კატეგორიის ძებნა..."
+                className="w-full bg-black/40 border border-white/10 rounded-2xl pl-10 pr-4 py-3 text-sm text-white outline-none focus:border-amber-500 transition-all group-hover:bg-black/60 placeholder:text-white/30"
+              />
+              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-white/30 group-hover:text-amber-500 transition-colors">🔍</span>
+            </div>
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
-              {CATEGORIES.map(cat => (
+              {filteredCategories.map(cat => (
                 <button
-                  key={cat}
+                  key={cat.value}
                   onClick={() => {
-                    if (cat === 'ყველა') {
-                      setSelectedCategories(['ყველა']);
-                    } else if (selectedCategories.includes(cat)) {
-                      setSelectedCategories(selectedCategories.filter(c => c !== cat && c !== 'ყველა'));
-                    } else {
-                      setSelectedCategories([...selectedCategories.filter(c => c !== 'ყველა'), cat]);
-                    }
+                    toggleCategory(cat.value);
                     setShowAllCategories(false);
                   }}
                   className={`px-4 py-3 rounded-2xl text-sm font-bold transition-all ${
-                    selectedCategories.includes(cat) 
+                    selectedCategories.includes(cat.value) 
                       ? 'bg-amber-600 text-white shadow-lg scale-105' 
                       : 'bg-white/5 text-white/60 hover:text-white hover:bg-white/10 border border-white/10'
                   }`}
                 >
-                  {cat}
+                  {cat.label}
                 </button>
               ))}
             </div>
+            {filteredCategories.length === 0 && (
+              <div className="text-white/40 text-sm font-bold mt-6">კატეგორია ვერ მოიძებნა</div>
+            )}
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </section>
   );
