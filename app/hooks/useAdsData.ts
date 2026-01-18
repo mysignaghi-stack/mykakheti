@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { supabase } from '../lib/supabase';
 import { Ad } from '../lib/types';
 import type { Tables } from '@/types/helpers';
@@ -28,12 +28,12 @@ export function useAdsData() {
   const [ads, setAds] = useState<Ad[]>([]);
   const [loading, setLoading] = useState(false);
 
-  const fetchAds = async () => {
+  const fetchAds = useCallback(async () => {
     setLoading(true);
     const { data } = await supabase.from('announcements').select('*').eq('is_approved', true).order('created_at', { ascending: false });
     if (data) setAds(data.map(mapRowToAd));
     setLoading(false);
-  };
+  }, []);
 
   const archiveAd = async (id: string) => {
     const { error } = await supabase.from('announcements').update({ is_archived: true }).eq('id', id);
