@@ -21,9 +21,9 @@ export function useAdminAuth() {
           return;
         }
 
-        if (session?.user && isAdminUser(session.user)) {
-          setIsAdmin(true);
+        if (session?.user) {
           setUser(session.user);
+          setIsAdmin(isAdminUser(session.user));
         } else {
           setIsAdmin(false);
           setUser(null);
@@ -42,9 +42,9 @@ export function useAdminAuth() {
     // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (_event, session) => {
-        if (session?.user && isAdminUser(session.user)) {
-          setIsAdmin(true);
+        if (session?.user) {
           setUser(session.user);
+          setIsAdmin(isAdminUser(session.user));
         } else {
           setIsAdmin(false);
           setUser(null);

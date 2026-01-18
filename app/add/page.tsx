@@ -44,6 +44,19 @@ export default function AddPage() {
   });
   const isAuthenticated = Boolean(session);
 
+  const getErrorMessage = (err: unknown) => {
+    if (err instanceof Error) return err.message;
+    if (typeof err === 'string') return err;
+    if (err && typeof err === 'object' && 'message' in err && typeof (err as { message?: unknown }).message === 'string') {
+      return (err as { message: string }).message;
+    }
+    try {
+      return JSON.stringify(err);
+    } catch {
+      return 'უცნობი შეცდომა';
+    }
+  };
+
   useEffect(() => {
     async function fetchBG() {
       const { data }: any = await ((supabase as any).from('site_settings')).select('value').eq('key', 'background_url').single();
@@ -103,7 +116,7 @@ export default function AddPage() {
       setRegisterMessage('აქტივაციის ბმული გაიგზავნა თქვენს მითითებულ ელფოსტაზე. გთხოვთ შეამოწმოთ საფოსტო ყუთი.');
       setRegisterData({ firstName: '', lastName: '', email: '', phone: '' });
     } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : 'Unknown error';
+      const message = getErrorMessage(err);
       setRegisterError(`ვერ გაიგზავნა ბმული: ${message}`);
     } finally {
       setRegisterLoading(false);
@@ -146,7 +159,7 @@ export default function AddPage() {
     setLoading(true);
     try {
       const { data: { session: freshSession } } = await supabase.auth.getSession();
-      if (!freshSession) {
+      if (!freshSession?.user?.id) {
         alert('განცხადების დასამატებლად გთხოვთ გაიაროთ ავტორიზაცია Google ან Facebook-ით.');
         setLoading(false);
         return;
@@ -162,7 +175,11 @@ export default function AddPage() {
         const fileName = `${Date.now()}-${Math.random().toString(36).substring(7)}.${img.name.split('.').pop()}`;
         
         const { error: uploadError } = await supabase.storage.from('announcements').upload(fileName, compressedFile);
-        if (uploadError) throw uploadError;
+        if (uploadError) {
+          const status = (uploadError as { statusCode?: number }).statusCode;
+          const statusInfo = status ? ` (სტატუსი: ${status})` : '';
+          throw new Error(`Storage upload failed: ${uploadError.message}${statusInfo}`);
+        }
 
         const { data: { publicUrl } } = supabase.storage.from('announcements').getPublicUrl(fileName);
         uploadedUrls.push(publicUrl);
@@ -181,8 +198,9 @@ export default function AddPage() {
       alert('თქვენი განცხადება წარმატებით გაიგზავნა მოდერაციაზე! 🚀');
       router.push('/');
     } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : 'Unknown error';
-      alert(`შეცდომა ატვირთვისას: ${message}`); 
+      const message = getErrorMessage(err);
+      console.error('Upload error details:', err);
+      alert(`შეცდომა ატვირთვისას: ${message}`);
     } finally { 
       setLoading(false); 
     }

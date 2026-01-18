@@ -11,6 +11,9 @@ type AnnouncementRow = Database['public']['Tables']['announcements']['Row'];
 export default function ModerateAds() {
   const [pendingAds, setPendingAds] = useState<AnnouncementRow[]>([]);
   const [loading, setLoading] = useState(true);
+  const [expiryDrafts, setExpiryDrafts] = useState<Record<string, string>>({});
+  const [rangeFrom, setRangeFrom] = useState('');
+  const [rangeTo, setRangeTo] = useState('');
 
   // 1. დაუდასტურებელი განცხადებების წამოღება
   const fetchPending = async () => {
@@ -83,6 +86,44 @@ export default function ModerateAds() {
     }
   };
 
+  const scheduleDelete = async (id: string) => {
+    const value = expiryDrafts[id];
+    if (!value) return alert('აირჩიეთ თარიღი და დრო');
+    const iso = new Date(value).toISOString();
+
+    const { error } = await (supabase.from('announcements' as any) as any)
+      .update({ expires_at: iso })
+      .eq('id', id);
+
+    if (error) {
+      alert('დაგეგმვა ვერ მოხერხდა');
+    } else {
+      alert('წაშლა დაიგეგმა');
+      fetchPending();
+    }
+  };
+
+  const deleteByRange = async () => {
+    if (!rangeFrom || !rangeTo) return alert('აირჩიეთ ორივე თარიღი');
+    if (!confirm('ნამდვილად გსურთ არჩეულ პერიოდში არსებული განცხადებების წაშლა?')) return;
+
+    const fromIso = new Date(rangeFrom).toISOString();
+    const toIso = new Date(rangeTo).toISOString();
+
+    const { error } = await supabase
+      .from('announcements')
+      .delete()
+      .gte('created_at', fromIso)
+      .lte('created_at', toIso);
+
+    if (error) {
+      alert('წაშლა ვერ მოხერხდა');
+    } else {
+      alert('არჩეული პერიოდის განცხადებები წაიშალა');
+      fetchPending();
+    }
+  };
+
   if (loading) return (
     <div className="min-h-screen bg-[#050510] flex flex-col items-center justify-center">
       <div className="w-12 h-12 border-4 border-amber-500 border-t-transparent rounded-full animate-spin mb-4" />
@@ -111,6 +152,36 @@ export default function ModerateAds() {
           <Link href="/admin" className="bg-white/5 text-white px-8 py-3 rounded-2xl font-black uppercase italic text-[11px] border border-white/10 hover:bg-white hover:text-black transition-all">
             ← ადმინ ჰაბი
           </Link>
+        </div>
+
+        <div className="bg-white/[0.03] backdrop-blur-3xl p-6 rounded-[32px] border border-white/10 shadow-xl mb-10">
+          <h2 className="text-xs font-black uppercase text-white/50 mb-4 tracking-widest">კალენდარული წაშლა</h2>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3 items-end">
+            <div>
+              <label className="text-[10px] text-white/40 block mb-1 uppercase">დან (created_at)</label>
+              <input
+                type="datetime-local"
+                value={rangeFrom}
+                onChange={(e) => setRangeFrom(e.target.value)}
+                className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-xs text-white"
+              />
+            </div>
+            <div>
+              <label className="text-[10px] text-white/40 block mb-1 uppercase">მდე (created_at)</label>
+              <input
+                type="datetime-local"
+                value={rangeTo}
+                onChange={(e) => setRangeTo(e.target.value)}
+                className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-xs text-white"
+              />
+            </div>
+            <button
+              onClick={deleteByRange}
+              className="bg-red-600 hover:bg-red-500 text-white rounded-xl px-4 py-2 font-black text-[10px] uppercase"
+            >
+              პერიოდის წაშლა
+            </button>
+          </div>
         </div>
 
         {pendingAds.length === 0 ? (
@@ -170,6 +241,20 @@ export default function ModerateAds() {
                   >
                     წაშლა 🗑️
                   </button>
+                  <div className="flex flex-col gap-2">
+                    <input
+                      type="datetime-local"
+                      value={expiryDrafts[ad.id] || ''}
+                      onChange={(e) => setExpiryDrafts(prev => ({ ...prev, [ad.id]: e.target.value }))}
+                      className="w-full bg-white/5 border border-white/10 rounded-2xl px-3 py-2 text-[10px] text-white"
+                    />
+                    <button
+                      onClick={() => scheduleDelete(ad.id)}
+                      className="w-full bg-amber-600 hover:bg-amber-500 text-white py-3 rounded-2xl font-black text-[10px] uppercase italic transition-all"
+                    >
+                      დაგეგმვა ⏳
+                    </button>
+                  </div>
                   <Link 
                     href={`/announcements/${ad.id}`} 
                     target="_blank"

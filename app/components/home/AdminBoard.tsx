@@ -1,16 +1,18 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import type { User } from '@supabase/supabase-js';
 import Image from 'next/image';
 import { supabase } from '../../lib/supabase';
 import { AdminPost } from '../../lib/types';
 
 interface AdminBoardProps {
   isAdmin: boolean;
+  user?: User | null;
   children: React.ReactNode;
 }
 
-export default function AdminBoard({ isAdmin, children }: AdminBoardProps) {
+export default function AdminBoard({ isAdmin, user: _user, children }: AdminBoardProps) {
   const [posts, setPosts] = useState<AdminPost[]>([]);
   
   // ფორმის მონაცემები

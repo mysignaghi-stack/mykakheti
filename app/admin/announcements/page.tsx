@@ -11,6 +11,19 @@ export default function AdminAnnouncements() {
   const [pendingAds, setPendingAds] = useState<Announcement[]>([]);
   const [liveAds, setLiveAds] = useState<Announcement[]>([]);
   const [loading, setLoading] = useState(true);
+  const [publishDrafts, setPublishDrafts] = useState<Record<string, string>>({});
+  const [expireDrafts, setExpireDrafts] = useState<Record<string, string>>({});
+  const [bulkFrom, setBulkFrom] = useState('');
+  const [bulkTo, setBulkTo] = useState('');
+  const [bulkPublishAt, setBulkPublishAt] = useState('');
+  const [bulkExpireAt, setBulkExpireAt] = useState('');
+
+  const toInputValue = (iso?: string | null) => {
+    if (!iso) return '';
+    const d = new Date(iso);
+    const pad = (n: number) => String(n).padStart(2, '0');
+    return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+  };
 
   useEffect(() => { fetchAllAds(); }, []);
 
@@ -29,9 +42,8 @@ export default function AdminAnnouncements() {
       console.error("Fetch Error:", error);
     } finally {
       setLoading(false);
-    }
-  }
-
+              )}
+            </div>
   async function approveAd(id: string) {
     const { error } = await (supabase as any).from('announcements').update({ is_approved: true }).eq('id', id);
     if (!error) {
@@ -39,6 +51,60 @@ export default function AdminAnnouncements() {
       const adToApprove = pendingAds.find(a => a.id === id);
       setPendingAds(prev => prev.filter(a => a.id !== id));
       if (adToApprove) setLiveAds(prev => [adToApprove, ...prev]);
+    }
+  }
+
+  async function saveSchedule(id: string, approveOnSave: boolean) {
+    const publishValue = publishDrafts[id];
+    const expireValue = expireDrafts[id];
+    if (!publishValue && !expireValue) return alert('აირჩიეთ თარიღი');
+
+    const payload: Record<string, string | boolean | null> = {};
+    if (publishValue) payload.publish_at = new Date(publishValue).toISOString();
+    if (expireValue) payload.expires_at = new Date(expireValue).toISOString();
+    if (approveOnSave) payload.is_approved = true;
+
+    const { error } = await (supabase as any)
+      .from('announcements')
+      .update(payload)
+      .eq('id', id);
+
+    if (!error) {
+      if (approveOnSave) {
+        const adToApprove = pendingAds.find(a => a.id === id);
+        setPendingAds(prev => prev.filter(a => a.id !== id));
+        if (adToApprove) setLiveAds(prev => [adToApprove, ...prev]);
+      } else {
+        fetchAllAds();
+      }
+    } else {
+      alert('დაგეგმვა ვერ მოხერხდა');
+    }
+  }
+
+  async function applyBulkSchedule() {
+    if (!bulkFrom || !bulkTo) return alert('აირჩიეთ პერიოდი');
+    if (!bulkPublishAt && !bulkExpireAt) return alert('აირჩიეთ გამოქვეყნების ან წაშლის დრო');
+
+    const fromIso = new Date(bulkFrom).toISOString();
+    const toIso = new Date(bulkTo).toISOString();
+    const payload: Record<string, string | boolean> = {};
+
+    if (bulkPublishAt) payload.publish_at = new Date(bulkPublishAt).toISOString();
+    if (bulkExpireAt) payload.expires_at = new Date(bulkExpireAt).toISOString();
+    if (bulkPublishAt) payload.is_approved = true;
+
+    const { error } = await (supabase as any)
+      .from('announcements')
+      .update(payload)
+      .gte('created_at', fromIso)
+      .lte('created_at', toIso);
+
+    if (error) {
+      alert('მასიური დაგეგმვა ვერ მოხერხდა');
+    } else {
+      fetchAllAds();
+      alert('მასიური დაგეგმვა დასრულდა');
     }
   }
 
@@ -77,7 +143,58 @@ export default function AdminAnnouncements() {
             <p className="font-black text-white/20 uppercase italic tracking-widest animate-pulse">იტვირთება მონაცემები...</p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
+          <div className="space-y-8">
+            <div className="bg-white/5 rounded-3xl border border-white/10 p-6">
+              <h2 className="text-sm font-black text-white/60 uppercase mb-4">მასიური დაგეგმვა</h2>
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-3 items-end">
+                <div>
+                  <label className="text-[10px] text-white/40 uppercase">დან (created_at)</label>
+                  <input
+                    type="datetime-local"
+                    value={bulkFrom}
+                    onChange={(e) => setBulkFrom(e.target.value)}
+                    className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-xs text-white"
+                  />
+                </div>
+                <div>
+                  <label className="text-[10px] text-white/40 uppercase">მდე (created_at)</label>
+                  <input
+                    type="datetime-local"
+                    value={bulkTo}
+                    onChange={(e) => setBulkTo(e.target.value)}
+                    className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-xs text-white"
+                  />
+                </div>
+                <div>
+                  <label className="text-[10px] text-white/40 uppercase">გამოქვეყნება</label>
+                  <input
+                    type="datetime-local"
+                    value={bulkPublishAt}
+                    onChange={(e) => setBulkPublishAt(e.target.value)}
+                    className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-xs text-white"
+                  />
+                </div>
+                <div>
+                  <label className="text-[10px] text-white/40 uppercase">წაშლა</label>
+                  <input
+                    type="datetime-local"
+                    value={bulkExpireAt}
+                    onChange={(e) => setBulkExpireAt(e.target.value)}
+                    className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-xs text-white"
+                  />
+                </div>
+              </div>
+              <div className="mt-4">
+                <button
+                  onClick={applyBulkSchedule}
+                  className="bg-amber-600 hover:bg-amber-500 text-white rounded-xl px-5 py-2 font-black text-xs uppercase"
+                >
+                  მასიური დაგეგმვა
+                </button>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
             <div className="bg-white/5 rounded-3xl border border-white/10 p-6 space-y-4">
               <div className="flex items-center justify-between">
                 <h2 className="text-xl font-black text-amber-400">მოლოდინში ({pendingAds.length})</h2>
@@ -100,12 +217,38 @@ export default function AdminAnnouncements() {
                           <p className="font-black text-amber-400">{ad.price} {ad.currency}</p>
                         </div>
                       </div>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                        <div>
+                          <label className="text-[10px] text-white/40 uppercase">გამოქვეყნება</label>
+                          <input
+                            type="datetime-local"
+                            value={publishDrafts[ad.id] ?? ''}
+                            onChange={(e) => setPublishDrafts(prev => ({ ...prev, [ad.id]: e.target.value }))}
+                            className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-xs text-white"
+                          />
+                        </div>
+                        <div>
+                          <label className="text-[10px] text-white/40 uppercase">წაშლა</label>
+                          <input
+                            type="datetime-local"
+                            value={expireDrafts[ad.id] ?? ''}
+                            onChange={(e) => setExpireDrafts(prev => ({ ...prev, [ad.id]: e.target.value }))}
+                            className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-xs text-white"
+                          />
+                        </div>
+                      </div>
                       <div className="flex gap-3">
                         <button
                           onClick={() => approveAd(ad.id)}
                           className="flex-1 bg-green-600 hover:bg-green-500 text-white rounded-xl py-2 font-black uppercase text-xs"
                         >
                           დამტკიცება
+                        </button>
+                        <button
+                          onClick={() => saveSchedule(ad.id, true)}
+                          className="flex-1 bg-amber-600 hover:bg-amber-500 text-white rounded-xl py-2 font-black uppercase text-xs"
+                        >
+                          დაგეგმვა
                         </button>
                         <button
                           onClick={() => deleteAd(ad.id)}
@@ -117,7 +260,8 @@ export default function AdminAnnouncements() {
                     </div>
                   ))}
                 </div>
-              )}
+              </div>
+            )}
             </div>
 
             <div className="bg-white/5 rounded-3xl border border-white/10 p-6 space-y-4">
@@ -142,6 +286,26 @@ export default function AdminAnnouncements() {
                           <p className="font-black text-amber-400">{ad.price} {ad.currency}</p>
                         </div>
                       </div>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                        <div>
+                          <label className="text-[10px] text-white/40 uppercase">გამოქვეყნება</label>
+                          <input
+                            type="datetime-local"
+                            defaultValue={toInputValue((ad as Announcement & { publish_at?: string | null }).publish_at)}
+                            onChange={(e) => setPublishDrafts(prev => ({ ...prev, [ad.id]: e.target.value }))}
+                            className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-xs text-white"
+                          />
+                        </div>
+                        <div>
+                          <label className="text-[10px] text-white/40 uppercase">წაშლა</label>
+                          <input
+                            type="datetime-local"
+                            defaultValue={toInputValue(ad.expires_at)}
+                            onChange={(e) => setExpireDrafts(prev => ({ ...prev, [ad.id]: e.target.value }))}
+                            className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-xs text-white"
+                          />
+                        </div>
+                      </div>
                       <div className="flex gap-3">
                         <Link
                           href={`/announcements/${ad.id}`}
@@ -149,6 +313,12 @@ export default function AdminAnnouncements() {
                         >
                           ნახვა
                         </Link>
+                        <button
+                          onClick={() => saveSchedule(ad.id, false)}
+                          className="flex-1 bg-amber-600 hover:bg-amber-500 text-white rounded-xl py-2 font-black uppercase text-xs"
+                        >
+                          დაგეგმვა
+                        </button>
                         <button
                           onClick={() => deleteAd(ad.id)}
                           className="flex-1 bg-red-600 hover:bg-red-500 text-white rounded-xl py-2 font-black uppercase text-xs"

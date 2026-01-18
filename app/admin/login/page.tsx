@@ -17,7 +17,7 @@ export default function AdminLogin() {
     // Check if already logged in
     const checkUser = async () => {
       const { data: { user } } = await supabase.auth.getUser();
-      if (user && user.user_metadata?.role === 'admin') {
+      if (user && isAdminUser(user)) {
         router.push('/admin');
       }
     };

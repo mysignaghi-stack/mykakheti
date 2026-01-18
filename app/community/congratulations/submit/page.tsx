@@ -62,7 +62,8 @@ export default function SubmitCongratulations() {
         message: formData.message,
         category: formData.occasion,
         theme: formData.occasion,
-        image_url: imageUrl || null
+        image_url: imageUrl || null,
+        is_approved: false
       }]);
 
       if (error) throw error;
@@ -71,7 +72,7 @@ export default function SubmitCongratulations() {
       router.push('/community/congratulations');
 
     } catch (error: unknown) {
-      const message = error instanceof Error ? error.message : 'Unknown error';
+      const message = error instanceof Error ? error.message : String(error);
       alert('შეცდომა: ' + message);
     } finally {
       setLoading(false);

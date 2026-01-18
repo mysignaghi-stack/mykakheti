@@ -22,13 +22,13 @@ export default function CongratulationsAdmin() {
     const { data: pending } = await supabase
       .from('congratulations')
       .select('*')
-      .eq('status', 'pending')
+      .eq('is_approved', false)
       .order('created_at', { ascending: false });
 
     const { data: approved } = await supabase
       .from('congratulations')
       .select('*')
-      .eq('status', 'approved')
+      .eq('is_approved', true)
       .order('created_at', { ascending: false });
 
     setPendingItems(pending || []);
@@ -38,7 +38,7 @@ export default function CongratulationsAdmin() {
 
   const approveItem = async (id: string) => {
     const { error } = await (supabase.from('congratulations' as any) as any)
-      .update({ status: 'approved' })
+      .update({ is_approved: true })
       .eq('id', id);
 
     if (!error) {
@@ -61,7 +61,7 @@ export default function CongratulationsAdmin() {
 
   const unapproveItem = async (id: string) => {
     const { error } = await (supabase.from('congratulations' as any) as any)
-      .update({ status: 'pending' })
+      .update({ is_approved: false })
       .eq('id', id);
 
     if (!error) {

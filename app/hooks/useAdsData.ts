@@ -31,7 +31,16 @@ export function useAdsData() {
   const fetchAds = useCallback(async () => {
     setLoading(true);
     const { data } = await supabase.from('announcements').select('*').eq('is_approved', true).order('created_at', { ascending: false });
-    if (data) setAds(data.map(mapRowToAd));
+    if (data) {
+      const now = Date.now();
+      const filtered = data.filter((row) => {
+        const publishAt = (row as typeof row & { publish_at?: string | null }).publish_at;
+        const publishOk = !publishAt || new Date(publishAt).getTime() <= now;
+        const expiresOk = !row.expires_at || new Date(row.expires_at).getTime() > now;
+        return publishOk && expiresOk;
+      });
+      setAds(filtered.map(mapRowToAd));
+    }
     setLoading(false);
   }, []);
 

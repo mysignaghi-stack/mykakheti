@@ -37,10 +37,10 @@ export const metadata: Metadata = {
     siteName: 'MyKakheti',
     images: [
       {
-        url: 'https://i.ibb.co/N2L6XvX/image.jpg',
-        width: 1200,
-        height: 630,
-        alt: 'MYKAKHETI.GE Preview',
+        url: '/favicon.ico',
+        width: 64,
+        height: 64,
+        alt: 'MYKAKHETI.GE',
       },
     ],
     locale: 'ka_GE',
