@@ -14,7 +14,6 @@ export default function ChatPopup({ isAdmin, controlToken }: ChatPopupProps) {
   // 1. ვქმნით რეფს, რომელიც მიებმება მთლიან კონტეინერს
   const popupRef = useRef<HTMLDivElement>(null);
   // ჩატის სკროლის კონტეინერის რეფი, გადავაწვდით KakhetianSquare-ს
-  const chatScrollRef = useRef<HTMLDivElement>(null);
 
   // 2. ლოგიკა: თუ დააკლიკეს ელემენტის გარეთ, ვხურავთ პოპაპს
   useEffect(() => {
@@ -42,7 +41,7 @@ export default function ChatPopup({ isAdmin, controlToken }: ChatPopupProps) {
       {isOpen && (
         <div className="w-[340px] h-[500px] bg-[#0a0a1f] rounded-[35px] shadow-[0_0_60px_rgba(0,0,0,0.8)] border border-white/20 overflow-hidden animate-in slide-in-from-bottom-10 fade-in duration-300">
            {/* კომპონენტი მთლიანად ავსებს კონტეინერს */}
-           <KakhetianSquare isAdmin={isAdmin} controlToken={controlToken} scrollRef={chatScrollRef} />
+             <KakhetianSquare isAdmin={isAdmin} controlToken={controlToken} />
         </div>
       )}
 

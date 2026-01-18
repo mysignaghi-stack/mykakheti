@@ -163,9 +163,6 @@ export default function HomePage() {
 
   const [adminPosts, setAdminPosts] = useState<AdminPost[]>([]);
   const [factIndex, setFactIndex] = useState(0);
-  // Use separate refs for desktop and mobile KakhetianSquare
-  const chatScrollRefDesktop = useRef<HTMLDivElement>(null) as React.RefObject<HTMLDivElement>;
-  const chatScrollRefMobile = useRef<HTMLDivElement>(null) as React.RefObject<HTMLDivElement>;
 
   const [frameContentTypes, setFrameContentTypes] = useState({
     left_top: 'post' as 'post' | 'announcement',
@@ -363,10 +360,9 @@ export default function HomePage() {
           <div className="hidden lg:flex flex-col gap-6 sticky top-24 order-1 min-w-[280px]">
             {/* კახური მოედანი (სქროლით) */}
             <div 
-              ref={chatScrollRefDesktop}
-              className="w-full h-[450px] overflow-y-auto custom-scrollbar bg-black/60 backdrop-blur-xl rounded-[30px] border border-white/5 relative"
+              className="w-full h-[450px] overflow-hidden bg-black/60 backdrop-blur-xl rounded-[30px] border border-white/5 relative"
             >
-               <KakhetianSquare isAdmin={isAdmin} controlToken={controlToken} scrollRef={chatScrollRefDesktop} />
+              <KakhetianSquare isAdmin={isAdmin} controlToken={controlToken} />
             </div>
             {/* მარცხენა პოსტები */}
             <div className="flex flex-col gap-4 w-full">
@@ -400,7 +396,7 @@ export default function HomePage() {
              {/* მობილური ვერსია (მხოლოდ პატარა ეკრანებზე) */}
              <div className="flex flex-col gap-4 w-full lg:hidden">
                  <div className="h-[450px] bg-black/60 backdrop-blur-xl rounded-[30px] border border-white/5">
-                   <KakhetianSquare isAdmin={isAdmin} controlToken={controlToken} scrollRef={chatScrollRefMobile} />
+                   <KakhetianSquare isAdmin={isAdmin} controlToken={controlToken} />
                  </div>
                 {/* CommunityHub removed: community entry moved to navbar center */}
                 <div className="bg-black/60 backdrop-blur-xl rounded-[30px] border border-white/5 p-2">

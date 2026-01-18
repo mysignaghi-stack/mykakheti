@@ -33,10 +33,9 @@ const EMOJI_TABS = [
 interface KakhetianSquareProps {
   isAdmin: boolean;
   controlToken?: string;
-  scrollRef?: React.RefObject<HTMLDivElement | null>;
 }
 
-export default function KakhetianSquare({ isAdmin, controlToken, scrollRef }: KakhetianSquareProps) {
+export default function KakhetianSquare({ isAdmin, controlToken }: KakhetianSquareProps) {
   // State
   const [messages, setMessages] = useState<Message[]>([]);
   const [msgName, setMsgName] = useState('');
@@ -61,7 +60,6 @@ export default function KakhetianSquare({ isAdmin, controlToken, scrollRef }: Ka
   const fileInputRef = useRef<HTMLInputElement>(null);
   const emojiPickerRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
-  // Fallback scroll ref when parent doesn't provide one (main panel)
   const ownScrollRef = useRef<HTMLDivElement>(null);
 
   // უნიკალური ID თითოეული ჩატის ინსტანციისთვის
@@ -87,14 +85,14 @@ export default function KakhetianSquare({ isAdmin, controlToken, scrollRef }: Ka
 
   const scrollToBottom = useCallback((force = false) => {
     // Scroll only the chat container; do not use scrollIntoView to avoid page jumps
-    const el = (scrollRef?.current) ?? ownScrollRef.current;
+    const el = ownScrollRef.current;
     if (!el) return;
     const distanceFromBottom = el.scrollHeight - el.scrollTop - el.clientHeight;
     const isNearBottom = distanceFromBottom < 120;
     if (force || isNearBottom) {
       el.scrollTo({ top: el.scrollHeight, behavior: force ? 'auto' : 'smooth' });
     }
-  }, [scrollRef]);
+  }, []);
 
   // --- Effects ---
 
@@ -146,7 +144,7 @@ export default function KakhetianSquare({ isAdmin, controlToken, scrollRef }: Ka
           const newMsg = payload.new as Message;
           setMessages((prev) => mergeMessages(prev, [newMsg]));
           playSound();
-          setTimeout(() => scrollToBottom(false), 60);
+          setTimeout(() => scrollToBottom(true), 60);
         }
       )
       .on(
@@ -339,7 +337,7 @@ export default function KakhetianSquare({ isAdmin, controlToken, scrollRef }: Ka
       </div>
 
       {/* Messages List */}
-      <div ref={scrollRef ?? ownScrollRef} className="flex-1 overflow-y-auto overscroll-contain p-4 space-y-4 custom-scrollbar bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')]">
+      <div ref={ownScrollRef} className="flex-1 overflow-y-auto overscroll-contain p-4 space-y-4 custom-scrollbar bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')]">
         {messages.map((m) => {
             const isMe = m.sender_name === msgName;
             return (
@@ -367,10 +365,10 @@ export default function KakhetianSquare({ isAdmin, controlToken, scrollRef }: Ka
                             <div className="mb-2 rounded-xl overflow-hidden cursor-pointer" onClick={() => setViewingMedia({ url: m.media_url!, type: m.media_type! })}>
                                 {m.media_type === 'image' ? (
                                   <div className="relative w-full max-h-48 h-48">
-                                    <Image src={m.media_url} alt="" fill sizes="(max-width: 768px) 100vw, 480px" className="object-cover" onLoad={() => scrollToBottom(false)} />
+                                    <Image src={m.media_url} alt="" fill sizes="(max-width: 768px) 100vw, 480px" className="object-cover" onLoad={() => scrollToBottom(true)} />
                                   </div>
                                 ) : (
-                                  <video src={m.media_url} className="w-full max-h-48" onLoadedData={() => scrollToBottom(false)} />
+                                  <video src={m.media_url} className="w-full max-h-48" onLoadedData={() => scrollToBottom(true)} />
                                 )}
                             </div>
                         )}
