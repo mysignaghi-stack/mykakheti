@@ -5,14 +5,12 @@ import { createPortal } from 'react-dom';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import type { Database } from '@/types/supabase';
+import type { Ad } from '../../lib/types';
 import CommunityEngagementSection from './CommunityEngagementSection';
 
-type AdRow = Database['public']['Tables']['announcements']['Row'];
-
 interface AdsSectionProps {
-  ads: AdRow[];
-  filteredAds: AdRow[];
+  ads: Ad[];
+  filteredAds: Ad[];
   isAdmin: boolean;
   showArchive: boolean;
   searchTerm: string;
@@ -21,9 +19,9 @@ interface AdsSectionProps {
   setSelectedCategories: (cats: string[]) => void;
   onArchive: (e: React.MouseEvent<HTMLButtonElement>, id: string) => void;
   onRestore: (e: React.MouseEvent<HTMLButtonElement>, id: string) => void;
-  onDelete: (e: React.MouseEvent<HTMLButtonElement>, ad: AdRow) => void;
-  onFBShare: (e: React.MouseEvent<HTMLButtonElement>, ad: AdRow) => void;
-  onCopyShare: (e: React.MouseEvent<HTMLButtonElement>, ad: AdRow) => void;
+  onDelete: (e: React.MouseEvent<HTMLButtonElement>, ad: Ad) => void;
+  onFBShare: (e: React.MouseEvent<HTMLButtonElement>, ad: Ad) => void;
+  onCopyShare: (e: React.MouseEvent<HTMLButtonElement>, ad: Ad) => void;
 }
 
 type CategoryItem = { value: string; label: string };
