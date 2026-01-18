@@ -30,6 +30,7 @@ const CATEGORY_OPTIONS = [
   { value: 'პენსიაზე გასვლა', label: 'პენსიაზე გასვლა 🎖️' },
   { value: 'რთველი', label: 'რთველი 🍇' },
   { value: 'თბილისობა', label: 'თბილისობა 🎡' },
+  { value: 'სხვა', label: 'სხვა ✨' },
 ];
 
 const STYLE_OPTIONS = [
@@ -52,6 +53,19 @@ export default function SubmitCongratulations() {
   const [files, setFiles] = useState<File[]>([]);
   const [previews, setPreviews] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
+
+  const getErrorMessage = (err: unknown) => {
+    if (err instanceof Error) return err.message;
+    if (typeof err === 'string') return err;
+    if (err && typeof err === 'object' && 'message' in err && typeof (err as { message?: unknown }).message === 'string') {
+      return (err as { message: string }).message;
+    }
+    try {
+      return JSON.stringify(err);
+    } catch {
+      return 'უცნობი შეცდომა';
+    }
+  };
 
   const handleFilesChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const incoming = Array.from(event.target.files || []);
@@ -134,7 +148,8 @@ export default function SubmitCongratulations() {
       router.push('/community/congratulations');
 
     } catch (error: unknown) {
-      const message = error instanceof Error ? error.message : String(error);
+      const message = getErrorMessage(error);
+      console.error('Congrats submit error:', error);
       alert('შეცდომა: ' + message);
     } finally {
       setLoading(false);
@@ -187,22 +202,17 @@ export default function SubmitCongratulations() {
 
                   <div className="rounded-[24px] bg-white/5 border border-white/10 p-4">
                     <p className="text-[11px] font-black uppercase text-white/60 mb-3 tracking-widest">კატეგორია</p>
-                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                    <select
+                      className="w-full p-4 bg-slate-950/80 border border-white/10 rounded-2xl text-white font-bold text-sm focus:border-amber-500 outline-none"
+                      value={formData.category}
+                      onChange={(e) => setFormData({ ...formData, category: e.target.value })}
+                    >
                       {CATEGORY_OPTIONS.map((option) => (
-                        <button
-                          key={option.value}
-                          type="button"
-                          onClick={() => setFormData({ ...formData, category: option.value })}
-                          className={`rounded-2xl px-3 py-3 text-[11px] font-black uppercase tracking-wide transition-all border ${
-                            formData.category === option.value
-                              ? 'bg-amber-600/30 border-amber-500 text-white'
-                              : 'bg-white/5 border-white/10 text-white/60 hover:text-white'
-                          }`}
-                        >
+                        <option key={option.value} value={option.value}>
                           {option.label}
-                        </button>
+                        </option>
                       ))}
-                    </div>
+                    </select>
                   </div>
 
                   <div className="rounded-[24px] bg-white/5 border border-white/10 p-4">
