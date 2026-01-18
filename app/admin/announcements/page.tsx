@@ -13,10 +13,10 @@ export default function AdminAnnouncements() {
   const [loading, setLoading] = useState(true);
   const [publishDrafts, setPublishDrafts] = useState<Record<string, string>>({});
   const [expireDrafts, setExpireDrafts] = useState<Record<string, string>>({});
-  const [bulkFrom, setBulkFrom] = useState('');
-  const [bulkTo, setBulkTo] = useState('');
-  const [bulkPublishAt, setBulkPublishAt] = useState('');
-  const [bulkExpireAt, setBulkExpireAt] = useState('');
+  const [bulkFrom, setBulkFrom] = useState<string>('');
+  const [bulkTo, setBulkTo] = useState<string>('');
+  const [bulkPublishAt, setBulkPublishAt] = useState<string>('');
+  const [bulkExpireAt, setBulkExpireAt] = useState<string>('');
 
   const toInputValue = (iso?: string | null) => {
     if (!iso) return '';
@@ -25,32 +25,45 @@ export default function AdminAnnouncements() {
     return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
   };
 
-  useEffect(() => { fetchAllAds(); }, []);
+  useEffect(() => {
+    fetchAllAds();
+  }, []);
 
   async function fetchAllAds() {
     setLoading(true);
     try {
-      // ერთდროულად მოთხოვნა ორივე ტიპის განცხადებაზე
       const [pendingRes, liveRes] = await Promise.all([
         (supabase as any).from('announcements').select('*').eq('is_approved', false).order('created_at', { ascending: false }),
-        (supabase as any).from('announcements').select('*').eq('is_approved', true).order('created_at', { ascending: false })
+        (supabase as any).from('announcements').select('*').eq('is_approved', true).order('created_at', { ascending: false }),
       ]);
 
       if (pendingRes.data) setPendingAds(pendingRes.data);
       if (liveRes.data) setLiveAds(liveRes.data);
     } catch (error) {
-      console.error("Fetch Error:", error);
+      console.error('Fetch Error:', error);
     } finally {
       setLoading(false);
-              )}
-            </div>
+    }
+  }
+
   async function approveAd(id: string) {
-    const { error } = await (supabase as any).from('announcements').update({ is_approved: true }).eq('id', id);
+    const { error } = await (supabase as any)
+      .from('announcements')
+      .update({ is_approved: true })
+      .eq('id', id);
     if (!error) {
-      // ანიმაციური გადასვლისთვის ადგილობრივი სტეიტის განახლება
       const adToApprove = pendingAds.find(a => a.id === id);
       setPendingAds(prev => prev.filter(a => a.id !== id));
       if (adToApprove) setLiveAds(prev => [adToApprove, ...prev]);
+    }
+  }
+
+  async function deleteAd(id: string) {
+    if (!confirm('ნამდვილად გსურთ ამ განცხადების წაშლა?')) return;
+    const { error } = await (supabase as any).from('announcements').delete().eq('id', id);
+    if (!error) {
+      setPendingAds(prev => prev.filter(a => a.id !== id));
+      setLiveAds(prev => prev.filter(a => a.id !== id));
     }
   }
 
@@ -108,21 +121,9 @@ export default function AdminAnnouncements() {
     }
   }
 
-  async function deleteAd(id: string) {
-    if (confirm('ნამდვილად გსურთ ამ განცხადების წაშლა?')) {
-      const { error } = await (supabase as any).from('announcements').delete().eq('id', id);
-      if (!error) {
-        setPendingAds(prev => prev.filter(a => a.id !== id));
-        setLiveAds(prev => prev.filter(a => a.id !== id));
-      }
-    }
-  }
-
   return (
     <main className="min-h-screen bg-[#050510] p-6 md:p-10 font-sans text-white">
       <div className="max-w-6xl mx-auto relative z-10">
-        
-        {/* Header Section */}
         <div className="flex flex-col md:flex-row justify-between items-center mb-12 bg-white/[0.03] backdrop-blur-3xl p-8 rounded-[40px] border border-white/10 shadow-2xl gap-6">
           <div>
             <h1 className="text-3xl font-black text-amber-500 uppercase italic tracking-tighter leading-none">
@@ -195,141 +196,141 @@ export default function AdminAnnouncements() {
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
-            <div className="bg-white/5 rounded-3xl border border-white/10 p-6 space-y-4">
-              <div className="flex items-center justify-between">
-                <h2 className="text-xl font-black text-amber-400">მოლოდინში ({pendingAds.length})</h2>
-                <button onClick={fetchAllAds} className="text-xs font-bold text-white/60 hover:text-white">↻ განახლება</button>
-              </div>
-              {pendingAds.length === 0 ? (
-                <p className="text-white/40 text-sm">მოლოდინში განცხადებები არ არის.</p>
-              ) : (
-                <div className="space-y-3">
-                  {pendingAds.map(ad => (
-                    <div key={ad.id} className="bg-black/40 border border-white/10 rounded-2xl p-4 flex flex-col gap-3">
-                      <div className="flex items-start justify-between gap-3">
-                        <div>
-                          <p className="text-sm uppercase tracking-wide text-white/50">{ad.category}</p>
-                          <h3 className="text-lg font-black text-white">{ad.title}</h3>
-                          <p className="text-white/60 text-sm">{ad.location}</p>
-                        </div>
-                        <div className="text-right text-sm text-white/50">
-                          <p>{new Date(ad.created_at ?? '').toLocaleString('ka-GE')}</p>
-                          <p className="font-black text-amber-400">{ad.price} {ad.currency}</p>
-                        </div>
-                      </div>
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                        <div>
-                          <label className="text-[10px] text-white/40 uppercase">გამოქვეყნება</label>
-                          <input
-                            type="datetime-local"
-                            value={publishDrafts[ad.id] ?? ''}
-                            onChange={(e) => setPublishDrafts(prev => ({ ...prev, [ad.id]: e.target.value }))}
-                            className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-xs text-white"
-                          />
-                        </div>
-                        <div>
-                          <label className="text-[10px] text-white/40 uppercase">წაშლა</label>
-                          <input
-                            type="datetime-local"
-                            value={expireDrafts[ad.id] ?? ''}
-                            onChange={(e) => setExpireDrafts(prev => ({ ...prev, [ad.id]: e.target.value }))}
-                            className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-xs text-white"
-                          />
-                        </div>
-                      </div>
-                      <div className="flex gap-3">
-                        <button
-                          onClick={() => approveAd(ad.id)}
-                          className="flex-1 bg-green-600 hover:bg-green-500 text-white rounded-xl py-2 font-black uppercase text-xs"
-                        >
-                          დამტკიცება
-                        </button>
-                        <button
-                          onClick={() => saveSchedule(ad.id, true)}
-                          className="flex-1 bg-amber-600 hover:bg-amber-500 text-white rounded-xl py-2 font-black uppercase text-xs"
-                        >
-                          დაგეგმვა
-                        </button>
-                        <button
-                          onClick={() => deleteAd(ad.id)}
-                          className="flex-1 bg-red-600 hover:bg-red-500 text-white rounded-xl py-2 font-black uppercase text-xs"
-                        >
-                          წაშლა
-                        </button>
-                      </div>
-                    </div>
-                  ))}
+              <div className="bg-white/5 rounded-3xl border border-white/10 p-6 space-y-4">
+                <div className="flex items-center justify-between">
+                  <h2 className="text-xl font-black text-amber-400">მოლოდინში ({pendingAds.length})</h2>
+                  <button onClick={fetchAllAds} className="text-xs font-bold text-white/60 hover:text-white">↻ განახლება</button>
                 </div>
+                {pendingAds.length === 0 ? (
+                  <p className="text-white/40 text-sm">მოლოდინში განცხადებები არ არის.</p>
+                ) : (
+                  <div className="space-y-3">
+                    {pendingAds.map(ad => (
+                      <div key={ad.id} className="bg-black/40 border border-white/10 rounded-2xl p-4 flex flex-col gap-3">
+                        <div className="flex items-start justify-between gap-3">
+                          <div>
+                            <p className="text-sm uppercase tracking-wide text-white/50">{ad.category}</p>
+                            <h3 className="text-lg font-black text-white">{ad.title}</h3>
+                            <p className="text-white/60 text-sm">{ad.location}</p>
+                          </div>
+                          <div className="text-right text-sm text-white/50">
+                            <p>{new Date(ad.created_at ?? '').toLocaleString('ka-GE')}</p>
+                            <p className="font-black text-amber-400">{ad.price} {ad.currency}</p>
+                          </div>
+                        </div>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                          <div>
+                            <label className="text-[10px] text-white/40 uppercase">გამოქვეყნება</label>
+                            <input
+                              type="datetime-local"
+                              value={publishDrafts[ad.id] ?? ''}
+                              onChange={(e) => setPublishDrafts(prev => ({ ...prev, [ad.id]: e.target.value }))}
+                              className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-xs text-white"
+                            />
+                          </div>
+                          <div>
+                            <label className="text-[10px] text-white/40 uppercase">წაშლა</label>
+                            <input
+                              type="datetime-local"
+                              value={expireDrafts[ad.id] ?? ''}
+                              onChange={(e) => setExpireDrafts(prev => ({ ...prev, [ad.id]: e.target.value }))}
+                              className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-xs text-white"
+                            />
+                          </div>
+                        </div>
+                        <div className="flex gap-3">
+                          <button
+                            onClick={() => approveAd(ad.id)}
+                            className="flex-1 bg-green-600 hover:bg-green-500 text-white rounded-xl py-2 font-black uppercase text-xs"
+                          >
+                            დამტკიცება
+                          </button>
+                          <button
+                            onClick={() => saveSchedule(ad.id, true)}
+                            className="flex-1 bg-amber-600 hover:bg-amber-500 text-white rounded-xl py-2 font-black uppercase text-xs"
+                          >
+                            დაგეგმვა
+                          </button>
+                          <button
+                            onClick={() => deleteAd(ad.id)}
+                            className="flex-1 bg-red-600 hover:bg-red-500 text-white rounded-xl py-2 font-black uppercase text-xs"
+                          >
+                            წაშლა
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
-            )}
-            </div>
 
-            <div className="bg-white/5 rounded-3xl border border-white/10 p-6 space-y-4">
-              <div className="flex items-center justify-between">
-                <h2 className="text-xl font-black text-green-400">აქტიური ({liveAds.length})</h2>
-                <button onClick={fetchAllAds} className="text-xs font-bold text-white/60 hover:text-white">↻ განახლება</button>
-              </div>
-              {liveAds.length === 0 ? (
-                <p className="text-white/40 text-sm">აქტიური განცხადებები არ არის.</p>
-              ) : (
-                <div className="space-y-3">
-                  {liveAds.map(ad => (
-                    <div key={ad.id} className="bg-black/40 border border-white/10 rounded-2xl p-4 flex flex-col gap-3">
-                      <div className="flex items-start justify-between gap-3">
-                        <div>
-                          <p className="text-sm uppercase tracking-wide text-white/50">{ad.category}</p>
-                          <h3 className="text-lg font-black text-white">{ad.title}</h3>
-                          <p className="text-white/60 text-sm">{ad.location}</p>
-                        </div>
-                        <div className="text-right text-sm text-white/50">
-                          <p>{new Date(ad.created_at ?? '').toLocaleString('ka-GE')}</p>
-                          <p className="font-black text-amber-400">{ad.price} {ad.currency}</p>
-                        </div>
-                      </div>
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                        <div>
-                          <label className="text-[10px] text-white/40 uppercase">გამოქვეყნება</label>
-                          <input
-                            type="datetime-local"
-                            defaultValue={toInputValue((ad as Announcement & { publish_at?: string | null }).publish_at)}
-                            onChange={(e) => setPublishDrafts(prev => ({ ...prev, [ad.id]: e.target.value }))}
-                            className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-xs text-white"
-                          />
-                        </div>
-                        <div>
-                          <label className="text-[10px] text-white/40 uppercase">წაშლა</label>
-                          <input
-                            type="datetime-local"
-                            defaultValue={toInputValue(ad.expires_at)}
-                            onChange={(e) => setExpireDrafts(prev => ({ ...prev, [ad.id]: e.target.value }))}
-                            className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-xs text-white"
-                          />
-                        </div>
-                      </div>
-                      <div className="flex gap-3">
-                        <Link
-                          href={`/announcements/${ad.id}`}
-                          className="flex-1 bg-white/10 hover:bg-white/20 text-white rounded-xl py-2 font-black uppercase text-xs text-center"
-                        >
-                          ნახვა
-                        </Link>
-                        <button
-                          onClick={() => saveSchedule(ad.id, false)}
-                          className="flex-1 bg-amber-600 hover:bg-amber-500 text-white rounded-xl py-2 font-black uppercase text-xs"
-                        >
-                          დაგეგმვა
-                        </button>
-                        <button
-                          onClick={() => deleteAd(ad.id)}
-                          className="flex-1 bg-red-600 hover:bg-red-500 text-white rounded-xl py-2 font-black uppercase text-xs"
-                        >
-                          წაშლა
-                        </button>
-                      </div>
-                    </div>
-                  ))}
+              <div className="bg-white/5 rounded-3xl border border-white/10 p-6 space-y-4">
+                <div className="flex items-center justify-between">
+                  <h2 className="text-xl font-black text-green-400">აქტიური ({liveAds.length})</h2>
+                  <button onClick={fetchAllAds} className="text-xs font-bold text-white/60 hover:text-white">↻ განახლება</button>
                 </div>
-              )}
+                {liveAds.length === 0 ? (
+                  <p className="text-white/40 text-sm">აქტიური განცხადებები არ არის.</p>
+                ) : (
+                  <div className="space-y-3">
+                    {liveAds.map(ad => (
+                      <div key={ad.id} className="bg-black/40 border border-white/10 rounded-2xl p-4 flex flex-col gap-3">
+                        <div className="flex items-start justify-between gap-3">
+                          <div>
+                            <p className="text-sm uppercase tracking-wide text-white/50">{ad.category}</p>
+                            <h3 className="text-lg font-black text-white">{ad.title}</h3>
+                            <p className="text-white/60 text-sm">{ad.location}</p>
+                          </div>
+                          <div className="text-right text-sm text-white/50">
+                            <p>{new Date(ad.created_at ?? '').toLocaleString('ka-GE')}</p>
+                            <p className="font-black text-amber-400">{ad.price} {ad.currency}</p>
+                          </div>
+                        </div>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                          <div>
+                            <label className="text-[10px] text-white/40 uppercase">გამოქვეყნება</label>
+                            <input
+                              type="datetime-local"
+                              defaultValue={toInputValue((ad as Announcement & { publish_at?: string | null }).publish_at)}
+                              onChange={(e) => setPublishDrafts(prev => ({ ...prev, [ad.id]: e.target.value }))}
+                              className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-xs text-white"
+                            />
+                          </div>
+                          <div>
+                            <label className="text-[10px] text-white/40 uppercase">წაშლა</label>
+                            <input
+                              type="datetime-local"
+                              defaultValue={toInputValue((ad as Announcement & { expires_at?: string | null }).expires_at)}
+                              onChange={(e) => setExpireDrafts(prev => ({ ...prev, [ad.id]: e.target.value }))}
+                              className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-xs text-white"
+                            />
+                          </div>
+                        </div>
+                        <div className="flex gap-3">
+                          <Link
+                            href={`/announcements/${ad.id}`}
+                            className="flex-1 bg-white/10 hover:bg-white/20 text-white rounded-xl py-2 font-black uppercase text-xs text-center"
+                          >
+                            ნახვა
+                          </Link>
+                          <button
+                            onClick={() => saveSchedule(ad.id, false)}
+                            className="flex-1 bg-amber-600 hover:bg-amber-500 text-white rounded-xl py-2 font-black uppercase text-xs"
+                          >
+                            დაგეგმვა
+                          </button>
+                          <button
+                            onClick={() => deleteAd(ad.id)}
+                            className="flex-1 bg-red-600 hover:bg-red-500 text-white rounded-xl py-2 font-black uppercase text-xs"
+                          >
+                            წაშლა
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         )}
