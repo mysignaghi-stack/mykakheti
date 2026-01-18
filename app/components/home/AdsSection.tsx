@@ -121,15 +121,15 @@ export default function AdsSection({
   const normalizedCategorySearch = useMemo(() => {
     return categorySearch
       .toLowerCase()
-      .replace(/[^\p{L}\p{N}\s]/gu, '')
+      .replace(/[^0-9A-Za-z\u10A0-\u10FF\u2D00-\u2D2F\s]/g, '')
       .trim();
   }, [categorySearch]);
 
   const filteredCategories = useMemo(() => {
     if (!normalizedCategorySearch) return CATEGORY_LIST;
     return CATEGORY_LIST.filter((item) => {
-      const normalizedLabel = item.label.toLowerCase().replace(/[^\p{L}\p{N}\s]/gu, '');
-      const normalizedValue = item.value.toLowerCase().replace(/[^\p{L}\p{N}\s]/gu, '');
+      const normalizedLabel = item.label.toLowerCase().replace(/[^0-9A-Za-z\u10A0-\u10FF\u2D00-\u2D2F\s]/g, '');
+      const normalizedValue = item.value.toLowerCase().replace(/[^0-9A-Za-z\u10A0-\u10FF\u2D00-\u2D2F\s]/g, '');
       return normalizedLabel.includes(normalizedCategorySearch) || normalizedValue.includes(normalizedCategorySearch);
     });
   }, [normalizedCategorySearch]);
