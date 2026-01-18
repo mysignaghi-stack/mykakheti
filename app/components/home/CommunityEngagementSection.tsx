@@ -82,9 +82,9 @@ export default function CommunityEngagementSection({ className }: CommunityEngag
         ))}
       </div>
 
-      <div className="mt-6">
+      {/* <div className="mt-6">
         <CongratulationsSection />
-      </div>
+      </div> */}
     </div>
   );
 }

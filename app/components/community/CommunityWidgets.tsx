@@ -211,8 +211,8 @@ function WidgetCard({ config, title, description, meta, href, image, badge, high
         <div className="flex items-center justify-between text-white/60 text-xs">
           <span className="font-bold truncate max-w-[70%]">{meta || (hasData ? "" : "")}</span>
           {image ? (
-            <div className="relative w-12 h-12 rounded-2xl overflow-hidden border border-white/10 shadow-lg">
-              <Image src={image} alt="" fill sizes="48px" className="object-cover" />
+            <div className="relative w-20 h-20 rounded-2xl overflow-hidden border border-white/10 shadow-lg">
+              <Image src={image} alt="" fill sizes="80px" className="object-cover" />
             </div>
           ) : (
             <span className="text-white/30">→</span>
