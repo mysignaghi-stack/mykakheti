@@ -11,7 +11,7 @@ const ROTATE_MS = 3000;
 type ObituaryRow = Pick<Database["public"]["Tables"]["obituaries"]["Row"], "id" | "full_name" | "funeral_at" | "funeral_place" | "image_url" | "is_approved" | "created_at">;
 type LostFoundRow = Pick<Database["public"]["Tables"]["lost_found"]["Row"], "id" | "title" | "location" | "image_url" | "kind" | "is_approved" | "resolved" | "created_at">;
 type MasterRow = Pick<Database["public"]["Tables"]["masters"]["Row"], "id" | "full_name" | "profession" | "location" | "photo_url" | "rating_avg" | "is_approved" | "created_at">;
-type CongratsRow = Pick<Database["public"]["Tables"]["congratulations"]["Row"], "id" | "sender_name" | "receiver_name" | "message" | "image_url" | "status" | "created_at">;
+type CongratsRow = Pick<Database["public"]["Tables"]["congratulations"]["Row"], "id" | "sender_name" | "receiver_name" | "message" | "image_url" | "category" | "theme" | "created_at"> & { all_images?: string[] | null };
 
 type CardConfig = {
   title: string;
@@ -56,7 +56,7 @@ export default function CommunityWidgets() {
           .limit(5),
         supabase
           .from("congratulations")
-          .select("id, sender_name, receiver_name, message, image_url, status, created_at")
+          .select("id, sender_name, receiver_name, message, image_url, all_images, category, theme, created_at")
           .eq("is_approved", true)
           .order("created_at", { ascending: false })
           .limit(5),
@@ -122,6 +122,7 @@ export default function CommunityWidgets() {
   const currentLostFound = lostFound[lfIndex] ?? null;
   const currentMaster = masters[masterIndex] ?? null;
   const currentCongrats = congrats[congratsIndex] ?? null;
+  const congratsImage = currentCongrats?.image_url || currentCongrats?.all_images?.[0] || undefined;
 
   return (
     <div className="w-full grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -164,9 +165,9 @@ export default function CommunityWidgets() {
         badge="მისალოცი"
         description={currentCongrats ? `${currentCongrats.sender_name || ""} → ${currentCongrats.receiver_name || ""}` : ""}
         title={currentCongrats?.message || cards[3].placeholder}
-        meta={currentCongrats?.status}
+        meta={currentCongrats?.category || currentCongrats?.theme}
         href={currentCongrats?.id ? cards[3].hrefBuilder?.(currentCongrats.id) ?? cards[3].link : cards[3].link}
-        image={currentCongrats?.image_url || undefined}
+        image={congratsImage}
       />
     </div>
   );
