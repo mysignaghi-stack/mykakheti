@@ -354,7 +354,7 @@ export default function HomePage() {
       {/* Community unit moved nearer to announcements (no duplicate) */}
 
       {/* Informational grid section, now outside header for independent styling */}
-      <section className="relative z-10 w-full px-4 sm:px-6 md:px-10 max-w-[1800px] mx-auto mt-4">
+      <section className="relative z-10 w-full px-4 sm:px-6 md:px-10 max-w-[1800px] mx-auto mt-10">
         <div className="grid grid-cols-1 lg:grid-cols-[minmax(260px,340px)_1fr_minmax(260px,340px)] gap-4 md:gap-8 xl:gap-12 items-start text-white bg-black/70 backdrop-blur-2xl rounded-[30px] border border-white/10 p-4 sm:p-8 shadow-xl">
           {/* --- მარცხენა სვეტი (Desktop Only) --- */}
           <div className="hidden lg:flex flex-col gap-6 sticky top-24 order-1 min-w-[280px]">
