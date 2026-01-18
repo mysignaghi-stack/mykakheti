@@ -190,36 +190,36 @@ function WidgetCard({ config, title, description, meta, href, image, badge, high
   return (
     <Link
       href={href}
-      className={`group relative overflow-hidden rounded-[24px] border border-white/10 bg-gradient-to-br ${config.accentClass} shadow-[0_20px_50px_-20px_rgba(0,0,0,0.55)] transition-transform duration-300 hover:-translate-y-1`}
+      className={`group relative overflow-hidden rounded-[24px] border border-white/10 bg-gradient-to-br ${config.accentClass} shadow-[0_20px_50px_-20px_rgba(0,0,0,0.55)] transition-transform duration-300 hover:-translate-y-1 min-h-[120px]`}
     >
       <div className="absolute inset-0 bg-white/5 opacity-0 group-hover:opacity-10 transition-opacity duration-300" />
-      <div className="p-4 space-y-3">
+      <div className="p-2 space-y-1.5">
         <div className="flex items-center justify-between text-white/80 text-[11px] font-black uppercase tracking-[0.2em]">
           <span className="px-3 py-1 rounded-full bg-white/10 backdrop-blur-lg border border-white/10">{badge}</span>
           <span className="text-white/50">Community</span>
         </div>
 
-        <div className="min-h-[82px] space-y-1">
-          <h3 className="text-base font-black text-white leading-tight animate-[fade-soft_0.6s_ease] line-clamp-2">{title}</h3>
+        <div className="min-h-[50px] space-y-0.5">
+          <h3 className="text-sm font-black text-white leading-snug animate-[fade-soft_0.6s_ease] line-clamp-2">{title}</h3>
           {description ? (
-            <p className="text-white/70 text-sm line-clamp-2 animate-[fade-soft_0.6s_ease]">{description}</p>
+            <p className="text-white/70 text-xs line-clamp-2 animate-[fade-soft_0.6s_ease]">{description}</p>
           ) : (
-            <p className="text-white/30 text-sm">{hasData ? "" : config.placeholder}</p>
+            <p className="text-white/30 text-xs">{hasData ? "" : config.placeholder}</p>
           )}
         </div>
 
         <div className="flex items-center justify-between text-white/60 text-xs">
-          <span className="font-bold truncate max-w-[70%]">{meta || (hasData ? "" : "")}</span>
+          <span className="font-bold truncate max-w-[65%]">{meta || (hasData ? "" : "")}</span>
           {image ? (
-            <div className="relative w-20 h-20 rounded-2xl overflow-hidden border border-white/10 shadow-lg">
-              <Image src={image} alt="" fill sizes="80px" className="object-cover" />
+            <div className="relative w-14 h-14 rounded-2xl overflow-hidden border border-white/10 shadow-lg">
+              <Image src={image} alt="" fill sizes="56px" className="object-cover" />
             </div>
           ) : (
             <span className="text-white/30">→</span>
           )}
         </div>
 
-        <div className="flex items-center justify-between pt-2 border-t border-white/10 text-[12px] text-white/70 font-black uppercase tracking-widest">
+        <div className="flex items-center justify-center pt-1 border-t border-white/10 text-[11px] text-white/70 font-black uppercase tracking-widest gap-2">
           <span>გახსენი სრულად</span>
           <span className="group-hover:translate-x-1 transition-transform">→</span>
         </div>

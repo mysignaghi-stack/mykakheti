@@ -351,7 +351,7 @@ export default function HomePage() {
         <CommunityWidgets />
       </div>
 
-      {/* Community unit moved nearer to announcements */}
+      {/* Community unit moved nearer to announcements (no duplicate) */}
 
       {/* Informational grid section, now outside header for independent styling */}
       <section className="relative z-10 w-full px-4 sm:px-6 md:px-10 max-w-[1800px] mx-auto mt-4">
