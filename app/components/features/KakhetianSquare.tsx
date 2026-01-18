@@ -111,9 +111,14 @@ export default function KakhetianSquare({ isAdmin, controlToken }: KakhetianSqua
     checkBan();
 
     const fetchMessages = async () => {
-      const { data } = await (supabase as any).from('square_messages').select('*').order('created_at', { ascending: true }).limit(MESSAGE_LIMIT);
+      const { data } = await (supabase as any)
+        .from('square_messages')
+        .select('*')
+        .order('created_at', { ascending: false })
+        .limit(MESSAGE_LIMIT);
       if (data) {
-        setMessages((prev) => mergeMessages(prev, data as Message[]));
+        const latest = (data as Message[]).slice().reverse();
+        setMessages((prev) => mergeMessages(prev, latest));
         setTimeout(() => scrollToBottom(true), 200);
       }
     };
@@ -241,20 +246,40 @@ export default function KakhetianSquare({ isAdmin, controlToken }: KakhetianSqua
     if (!msgName || (!trimmedText && selectedFiles.length === 0)) return;
     
     localStorage.setItem('kakheti_username', msgName);
-    const tempId = `temp-${Date.now()}-${Math.random().toString(36).slice(2)}`;
-    const optimistic: Message | null = selectedFiles.length === 0 ? {
-      id: tempId,
-      sender_name: msgName,
-      message: trimmedText,
-      created_at: new Date().toISOString(),
-      parent_id: replyTo?.id || null,
-      ip_address: controlToken,
-      fingerprint: 'web',
-      pending: true,
-    } : null;
+    const tempBase = `temp-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+    const nowIso = new Date().toISOString();
+    const optimisticMessages: Message[] = [];
+    if (selectedFiles.length > 0) {
+      selectedFiles.forEach((file, index) => {
+        const type = file.type.startsWith('image') ? 'image' : 'video';
+        optimisticMessages.push({
+          id: `${tempBase}-${index}`,
+          sender_name: msgName,
+          message: index === 0 ? trimmedText : '',
+          created_at: nowIso,
+          parent_id: replyTo?.id || null,
+          ip_address: controlToken,
+          fingerprint: 'web',
+          pending: true,
+          media_url: filePreviews[index],
+          media_type: type,
+        });
+      });
+    } else if (trimmedText) {
+      optimisticMessages.push({
+        id: tempBase,
+        sender_name: msgName,
+        message: trimmedText,
+        created_at: nowIso,
+        parent_id: replyTo?.id || null,
+        ip_address: controlToken,
+        fingerprint: 'web',
+        pending: true,
+      });
+    }
 
-    if (optimistic) {
-      setMessages((prev) => mergeMessages(prev, [optimistic]));
+    if (optimisticMessages.length > 0) {
+      setMessages((prev) => mergeMessages(prev, optimisticMessages));
       requestAnimationFrame(() => scrollToBottom(true));
     }
 
@@ -287,7 +312,9 @@ export default function KakhetianSquare({ isAdmin, controlToken }: KakhetianSqua
         if (!error && data) {
           setMessages((prev) => {
             const newMsgs = data as Message[];
-            const base = optimistic ? prev.filter(m => m.id !== tempId) : prev;
+            if (optimisticMessages.length === 0) return mergeMessages(prev, newMsgs);
+            const tempIds = new Set(optimisticMessages.map(m => m.id));
+            const base = prev.filter(m => !tempIds.has(m.id));
             return mergeMessages(base, newMsgs);
           });
           requestAnimationFrame(() => scrollToBottom(true));
@@ -297,7 +324,10 @@ export default function KakhetianSquare({ isAdmin, controlToken }: KakhetianSqua
           filePreviews.forEach(u => URL.revokeObjectURL(u));
           setSelectedFiles([]); setFilePreviews([]);
       } else {
-          if (optimistic) setMessages((prev) => prev.filter(m => m.id !== tempId));
+          if (optimisticMessages.length > 0) {
+            const tempIds = new Set(optimisticMessages.map(m => m.id));
+            setMessages((prev) => prev.filter(m => !tempIds.has(m.id)));
+          }
           alert("შეცდომა გაგზავნისას.");
       }
     } finally {
