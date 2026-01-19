@@ -3,6 +3,7 @@
 import { useState, type FormEvent } from 'react';
 import Link from 'next/link';
 import { supabase } from '../../../lib/supabase';
+import imageCompression from 'browser-image-compression';
 import SubmissionAuthGate from '../../../components/auth/SubmissionAuthGate';
 
 export default function LostFoundSubmit() {
@@ -16,32 +17,113 @@ export default function LostFoundSubmit() {
   const [reward, setReward] = useState(false);
   const [reward_note, setRewardNote] = useState('');
   const [submitted, setSubmitted] = useState(false);
+  const [files, setFiles] = useState<File[]>([]);
+  const [previews, setPreviews] = useState<string[]>([]);
+  const [loading, setLoading] = useState(false);
 
   const KIND_LABELS: Record<'lost'|'found', string> = {
     lost: 'დაკარგული',
     found: 'ნაპოვნი',
   };
 
+  const getErrorMessage = (err: unknown) => {
+    if (err instanceof Error) return err.message;
+    if (typeof err === 'string') return err;
+    if (err && typeof err === 'object' && 'message' in err && typeof (err as { message?: unknown }).message === 'string') {
+      return (err as { message: string }).message;
+    }
+    try {
+      return JSON.stringify(err);
+    } catch {
+      return 'უცნობი შეცდომა';
+    }
+  };
+
+  const handleFilesChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const incoming = Array.from(event.target.files || []);
+    if (files.length + incoming.length > 3) {
+      alert('მაქსიმუმ 3 ფოტოს ატვირთვა შეიძლება.');
+      return;
+    }
+    const nextFiles: File[] = [];
+    const nextPreviews: string[] = [];
+    incoming.forEach((file) => {
+      if (!file.type.startsWith('image/')) return;
+      nextFiles.push(file);
+      nextPreviews.push(URL.createObjectURL(file));
+    });
+    setFiles((prev) => [...prev, ...nextFiles]);
+    setPreviews((prev) => [...prev, ...nextPreviews]);
+  };
+
+  const removeFile = (index: number) => {
+    const nextFiles = [...files];
+    const nextPreviews = [...previews];
+    const removed = nextPreviews[index];
+    if (removed) URL.revokeObjectURL(removed);
+    nextFiles.splice(index, 1);
+    nextPreviews.splice(index, 1);
+    setFiles(nextFiles);
+    setPreviews(nextPreviews);
+  };
+
   const submit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!title) return alert('სათაური აუცილებელია');
+    setLoading(true);
     const { data: { session } } = await supabase.auth.getSession();
     if (!session) {
       alert('განცხადების დასამატებლად საჭიროა სწრაფი რეგისტრაცია ან ავტორიზაცია.');
+      setLoading(false);
       return;
     }
-    const { error } = await (supabase as any).from('lost_found').insert({
-      kind, title, category,
-      description: description||null,
-      location: location||null,
-      event_date: event_date||null,
-      contact: contact||null,
-      reward,
-      reward_note: reward ? (reward_note||null) : null,
-      is_approved: false
-    });
-    if (error) return alert('შეცდომა: '+error.message);
-    setSubmitted(true);
+
+    try {
+      let imageUrl: string | null = null;
+      let imageUrls: string[] = [];
+
+      if (files.length > 0) {
+        const uploads: string[] = [];
+        for (const file of files) {
+          const compressed = await imageCompression(file, { maxSizeMB: 0.5, maxWidthOrHeight: 1200, useWebWorker: true });
+          const fileName = `lost-found-${Date.now()}-${Math.random().toString(36).slice(2)}.jpg`;
+          const { error: uploadError } = await supabase.storage
+            .from('lost_found')
+            .upload(fileName, compressed);
+
+          if (uploadError) throw uploadError;
+
+          const { data: { publicUrl } } = supabase.storage
+            .from('lost_found')
+            .getPublicUrl(fileName);
+
+          uploads.push(publicUrl);
+        }
+        imageUrls = uploads;
+        imageUrl = uploads[0] ?? null;
+      }
+
+      const { error } = await (supabase as any).from('lost_found').insert({
+        kind, title, category,
+        description: description||null,
+        location: location||null,
+        event_date: event_date||null,
+        contact: contact||null,
+        reward,
+        reward_note: reward ? (reward_note||null) : null,
+        image_url: imageUrl,
+        all_images: imageUrls.length > 0 ? imageUrls : null,
+        is_approved: false
+      });
+      if (error) throw error;
+      setSubmitted(true);
+    } catch (error: unknown) {
+      const message = getErrorMessage(error);
+      console.error('Lost found submit error:', error);
+      alert('შეცდომა: ' + message);
+    } finally {
+      setLoading(false);
+    }
   };
 
   if (submitted) return (
@@ -91,7 +173,39 @@ export default function LostFoundSubmit() {
                   )}
                 </div>
               )}
-              <div className="flex justify-end"><button type="submit" className="bg-green-600 hover:bg-green-500 text-white rounded-xl px-5 py-2 font-bold">გაგზავნა</button></div>
+              <div className="space-y-3">
+                <label className="block text-white/60 font-bold text-sm text-center">
+                  ფოტოები (მაქსიმუმ 3)
+                </label>
+                <div className="grid grid-cols-3 gap-3">
+                  {previews.map((src, idx) => (
+                    <div key={src} className="relative aspect-square rounded-2xl overflow-hidden border border-white/10">
+                      <img src={src} alt="" className="h-full w-full object-cover" />
+                      <button
+                        type="button"
+                        onClick={() => removeFile(idx)}
+                        className="absolute inset-0 bg-red-600/70 opacity-0 hover:opacity-100 transition-opacity text-[10px] font-black uppercase"
+                      >
+                        წაშლა
+                      </button>
+                    </div>
+                  ))}
+                  {files.length < 3 && (
+                    <label className="aspect-square rounded-2xl border border-dashed border-white/20 bg-white/5 flex items-center justify-center text-white/40 text-2xl cursor-pointer hover:border-amber-500 hover:text-amber-400 transition">
+                      +
+                      <input
+                        type="file"
+                        accept="image/*"
+                        multiple
+                        onChange={handleFilesChange}
+                        className="hidden"
+                      />
+                    </label>
+                  )}
+                </div>
+                <p className="text-[11px] text-white/40 text-center">ფოტოები ავტომატურად კომპრესდება მაქს. 500KB-მდე.</p>
+              </div>
+              <div className="flex justify-end"><button type="submit" disabled={loading} className="bg-green-600 hover:bg-green-500 text-white rounded-xl px-5 py-2 font-bold disabled:opacity-50 disabled:cursor-not-allowed">{loading ? 'იგზავნება...' : 'გაგზავნა'}</button></div>
             </form>
           )}
         </SubmissionAuthGate>
