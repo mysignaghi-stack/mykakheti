@@ -23,32 +23,32 @@ const COMMUNITY_CARDS: CommunityCardConfig[] = [
     icon: '🕊️',
     submitHref: '/community/obituaries/submit',
     submitLabel: 'სამძიმრის დამატება',
-    viewHref: '/community/obituaries/submit',
-    viewLabel: 'დამატება',
+    viewHref: '/community/obituaries',
+    viewLabel: 'ნახვა',
   },
   {
     key: 'lost-found',
     icon: '🔎',
     submitHref: '/community/lost-found/submit',
     submitLabel: 'დაკარგული/ნაპოვნის დამატება',
-    viewHref: '/community/lost-found/submit',
-    viewLabel: 'დამატება',
+    viewHref: '/community/lost-found',
+    viewLabel: 'ნახვა',
   },
   {
     key: 'masters',
     icon: '🛠️',
     submitHref: '/community/masters/submit',
     submitLabel: 'ოსტატის დამატება',
-    viewHref: '/community/masters/submit',
-    viewLabel: 'დამატება',
+    viewHref: '/community/masters',
+    viewLabel: 'ნახვა',
   },
   {
     key: 'congratulations',
     icon: '🎉',
     submitHref: '/community/congratulations/submit',
     submitLabel: 'მისალოცის დამატება',
-    viewHref: '/community/congratulations/submit',
-    viewLabel: 'დამატება',
+    viewHref: '/community/congratulations',
+    viewLabel: 'ნახვა',
   },
 ];
 
@@ -70,12 +70,12 @@ export default function CommunityEngagementSection({ className }: CommunityEngag
         {COMMUNITY_CARDS.map((card) => (
           <Link
             key={card.key}
-            href={card.submitHref}
+            href={card.viewHref}
             className="bg-black/60 backdrop-blur-xl rounded-[30px] border border-white/5 p-3 flex flex-col items-center justify-center hover:bg-black/80 transition-all text-center"
           >
             <span className="text-2xl mb-1">{card.icon}</span>
             <span className="text-[10px] font-black uppercase tracking-widest text-white block">
-              {card.submitLabel}
+              {card.key === 'obituaries' ? 'სამძიმარი' : card.key === 'lost-found' ? 'დაკარგული/ნაპოვნი' : card.key === 'masters' ? 'ოსტატები' : 'მისალოცი'}
             </span>
             <span className="mt-1 text-[9px] text-white/50">გააგზავნე მოდერაციაზე</span>
           </Link>

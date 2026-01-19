@@ -41,6 +41,7 @@ export default function AdminSideFrame({ post, position, isAdmin, onRefresh, con
     videoBackground: false
   });
   const [loading, setLoading] = useState(false);
+  const [showFullContent, setShowFullContent] = useState(false);
 
   const resetForm = () => {
     setFormData({ title: '', content: '', category: '', priority: 0, link: '', files: [], mediaType: null, videoBackground: false });
@@ -165,6 +166,20 @@ export default function AdminSideFrame({ post, position, isAdmin, onRefresh, con
     } catch (error: unknown) {
       const message = error instanceof Error ? error.message : 'Unknown error';
       alert('შეცდომა წაშლისას: ' + message);
+    }
+  };
+
+  const handleHide = async (postId: number) => {
+    try {
+      const { error } = await (supabase
+        .from('admin_posts') as any)
+        .update({ priority: -1 })
+        .eq('id', postId);
+
+      if (error) throw error;
+      onRefresh();
+    } catch (error) {
+      console.error('Failed to hide post:', error);
     }
   };
 
@@ -309,11 +324,7 @@ export default function AdminSideFrame({ post, position, isAdmin, onRefresh, con
         <div className="space-y-3">
           <div className="flex justify-between items-start">
             <h4 className="text-amber-500 font-black text-lg italic flex-1">{post.title}</h4>
-            {post.priority && post.priority > 0 && (
-              <span className="bg-green-600/20 text-green-400 px-2 py-1 rounded text-xs font-bold mr-2">
-                P{post.priority}
-              </span>
-            )}
+            {/* Admin Controls */}
             {isAdmin && (
               <div className="flex gap-1 ml-2">
                 <button
@@ -324,16 +335,44 @@ export default function AdminSideFrame({ post, position, isAdmin, onRefresh, con
                   ✏️
                 </button>
                 <button
-                  onClick={() => handleDelete(post.id)}
-                  className="text-red-400 hover:text-white text-xs px-2 py-1 rounded hover:bg-red-600/20 transition-all"
-                  title="წაშლა"
+                  onClick={() => handleHide(post.id)}
+                  className="text-gray-400 hover:text-white text-xs px-2 py-1 rounded hover:bg-gray-600/20 transition-all"
+                  title="დამალვა"
                 >
-                  🗑️
+                  👁️
                 </button>
               </div>
             )}
           </div>
-          <p className="text-white/80 text-sm leading-relaxed">{post.content}</p>
+          
+          {/* Content Preview */}
+          <div className="relative">
+            <p className="text-white/80 text-sm leading-relaxed">
+              {showFullContent || post.content.length <= 150 
+                ? post.content 
+                : `${post.content.substring(0, 150)}...`}
+            </p>
+            {post.content.length > 150 && !showFullContent && (
+              <div className="absolute bottom-0 left-0 right-0 h-8 bg-gradient-to-t from-black/60 to-transparent rounded-b-xl flex items-end justify-center pb-1">
+                <button
+                  onClick={() => setShowFullContent(true)}
+                  className="text-amber-400 text-xs font-bold hover:text-amber-300 transition-colors"
+                >
+                  ვრცლად ▼
+                </button>
+              </div>
+            )}
+            {showFullContent && post.content.length > 150 && (
+              <div className="text-center mt-2">
+                <button
+                  onClick={() => setShowFullContent(false)}
+                  className="text-amber-400 text-xs font-bold hover:text-amber-300 transition-colors"
+                >
+                  ნაკლები ▲
+                </button>
+              </div>
+            )}
+          </div>
           {post.category && (
             <span className="inline-block px-2 py-1 bg-purple-600/20 text-purple-400 rounded text-xs font-bold">{post.category}</span>
           )}
@@ -389,8 +428,15 @@ export default function AdminSideFrame({ post, position, isAdmin, onRefresh, con
               )}
             </div>
           ) : null}
-          <div className="text-xs text-white/40 font-mono">
-            {new Date(post.created_at).toLocaleDateString('ka-GE')}
+          <div className="flex justify-between items-center mt-3">
+            <div className="text-xs text-white/40 font-mono">
+              {new Date(post.created_at).toLocaleDateString('ka-GE')}
+            </div>
+            {post.priority && post.priority > 0 && (
+              <span className="bg-green-600/20 text-green-400 px-2 py-1 rounded text-xs font-bold">
+                P{post.priority}
+              </span>
+            )}
           </div>
         </div>
       ) : (

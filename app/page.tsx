@@ -203,7 +203,7 @@ export default function HomePage() {
 
   const fetchAdminPosts = async () => {
     const { data } = await (supabase as any).from('admin_posts').select('*').order('priority', { ascending: false }).order('created_at', { ascending: false });
-    if (data) setAdminPosts(data);
+    if (data) setAdminPosts(data.filter((post: any) => post.priority !== -1));
   };
 
   const getPostByPos = (pos: string) => adminPosts.find(p => p.position === pos);
@@ -364,47 +364,72 @@ export default function HomePage() {
             >
               <KakhetianSquare isAdmin={isAdmin} controlToken={controlToken} />
             </div>
-            {/* მარცხენა პოსტები */}
-            <div className="flex flex-col gap-4 w-full">
-               <div className="h-auto">
-                 <AdminSideFrame 
-                   post={getPostByPos('left_top')} 
-                   position="left_top" 
-                   isAdmin={isAdmin} 
-                   onRefresh={fetchAdminPosts}
-                   contentType={frameContentTypes.left_top}
-                   announcement={frameContentTypes.left_top === 'announcement' ? firstAnnouncement : null}
-                   onContentTypeChange={(type) => changeFrameContentType('left_top', type)}
-                 />
-               </div>
-               <div className="h-auto">
-                 <AdminSideFrame 
-                   post={getPostByPos('left_bottom')} 
-                   position="left_bottom" 
-                   isAdmin={isAdmin} 
-                   onRefresh={fetchAdminPosts}
-                   contentType={frameContentTypes.left_bottom}
-                   announcement={frameContentTypes.left_bottom === 'announcement' ? firstAnnouncement : null}
-                   onContentTypeChange={(type) => changeFrameContentType('left_bottom', type)}
-                 />
-               </div>
+            {/* 🍇 აგრო-ბირჟა */}
+            <div className="bg-white/[0.03] backdrop-blur-3xl rounded-[30px] border border-white/10 p-5 flex flex-col items-center group relative overflow-hidden transition-all hover:border-purple-500/30 shadow-xl">
+              <div className="flex justify-between w-full items-center mb-4">
+                <h4 className="text-[10px] font-black text-purple-400 uppercase tracking-[0.4em]">🍇 აგრო-ბირჟა</h4>
+                {isAdmin && <span className="text-[9px] bg-red-500/20 text-red-400 px-2 py-1 rounded">Edit</span>}
+              </div>
+              <p className="w-full text-[10px] text-white/40 font-bold uppercase tracking-[0.2em] mb-3 leading-tight">საორიენტაციო ფასები · დააჭირე პროდუქტს რომ ნახო მიმღები ობიექტები</p>
+              <div className="w-full space-y-2">
+                {agroData.filter(i => i.category === 'grape').map(item => (
+                  <button key={item.id} onClick={() => isAdmin ? (() => { setEditAgroItem(item); setNewPrice(item.price); setEditDetails(item.details || []); })() : setSelectedAgro(item)} className={`w-full flex justify-between items-center bg-black/40 p-3 rounded-xl border border-white/5 transition-all group/item hover:bg-white/5 ${isAdmin ? 'hover:border-amber-500' : ''}`}>
+                    <span className="text-xs font-black uppercase text-purple-300 flex gap-2">{item.name} {isAdmin && '✏️'}</span>
+                    <span className="text-sm font-black italic">{item.price}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+            {/* 🏛️ ადმინისტრაციული განცხადება */}
+            <div className="w-full bg-gradient-to-br from-amber-900/40 via-black/50 to-amber-700/20 backdrop-blur-sm rounded-[24px] border border-amber-500/30 shadow-[0_0_20px_4px_rgba(255,191,0,0.1)] p-4 ring-1 ring-amber-400/20 relative">
+              <AdminSideFrame 
+                post={getPostByPos('right_bottom')} 
+                position="right_bottom" 
+                isAdmin={isAdmin} 
+                onRefresh={fetchAdminPosts}
+                contentType={frameContentTypes.right_bottom}
+                announcement={frameContentTypes.right_bottom === 'announcement' ? firstAnnouncement : null}
+                onContentTypeChange={(type) => changeFrameContentType('right_bottom', type)}
+              />
             </div>
           </div>
 
           {/* --- ცენტრალური სვეტი --- */}
           <div className="flex flex-col items-center text-center space-y-8 animate-in fade-in duration-1000 w-full order-1 lg:order-2">
-             {/* მობილური ვერსია (მხოლოდ პატარა ეკრანებზე) */}
+             {/* მობილური ვერსია - მარცხენა მხარე */}
              <div className="flex flex-col gap-4 w-full lg:hidden">
                  <div className="h-[450px] bg-black/60 backdrop-blur-xl rounded-[30px] border border-white/5">
                    <KakhetianSquare isAdmin={isAdmin} controlToken={controlToken} />
                  </div>
+                 {/* 🍇 აგრო-ბირჟა */}
+                 <div className="bg-white/[0.03] backdrop-blur-3xl rounded-[30px] border border-white/10 p-5 flex flex-col items-center group relative overflow-hidden transition-all hover:border-purple-500/30 shadow-xl">
+                   <div className="flex justify-between w-full items-center mb-4">
+                     <h4 className="text-[10px] font-black text-purple-400 uppercase tracking-[0.4em]">🍇 აგრო-ბირჟა</h4>
+                     {isAdmin && <span className="text-[9px] bg-red-500/20 text-red-400 px-2 py-1 rounded">Edit</span>}
+                   </div>
+                   <p className="w-full text-[10px] text-white/40 font-bold uppercase tracking-[0.2em] mb-3 leading-tight">საორიენტაციო ფასები · დააჭირე პროდუქტს რომ ნახო მიმღები ობიექტები</p>
+                   <div className="w-full space-y-2">
+                     {agroData.filter(i => i.category === 'grape').map(item => (
+                       <button key={item.id} onClick={() => isAdmin ? (() => { setEditAgroItem(item); setNewPrice(item.price); setEditDetails(item.details || []); })() : setSelectedAgro(item)} className={`w-full flex justify-between items-center bg-black/40 p-3 rounded-xl border border-white/5 transition-all group/item hover:bg-white/5 ${isAdmin ? 'hover:border-amber-500' : ''}`}>
+                         <span className="text-xs font-black uppercase text-purple-300 flex gap-2">{item.name} {isAdmin && '✏️'}</span>
+                         <span className="text-sm font-black italic">{item.price}</span>
+                       </button>
+                     ))}
+                   </div>
+                 </div>
+                 {/* 🏛️ ადმინისტრაციული განცხადება */}
+                 <div className="bg-gradient-to-br from-amber-900/40 via-black/50 to-amber-700/20 backdrop-blur-sm rounded-[24px] border border-amber-500/30 shadow-[0_0_20px_4px_rgba(255,191,0,0.1)] p-4 ring-1 ring-amber-400/20 relative">
+                   <AdminSideFrame 
+                     post={getPostByPos('right_bottom')} 
+                     position="right_bottom" 
+                     isAdmin={isAdmin} 
+                     onRefresh={fetchAdminPosts}
+                     contentType={frameContentTypes.right_bottom}
+                     announcement={frameContentTypes.right_bottom === 'announcement' ? firstAnnouncement : null}
+                     onContentTypeChange={(type) => changeFrameContentType('right_bottom', type)}
+                   />
+                 </div>
                 {/* CommunityHub removed: community entry moved to navbar center */}
-                <div className="bg-black/60 backdrop-blur-xl rounded-[30px] border border-white/5 p-2">
-                  <AdminSideFrame post={getPostByPos('left_top')} position="left_top" isAdmin={isAdmin} onRefresh={fetchAdminPosts} />
-                </div>
-                <div className="bg-black/60 backdrop-blur-xl rounded-[30px] border border-white/5 p-2">
-                  <AdminSideFrame post={getPostByPos('left_bottom')} position="left_bottom" isAdmin={isAdmin} onRefresh={fetchAdminPosts} />
-                </div>
              </div>
 
              <HeroSection 
@@ -427,21 +452,26 @@ export default function HomePage() {
             {/* CommunityHub removed: community entry moved to navbar center */}
 
             <ServiceWidgets 
-              agroData={agroData} isAdmin={isAdmin} 
-              onEditAgro={(item) => { setEditAgroItem(item); setNewPrice(item.price); setEditDetails(item.details || []); }} 
-              onSelectAgro={setSelectedAgro} onMapSearch={handleMapSearch} 
+              onMapSearch={handleMapSearch} 
             />
 
-             {/* მობილური ვერსია - მარჯვენა მხარე */}
              <div className="flex flex-col gap-4 w-full lg:hidden text-left">
                <div className="h-[450px] bg-black/60 backdrop-blur-xl rounded-[30px] border border-white/5">
                  <RightSidebar weatherData={weatherData} seasonal={seasonal} fact={KAKHETI_FACTS[factIndex]} onShowTransport={() => setShowTransport(true)} />
                </div>
-               <div className="bg-black/60 backdrop-blur-xl rounded-[30px] border border-white/5 p-2">
-                <AdminSideFrame post={getPostByPos('right_top')} position="right_top" isAdmin={isAdmin} onRefresh={fetchAdminPosts} />
-               </div>
-               <div className="bg-black/60 backdrop-blur-xl rounded-[30px] border border-white/5 p-2">
-                <AdminSideFrame post={getPostByPos('right_bottom')} position="right_bottom" isAdmin={isAdmin} onRefresh={fetchAdminPosts} />
+               {/* 🌾 მარცვლეული */}
+               <div className="bg-white/[0.03] backdrop-blur-3xl rounded-[30px] border border-white/10 p-5 flex flex-col items-center group relative overflow-hidden transition-all hover:border-yellow-500/30 shadow-xl">
+                 <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-yellow-500 to-transparent opacity-30" />
+                 <h4 className="text-[10px] font-black text-yellow-500 uppercase tracking-[0.4em] mb-4 w-full text-left">🌾 მარცვლეული</h4>
+                 <p className="w-full text-[10px] text-white/40 font-bold uppercase tracking-[0.2em] mb-3 leading-tight">საორიენტაციო ფასები · დააჭირე პროდუქტს რომ ნახო მიმღები ობიექტები</p>
+                 <div className="w-full space-y-2">
+                   {agroData.filter(i => i.category === 'grain').map(item => (
+                     <button key={item.id} onClick={() => isAdmin ? (() => { setEditAgroItem(item); setNewPrice(item.price); setEditDetails(item.details || []); })() : setSelectedAgro(item)} className={`w-full flex justify-between items-center bg-black/40 p-3 rounded-xl border border-white/5 transition-all group/item hover:bg-white/5 ${isAdmin ? 'hover:border-amber-500' : ''}`}>
+                       <span className="text-xs font-black uppercase text-yellow-500 flex gap-2">{item.name} {isAdmin && '✏️'}</span>
+                       <span className="text-sm font-black italic">{item.price}</span>
+                     </button>
+                   ))}
+                 </div>
                </div>
              </div>
           </div>
@@ -454,30 +484,33 @@ export default function HomePage() {
                 <RightSidebar weatherData={weatherData} seasonal={seasonal} fact={KAKHETI_FACTS[factIndex]} onShowTransport={() => setShowTransport(true)} />
               </div>
             </div>
-            {/* მარჯვენა პოსტები */}
+            {/* 🌾 მარცვლეული */}
+            <div className="w-full bg-white/[0.03] backdrop-blur-3xl rounded-[30px] border border-white/10 p-5 flex flex-col items-center group relative overflow-hidden transition-all hover:border-yellow-500/30 shadow-xl">
+              <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-yellow-500 to-transparent opacity-30" />
+              <h4 className="text-[10px] font-black text-yellow-500 uppercase tracking-[0.4em] mb-4 w-full text-left">🌾 მარცვლეული</h4>
+              <p className="w-full text-[10px] text-white/40 font-bold uppercase tracking-[0.2em] mb-3 leading-tight">საორიენტაციო ფასები · დააჭირე პროდუქტს რომ ნახო მიმღები ობიექტები</p>
+              <div className="w-full space-y-2">
+                {agroData.filter(i => i.category === 'grain').map(item => (
+                  <button key={item.id} onClick={() => isAdmin ? (() => { setEditAgroItem(item); setNewPrice(item.price); setEditDetails(item.details || []); })() : setSelectedAgro(item)} className={`w-full flex justify-between items-center bg-black/40 p-3 rounded-xl border border-white/5 transition-all group/item hover:bg-white/5 ${isAdmin ? 'hover:border-amber-500' : ''}`}>
+                    <span className="text-xs font-black uppercase text-yellow-500 flex gap-2">{item.name} {isAdmin && '✏️'}</span>
+                    <span className="text-sm font-black italic">{item.price}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+            {/* 🏛️ ადმინისტრაციული განცხადებები */}
             <div className="flex flex-col gap-4 w-full">
-               <div className="h-auto">
-                 <AdminSideFrame 
-                   post={getPostByPos('right_top')} 
-                   position="right_top" 
-                   isAdmin={isAdmin} 
-                   onRefresh={fetchAdminPosts}
-                   contentType={frameContentTypes.right_top}
-                   announcement={frameContentTypes.right_top === 'announcement' ? firstAnnouncement : null}
-                   onContentTypeChange={(type) => changeFrameContentType('right_top', type)}
-                 />
-               </div>
-               <div className="h-auto">
-                 <AdminSideFrame 
-                   post={getPostByPos('right_bottom')} 
-                   position="right_bottom" 
-                   isAdmin={isAdmin} 
-                   onRefresh={fetchAdminPosts}
-                   contentType={frameContentTypes.right_bottom}
-                   announcement={frameContentTypes.right_bottom === 'announcement' ? firstAnnouncement : null}
-                   onContentTypeChange={(type) => changeFrameContentType('right_bottom', type)}
-                 />
-               </div>
+              <div className="w-full bg-gradient-to-br from-amber-900/40 via-black/50 to-amber-700/20 backdrop-blur-sm rounded-[24px] border border-amber-500/30 shadow-[0_0_20px_4px_rgba(255,191,0,0.1)] p-4 ring-1 ring-amber-400/20 relative">
+                <AdminSideFrame 
+                  post={getPostByPos('right_top')} 
+                  position="right_top" 
+                  isAdmin={isAdmin} 
+                  onRefresh={fetchAdminPosts}
+                  contentType={frameContentTypes.right_top}
+                  announcement={frameContentTypes.right_top === 'announcement' ? firstAnnouncement : null}
+                  onContentTypeChange={(type) => changeFrameContentType('right_top', type)}
+                />
+              </div>
             </div>
           </div>
         </div>
