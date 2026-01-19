@@ -186,12 +186,11 @@ export default function AdsSection({
           <div className="relative group w-full sm:w-64">
             <input 
               type="text" 
-              placeholder="ძებნა..." 
+              placeholder="🔍 ძებნა..." 
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full bg-black/40 border border-white/10 rounded-2xl pl-12 pr-4 py-3 text-sm text-white outline-none focus:border-amber-500 transition-all group-hover:bg-black/60 placeholder:text-white/30"
+              className="w-full bg-black/40 border border-white/10 rounded-2xl pl-4 pr-4 py-3 text-sm text-white outline-none focus:border-amber-500 transition-all group-hover:bg-black/60 placeholder:text-white/30"
             />
-            <span className="absolute left-4 top-1/2 -translate-y-1/2 text-white/30 group-hover:text-amber-500 transition-colors">🔍</span>
           </div>
         </div>
       </div>
