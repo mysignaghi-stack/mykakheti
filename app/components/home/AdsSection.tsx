@@ -189,9 +189,9 @@ export default function AdsSection({
               placeholder="ძებნა..." 
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full bg-black/40 border border-white/10 rounded-2xl pl-10 pr-4 py-3 text-sm text-white outline-none focus:border-amber-500 transition-all group-hover:bg-black/60 placeholder:text-white/30"
+              className="w-full bg-black/40 border border-white/10 rounded-2xl pl-12 pr-4 py-3 text-sm text-white outline-none focus:border-amber-500 transition-all group-hover:bg-black/60 placeholder:text-white/30"
             />
-            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-white/30 group-hover:text-amber-500 transition-colors">🔍</span>
+            <span className="absolute left-4 top-1/2 -translate-y-1/2 text-white/30 group-hover:text-amber-500 transition-colors">🔍</span>
           </div>
         </div>
       </div>
@@ -333,7 +333,7 @@ export default function AdsSection({
               />
               <span className="absolute left-3 top-1/2 -translate-y-1/2 text-white/30 group-hover:text-amber-500 transition-colors">🔍</span>
             </div>
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 max-h-96 overflow-y-auto">
               {filteredCategories.map(cat => (
                 <button
                   key={cat.value}
@@ -341,7 +341,7 @@ export default function AdsSection({
                     toggleCategory(cat.value);
                     setShowAllCategories(false);
                   }}
-                  className={`px-4 py-3 rounded-2xl text-sm font-bold transition-all ${
+                  className={`px-3 py-2 rounded-2xl text-xs font-bold transition-all ${
                     selectedCategories.includes(cat.value) 
                       ? 'bg-amber-600 text-white shadow-lg scale-105' 
                       : 'bg-white/5 text-white/60 hover:text-white hover:bg-white/10 border border-white/10'
