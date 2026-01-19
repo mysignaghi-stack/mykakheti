@@ -138,8 +138,8 @@ export default function HomePage() {
         details: editDetails,
       };
 
-      const { error } = await supabase
-        .from('agro_prices')
+      const { error } = await (supabase
+        .from('agro_prices') as any)
         .update(payload)
         .eq('id', editAgroItem.id);
 

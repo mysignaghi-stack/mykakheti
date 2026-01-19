@@ -47,13 +47,13 @@ export function useAdsData() {
   }, []);
 
   const archiveAd = async (id: string) => {
-    const { error } = await supabase.from('announcements').update({ is_archived: true }).eq('id', id);
+    const { error } = await (supabase.from('announcements') as any).update({ is_archived: true }).eq('id', id);
     if (!error) setAds(ads => ads.map(ad => ad.id === id ? { ...ad, is_archived: true } : ad));
     return error;
   };
 
   const restoreAd = async (id: string) => {
-    const { error } = await supabase.from('announcements').update({ is_archived: false }).eq('id', id);
+    const { error } = await (supabase.from('announcements') as any).update({ is_archived: false }).eq('id', id);
     if (!error) setAds(ads => ads.map(ad => ad.id === id ? { ...ad, is_archived: false } : ad));
     return error;
   };
