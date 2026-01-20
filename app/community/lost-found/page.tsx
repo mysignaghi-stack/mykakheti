@@ -5,12 +5,15 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { supabase } from '../../lib/supabase';
 import type { Database } from '../../../types/supabase';
+import { useSearchParams } from 'next/navigation';
 
 type LFItem = Database['public']['Tables']['lost_found']['Row'];
 
 export default function LostFoundPage() {
   const [items, setItems] = useState<LFItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const searchParams = useSearchParams();
+  const selectedId = searchParams.get('selectedId');
 
   const CATEGORY_LABELS: Record<string, string> = {
     document: 'დოკუმენტები',
@@ -38,6 +41,15 @@ export default function LostFoundPage() {
     fetchData();
   }, []);
 
+  useEffect(() => {
+    if (selectedId) {
+      const element = document.getElementById(`lost-found-${selectedId}`);
+      if (element) {
+        element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+    }
+  }, [selectedId]);
+
   return (
     <main className="min-h-screen bg-[#050510] p-6 md:p-10 text-white">
       <div className="max-w-5xl mx-auto">
@@ -55,7 +67,7 @@ export default function LostFoundPage() {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             {items.map(it => (
               <Link key={it.id} href={`/community/lost-found/${it.id}`} className="block">
-                <div className="p-5 bg-white/5 rounded-2xl border border-white/10 hover:bg-white/10 transition">
+                <div id={`lost-found-${it.id}`} className="p-5 bg-white/5 rounded-2xl border border-white/10 hover:bg-white/10 transition">
                   <div className="flex gap-3 items-start">
                     {it.image_url && (
                       <Image src={it.image_url} alt="" width={80} height={80} className="rounded-xl object-cover" />

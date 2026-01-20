@@ -5,12 +5,15 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { supabase } from '../../lib/supabase';
 import type { Database } from '../../../types/supabase';
+import { useSearchParams } from 'next/navigation';
 
 type Obituary = Database['public']['Tables']['obituaries']['Row'];
 
 export default function ObituariesPage() {
   const [items, setItems] = useState<Obituary[]>([]);
   const [loading, setLoading] = useState(true);
+  const searchParams = useSearchParams();
+  const selectedId = searchParams.get('selectedId');
 
   useEffect(() => {
     const fetchData = async () => {
@@ -25,6 +28,15 @@ export default function ObituariesPage() {
     };
     fetchData();
   }, []);
+
+  useEffect(() => {
+    if (selectedId) {
+      const element = document.getElementById(`obituary-${selectedId}`);
+      if (element) {
+        element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+    }
+  }, [selectedId]);
 
   return (
     <main className="min-h-screen bg-[#050510] p-6 md:p-10 text-white">
@@ -42,23 +54,29 @@ export default function ObituariesPage() {
         ) : (
           <div className="space-y-4">
             {items.map(item => (
-              <Link key={item.id} href={`/community/obituaries/${item.id}`} className="block p-5 bg-white/5 rounded-2xl border border-white/10 hover:bg-white/10 transition">
-                <div className="flex gap-4 items-start">
-                  {item.image_url && (
-                    <Image src={item.image_url} alt="" width={80} height={80} className="rounded-xl object-cover" />
-                  )}
-                  <div className="flex-1">
-                    <h3 className="font-black text-white text-lg italic">{item.full_name}</h3>
-                    <div className="text-[12px] text-white/60">
-                      {item.date_of_death && (<p>გარდაცვალება: {new Date(item.date_of_death).toLocaleDateString()}</p>)}
-                      {item.funeral_at && (<p>გასვენება: {new Date(item.funeral_at).toLocaleString()}</p>)}
-                      {item.funeral_place && (<p>ადგილი: {item.funeral_place}</p>)}
-                      {item.contacts && (<p>კონტაქტი: {item.contacts}</p>)}
+              <div
+                key={item.id}
+                id={`obituary-${item.id}`}
+                className={item.id === selectedId ? 'highlight-class' : ''}
+              >
+                <Link href={`/community/obituaries/${item.id}`} className="block p-5 bg-white/5 rounded-2xl border border-white/10 hover:bg-white/10 transition">
+                  <div className="flex gap-4 items-start">
+                    {item.image_url && (
+                      <Image src={item.image_url} alt="" width={80} height={80} className="rounded-xl object-cover" />
+                    )}
+                    <div className="flex-1">
+                      <h3 className="font-black text-white text-lg italic">{item.full_name}</h3>
+                      <div className="text-[12px] text-white/60">
+                        {item.date_of_death && (<p>გარდაცვალება: {new Date(item.date_of_death).toLocaleDateString()}</p>)}
+                        {item.funeral_at && (<p>გასვენება: {new Date(item.funeral_at).toLocaleString()}</p>)}
+                        {item.funeral_place && (<p>ადგილი: {item.funeral_place}</p>)}
+                        {item.contacts && (<p>კონტაქტი: {item.contacts}</p>)}
+                      </div>
+                      {item.notes && (<p className="mt-2 text-sm text-white/80">{item.notes}</p>)}
                     </div>
-                    {item.notes && (<p className="mt-2 text-sm text-white/80">{item.notes}</p>)}
                   </div>
-                </div>
-              </Link>
+                </Link>
+              </div>
             ))}
             {items.length === 0 && (
               <div className="opacity-20 italic">ჩანაწერები არ არსებობს</div>

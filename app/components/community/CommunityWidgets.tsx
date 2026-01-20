@@ -39,27 +39,23 @@ export default function CommunityWidgets() {
           .from("obituaries")
           .select("id, full_name, funeral_at, funeral_place, image_url, is_approved, created_at")
           .eq("is_approved", true)
-          .order("created_at", { ascending: false })
-          .limit(5),
+          .order("created_at", { ascending: false }),
         supabase
           .from("lost_found")
           .select("id, title, location, image_url, kind, is_approved, resolved, created_at")
           .eq("is_approved", true)
           .eq("resolved", false)
-          .order("created_at", { ascending: false })
-          .limit(5),
+          .order("created_at", { ascending: false }),
         supabase
           .from("masters")
           .select("id, full_name, profession, location, photo_url, rating_avg, is_approved, created_at")
           .eq("is_approved", true)
-          .order("created_at", { ascending: false })
-          .limit(5),
+          .order("created_at", { ascending: false }),
         supabase
           .from("congratulations")
           .select("id, sender_name, receiver_name, message, image_url, category, theme, created_at")
           .eq("is_approved", true)
-          .order("created_at", { ascending: false })
-          .limit(5),
+          .order("created_at", { ascending: false }),
       ]);
 
       setObituaries(obRes.data ?? []);
@@ -133,7 +129,7 @@ export default function CommunityWidgets() {
         description={currentObituary ? currentObituary.funeral_place || "" : ""}
         title={currentObituary?.full_name || cards[0].placeholder}
         meta={currentObituary?.funeral_at ? new Date(currentObituary.funeral_at).toLocaleDateString("ka-GE") : undefined}
-        href={currentObituary?.id ? cards[0].hrefBuilder?.(currentObituary.id) ?? cards[0].link : cards[0].link}
+        href={`/community/obituaries?selectedId=${currentObituary?.id}`}
         image={currentObituary?.image_url || undefined}
       />
 
@@ -144,7 +140,7 @@ export default function CommunityWidgets() {
         description={currentLostFound?.location || ""}
         title={currentLostFound?.title || cards[1].placeholder}
         meta={currentLostFound?.kind ? (currentLostFound.kind === "found" ? "ნაპოვნი" : "დაკარგული") : undefined}
-        href={currentLostFound?.id ? cards[1].hrefBuilder?.(currentLostFound.id) ?? cards[1].link : cards[1].link}
+        href={`/community/lost-found?selectedId=${currentLostFound?.id}`}
         image={currentLostFound?.image_url || undefined}
       />
 
@@ -155,7 +151,7 @@ export default function CommunityWidgets() {
         description={currentMaster?.location || ""}
         title={currentMaster?.full_name || cards[2].placeholder}
         meta={currentMaster?.profession}
-        href={currentMaster?.id ? cards[2].hrefBuilder?.(currentMaster.id) ?? cards[2].link : cards[2].link}
+        href={`/community/masters?selectedId=${currentMaster?.id}`}
         image={currentMaster?.photo_url || undefined}
       />
 
@@ -166,7 +162,7 @@ export default function CommunityWidgets() {
         description={currentCongrats ? `${currentCongrats.sender_name || ""} → ${currentCongrats.receiver_name || ""}` : ""}
         title={currentCongrats?.message || cards[3].placeholder}
         meta={currentCongrats?.category || currentCongrats?.theme}
-        href={currentCongrats?.id ? cards[3].hrefBuilder?.(currentCongrats.id) ?? cards[3].link : cards[3].link}
+        href={`/community/congratulations?selectedId=${currentCongrats?.id}`}
         image={congratsImage}
       />
     </div>

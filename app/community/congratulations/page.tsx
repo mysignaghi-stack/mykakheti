@@ -5,12 +5,15 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { supabase } from '../../lib/supabase';
 import type { Database } from '../../../types/supabase';
+import { useSearchParams } from 'next/navigation';
 
 type Congratulations = Database['public']['Tables']['congratulations']['Row'];
 
 export default function CongratulationsPage() {
   const [items, setItems] = useState<Congratulations[]>([]);
   const [loading, setLoading] = useState(true);
+  const searchParams = useSearchParams();
+  const selectedId = searchParams.get('selectedId');
 
   useEffect(() => {
     const fetchData = async () => {
@@ -25,6 +28,15 @@ export default function CongratulationsPage() {
     };
     fetchData();
   }, []);
+
+  useEffect(() => {
+    if (selectedId) {
+      const element = document.getElementById(`congrats-${selectedId}`);
+      if (element) {
+        element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+    }
+  }, [selectedId]);
 
   return (
     <main className="min-h-screen bg-[#050510] p-6 md:p-10 text-white">

@@ -5,12 +5,15 @@ import Link from 'next/link';
 import { supabase } from '../../lib/supabase';
 import MasterCard from '../../components/community/MasterCard';
 import type { Database } from '../../../types/supabase';
+import { useSearchParams } from 'next/navigation';
 
 type Master = Database['public']['Tables']['masters']['Row'];
 
 export default function MastersPage() {
   const [items, setItems] = useState<Master[]>([]);
   const [loading, setLoading] = useState(true);
+  const searchParams = useSearchParams();
+  const selectedId = searchParams.get('selectedId');
 
   useEffect(() => {
     const fetchData = async () => {
@@ -25,6 +28,15 @@ export default function MastersPage() {
     };
     fetchData();
   }, []);
+
+  useEffect(() => {
+    if (selectedId) {
+      const element = document.getElementById(`master-${selectedId}`);
+      if (element) {
+        element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+    }
+  }, [selectedId]);
 
   return (
     <main className="min-h-screen bg-[#050510] p-6 md:p-10 text-white">
@@ -42,9 +54,15 @@ export default function MastersPage() {
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             {items.map(m => (
-              <Link key={m.id} href={`/community/masters/${m.id}`} className="block">
-                <MasterCard master={m} />
-              </Link>
+              <div
+                key={m.id}
+                id={`master-${m.id}`}
+                className={m.id === selectedId ? 'highlight-class' : ''}
+              >
+                <Link href={`/community/masters/${m.id}`} className="block">
+                  <MasterCard master={m} />
+                </Link>
+              </div>
             ))}
             {items.length === 0 && (
               <div className="opacity-20 italic">შესაბამისი ოსტატი ვერ მოიძებნა</div>
