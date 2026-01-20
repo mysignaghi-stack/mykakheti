@@ -27,6 +27,7 @@ export default function ServiceWidgets({ onMapSearch }: ServiceWidgetsProps) {
   const [loading, setLoading] = useState(true);
   const [currentPlaceIndex, setCurrentPlaceIndex] = useState(0);
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
+
   
   useEffect(() => {
     const fetchPlaces = async () => {
@@ -93,7 +94,7 @@ export default function ServiceWidgets({ onMapSearch }: ServiceWidgetsProps) {
       </div>
 
       {/* 🏛️ კახეთის ღირსშესანიშნაობები */}
-      <div className="bg-white/[0.03] backdrop-blur-3xl rounded-[30px] border border-white/10 p-5 flex flex-col items-center group relative overflow-hidden transition-all hover:border-cyan-500/30 shadow-xl h-full">
+      <div className="bg-white/[0.03] backdrop-blur-3xl rounded-[30px] border border-white/10 p-5 flex flex-col items-center group relative overflow-hidden transition-all hover:border-cyan-500/30 shadow-xl h-80">
         <h4 className="text-[10px] font-black text-cyan-400 uppercase tracking-[0.4em] mb-4 w-full text-left">🏛️ კახეთის ღირსშესანიშნაობები</h4>
         
         {/* Category filters */}
@@ -133,63 +134,19 @@ export default function ServiceWidgets({ onMapSearch }: ServiceWidgetsProps) {
           <div className="w-full h-full flex flex-col">
             {/* Main place display */}
             <div className="flex-1 flex flex-col justify-center">
-              <div className="bg-white/5 p-6 rounded-2xl border border-white/5 hover:bg-cyan-500/10 transition-all duration-500 group/place">
-                <div className="flex flex-col space-y-4">
-                  {/* Image display */}
-                  {filteredPlaces[currentPlaceIndex]?.image_url && (
-                    <div className="w-full h-48 rounded-lg overflow-hidden border border-white/10">
-                      <img
-                        src={filteredPlaces[currentPlaceIndex].image_url}
-                        alt={filteredPlaces[currentPlaceIndex]?.title}
-                        className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
-                        onError={(e) => {
-                          // Hide image if it fails to load
-                          (e.target as HTMLElement).style.display = 'none';
-                        }}
-                      />
-                    </div>
-                  )}
-
-                  <div className="flex items-start space-x-4">
-                    <div className="text-4xl flex-shrink-0">
-                      {getPlaceIcon(filteredPlaces[currentPlaceIndex])}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center justify-between mb-2">
-                        <h3 className="text-lg font-bold text-white leading-tight">
-                          {filteredPlaces[currentPlaceIndex]?.title}
-                        </h3>
-                        {filteredPlaces[currentPlaceIndex]?.category && (
-                          <span className="text-xs bg-cyan-500/20 text-cyan-300 px-2 py-1 rounded-full border border-cyan-500/30">
-                            {filteredPlaces[currentPlaceIndex].category}
-                          </span>
-                        )}
-                      </div>
-                      <p className="text-sm text-white/80 leading-relaxed line-clamp-4 mb-3">
-                        {filteredPlaces[currentPlaceIndex]?.description}
-                      </p>
-                      {filteredPlaces[currentPlaceIndex]?.fun_fact && (
-                        <div className="bg-cyan-500/10 border border-cyan-500/20 rounded-lg p-3 mb-3">
-                          <div className="text-xs font-medium text-cyan-300 mb-1">იცოდით თუ არა?</div>
-                          <div className="text-sm text-white/90 italic">
-                            {filteredPlaces[currentPlaceIndex]?.fun_fact}
-                          </div>
-                        </div>
-                      )}
-                      {filteredPlaces[currentPlaceIndex]?.location_name && (
-                        <div className="text-xs text-white/60">
-                          📍 {filteredPlaces[currentPlaceIndex]?.location_name}
-                        </div>
-                      )}
+              <div className="flex flex-col space-y-4">
+                {filteredPlaces[currentPlaceIndex]?.fun_fact ? (
+                  <div className="bg-cyan-500/10 border border-cyan-500/20 rounded-lg p-4">
+                    <div className="text-sm font-medium text-cyan-300 mb-2">იცოდით თუ არა?</div>
+                    <div className="text-sm text-white/90 italic">
+                      {filteredPlaces[currentPlaceIndex]?.fun_fact}
                     </div>
                   </div>
-                  <button
-                    onClick={() => onMapSearch(filteredPlaces[currentPlaceIndex]?.title)}
-                    className="px-4 py-2 bg-cyan-500/20 hover:bg-cyan-500/30 text-cyan-300 text-xs font-medium rounded-lg transition-all duration-200 border border-cyan-500/30"
-                  >
-                    რუკაზე ნახვა 🗺️
-                  </button>
-                </div>
+                ) : (
+                  <div className="text-sm text-white/60 text-center">
+                    ინფორმაცია არ არის ხელმისაწვდომი
+                  </div>
+                )}
               </div>
             </div>
 
