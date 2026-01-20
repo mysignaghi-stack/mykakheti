@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, Suspense } from 'react';
 import Link from 'next/link';
 import { supabase } from '../../lib/supabase';
 import MasterCard from '../../components/community/MasterCard';
@@ -9,7 +9,7 @@ import { useSearchParams } from 'next/navigation';
 
 type Master = Database['public']['Tables']['masters']['Row'];
 
-export default function MastersPage() {
+function MastersPageContent() {
   const [items, setItems] = useState<Master[]>([]);
   const [loading, setLoading] = useState(true);
   const searchParams = useSearchParams();
@@ -71,5 +71,13 @@ export default function MastersPage() {
         )}
       </div>
     </main>
+  );
+}
+
+export default function MastersPage() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <MastersPageContent />
+    </Suspense>
   );
 }

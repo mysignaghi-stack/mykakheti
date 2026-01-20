@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, Suspense } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { supabase } from '../../lib/supabase';
@@ -9,7 +9,7 @@ import { useSearchParams } from 'next/navigation';
 
 type Obituary = Database['public']['Tables']['obituaries']['Row'];
 
-export default function ObituariesPage() {
+function ObituariesPageContent() {
   const [items, setItems] = useState<Obituary[]>([]);
   const [loading, setLoading] = useState(true);
   const searchParams = useSearchParams();
@@ -85,5 +85,13 @@ export default function ObituariesPage() {
         )}
       </div>
     </main>
+  );
+}
+
+export default function ObituariesPage() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <ObituariesPageContent />
+    </Suspense>
   );
 }

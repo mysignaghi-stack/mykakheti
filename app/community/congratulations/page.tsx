@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, Suspense } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { supabase } from '../../lib/supabase';
@@ -9,7 +9,7 @@ import { useSearchParams } from 'next/navigation';
 
 type Congratulations = Database['public']['Tables']['congratulations']['Row'];
 
-export default function CongratulationsPage() {
+function CongratulationsPageContent() {
   const [items, setItems] = useState<Congratulations[]>([]);
   const [loading, setLoading] = useState(true);
   const searchParams = useSearchParams();
@@ -85,5 +85,13 @@ export default function CongratulationsPage() {
         )}
       </div>
     </main>
+  );
+}
+
+export default function CongratulationsPage() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <CongratulationsPageContent />
+    </Suspense>
   );
 }

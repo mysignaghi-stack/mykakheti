@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, Suspense } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { supabase } from '../../lib/supabase';
@@ -9,7 +9,7 @@ import { useSearchParams } from 'next/navigation';
 
 type LFItem = Database['public']['Tables']['lost_found']['Row'];
 
-export default function LostFoundPage() {
+function LostFoundPageContent() {
   const [items, setItems] = useState<LFItem[]>([]);
   const [loading, setLoading] = useState(true);
   const searchParams = useSearchParams();
@@ -96,5 +96,13 @@ export default function LostFoundPage() {
         )}
       </div>
     </main>
+  );
+}
+
+export default function LostFoundPage() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <LostFoundPageContent />
+    </Suspense>
   );
 }
