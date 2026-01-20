@@ -348,11 +348,11 @@ export default function AdminSideFrame({ post, position, isAdmin, onRefresh, con
           {/* Content Preview */}
           <div className="relative">
             <p className="text-white/80 text-sm leading-relaxed">
-              {showFullContent || post.content.length <= 150 
+              {showFullContent || !post.content || post.content.length <= 150 
                 ? post.content 
                 : `${post.content.substring(0, 150)}...`}
             </p>
-            {post.content.length > 150 && !showFullContent && (
+            {post.content && post.content.length > 150 && !showFullContent && (
               <div className="absolute bottom-0 left-0 right-0 h-8 bg-gradient-to-t from-black/60 to-transparent rounded-b-xl flex items-end justify-center pb-1">
                 <button
                   onClick={() => setShowFullContent(true)}
@@ -362,7 +362,7 @@ export default function AdminSideFrame({ post, position, isAdmin, onRefresh, con
                 </button>
               </div>
             )}
-            {showFullContent && post.content.length > 150 && (
+            {showFullContent && post.content && post.content.length > 150 && (
               <div className="text-center mt-2">
                 <button
                   onClick={() => setShowFullContent(false)}
