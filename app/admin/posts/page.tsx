@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { supabase } from '../../lib/supabase';
+import { useAdminAuth } from '../../hooks/useAdminAuth';
 
 type AdminPost = {
   id: string;
@@ -20,6 +21,7 @@ type AdminPost = {
 };
 
 export default function AdminPosts() {
+  const { isAdmin, loading: authLoading } = useAdminAuth();
   const [posts, setPosts] = useState<AdminPost[]>([]);
   const [loading, setLoading] = useState(true);
   const [editingPost, setEditingPost] = useState<AdminPost | null>(null);
@@ -208,6 +210,31 @@ export default function AdminPosts() {
     const files = Array.from(e.target.files || []);
     setSelectedFiles(prev => [...prev, ...files]);
   };
+
+  if (authLoading) {
+    return (
+      <main className="min-h-screen bg-[#050510] flex items-center justify-center text-white">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-amber-500 mx-auto mb-4" />
+          <p>ავტორიზაცია...</p>
+        </div>
+      </main>
+    );
+  }
+
+  if (!isAdmin) {
+    return (
+      <main className="min-h-screen bg-[#050510] flex items-center justify-center text-white">
+        <div className="text-center">
+          <h1 className="text-2xl font-black text-red-400 mb-4">წვდომა აკრძალულია</h1>
+          <p className="text-white/60 mb-6">ამ გვერდზე წვდომისთვის საჭიროა ადმინისტრატორის უფლებები.</p>
+          <Link href="/admin/login" className="bg-amber-600 hover:bg-amber-500 text-white px-6 py-3 rounded-xl font-black uppercase">
+            ადმინისტრატორად შესვლა
+          </Link>
+        </div>
+      </main>
+    );
+  }
 
   if (loading) {
     return (
