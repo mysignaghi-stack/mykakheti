@@ -60,6 +60,7 @@ export interface AdminPost {
   priority?: number; // პრიორიტეტი (უფრო მაღალი = უფრო მაღლა)
   link?: string; // არასავალდებულო ბმული
   video_background?: boolean; // ვიდეო ფონზე გაშვება
+  badge_text?: string; // ბეიჯის ტექსტი
   created_at: string;
 }
 

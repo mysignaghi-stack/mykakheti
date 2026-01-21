@@ -169,6 +169,7 @@ export default function HomePage() {
   const [frameContentTypes, setFrameContentTypes] = useState({
     left_top: 'post' as 'post' | 'announcement',
     right_top: 'post' as 'post' | 'announcement',
+    right_bottom: 'post' as 'post' | 'announcement',
   });
 
   // Load frame content types from localStorage

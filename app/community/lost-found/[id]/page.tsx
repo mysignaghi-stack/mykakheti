@@ -14,10 +14,17 @@ export default function LostFoundDetails() {
   const id = params?.id as string;
   const [item, setItem] = useState<LostFoundRow | null>(null);
   const CATEGORY_LABELS: Record<string, string> = {
-    document: 'დოკუმენტები',
-    pet: 'შინაური ცხოველი',
-    keys_items: 'გასაღები/ნივთები',
-    other: 'სხვა',
+    personal_documents_wallet: 'პირადი დოკუმენტები და საფულე',
+    electronics_gadgets: 'ელექტრონიკა და გაჯეტები',
+    accessories_jewelry: 'აქსესუარები და სამკაულები',
+    bags_luggage: 'ჩანთები და ბარგი',
+    clothing_footwear: 'ტანსაცმელი და ფეხსაცმელი',
+    pet: 'შინაური ცხოველები',
+    tools_agricultural: 'პირუტყვი და სასოფლო-სამეურნეო ინვენტარი',
+    children_items: 'საბავშვო ნივთები',
+    transport_sports: 'ტრანსპორტი და სპორტი',
+    person: 'ადამიანი',
+    other: 'სხვადასხვა',
   };
   const FILTER_LABELS: Record<'lost'|'found', string> = {
     lost: 'დაკარგული',

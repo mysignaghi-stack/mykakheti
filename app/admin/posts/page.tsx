@@ -15,6 +15,7 @@ type AdminPost = {
   priority?: number;
   link?: string;
   position?: string;
+  badge_text?: string;
   created_at: string;
 };
 
