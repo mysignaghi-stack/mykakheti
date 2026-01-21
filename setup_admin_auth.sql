@@ -22,6 +22,17 @@ FOR UPDATE USING (
   )
 );
 
+-- Allow admins to delete announcements as well
+DROP POLICY IF EXISTS "Admin can delete announcements" ON announcements;
+CREATE POLICY "Admin can delete announcements" ON announcements
+FOR DELETE USING (
+  EXISTS (
+    SELECT 1 FROM auth.users
+    WHERE id = auth.uid()
+    AND raw_user_meta_data->>'role' = 'admin'
+  )
+);
+
 CREATE POLICY "Admin can manage admin posts" ON admin_posts
 FOR ALL USING (
   EXISTS (

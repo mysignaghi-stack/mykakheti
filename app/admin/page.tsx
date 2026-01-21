@@ -9,8 +9,8 @@ import { supabase } from '../lib/supabase';
 const ADMIN_LINKS = [
   { href: '/admin/moderate', title: 'განცხადებების მოდერაცია', desc: 'ყველა ახალი განცხადების დადასტურება/წაშლა' },
   { href: '/admin/announcements', title: 'ადმინის განცხადებები', desc: 'სერვისული პოსტების მართვა' },
-  { href: '/admin/community', title: 'ქომუნითი მოდერაცია', desc: 'სამძიმარი / დაკარგული / ოსტატები' },
-  { href: '/admin/congratulations', title: 'მისალოცები', desc: 'მისალოცი ბარათების დადასტურება' },
+  // community link removed — community moderation is available from the main cards above
+  // 'მისალოცები' merged into 'ქომუნითი' to avoid duplicate panels
   { href: '/admin/messages', title: 'შეტყობინებები', desc: 'კონტაქტის ფორმის მესიჯები' },
   { href: '/admin/businesses', title: 'ბიზნესები', desc: 'ბიზნეს ობიექტების მართვა' },
   { href: '/admin/diagnostic', title: 'დიაგნოსტიკა', desc: 'ადმინისტრატორის სტატუსის შემოწმება' },
@@ -120,11 +120,7 @@ export default function AdminDashboard() {
             <p className="text-white/50 text-sm mt-1">სამძიმარი/დაკარგული/ოსტატები</p>
             <div className="text-[11px] text-white/40 mt-2">სამძიმარი: {stats.pendingObituaries} • დაკარგული: {stats.pendingLostFound} • ოსტატები: {stats.pendingMasters}</div>
           </Link>
-          <Link href="/admin/congratulations" className="bg-white/5 border border-white/10 rounded-2xl p-6 hover:border-amber-500/50 transition-all">
-            <div className="text-xs uppercase font-black text-white/60">მისალოცები</div>
-            <div className="text-3xl font-black mt-2">{stats.pendingCongrats}</div>
-            <p className="text-white/50 text-sm mt-1">დასადასტურებელი ბარათი</p>
-          </Link>
+          {/* 'მისალოცები' moved into the community page (use /admin/community) */}
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
