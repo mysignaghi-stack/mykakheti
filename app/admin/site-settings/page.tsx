@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import imageCompression from 'browser-image-compression';
 import { supabase } from '../../lib/supabase';
 
 export default function AdminSiteSettings() {
@@ -47,33 +48,65 @@ export default function AdminSiteSettings() {
 
     setLoading(true);
     try {
+      // Compress the image
+      console.log('Starting image compression...');
+      const compressedFile = selectedFile.type.startsWith('image/') ? await imageCompression(selectedFile, {
+        maxSizeMB: 2,
+        maxWidthOrHeight: 1920,
+        useWebWorker: true,
+      }) : selectedFile;
+      console.log('Image compression completed');
+
       // Upload to site-assets bucket
-      const fileName = `background-${Date.now()}.${selectedFile.name.split('.').pop()}`;
+      const fileExtension = compressedFile.name.split('.').pop()?.toLowerCase() || 'jpg';
+      const fileName = `background-${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExtension}`;
+      console.log('Uploading to site-assets bucket:', fileName);
       const { data: uploadData, error: uploadError } = await supabase.storage
         .from('site-assets')
-        .upload(fileName, selectedFile);
+        .upload(fileName, compressedFile);
 
-      if (uploadError) throw uploadError;
+      if (uploadError) {
+        console.error('Storage upload error:', uploadError);
+        throw new Error(`ატვირთვის შეცდომა: ${uploadError.message}`);
+      }
+      console.log('Upload successful:', uploadData);
 
       // Get public URL
+      console.log('Getting public URL...');
       const { data: urlData } = supabase.storage
         .from('site-assets')
         .getPublicUrl(fileName);
 
+      if (!urlData?.publicUrl) {
+        throw new Error('საჯარო URL-ის მიღების შეცდომა');
+      }
+      console.log('Public URL obtained:', urlData.publicUrl);
+
       // Update site_settings
+      console.log('Updating site_settings...');
       const { error: updateError } = await (supabase as any)
         .from('site_settings')
         .upsert({ key: 'background_url', value: urlData.publicUrl });
 
-      if (updateError) throw updateError;
+      if (updateError) {
+        console.error('Database update error:', updateError);
+        throw new Error(`ბაზის განახლების შეცდომა: ${updateError.message}`);
+      }
+      console.log('Database update successful');
 
       alert('უკანა ფონი წარმატებით განახლდა');
       setCurrentBgUrl(urlData.publicUrl);
       setSelectedFile(null);
       setPreviewUrl('');
-    } catch (error) {
-      console.error('Upload error:', error);
-      alert('შეცდომა ატვირთვისას');
+    } catch (error: any) {
+      console.error('Upload error details:', {
+        message: error?.message,
+        name: error?.name,
+        stack: error?.stack,
+        error
+      });
+      const errorMessage = error?.message || 'უცნობი შეცდომა';
+      alert(`შეცდომა ატვირთვისას: ${errorMessage}`);
     } finally {
       setLoading(false);
     }

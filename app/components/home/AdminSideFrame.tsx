@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
 import imageCompression from 'browser-image-compression';
 import { Navigation, Pagination, EffectFade, Autoplay } from 'swiper/modules';
@@ -45,6 +45,12 @@ export default function AdminSideFrame({ post, position, isAdmin, onRefresh, con
   const [loading, setLoading] = useState(false);
   const [showFullContent, setShowFullContent] = useState(false);
   const [lightbox, setLightbox] = useState<{ open: boolean; media: string[]; currentIndex: number; isVideo: boolean } | null>(null);
+
+  // Reset states when content type or announcement changes
+  useEffect(() => {
+    setLightbox(null);
+    setShowFullContent(false);
+  }, [contentType, announcement]);
 
   const resetForm = () => {
     setFormData({ title: '', content: '', category: '', priority: 0, link: '', files: [], mediaType: null, videoBackground: false });
@@ -185,6 +191,16 @@ export default function AdminSideFrame({ post, position, isAdmin, onRefresh, con
       console.error('Failed to hide post:', error);
     }
   };
+
+  // Declare createdDate to handle null safely
+  const createdDate = post?.created_at ? new Date(post.created_at) : null;
+
+  // Safely access post properties with optional chaining
+  const postCategory = post?.category;
+  const postLink = post?.link;
+  const postMediaUrls = post?.media_urls;
+  const postMediaType = post?.media_type;
+  const postVideoBackground = post?.video_background;
 
   return (
     <div className="w-full h-auto bg-gradient-to-br from-slate-900/80 via-black/60 to-slate-800/80 backdrop-blur-md rounded-[36px] border-4 border-amber-400/60 shadow-[0_0_40px_12px_rgba(255,191,0,0.2)] p-5 ring-2 ring-amber-400/40 relative animate-in fade-in duration-700 animate-pulse">
@@ -436,14 +452,14 @@ export default function AdminSideFrame({ post, position, isAdmin, onRefresh, con
                     fill
                     sizes="(max-width: 768px) 100vw, 800px"
                     className="object-contain rounded-2xl shadow-xl ring-1 ring-amber-400/20"
-                  />
+                />
                 </div>
               )}
             </div>
           ) : null}
           <div className="flex justify-between items-center mt-3">
             <div className="text-xs text-white/40 font-mono">
-              {new Date(post.created_at).toLocaleDateString('ka-GE')}
+              {createdDate && createdDate.toLocaleDateString('ka-GE')}
             </div>
             {post.priority && post.priority > 0 && (
               <span className="bg-green-600/20 text-green-400 px-2 py-1 rounded text-xs font-bold">

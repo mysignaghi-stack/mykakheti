@@ -5,17 +5,23 @@ import type { Database } from '../../../types/supabase';
 type KakhetiHeritageRow = Database['public']['Tables']['kakheti_heritage']['Row'];
 
 const fetchKakhetiHeritage = async (): Promise<KakhetiHeritageRow[]> => {
-  const { data, error } = await (supabase as any)
-    .from('kakheti_heritage')
-    .select('*')
-    .order('created_at', { ascending: false });
+  try {
+    const { data, error } = await (supabase as any)
+      .from('kakheti_heritage')
+      .select('*')
+      .order('created_at', { ascending: false });
 
-  if (error) {
-    console.error('Error fetching heritage data:', error);
+    if (error) {
+      console.error('Error fetching heritage data:', JSON.stringify(error));
+      return [];
+    }
+
+    console.log('Heritage data fetched successfully:', data?.length || 0, 'items');
+    return data || [];
+  } catch (err) {
+    console.error('Exception in fetchKakhetiHeritage:', err);
     return [];
   }
-
-  return data || [];
 };
 
 interface ServiceWidgetsProps {

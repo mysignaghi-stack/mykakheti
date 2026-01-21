@@ -9,9 +9,9 @@ import type { Database } from "../../../types/supabase";
 const ROTATE_MS = 3000;
 
 type ObituaryRow = Pick<Database["public"]["Tables"]["obituaries"]["Row"], "id" | "full_name" | "funeral_at" | "funeral_place" | "image_url" | "is_approved" | "created_at">;
-type LostFoundRow = Pick<Database["public"]["Tables"]["lost_found"]["Row"], "id" | "title" | "location" | "image_url" | "kind" | "is_approved" | "resolved" | "created_at">;
-type MasterRow = Pick<Database["public"]["Tables"]["masters"]["Row"], "id" | "full_name" | "profession" | "location" | "photo_url" | "rating_avg" | "is_approved" | "created_at">;
-type CongratsRow = Pick<Database["public"]["Tables"]["congratulations"]["Row"], "id" | "sender_name" | "receiver_name" | "message" | "image_url" | "category" | "theme" | "created_at">;
+type LostFoundRow = Pick<Database["public"]["Tables"]["lost_found"]["Row"], "id" | "title" | "location" | "image_url" | "kind" | "is_approved" | "created_at">;
+type MasterRow = Pick<Database["public"]["Tables"]["masters"]["Row"], "id" | "full_name" | "profession" | "location" | "description" | "rating_avg" | "is_approved" | "created_at">;
+type CongratsRow = Pick<Database["public"]["Tables"]["congratulations"]["Row"], "id" | "sender_name" | "recipient_name" | "message" | "image_url" | "occasion" | "created_at">;
 
 type CardConfig = {
   title: string;
@@ -42,18 +42,17 @@ export default function CommunityWidgets() {
           .order("created_at", { ascending: false }),
         supabase
           .from("lost_found")
-          .select("id, title, location, image_url, kind, is_approved, resolved, created_at")
+          .select("id, title, location, image_url, kind, is_approved, created_at")
           .eq("is_approved", true)
-          .eq("resolved", false)
           .order("created_at", { ascending: false }),
         supabase
           .from("masters")
-          .select("id, full_name, profession, location, photo_url, rating_avg, is_approved, created_at")
+          .select("id, full_name, profession, location, description, rating_avg, is_approved, created_at")
           .eq("is_approved", true)
           .order("created_at", { ascending: false }),
         supabase
           .from("congratulations")
-          .select("id, sender_name, receiver_name, message, image_url, category, theme, created_at")
+          .select("id, sender_name, recipient_name, message, image_url, occasion, created_at")
           .eq("is_approved", true)
           .order("created_at", { ascending: false }),
       ]);
@@ -152,16 +151,16 @@ export default function CommunityWidgets() {
         title={currentMaster?.full_name || cards[2].placeholder}
         meta={currentMaster?.profession}
         href={`/community/masters?selectedId=${currentMaster?.id}`}
-        image={currentMaster?.photo_url || undefined}
+        image={undefined}
       />
 
       <WidgetCard
         config={cards[3]}
         highlight={currentCongrats}
         badge="მისალოცი"
-        description={currentCongrats ? `${currentCongrats.sender_name || ""} → ${currentCongrats.receiver_name || ""}` : ""}
+        description={currentCongrats ? `${currentCongrats.sender_name || ""} → ${currentCongrats.recipient_name || ""}` : ""}
         title={currentCongrats?.message || cards[3].placeholder}
-        meta={currentCongrats?.category || currentCongrats?.theme}
+        meta={currentCongrats?.occasion}
         href={`/community/congratulations?selectedId=${currentCongrats?.id}`}
         image={congratsImage}
       />

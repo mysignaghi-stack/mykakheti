@@ -4,21 +4,9 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { supabase } from '../../lib/supabase';
 import { useAdminAuth } from '../../hooks/useAdminAuth';
+import type { Database } from '@/types/supabase';
 
-type AdminPost = {
-  id: string;
-  title: string;
-  content: string;
-  category: string;
-  media_urls?: string[];
-  media_url?: string;
-  video_background?: boolean;
-  priority?: number;
-  link?: string;
-  position?: string;
-  badge_text?: string;
-  created_at: string;
-};
+type AdminPost = Database['public']['Tables']['admin_posts']['Row'];
 
 export default function AdminPosts() {
   const { isAdmin, loading: authLoading } = useAdminAuth();
@@ -64,26 +52,41 @@ export default function AdminPosts() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
+    if (!formData.title.trim()) {
+      alert('სათაური აუცილებელია');
+      return;
+    }
+
     try {
       const data = {
         ...formData,
         media_urls: formData.media_urls.length > 0 ? formData.media_urls : null,
       };
 
+      console.log('Data to insert/update:', data);
+
       if (editingPost) {
+        console.log('Updating post with id:', editingPost.id);
         const { error } = await (supabase as any)
           .from('admin_posts')
           .update(data)
           .eq('id', editingPost.id);
 
-        if (error) throw error;
+        if (error) {
+          console.error('Update error details:', JSON.stringify(error));
+          throw error;
+        }
         setEditingPost(null);
       } else {
+        console.log('Inserting new post');
         const { error } = await (supabase as any)
           .from('admin_posts')
           .insert(data);
 
-        if (error) throw error;
+        if (error) {
+          console.error('Insert error details:', JSON.stringify(error));
+          throw error;
+        }
       }
 
       setFormData({
@@ -101,12 +104,12 @@ export default function AdminPosts() {
 
       fetchPosts();
     } catch (error) {
-      console.error('Submit error:', error);
+      console.error('Submit error:', JSON.stringify(error));
       alert('შეცდომა შენახვისას');
     }
   };
 
-  const deletePost = async (id: string) => {
+  const deletePost = async (id: number) => {
     if (!confirm('ნამდვილად გსურთ პოსტის წაშლა?')) return;
 
     try {
@@ -412,7 +415,7 @@ export default function AdminPosts() {
                   </div>
                   <p className="text-white/60 text-sm mb-2">{post.category}</p>
                   <p className="text-white/80 text-sm line-clamp-2">{post.content}</p>
-                  <p className="text-white/40 text-xs mt-2">{new Date(post.created_at).toLocaleDateString('ka-GE')}</p>
+                  <p className="text-white/40 text-xs mt-2">{post.created_at ? new Date(post.created_at).toLocaleDateString('ka-GE') : 'თარიღი არ არის'}</p>
                 </div>
               ))}
               {posts.length === 0 && (

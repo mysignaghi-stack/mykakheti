@@ -62,10 +62,10 @@ function CongratulationsPageContent() {
                   <div className="flex-1">
                     <div className="flex justify-between items-start mb-2">
                       <h3 className="font-black text-white text-lg italic">
-                        {item.sender_name} → {item.receiver_name}
+                        {item.sender_name} → {item.recipient_name}
                       </h3>
                       <span className="text-amber-500 text-sm font-bold uppercase">
-                        {item.category}
+                        {item.occasion}
                       </span>
                     </div>
                     <p className="text-white/80 italic leading-relaxed">{item.message}</p>

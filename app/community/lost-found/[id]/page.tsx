@@ -51,7 +51,6 @@ export default function LostFoundDetails() {
         <h1 className="text-2xl font-black text-amber-500 uppercase italic">{item.title}</h1>
         <div className="text-[12px] text-white/60 flex gap-3">
           <span className={`font-black uppercase ${item.kind==='lost'?'text-red-400':'text-green-400'}`}>{FILTER_LABELS[item.kind as 'lost'|'found']}</span>
-          {item.category && (<span className="font-black uppercase text-white/40">{CATEGORY_LABELS[item.category] ?? item.category}</span>)}
         </div>
         {item.image_url && (
           <div className="relative w-full h-[360px] rounded-2xl overflow-hidden">

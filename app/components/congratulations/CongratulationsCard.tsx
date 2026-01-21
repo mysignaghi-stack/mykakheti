@@ -13,59 +13,6 @@ interface CongratulationsCardProps {
 
 export default function CongratulationsCard({ item, isPreview = false }: CongratulationsCardProps) {
   const [showAnimation, setShowAnimation] = useState(false);
-  const [audio, setAudio] = useState<HTMLAudioElement | null>(null);
-
-  useEffect(() => {
-    if (item.music_url && !isPreview) {
-      try {
-        const audioElement = new Audio(`/music/${item.music_url}`);
-        audioElement.loop = true;
-        audioElement.volume = 0.3;
-        
-        // Add error handling for audio loading
-        audioElement.addEventListener('error', (e) => {
-          console.warn('Audio file not found or not supported:', item.music_url);
-          setAudio(null); // Clear audio state on error
-        });
-        
-        // Add load event to confirm successful loading
-        audioElement.addEventListener('loadeddata', () => {
-          console.log('Audio file loaded successfully:', item.music_url);
-        });
-        
-        setAudio(audioElement);
-
-        return () => {
-          audioElement.pause();
-          audioElement.currentTime = 0;
-        };
-      } catch (error) {
-        console.warn('Failed to create audio element:', error);
-      }
-    }
-  }, [item.music_url, isPreview]);
-
-  const playMusic = () => {
-    if (audio) {
-      audio.play().catch((error) => {
-        console.warn('Failed to play audio:', error);
-        if (error.name === 'NotSupportedError') {
-          alert('მუსიკის ფორმატი არ არის მხარდაჭერილი ამ ბრაუზერში.');
-        } else if (error.name === 'NotAllowedError') {
-          alert('მუსიკის დაკვრისთვის საჭიროა მომხმარებლის ნებართვა.');
-        } else {
-          alert('მუსიკის დაკვრა ვერ მოხერხდა. ფაილი შესაძლოა არ არსებობს ან დაზიანებულია.');
-        }
-      });
-    }
-  };
-
-  const stopMusic = () => {
-    if (audio) {
-      audio.pause();
-      audio.currentTime = 0;
-    }
-  };
 
   const triggerAnimation = () => {
     setShowAnimation(true);
@@ -91,20 +38,14 @@ export default function CongratulationsCard({ item, isPreview = false }: Congrat
           <div className="space-y-6 flex-1">
             <div>
               <h2 className="text-3xl font-black text-white italic bg-clip-text text-transparent bg-gradient-to-r from-white to-white/70">
-                {item.sender_name || "მეგობარი"} → {item.receiver_name}
+                {item.sender_name || "მეგობარი"} → {item.recipient_name}
               </h2>
-              <p className="text-amber-500 font-black uppercase text-xs tracking-widest mt-2">{item.category}</p>
+              <p className="text-amber-500 font-black uppercase text-xs tracking-widest mt-2">{item.occasion}</p>
             </div>
 
             <p className="text-xl text-white/90 leading-relaxed italic font-medium whitespace-pre-wrap">
               "{item.message}"
             </p>
-
-            {item.toast && (
-              <div className="bg-amber-500/10 border border-amber-500/20 rounded-2xl p-4">
-                <p className="text-amber-400 font-bold text-sm italic">🍷 "{item.toast}"</p>
-              </div>
-            )}
 
             <div className="pt-4 text-white/40 text-sm font-bold">
               {item.created_at ? new Date(item.created_at).toLocaleDateString("ka-GE") : ""}
@@ -113,38 +54,19 @@ export default function CongratulationsCard({ item, isPreview = false }: Congrat
         </div>
 
         {/* Animation button */}
-        {item.animation_enabled && (
-          <div className="flex justify-center pt-6">
-            <button
-              onClick={triggerAnimation}
-              className="bg-amber-600 hover:bg-amber-500 text-white px-6 py-3 rounded-full font-bold text-sm transition-all hover:scale-105"
-            >
-              🥂 ჭიქების მიჭახუნება
-            </button>
-          </div>
-        )}
+        <div className="flex justify-center pt-6">
+          <button
+            onClick={triggerAnimation}
+            className="bg-amber-600 hover:bg-amber-500 text-white px-6 py-3 rounded-full font-bold text-sm transition-all hover:scale-105"
+          >
+            🥂 ჭიქების მიჭახუნება
+          </button>
+        </div>
 
-        {/* Music controls */}
-        {item.music_url && audio && (
-          <div className="flex justify-center gap-4 pt-4">
-            <button
-              onClick={playMusic}
-              className="bg-green-600 hover:bg-green-500 text-white px-4 py-2 rounded-lg font-bold text-sm transition-all"
-            >
-              🎵 დაკვრა
-            </button>
-            <button
-              onClick={stopMusic}
-              className="bg-red-600 hover:bg-red-500 text-white px-4 py-2 rounded-lg font-bold text-sm transition-all"
-            >
-              ⏹️ შეჩერება
-            </button>
-          </div>
-        )}
       </>
     );
 
-    switch (item.template) {
+    switch ('თანამედროვე მინიმალიზმი') {
       case 'ძველი პერგამენტი':
         return (
           <div className={`${baseClasses} bg-gradient-to-br from-amber-900/20 via-yellow-900/10 to-amber-800/20 border-amber-500/30`}>

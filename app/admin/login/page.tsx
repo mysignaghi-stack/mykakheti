@@ -35,6 +35,13 @@ export default function AdminLogin() {
         password,
       });
 
+      // Check authentication
+      const { data: { user }, error: authError } = await supabase.auth.getUser();
+      if (authError || !user) {
+        alert('გთხოვთ გაიაროთ ავტორიზაცია');
+        return;
+      }
+
       if (error) {
         setError('არასწორი მონაცემები');
         return;
@@ -46,9 +53,15 @@ export default function AdminLogin() {
         await supabase.auth.signOut();
         setError('ადმინისტრატორის წვდომა არ არის');
       }
-    } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : 'შეცდომა ავტორიზაციისას';
-      setError(message);
+    } catch (error: any) {
+      console.error('Upload error details:', {
+        message: error?.message,
+        name: error?.name,
+        stack: error?.stack,
+        error
+      });
+      const errorMessage = error?.message || 'უცნობი შეცდომა';
+      alert(`შეცდომა ატვირთვისას: ${errorMessage}`);
     } finally {
       setLoading(false);
     }
@@ -150,3 +163,6 @@ export default function AdminLogin() {
     </main>
   );
 }
+
+/* CREATE POLICY "Authenticated users can manage admin posts" ON admin_posts
+FOR ALL USING (auth.uid() IS NOT NULL); */

@@ -83,7 +83,6 @@ function LostFoundPageContent() {
                       <div className="flex justify-between items-center">
                         <h3 className="font-black text-white text-base italic line-clamp-1">{it.title}</h3>
                         <div className="flex items-center gap-2">
-                          {it.category && (<span className="text-[10px] font-black uppercase text-white/40">{CATEGORY_LABELS[it.category as keyof typeof CATEGORY_LABELS] ?? it.category}</span>)}
                           <span className={`text-[10px] font-black uppercase ${it.kind==='lost'?'text-red-400':'text-green-400'}`}>{it.kind ? FILTER_LABELS[it.kind as 'lost'|'found'] : ''}</span>
                         </div>
                       </div>
