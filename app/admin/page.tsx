@@ -8,7 +8,7 @@ import { supabase } from '../lib/supabase';
 
 const ADMIN_LINKS = [
   { href: '/admin/moderate', title: 'განცხადებების მოდერაცია', desc: 'ყველა ახალი განცხადების დადასტურება/წაშლა' },
-  { href: '/admin/announcements', title: 'ადმინის განცხადებები', desc: 'სერვისული პოსტების მართვა' },
+  { href: '/admin/announcements', title: 'მომხმარებლების განცხადებები', desc: 'სერვისული პოსტების მართვა' },
   // community link removed — community moderation is available from the main cards above
   // 'მისალოცები' merged into 'ქომუნითი' to avoid duplicate panels
   { href: '/admin/messages', title: 'შეტყობინებები', desc: 'კონტაქტის ფორმის მესიჯები' },
@@ -26,20 +26,29 @@ export default function AdminDashboard() {
     pendingObituaries: 0,
     pendingLostFound: 0,
     pendingMasters: 0,
+    approvedAds: 0,
+    approvedCongrats: 0,
+    approvedObituaries: 0,
+    approvedLostFound: 0,
+    approvedMasters: 0,
   });
 
-  const totalCommunityPending = stats.pendingObituaries + stats.pendingLostFound + stats.pendingMasters;
+  const totalCommunityPending = stats.approvedObituaries + stats.approvedLostFound + stats.approvedMasters + stats.approvedCongrats;
 
   const loadStats = useCallback(async () => {
     if (!isAdmin) return;
     setStatsLoading(true);
     try {
-      const [{ count: pendingAds }, { count: pendingCongrats }, { count: pendingObituaries }, { count: pendingLostFound }, { count: pendingMasters }] = await Promise.all([
+      const [{ count: pendingAds }, { count: pendingCongrats }, { count: pendingObituaries }, { count: pendingLostFound }, { count: pendingMasters }, { count: approvedCongrats }, { count: approvedObituaries }, { count: approvedLostFound }, { count: approvedMasters }] = await Promise.all([
         supabase.from('announcements').select('*', { count: 'exact', head: true }).eq('is_approved', false),
         supabase.from('congratulations').select('*', { count: 'exact', head: true }).eq('is_approved', false),
         supabase.from('obituaries').select('*', { count: 'exact', head: true }).eq('is_approved', false),
         supabase.from('lost_found').select('*', { count: 'exact', head: true }).eq('is_approved', false),
         supabase.from('masters').select('*', { count: 'exact', head: true }).eq('is_approved', false),
+        supabase.from('congratulations').select('*', { count: 'exact', head: true }).eq('is_approved', true),
+        supabase.from('obituaries').select('*', { count: 'exact', head: true }).eq('is_approved', true),
+        supabase.from('lost_found').select('*', { count: 'exact', head: true }).eq('is_approved', true),
+        supabase.from('masters').select('*', { count: 'exact', head: true }).eq('is_approved', true),
       ]);
 
       setStats({
@@ -48,6 +57,10 @@ export default function AdminDashboard() {
         pendingObituaries: pendingObituaries ?? 0,
         pendingLostFound: pendingLostFound ?? 0,
         pendingMasters: pendingMasters ?? 0,
+        approvedCongrats: approvedCongrats ?? 0,
+        approvedObituaries: approvedObituaries ?? 0,
+        approvedLostFound: approvedLostFound ?? 0,
+        approvedMasters: approvedMasters ?? 0,
       });
     } finally {
       setStatsLoading(false);
@@ -117,8 +130,8 @@ export default function AdminDashboard() {
           <Link href="/admin/community" className="bg-white/5 border border-white/10 rounded-2xl p-6 hover:border-amber-500/50 transition-all">
             <div className="text-xs uppercase font-black text-white/60">ქომუნითი</div>
             <div className="text-3xl font-black mt-2">{totalCommunityPending}</div>
-            <p className="text-white/50 text-sm mt-1">სამძიმარი/დაკარგული/ოსტატები</p>
-            <div className="text-[11px] text-white/40 mt-2">სამძიმარი: {stats.pendingObituaries} • დაკარგული: {stats.pendingLostFound} • ოსტატები: {stats.pendingMasters}</div>
+            <p className="text-white/50 text-sm mt-1">აქტიური სამძიმარი/დაკარგული/ოსტატები/მისალოცი</p>
+            <div className="text-[11px] text-white/40 mt-2">სამძიმარი: {stats.approvedObituaries} • დაკარგული: {stats.approvedLostFound} • ოსტატები: {stats.approvedMasters} • მისალოცი: {stats.approvedCongrats}</div>
           </Link>
           {/* 'მისალოცები' moved into the community page (use /admin/community) */}
         </div>

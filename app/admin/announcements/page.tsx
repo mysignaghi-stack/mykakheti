@@ -127,7 +127,7 @@ export default function AdminAnnouncements() {
         <div className="flex flex-col md:flex-row justify-between items-center mb-12 bg-white/[0.03] backdrop-blur-3xl p-8 rounded-[40px] border border-white/10 shadow-2xl gap-6">
           <div>
             <h1 className="text-3xl font-black text-amber-500 uppercase italic tracking-tighter leading-none">
-              განცხადებების მართვა
+              მომხმარებლების განცხადებების მართვა
             </h1>
             <p className="text-white/40 font-bold text-xs mt-2 uppercase tracking-[0.2em] italic">
               Digital Kakheti Hub • მოდერაცია

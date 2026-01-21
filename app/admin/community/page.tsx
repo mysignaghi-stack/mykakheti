@@ -230,8 +230,8 @@ function ModerationPanel({ table, title, renderItem, highlight }: { table: strin
 
   const fetchItems = async () => {
     setLoading(true);
-    const { data: pending, error: pendErr } = await supabase.from(table).select('*').eq('is_approved', false).order('created_at', { ascending: false });
-    const { data: approved, error: appErr } = await supabase.from(table).select('*').eq('is_approved', true).order('created_at', { ascending: false });
+    const { data: pending, error: pendErr } = await (supabase as any).from(table).select('*').eq('is_approved', false).order('created_at', { ascending: false });
+    const { data: approved, error: appErr } = await (supabase as any).from(table).select('*').eq('is_approved', true).order('created_at', { ascending: false });
     if (pendErr) console.error(table, 'pending fetch', pendErr);
     if (appErr) console.error(table, 'approved fetch', appErr);
     setPendingItems(pending || []);
@@ -242,20 +242,20 @@ function ModerationPanel({ table, title, renderItem, highlight }: { table: strin
   useEffect(() => { fetchItems(); }, [table]);
 
   const approve = async (id: string) => {
-    const { error } = await supabase.from(table).update({ is_approved: true }).eq('id', id);
+    const { error } = await (supabase as any).from(table).update({ is_approved: true }).eq('id', id);
     if (error) return alert('დადასტურება ვერ მოხერხდა');
     fetchItems();
   };
 
   const remove = async (id: string) => {
     if (!confirm('ნამდვილად გსურთ წაშლა?')) return;
-    const { error } = await supabase.from(table).delete().eq('id', id);
+    const { error } = await (supabase as any).from(table).delete().eq('id', id);
     if (error) return alert('წაშლა ვერ მოხერხდა');
     fetchItems();
   };
 
   const unapprove = async (id: string) => {
-    const { error } = await supabase.from(table).update({ is_approved: false }).eq('id', id);
+    const { error } = await (supabase as any).from(table).update({ is_approved: false }).eq('id', id);
     if (error) return alert('გაუქმება ვერ მოხერხდა');
     fetchItems();
   };
