@@ -37,7 +37,7 @@ const COMMUNITY_CARDS: CommunityCardConfig[] = [
     key: 'masters',
     icon: '🛠️',
     submitHref: '/community/masters/submit',
-    submitLabel: 'ოსტატის დამატება',
+    submitLabel: 'ოსტატის/სპეციალისტის დამატება',
     viewHref: '/community/masters',
     viewLabel: 'ნახვა',
   },
@@ -75,7 +75,7 @@ export default function CommunityEngagementSection({ className }: CommunityEngag
           >
             <span className="text-2xl mb-1">{card.icon}</span>
             <span className="text-[10px] font-black uppercase tracking-widest text-white block">
-              {card.key === 'obituaries' ? 'სამძიმარი' : card.key === 'lost-found' ? 'დაკარგული/ნაპოვნი' : card.key === 'masters' ? 'ოსტატები' : 'მისალოცი'}
+              {card.key === 'obituaries' ? 'სამძიმარი' : card.key === 'lost-found' ? 'დაკარგული/ნაპოვნი' : card.key === 'masters' ? 'ოსტატები/სპეციალისტები' : 'მისალოცი'}
             </span>
             <span className="mt-1 text-[9px] text-white/50">დამატება</span>
           </Link>

@@ -47,7 +47,7 @@ function MastersPageContent() {
             დამატება
           </Link>
         </div>
-        <h1 className="text-2xl font-black text-amber-500 uppercase italic mb-6">ოსტატების ბაზა</h1>
+        <h1 className="text-2xl font-black text-amber-500 uppercase italic mb-6">ოსტატების/სპეციალისტების ბაზა</h1>
         <h2 className="text-xl font-black text-amber-500 uppercase italic mb-4">Announcement Feed</h2>
         {loading ? (
           <div className="opacity-50">იტვირთება...</div>
@@ -65,7 +65,7 @@ function MastersPageContent() {
               </div>
             ))}
             {items.length === 0 && (
-              <div className="opacity-20 italic">შესაბამისი ოსტატი ვერ მოიძებნა</div>
+              <div className="opacity-20 italic">შესაბამისი ოსტატი/სპეციალისტი ვერ მოიძებნა</div>
             )}
           </div>
         )}

@@ -21,6 +21,7 @@ interface Master {
   price_note?: string | null;
   verified?: boolean | null;
   admin_recommended?: boolean | null;
+  category?: string | null;
 }
 
 export default function MasterCard({ master }: { master: Master }) {
@@ -76,7 +77,7 @@ export default function MasterCard({ master }: { master: Master }) {
             )}
             <div>
               <h3 className="font-black text-white text-base italic">{master.full_name}</h3>
-              <p className="text-[11px] text-amber-400 uppercase font-black">{master.profession}</p>
+              <p className="text-[11px] text-amber-400 uppercase font-black">{master.category || 'ოსტატი'} - {master.profession}</p>
             </div>
           </div>
           <div className="flex items-center gap-2 mt-1">

@@ -8,6 +8,7 @@ import SubmissionAuthGate from '../../../components/auth/SubmissionAuthGate';
 export default function MastersSubmit() {
   const [full_name, setFullName] = useState('');
   const [profession, setProfession] = useState('');
+  const [category, setCategory] = useState<'ოსტატი'|'სპეციალისტი'>('ოსტატი');
   const [phone, setPhone] = useState('');
   const [location, setLocation] = useState('');
   const [description, setDescription] = useState('');
@@ -21,11 +22,11 @@ export default function MastersSubmit() {
     if (!full_name || !profession) return alert('სახელი და პროფესიას აუცილებელია');
     const { data: { session } } = await supabase.auth.getSession();
     if (!session) {
-      alert('ოსტატის პროფილის დასამატებლად გაიარეთ ავტორიზაცია.');
+      alert('ოსტატის/სპეციალისტის პროფილის დასამატებლად გაიარეთ ავტორიზაცია.');
       return;
     }
     const { error } = await (supabase as any).from('masters').insert({
-      full_name, profession,
+      full_name, profession, category,
       phone: phone||null, location: location||null, description: description||null,
       photo_url: photo_url||null, service_area: service_area||null, price_note: price_note||null,
       is_approved: false
@@ -49,12 +50,16 @@ export default function MastersSubmit() {
         <div className="flex justify-start mb-4">
           <Link href="/" className="text-[11px] font-black uppercase italic text-white/50 hover:text-white transition">← მთავარი გვერდი</Link>
         </div>
-        <h1 className="text-2xl font-black text-amber-500 uppercase italic mb-6">ოსტატის პროფილის გამოქვეყნება</h1>
+        <h1 className="text-2xl font-black text-amber-500 uppercase italic mb-6">ოსტატის/სპეციალისტის პროფილის გამოქვეყნება</h1>
         <SubmissionAuthGate redirectPath="/community/masters/submit" heading="განცხადებების გამოქვეყნება შესაძლებელია გამარტივებული ავტორიზაციის დასრულების შემდეგ.">
           {() => (
             <form className="space-y-3" onSubmit={submit}>
               <input value={full_name} onChange={e=>setFullName(e.target.value)} placeholder="სრული სახელი" className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-sm text-white" />
               <input value={profession} onChange={e=>setProfession(e.target.value)} placeholder="პროფესია" className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-sm text-white" />
+              <select value={category} onChange={e=>setCategory(e.target.value as 'ოსტატი'|'სპეციალისტი')} className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-sm text-white">
+                <option value="ოსტატი">ოსტატი</option>
+                <option value="სპეციალისტი">სპეციალისტი</option>
+              </select>
               <div className="grid grid-cols-2 gap-3">
                 <input value={phone} onChange={e=>setPhone(e.target.value)} placeholder="ტელეფონი" className="bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-sm text-white" />
                 <input value={location} onChange={e=>setLocation(e.target.value)} placeholder="ლოკაცია" className="bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-sm text-white" />

@@ -58,7 +58,7 @@ export default function AdminCommunityPage() {
               { key: 'congratulations', label: 'მისალოცი' },
               { key: 'obituaries', label: 'სამძიმარი' },
               { key: 'lost_found', label: 'დაკარგული/პოვნილი' },
-              { key: 'masters', label: 'ოსტატები' },
+              { key: 'masters', label: 'ოსტატები/სპეციალისტები' },
             ].map(c => (
               <button
                 key={c.key}
@@ -94,9 +94,9 @@ export default function AdminCommunityPage() {
             </>
           )} />
 
-          <ModerationPanel table="masters" title="ოსტატები" highlight={selectedCategory === 'masters'} renderItem={(item: any) => (
+          <ModerationPanel table="masters" title="ოსტატები/სპეციალისტები" highlight={selectedCategory === 'masters'} renderItem={(item: any) => (
             <>
-              <div className="font-black text-white text-lg italic">{item.full_name} — {item.profession}</div>
+              <div className="font-black text-white text-lg italic">{item.full_name} — {item.category || 'ოსტატი'} - {item.profession}</div>
               <p className="text-white/80 italic leading-relaxed">{item.location ?? ''}</p>
             </>
           )} />
@@ -321,7 +321,7 @@ function MastersForm({ onAdded }: FormProps) {
   };
   return (
     <div className="flex gap-3">
-      <input value={name} onChange={e => setName(e.target.value)} placeholder="ოსტატის სახელი" className="flex-1 bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-sm focus:border-blue-600 outline-none" />
+      <input value={name} onChange={e => setName(e.target.value)} placeholder="ოსტატის/სპეციალისტის სახელი" className="flex-1 bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-sm focus:border-blue-600 outline-none" />
       <button onClick={submit} className="bg-blue-600 px-6 py-2 rounded-xl text-xs font-black uppercase">დამატება</button>
     </div>
   );

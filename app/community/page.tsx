@@ -19,7 +19,7 @@ const sections = [
   },
   {
     icon: '🛠️',
-    title: 'ოსტატები',
+    title: 'ოსტატები/სპეციალისტები',
     description: 'იპოვეთ და დაამატეთ სანდო სპეციალისტები.',
     viewHref: '/community/masters',
     addHref: '/community/masters/submit',

@@ -456,6 +456,7 @@ export type Database = {
       masters: {
         Row: {
           admin_recommended: boolean | null
+          category: string | null
           created_at: string | null
           description: string | null
           full_name: string
@@ -473,6 +474,7 @@ export type Database = {
         }
         Insert: {
           admin_recommended?: boolean | null
+          category?: string | null
           created_at?: string | null
           description?: string | null
           full_name: string
@@ -490,6 +492,7 @@ export type Database = {
         }
         Update: {
           admin_recommended?: boolean | null
+          category?: string | null
           created_at?: string | null
           description?: string | null
           full_name?: string

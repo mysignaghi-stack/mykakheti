@@ -133,8 +133,8 @@ export default function AdminDashboard() {
           <Link href="/admin/community" className="bg-white/5 border border-white/10 rounded-2xl p-6 hover:border-amber-500/50 transition-all">
             <div className="text-xs uppercase font-black text-white/60">ქომუნითი</div>
             <div className="text-3xl font-black mt-2">{totalCommunityPending}</div>
-            <p className="text-white/50 text-sm mt-1">აქტიური სამძიმარი/დაკარგული/ოსტატები/მისალოცი</p>
-            <div className="text-[11px] text-white/40 mt-2">სამძიმარი: {stats.approvedObituaries} • დაკარგული: {stats.approvedLostFound} • ოსტატები: {stats.approvedMasters} • მისალოცი: {stats.approvedCongrats}</div>
+            <p className="text-white/50 text-sm mt-1">აქტიური სამძიმარი/დაკარგული/ოსტატები-სპეციალისტები/მისალოცი</p>
+            <div className="text-[11px] text-white/40 mt-2">სამძიმარი: {stats.approvedObituaries} • დაკარგული: {stats.approvedLostFound} • ოსტატები-სპეციალისტები: {stats.approvedMasters} • მისალოცი: {stats.approvedCongrats}</div>
           </Link>
           {/* 'მისალოცები' moved into the community page (use /admin/community) */}
         </div>
