@@ -17,6 +17,7 @@ export default function AdminSquare() {
   const [messages, setMessages] = useState<SquareMessage[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedMessages, setSelectedMessages] = useState<string[]>([]);
+  const [viewingMessage, setViewingMessage] = useState<SquareMessage | null>(null);
 
   useEffect(() => {
     fetchMessages();
@@ -165,6 +166,7 @@ export default function AdminSquare() {
                       {message.archived && <span className="text-yellow-400 text-sm ml-2">(დაარქივებული)</span>}
                     </div>
                     <div className="flex gap-2">
+                      <button onClick={() => setViewingMessage(message)} className="text-xs bg-green-600 px-2 py-1 rounded">ნახვა</button>
                       <button onClick={() => alert(`IP: ${message.ip_address}`)} className="text-xs bg-blue-600 px-2 py-1 rounded">IP</button>
                       <button onClick={() => banIP(message.ip_address)} className="text-xs bg-red-600 px-2 py-1 rounded">ბანი</button>
                       <button onClick={() => archiveMessage(message.id)} className="text-xs bg-yellow-600 px-2 py-1 rounded">არქივი</button>
@@ -182,6 +184,36 @@ export default function AdminSquare() {
             </div>
           )}
         </div>
+
+        {/* Message View Modal */}
+        {viewingMessage && (
+          <div className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4" onClick={() => setViewingMessage(null)}>
+            <div className="bg-slate-900 rounded-2xl border border-white/20 p-6 max-w-2xl w-full max-h-[80vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+              <div className="flex justify-between items-start mb-4">
+                <div>
+                  <h3 className="text-xl font-bold text-amber-400">{viewingMessage.user_name}</h3>
+                  <p className="text-white/60 text-sm">{new Date(viewingMessage.created_at).toLocaleString('ka-GE')}</p>
+                  <p className="text-white/40 text-sm">IP: {viewingMessage.ip_address}</p>
+                  {viewingMessage.archived && <p className="text-yellow-400 text-sm">(დაარქივებული)</p>}
+                </div>
+                <button
+                  onClick={() => setViewingMessage(null)}
+                  className="text-white/60 hover:text-white text-2xl"
+                >
+                  ✕
+                </button>
+              </div>
+              <div className="bg-white/5 rounded-xl p-4 mb-4">
+                <p className="text-white whitespace-pre-wrap">{viewingMessage.message}</p>
+              </div>
+              <div className="flex gap-2 flex-wrap">
+                <button onClick={() => { banIP(viewingMessage.ip_address); setViewingMessage(null); }} className="bg-red-600 px-4 py-2 rounded-xl text-sm font-bold">ბანი IP</button>
+                <button onClick={() => { archiveMessage(viewingMessage.id); setViewingMessage(null); }} className="bg-yellow-600 px-4 py-2 rounded-xl text-sm font-bold">დაარქივება</button>
+                <button onClick={() => { deleteMessage(viewingMessage.id); setViewingMessage(null); }} className="bg-red-600 px-4 py-2 rounded-xl text-sm font-bold">წაშლა</button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </main>
   );
