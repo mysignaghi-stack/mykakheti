@@ -48,7 +48,7 @@ export default function LostFoundDetails() {
         </div>
         {item.image_url && (
           <div className="relative w-full h-[360px] rounded-2xl overflow-hidden">
-            <Image src={item.image_url} alt="" fill sizes="(max-width: 768px) 100vw, 700px" className="object-cover" />
+            <Image src={item.image_url} alt="" fill sizes="(max-width: 768px) 100vw, 700px" className="object-contain rounded-2xl" />
           </div>
         )}
         {item.location && (<p className="text-sm text-white/80">ლოკაცია: {item.location}</p>)}

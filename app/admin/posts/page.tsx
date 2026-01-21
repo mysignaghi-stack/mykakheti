@@ -34,6 +34,7 @@ export default function AdminPosts() {
     priority: 0,
     link: '',
     position: '',
+    badge_text: '',
   });
 
   useEffect(() => {
@@ -92,6 +93,7 @@ export default function AdminPosts() {
         priority: 0,
         link: '',
         position: '',
+        badge_text: '',
       });
 
       fetchPosts();
@@ -167,6 +169,7 @@ export default function AdminPosts() {
       priority: post.priority || 0,
       link: post.link || '',
       position: post.position || '',
+      badge_text: post.badge_text || '',
     });
   };
 
@@ -182,6 +185,7 @@ export default function AdminPosts() {
       priority: 0,
       link: '',
       position: '',
+      badge_text: '',
     });
   };
 
@@ -283,6 +287,17 @@ export default function AdminPosts() {
                   <option value="left_top">მარცხენა ზედა (აგრო ბირჟის დაბლა)</option>
                   <option value="right_top">მარჯვენა ზედა (მარცვლეულის დაბლა)</option>
                 </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-bold text-white/60 mb-2">ბეიჯის ტექსტი</label>
+                <input
+                  type="text"
+                  value={formData.badge_text}
+                  onChange={(e) => setFormData(prev => ({ ...prev, badge_text: e.target.value }))}
+                  placeholder="ოფიციალური განცხადება"
+                  className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-white"
+                />
               </div>
 
               <div>

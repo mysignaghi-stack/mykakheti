@@ -488,7 +488,7 @@ export default function KakhetianSquare({ isAdmin, controlToken }: KakhetianSqua
       {viewingMedia && (
         <div className="fixed inset-0 z-[100] bg-black/95 flex items-center justify-center p-4 backdrop-blur-sm" onClick={() => setViewingMedia(null)}>
             <div className="relative w-full max-w-[90vw] h-[90vh]">
-              <Image src={viewingMedia.url} alt="" fill sizes="90vw" className="object-contain rounded-xl shadow-2xl" />
+              <Image src={viewingMedia.url} alt="" fill sizes="90vw" className="object-contain rounded-2xl shadow-2xl" />
             </div>
         </div>
       )}

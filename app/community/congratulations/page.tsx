@@ -57,7 +57,7 @@ function CongratulationsPageContent() {
               <Link key={item.id} href={`/community/congratulations/${item.id}`} className="block p-5 bg-white/5 rounded-2xl border border-white/10 hover:bg-white/10 transition">
                 <div className="flex gap-4 items-start">
                   {item.image_url && (
-                    <Image src={item.image_url} alt="" width={80} height={80} className="rounded-xl object-cover" />
+                    <Image src={item.image_url} alt="" width={80} height={80} className="rounded-2xl object-contain shadow-lg ring-1 ring-amber-400/20" />
                   )}
                   <div className="flex-1">
                     <div className="flex justify-between items-start mb-2">

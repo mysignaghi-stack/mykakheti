@@ -57,7 +57,7 @@ export default function AnnouncementsPage() {
                         alt=""
                         width={80}
                         height={80}
-                        className="rounded-xl object-cover flex-shrink-0"
+                        className="rounded-2xl object-contain flex-shrink-0 shadow-lg ring-1 ring-amber-400/20"
                       />
                     )}
                     <div className="flex-1">

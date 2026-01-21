@@ -3,11 +3,13 @@
 import React, { useState } from 'react';
 import Image from 'next/image';
 import imageCompression from 'browser-image-compression';
-import { Navigation, Pagination } from 'swiper/modules';
+import { Navigation, Pagination, EffectFade, Autoplay } from 'swiper/modules';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import 'swiper/css';
 import 'swiper/css/navigation';
 import 'swiper/css/pagination';
+import 'swiper/css/effect-fade';
+import 'swiper/css/autoplay';
 import { supabase } from '../../lib/supabase';
 // წავშალეთ AdminPost იმპორტი lib/types-დან კონფლიქტის თავიდან ასაცილებლად
 import { Ad } from '../../lib/types'; 
@@ -42,6 +44,7 @@ export default function AdminSideFrame({ post, position, isAdmin, onRefresh, con
   });
   const [loading, setLoading] = useState(false);
   const [showFullContent, setShowFullContent] = useState(false);
+  const [lightbox, setLightbox] = useState<{ open: boolean; media: string[]; currentIndex: number; isVideo: boolean } | null>(null);
 
   const resetForm = () => {
     setFormData({ title: '', content: '', category: '', priority: 0, link: '', files: [], mediaType: null, videoBackground: false });
@@ -184,9 +187,15 @@ export default function AdminSideFrame({ post, position, isAdmin, onRefresh, con
   };
 
   return (
-    <div className="w-full h-auto bg-gradient-to-br from-amber-900/60 via-black/40 to-amber-700/30 rounded-[36px] border-4 border-amber-400/40 shadow-[0_0_32px_8px_rgba(255,191,0,0.15)] p-5 ring-2 ring-amber-400/30 relative animate-in fade-in duration-700">
+    <div className="w-full h-auto bg-gradient-to-br from-slate-900/80 via-black/60 to-slate-800/80 backdrop-blur-md rounded-[36px] border-4 border-amber-400/60 shadow-[0_0_40px_12px_rgba(255,191,0,0.2)] p-5 ring-2 ring-amber-400/40 relative animate-in fade-in duration-700 animate-pulse">
+      {/* Badge */}
+      <div className="absolute top-2 left-4 z-10">
+        <div className="bg-gradient-to-r from-amber-500 to-yellow-500 text-black font-black text-sm px-4 py-1 rounded-full shadow-lg border-2 border-amber-300 animate-pulse">
+          🏛️ {post?.badge_text || 'ოფიციალური განცხადება'}
+        </div>
+      </div>
       {/* Header with controls */}
-      <div className="flex justify-end items-center mb-4">
+      <div className="flex justify-end items-center mb-4 pt-4">
         <div className="flex gap-2">
           {isAdmin && onContentTypeChange && (
             <button
@@ -304,7 +313,7 @@ export default function AdminSideFrame({ post, position, isAdmin, onRefresh, con
           <h4 className="text-amber-500 font-black text-lg italic">{announcement.title}</h4>
           <p className="text-white/80 text-sm leading-relaxed">{announcement.description}</p>
           {announcement.image_url && (
-            <div className="relative mt-4 w-full h-32 overflow-hidden rounded-xl">
+            <div className="relative mt-4 w-full h-32 overflow-hidden rounded-2xl shadow-2xl ring-2 ring-amber-400/30 cursor-pointer" onClick={() => setLightbox({ open: true, media: [announcement.image_url!], currentIndex: 0, isVideo: false })}>
               <Image
                 src={announcement.image_url}
                 alt=""
@@ -384,31 +393,35 @@ export default function AdminSideFrame({ post, position, isAdmin, onRefresh, con
               {post.media_type === 'video' ? (
                 <video
                   src={(post.media_urls?.[0] || (post as any).media_url)!}
-                  controls={!post.video_background}
-                  autoPlay={post.video_background || false}
-                  muted={post.video_background || false}
-                  loop={post.video_background || false}
-                  className={`w-full ${post.video_background ? 'h-48' : 'h-32'} object-contain rounded-xl`}
+                  controls={false}
+                  autoPlay={true}
+                  muted={true}
+                  loop={true}
+                  className={`w-full ${post.video_background ? 'h-48' : 'h-32'} object-contain rounded-2xl shadow-2xl ring-2 ring-amber-400/30 cursor-pointer`}
+                  onClick={() => setLightbox({ open: true, media: [(post.media_urls?.[0] || (post as any).media_url)!], currentIndex: 0, isVideo: true })}
                 />
               ) : post.media_type === 'gallery' ? (
                 <div className="mt-3">
                   <Swiper
-                    modules={[Navigation, Pagination]}
+                    modules={[Navigation, Pagination, EffectFade, Autoplay]}
                     spaceBetween={10}
                     slidesPerView={1}
                     navigation
                     pagination={{ clickable: true }}
-                    className="w-full h-32 rounded-xl"
+                    effect="fade"
+                    fadeEffect={{ crossFade: true }}
+                    autoplay={{ delay: 3000, disableOnInteraction: false }}
+                    className="w-full h-32 rounded-2xl shadow-2xl ring-2 ring-amber-400/30"
                   >
                     {(post.media_urls || [(post as any).media_url]).filter(Boolean).map((url: string, idx: number) => (
                       <SwiperSlide key={idx}>
-                        <div className="relative w-full h-full">
+                        <div className="relative w-full h-full cursor-pointer" onClick={() => setLightbox({ open: true, media: (post.media_urls || [(post as any).media_url]).filter(Boolean), currentIndex: idx, isVideo: false })}>
                           <Image
                             src={url!}
                             alt=""
                             fill
                             sizes="(max-width: 768px) 100vw, 800px"
-                            className="object-contain rounded-xl"
+                            className="object-contain rounded-2xl shadow-xl ring-1 ring-amber-400/20"
                           />
                         </div>
                       </SwiperSlide>
@@ -416,13 +429,13 @@ export default function AdminSideFrame({ post, position, isAdmin, onRefresh, con
                   </Swiper>
                 </div>
               ) : (
-                <div className="relative w-full h-32">
+                <div className="relative w-full h-32 cursor-pointer" onClick={() => setLightbox({ open: true, media: [(post.media_urls?.[0] || (post as any).media_url)!], currentIndex: 0, isVideo: false })}>
                   <Image
                     src={(post.media_urls?.[0] || (post as any).media_url)!}
                     alt=""
                     fill
                     sizes="(max-width: 768px) 100vw, 800px"
-                    className="object-contain rounded-xl"
+                    className="object-contain rounded-2xl shadow-xl ring-1 ring-amber-400/20"
                   />
                 </div>
               )}
@@ -451,6 +464,36 @@ export default function AdminSideFrame({ post, position, isAdmin, onRefresh, con
               + დაამატე კონტენტი
             </button>
           )}
+        </div>
+      )}
+      
+      {/* Lightbox Modal */}
+      {lightbox?.open && (
+        <div className="fixed inset-0 bg-black/90 z-50 flex items-center justify-center p-4" onClick={() => setLightbox(null)}>
+          <div className="relative max-w-4xl max-h-full" onClick={(e) => e.stopPropagation()}>
+            {lightbox.isVideo ? (
+              <video
+                src={lightbox.media[lightbox.currentIndex]}
+                controls
+                autoPlay
+                className="max-w-full max-h-full object-contain rounded-2xl shadow-2xl"
+              />
+            ) : (
+              <Image
+                src={lightbox.media[lightbox.currentIndex]}
+                alt=""
+                width={800}
+                height={600}
+                className="max-w-full max-h-full object-contain rounded-2xl shadow-2xl"
+              />
+            )}
+            <button
+              onClick={() => setLightbox(null)}
+              className="absolute top-4 right-4 text-white text-2xl font-bold bg-black/50 rounded-full w-10 h-10 flex items-center justify-center hover:bg-black/70"
+            >
+              ✕
+            </button>
+          </div>
         </div>
       )}
     </div>

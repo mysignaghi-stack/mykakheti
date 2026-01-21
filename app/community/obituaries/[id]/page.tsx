@@ -69,7 +69,7 @@ export default function ObituaryDetailsPage() {
 
         {item.image_url ? (
           <div className="relative w-full h-[320px] rounded-2xl overflow-hidden border border-white/10">
-            <Image src={item.image_url} alt={item.full_name} fill sizes="(max-width: 1024px) 100vw, 700px" className="object-cover" />
+            <Image src={item.image_url} alt={item.full_name} fill sizes="(max-width: 1024px) 100vw, 700px" className="object-contain rounded-2xl" />
           </div>
         ) : null}
 

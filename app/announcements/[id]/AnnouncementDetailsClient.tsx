@@ -82,7 +82,7 @@ export default function AnnouncementDetailsClient({ initialAd }: { initialAd: An
                   alt={ad.title}
                   fill
                   sizes="(max-width: 1024px) 100vw, 700px"
-                  className="object-cover transition-all duration-700 group-hover:scale-105"
+                  className="object-contain transition-all duration-700 group-hover:scale-105 rounded-2xl"
                 />
             ) : (
                 <div className="w-full h-full flex items-center justify-center bg-slate-900 text-white/20 font-black uppercase italic">ფოტო არ არის</div>
@@ -93,19 +93,19 @@ export default function AnnouncementDetailsClient({ initialAd }: { initialAd: An
             <div className="flex gap-4 overflow-x-auto custom-scrollbar py-2 px-2">
                 {/* მთავარი ფოტოც რომ იყოს არჩევაში */}
                 {ad.image_url && (
-                    <button onClick={() => setActiveImg(ad.image_url)} className={`w-20 h-20 md:w-24 md:h-24 rounded-[22px] overflow-hidden border-2 shrink-0 transition-all duration-300 ${activeImg === ad.image_url ? 'border-amber-500 scale-105' : 'border-white/10 opacity-60'}`}>
-                    <Image src={ad.image_url} alt="Main" width={96} height={96} className="w-full h-full object-cover" />
+                    <button onClick={() => setActiveImg(ad.image_url)} className={`w-20 h-20 md:w-24 md:h-24 rounded-2xl overflow-hidden border-2 shrink-0 transition-all duration-300 ${activeImg === ad.image_url ? 'border-amber-500 scale-105' : 'border-white/10 opacity-60'}`}>
+                    <Image src={ad.image_url} alt="Main" width={96} height={96} className="w-full h-full object-contain" />
                     </button>
                 )}
                 {ad.all_images.map((img: string, i: number) => (
                 <button 
                     key={i} 
                     onClick={() => setActiveImg(img)} 
-                    className={`w-20 h-20 md:w-24 md:h-24 rounded-[22px] overflow-hidden border-2 shrink-0 transition-all duration-300 ${
+                    className={`w-20 h-20 md:w-24 md:h-24 rounded-2xl overflow-hidden border-2 shrink-0 transition-all duration-300 ${
                     activeImg === img ? 'border-amber-500 scale-105 shadow-lg shadow-amber-500/20' : 'border-white/10 opacity-60 hover:opacity-100'
                     }`}
                 >
-                  <Image src={img} alt="" width={96} height={96} className="w-full h-full object-cover" />
+                  <Image src={img} alt="" width={96} height={96} className="w-full h-full object-contain" />
                 </button>
                 ))}
             </div>

@@ -16,6 +16,7 @@ export type Database = {
     Tables: {
       admin_posts: {
         Row: {
+          badge_text: string | null
           category: string | null
           content: string | null
           created_at: string
@@ -30,6 +31,7 @@ export type Database = {
           video_background: boolean | null
         }
         Insert: {
+          badge_text?: string | null
           category?: string | null
           content?: string | null
           created_at?: string
@@ -44,6 +46,7 @@ export type Database = {
           video_background?: boolean | null
         }
         Update: {
+          badge_text?: string | null
           category?: string | null
           content?: string | null
           created_at?: string

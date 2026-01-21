@@ -70,7 +70,7 @@ export default function CongratsDetailsPage() {
           <div className="flex flex-col md:flex-row gap-10 items-center md:items-start text-center md:text-left">
             {item.image_url ? (
               <div className="relative w-64 h-64 rounded-3xl overflow-hidden border border-white/10 shadow-xl shrink-0">
-                <Image src={item.image_url} alt="" fill className="object-cover" />
+                <Image src={item.image_url} alt="" fill className="object-contain rounded-2xl" />
               </div>
             ) : (
               <div className="w-64 h-64 rounded-3xl bg-white/5 border border-white/10 flex items-center justify-center text-4xl shrink-0">🎉</div>

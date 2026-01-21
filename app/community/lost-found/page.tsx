@@ -70,7 +70,7 @@ function LostFoundPageContent() {
                 <div id={`lost-found-${it.id}`} className="p-5 bg-white/5 rounded-2xl border border-white/10 hover:bg-white/10 transition">
                   <div className="flex gap-3 items-start">
                     {it.image_url && (
-                      <Image src={it.image_url} alt="" width={80} height={80} className="rounded-xl object-cover" />
+                      <Image src={it.image_url} alt="" width={80} height={80} className="rounded-2xl object-contain shadow-lg ring-1 ring-amber-400/20" />
                     )}
                     <div className="flex-1">
                       <div className="flex justify-between items-center">
