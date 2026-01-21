@@ -4,7 +4,7 @@ import type { Database } from '../../types/supabase';
 import { AgroItem } from '../lib/types';
 import { DEFAULT_AGRO_DATA } from '../lib/constants';
 
-type AgroRow = Database['public']['Tables']['agro_prices']['Row'];
+type AgroRow = any;
 
 export function useAgroData() {
   const [agroData, setAgroData] = useState<AgroItem[]>(DEFAULT_AGRO_DATA);
@@ -15,7 +15,7 @@ export function useAgroData() {
 
   const fetchAgroData = useCallback(async () => {
     setLoading(true);
-    const { data, error } = await supabase.from('agro_prices').select('*');
+    const { data, error } = await (supabase.from('agro_prices' as any) as any).select('*');
     if (!error && data) {
       const normalized: AgroItem[] = (data as AgroRow[]).map((row) => ({
         id: row.id,

@@ -120,9 +120,9 @@ export default function AdminBoard({ isAdmin, user: _user, children }: AdminBoar
     return (
       <div className="bg-slate-900/40 backdrop-blur-md border border-white/10 rounded-[30px] overflow-hidden relative flex flex-col h-full shadow-2xl group transition-all hover:border-red-500/30">
          {post.media_url && (
-            <div className="h-40 w-full bg-black/50 overflow-hidden relative border-b border-white/5 shrink-0">
+            <div className="h-40 w-full bg-black/50 overflow-hidden relative border-b border-white/5 shrink-0 backdrop-blur-lg">
                {post.media_type === 'video' ? (
-                 <video src={post.media_url} controls className="w-full h-full object-cover" />
+                 <video src={post.media_url} controls className="w-full h-40 object-contain rounded-3xl shadow-2xl shadow-indigo-900/50 animate-pulse ring-2 ring-amber-400/90 ring-inset hover:ring-3 hover:ring-amber-400/70 hover:shadow-3xl hover:shadow-amber-400/40 transition-all duration-300" style={{ transform: 'perspective(1000px) rotateX(5deg)' }} />
                ) : (
                  <Image src={post.media_url} alt="" fill sizes="280px" className="object-cover group-hover:scale-105 transition-transform duration-700" />
                )}

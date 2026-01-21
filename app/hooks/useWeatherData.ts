@@ -4,7 +4,7 @@ import type { Database } from '../../types/supabase';
 import { WeatherItem } from '../lib/types';
 import { WEATHER_POINTS } from '../lib/constants';
 
-type WeatherRow = Database['public']['Tables']['weather']['Row'];
+type WeatherRow = any;
 
 export function useWeatherData() {
   const [weatherData, setWeatherData] = useState<WeatherItem[]>([]);
@@ -14,7 +14,7 @@ export function useWeatherData() {
     setLoading(true);
     try {
       // Try to fetch from Supabase first
-      const { data, error } = await supabase.from('weather').select('*').order('created_at', { ascending: false });
+      const { data, error } = await (supabase.from('weather' as any) as any).select('*').order('created_at', { ascending: false });
       if (!error && data && data.length > 0) {
         const normalized: WeatherItem[] = (data as WeatherRow[]).map((row) => ({
           name: row.name,

@@ -66,7 +66,7 @@ export default function CongratulationsCard({ item, isPreview = false }: Congrat
       </>
     );
 
-    switch ('თანამედროვე მინიმალიზმი') {
+    switch ('თანამედროვე მინიმალიზმი' as 'თანამედროვე მინიმალიზმი' | 'ძველი პერგამენტი' | 'ბუნების სუნთქვა' | 'სადღეგრძელოს ბარათი') {
       case 'ძველი პერგამენტი':
         return (
           <div className={`${baseClasses} bg-gradient-to-br from-amber-900/20 via-yellow-900/10 to-amber-800/20 border-amber-500/30`}>

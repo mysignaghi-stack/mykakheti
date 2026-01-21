@@ -364,15 +364,26 @@ export default function HomePage() {
     <main className="min-h-screen relative flex flex-col bg-[#050510] overflow-x-hidden text-left selection:bg-amber-500 selection:text-white text-white">
       {/* Background */}
       <div className="fixed inset-0 z-0 pointer-events-none">
-        {bgImage && !bgImage.includes('.mp4') && !bgImage.includes('.mov') && !bgImage.includes('.avi') && (
-          <Image
-            src={bgImage}
-            alt=""
-            fill
-            sizes="100vw"
-            className="object-cover opacity-7 transition-opacity duration-500"
-            priority
-          />
+        {bgImage && (
+          bgImage.includes('.mp4') || bgImage.includes('.mov') || bgImage.includes('.avi') || bgImage.includes('.webm') ? (
+            <video
+              src={bgImage}
+              autoPlay
+              muted
+              loop
+              className="w-full h-full object-cover opacity-7 transition-opacity duration-500"
+              playsInline
+            />
+          ) : (
+            <Image
+              src={bgImage}
+              alt=""
+              fill
+              sizes="100vw"
+              className="object-cover opacity-7 transition-opacity duration-500"
+              priority
+            />
+          )
         )}
         <div className="absolute inset-0 bg-gradient-to-b from-[#0a0a1f]/30 via-[#050510]/10 to-[#050510]/40 backdrop-blur-[2px]" />
       </div>
@@ -413,7 +424,7 @@ export default function HomePage() {
               </div>
             </div>
             {/* 🏛️ ადმინისტრაციული განცხადება */}
-            <div className="w-full bg-gradient-to-br from-amber-900/40 via-black/50 to-amber-700/20 backdrop-blur-sm rounded-[24px] border border-amber-500/30 shadow-[0_0_20px_4px_rgba(255,191,0,0.1)] p-4 ring-1 ring-amber-400/20 relative">
+            <div className="w-full bg-gradient-to-br from-amber-900/40 via-black/50 to-amber-700/20 backdrop-blur-sm rounded-[24px] border border-amber-500/30 shadow-[0_0_20px_4px_rgba(255,191,0,0.1)] p-4 ring-1 ring-amber-400/20 relative" style={{ minWidth: '240px' }}>
               <AdminSideFrame 
                 post={getPostByPos('left_top')} 
                 position="left_top" 
