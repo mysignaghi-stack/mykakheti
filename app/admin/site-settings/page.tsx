@@ -38,6 +38,11 @@ export default function AdminSiteSettings() {
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
+      // Check if it's an image file
+      if (!file.type.startsWith('image/')) {
+        alert('გთხოვთ აირჩიოთ მხოლოდ სურათის ფაილი (JPG, PNG, WebP)');
+        return;
+      }
       setSelectedFile(file);
       setPreviewUrl(URL.createObjectURL(file));
     }
@@ -142,7 +147,30 @@ export default function AdminSiteSettings() {
             {currentBgUrl && (
               <div className="mb-4">
                 <p className="text-white/60 mb-2">მიმდინარე ფონი:</p>
-                <img src={currentBgUrl} alt="Current background" className="w-full max-w-md h-48 object-cover rounded-xl border border-white/10" />
+                <div className="flex gap-2 items-start">
+                  <img src={currentBgUrl} alt="Current background" className="w-full max-w-md h-48 object-cover rounded-xl border border-white/10" />
+                  <button
+                    onClick={async () => {
+                      if (confirm('გსურთ მიმდინარე ფონის წაშლა?')) {
+                        try {
+                          const { error } = await (supabase as any)
+                            .from('site_settings')
+                            .delete()
+                            .eq('key', 'background_url');
+                          if (error) throw error;
+                          setCurrentBgUrl('');
+                          alert('ფონი წაიშალა');
+                        } catch (error) {
+                          console.error('Delete error:', error);
+                          alert('შეცდომა წაშლისას');
+                        }
+                      }
+                    }}
+                    className="bg-red-600 hover:bg-red-500 text-white px-3 py-1 rounded text-xs font-bold"
+                  >
+                    ❌ წაშლა
+                  </button>
+                </div>
               </div>
             )}
 

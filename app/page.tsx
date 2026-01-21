@@ -364,7 +364,7 @@ export default function HomePage() {
     <main className="min-h-screen relative flex flex-col bg-[#050510] overflow-x-hidden text-left selection:bg-amber-500 selection:text-white text-white">
       {/* Background */}
       <div className="fixed inset-0 z-0 pointer-events-none">
-        {bgImage && (
+        {bgImage && !bgImage.includes('.mp4') && !bgImage.includes('.mov') && !bgImage.includes('.avi') && (
           <Image
             src={bgImage}
             alt=""
