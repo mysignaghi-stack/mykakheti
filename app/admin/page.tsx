@@ -10,6 +10,9 @@ const ADMIN_LINKS = [
   // community link removed — community moderation is available from the main cards above
   // 'მისალოცები' merged into 'ქომუნითი' to avoid duplicate panels
   { href: '/admin/messages', title: 'შეტყობინებები', desc: 'კონტაქტის ფორმის მესიჯები' },
+  { href: '/admin/posts', title: 'ადმინისტრატორის განცხადებები', desc: 'ადმინის პოსტების მართვა' },
+  { href: '/admin/square', title: 'კახური მოედანი', desc: 'ჩატის მესიჯების მართვა' },
+  { href: '/admin/site-settings', title: 'საიტის პარამეტრები', desc: 'უკანა ფონის და სხვა პარამეტრების მართვა' },
   { href: '/admin/diagnostic', title: 'დიაგნოსტიკა', desc: 'ადმინისტრატორის სტატუსის შემოწმება' },
 ];
 

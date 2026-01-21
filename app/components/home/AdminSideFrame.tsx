@@ -310,7 +310,7 @@ export default function AdminSideFrame({ post, position, isAdmin, onRefresh, con
                 alt=""
                 fill
                 sizes="(max-width: 768px) 100vw, 600px"
-                className="object-cover"
+                className="object-contain"
                 priority
               />
             </div>
@@ -388,7 +388,7 @@ export default function AdminSideFrame({ post, position, isAdmin, onRefresh, con
                   autoPlay={post.video_background || false}
                   muted={post.video_background || false}
                   loop={post.video_background || false}
-                  className={`w-full ${post.video_background ? 'h-48' : 'h-32'} object-cover rounded-xl`}
+                  className={`w-full ${post.video_background ? 'h-48' : 'h-32'} object-contain rounded-xl`}
                 />
               ) : post.media_type === 'gallery' ? (
                 <div className="mt-3">
@@ -408,7 +408,7 @@ export default function AdminSideFrame({ post, position, isAdmin, onRefresh, con
                             alt=""
                             fill
                             sizes="(max-width: 768px) 100vw, 800px"
-                            className="object-cover rounded-xl"
+                            className="object-contain rounded-xl"
                           />
                         </div>
                       </SwiperSlide>
@@ -422,7 +422,7 @@ export default function AdminSideFrame({ post, position, isAdmin, onRefresh, con
                     alt=""
                     fill
                     sizes="(max-width: 768px) 100vw, 800px"
-                    className="object-cover rounded-xl"
+                    className="object-contain rounded-xl"
                   />
                 </div>
               )}

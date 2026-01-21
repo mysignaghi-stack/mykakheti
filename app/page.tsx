@@ -168,10 +168,34 @@ export default function HomePage() {
 
   const [frameContentTypes, setFrameContentTypes] = useState({
     left_top: 'post' as 'post' | 'announcement',
-    left_bottom: 'post' as 'post' | 'announcement',
     right_top: 'post' as 'post' | 'announcement',
-    right_bottom: 'post' as 'post' | 'announcement',
   });
+
+  // Load frame content types from localStorage
+  useEffect(() => {
+    const saved = localStorage.getItem('frameContentTypes');
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        setFrameContentTypes(prev => ({ ...prev, ...parsed }));
+      } catch (e) {
+        console.error('Failed to parse frameContentTypes from localStorage', e);
+      }
+    }
+  }, []);
+
+  // Set default content type to announcement if announcements exist
+  useEffect(() => {
+    if (ads.length > 0) {
+      setFrameContentTypes(prev => {
+        const newTypes = { ...prev };
+        if (prev.left_top === 'post') newTypes.left_top = 'announcement';
+        if (prev.right_top === 'post') newTypes.right_top = 'announcement';
+        localStorage.setItem('frameContentTypes', JSON.stringify(newTypes));
+        return newTypes;
+      });
+    }
+  }, [ads]);
 
   useEffect(() => {
     setFactIndex(Math.floor(Math.random() * KAKHETI_FACTS.length));
@@ -188,6 +212,7 @@ export default function HomePage() {
     initSecurity();
 
     fetchAds();
+    fetchAdminPosts();
     // ...existing code for chat scroll, channel, cleanup, etc...
     // სესიის შემოწმება Supabase-ში
     (async () => {
@@ -211,7 +236,11 @@ export default function HomePage() {
   const getPostByPos = (pos: string) => adminPosts.find(p => p.position === pos);
 
   const changeFrameContentType = (position: string, type: 'post' | 'announcement') => {
-    setFrameContentTypes(prev => ({ ...prev, [position]: type }));
+    setFrameContentTypes(prev => {
+      const newTypes = { ...prev, [position]: type };
+      localStorage.setItem('frameContentTypes', JSON.stringify(newTypes));
+      return newTypes;
+    });
   };
 
   // Confirmation modal state
@@ -385,13 +414,13 @@ export default function HomePage() {
             {/* 🏛️ ადმინისტრაციული განცხადება */}
             <div className="w-full bg-gradient-to-br from-amber-900/40 via-black/50 to-amber-700/20 backdrop-blur-sm rounded-[24px] border border-amber-500/30 shadow-[0_0_20px_4px_rgba(255,191,0,0.1)] p-4 ring-1 ring-amber-400/20 relative">
               <AdminSideFrame 
-                post={getPostByPos('right_bottom')} 
-                position="right_bottom" 
+                post={getPostByPos('left_top')} 
+                position="left_top" 
                 isAdmin={isAdmin} 
                 onRefresh={fetchAdminPosts}
-                contentType={frameContentTypes.right_bottom}
-                announcement={frameContentTypes.right_bottom === 'announcement' ? firstAnnouncement : null}
-                onContentTypeChange={(type) => changeFrameContentType('right_bottom', type)}
+                contentType={frameContentTypes.left_top}
+                announcement={frameContentTypes.left_top === 'announcement' ? firstAnnouncement : null}
+                onContentTypeChange={(type) => changeFrameContentType('left_top', type)}
               />
             </div>
           </div>
