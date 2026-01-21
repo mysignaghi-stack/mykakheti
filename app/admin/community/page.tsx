@@ -76,7 +76,9 @@ export default function AdminCommunityPage() {
             <>
               <div className="font-black text-white text-lg italic">{item.sender_name} → {item.receiver_name}</div>
               <div className="text-amber-400 text-sm font-bold uppercase bg-amber-600/20 px-2 py-1 rounded-full inline-block mb-2">{item.category}</div>
+              {item.template && <div className="text-purple-400 text-xs font-bold uppercase bg-purple-600/20 px-2 py-1 rounded-full inline-block mb-2 ml-2">{item.template}</div>}
               <p className="text-white/80 italic leading-relaxed">{item.message}</p>
+              {item.toast && <p className="text-amber-300 text-sm italic mt-2">🍷 {item.toast}</p>}
             </>
           )} />
 

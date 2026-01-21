@@ -206,12 +206,14 @@ export type Database = {
       congratulations: {
         Row: {
           all_images: string[] | null
+          animation_enabled: boolean | null
           category: string
           created_at: string | null
           id: string
           image_url: string | null
           is_approved: boolean | null
           message: string
+          music_url: string | null
           photo: string | null
           publish_date: string
           receiver: string | null
@@ -219,16 +221,20 @@ export type Database = {
           sender: string | null
           sender_name: string | null
           status: string
+          template: string | null
           theme: string
+          toast: string | null
         }
         Insert: {
           all_images?: string[] | null
+          animation_enabled?: boolean | null
           category: string
           created_at?: string | null
           id?: string
           image_url?: string | null
           is_approved?: boolean | null
           message: string
+          music_url?: string | null
           photo?: string | null
           publish_date?: string
           receiver?: string | null
@@ -236,16 +242,20 @@ export type Database = {
           sender?: string | null
           sender_name?: string | null
           status?: string
+          template?: string | null
           theme?: string
+          toast?: string | null
         }
         Update: {
           all_images?: string[] | null
+          animation_enabled?: boolean | null
           category?: string
           created_at?: string | null
           id?: string
           image_url?: string | null
           is_approved?: boolean | null
           message?: string
+          music_url?: string | null
           photo?: string | null
           publish_date?: string
           receiver?: string | null
@@ -253,7 +263,9 @@ export type Database = {
           sender?: string | null
           sender_name?: string | null
           status?: string
+          template?: string | null
           theme?: string
+          toast?: string | null
         }
         Relationships: []
       }

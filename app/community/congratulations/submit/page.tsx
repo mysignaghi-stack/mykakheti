@@ -33,12 +33,18 @@ const CATEGORY_OPTIONS = [
   { value: 'სხვა', label: 'სხვა ✨' },
 ];
 
-const STYLE_OPTIONS = [
-  { value: 'ელეგანტური', label: 'ელეგანტური ✨' },
-  { value: 'კლასიკური', label: 'კლასიკური 🕊️' },
-  { value: 'ფერმკრთალი', label: 'ფერმკრთალი 🌫️' },
-  { value: 'მხიარული', label: 'მხიარული 🎉' },
-  { value: 'ქართულ-ტრადიციული', label: 'ქართულ-ტრადიციული 🇬🇪' },
+const TEMPLATE_OPTIONS = [
+  { value: 'ძველი პერგამენტი', label: '📜 ძველი პერგამენტი', description: 'კლასიკური, ისტორიული სტილის ბარათი დახვეწილი შრიფტით' },
+  { value: 'თანამედროვე მინიმალიზმი', label: '✨ თანამედროვე მინიმალიზმი', description: 'სუფთა დიზაინი, სადაც ფოტო დიდ ადგილს იკავებს' },
+  { value: 'ბუნების სუნთქვა', label: '🌿 ბუნების სუნთქვა', description: 'კახეთის პეიზაჟების (ალაზნის ველი, კავკასიონი) ფონით' },
+  { value: 'სადღეგრძელოს ბარათი', label: '🍷 სადღეგრძელოს ბარათი', description: 'სპეციალური ფორმა, რომელიც ვიზუალურად ქვევრს ან ყურძნის მტევანს ჰგავს' },
+];
+
+const MUSIC_OPTIONS = [
+  { value: '', label: 'უმუსიკო' },
+  { value: 'mravaljamieri.mp3', label: 'მრავალჟამიერი' },
+  { value: 'kakhetian_folk.mp3', label: 'კახური ხალხური' },
+  { value: 'traditional_toast.mp3', label: 'ტრადიციული სადღეგრძელო' },
 ];
 
 export default function SubmitCongratulations() {
@@ -48,7 +54,10 @@ export default function SubmitCongratulations() {
     recipient_name: '',
     message: '',
     category: CATEGORY_OPTIONS[0]?.value ?? 'დაბადების დღე',
-    theme: STYLE_OPTIONS[0]?.value ?? 'ელეგანტური'
+    template: TEMPLATE_OPTIONS[0]?.value ?? 'თანამედროვე მინიმალიზმი',
+    toast: '',
+    music_url: '',
+    animation_enabled: false
   });
   const [files, setFiles] = useState<File[]>([]);
   const [previews, setPreviews] = useState<string[]>([]);
@@ -136,10 +145,15 @@ export default function SubmitCongratulations() {
         receiver_name: formData.recipient_name,
         message: formData.message,
         category: formData.category,
-        theme: formData.theme,
+        theme: 'ელეგანტური', // Keep theme for backward compatibility
         image_url: imageUrl,
         all_images: imageUrls.length > 0 ? imageUrls : null,
-        is_approved: false
+        is_approved: false,
+        // New fields - will be added when database is updated
+        ...(formData.template && { template: formData.template }),
+        ...(formData.toast && { toast: formData.toast }),
+        ...(formData.music_url && { music_url: formData.music_url }),
+        ...(typeof formData.animation_enabled === 'boolean' && { animation_enabled: formData.animation_enabled }),
       }]);
 
       if (error) throw error;
@@ -216,20 +230,21 @@ export default function SubmitCongratulations() {
                   </div>
 
                   <div className="rounded-[24px] bg-white/5 border border-white/10 p-4">
-                    <p className="text-[11px] font-black uppercase text-white/60 mb-3 tracking-widest">დიზაინის სტილი</p>
-                    <div className="grid grid-cols-2 gap-2">
-                      {STYLE_OPTIONS.map((option) => (
+                    <p className="text-[11px] font-black uppercase text-white/60 mb-3 tracking-widest">ბარათის შაბლონი</p>
+                    <div className="space-y-2">
+                      {TEMPLATE_OPTIONS.map((option) => (
                         <button
                           key={option.value}
                           type="button"
-                          onClick={() => setFormData({ ...formData, theme: option.value })}
-                          className={`rounded-2xl px-3 py-3 text-[11px] font-black uppercase tracking-wide transition-all border ${
-                            formData.theme === option.value
-                              ? 'bg-emerald-500/20 border-emerald-400 text-white'
+                          onClick={() => setFormData({ ...formData, template: option.value })}
+                          className={`w-full rounded-2xl px-4 py-3 text-left transition-all border ${
+                            formData.template === option.value
+                              ? 'bg-amber-500/20 border-amber-400 text-white'
                               : 'bg-white/5 border-white/10 text-white/60 hover:text-white'
                           }`}
                         >
-                          {option.label}
+                          <div className="font-bold text-sm">{option.label}</div>
+                          <div className="text-[10px] text-white/40 mt-1">{option.description}</div>
                         </button>
                       ))}
                     </div>
@@ -243,6 +258,47 @@ export default function SubmitCongratulations() {
                     onChange={(e) => setFormData({...formData, message: e.target.value})}
                     required
                   />
+
+                  <div className="rounded-[24px] bg-white/5 border border-white/10 p-4">
+                    <p className="text-[11px] font-black uppercase text-white/60 mb-3 tracking-widest">სადღეგრძელო (არასავალდებულო)</p>
+                    <textarea
+                      placeholder="მოკლე, სხარტი კახური დალოცვა..."
+                      rows={2}
+                      className="w-full p-4 bg-slate-950/80 border border-white/10 rounded-2xl text-white font-bold text-sm focus:border-amber-500 outline-none resize-none"
+                      value={formData.toast}
+                      onChange={(e) => setFormData({...formData, toast: e.target.value})}
+                    />
+                  </div>
+
+                  <div className="rounded-[24px] bg-white/5 border border-white/10 p-4">
+                    <p className="text-[11px] font-black uppercase text-white/60 mb-3 tracking-widest">მუსიკალური ფონი (არასავალდებულო)</p>
+                    <select
+                      className="w-full p-4 bg-slate-950/80 border border-white/10 rounded-2xl text-white font-bold text-sm focus:border-amber-500 outline-none"
+                      value={formData.music_url}
+                      onChange={(e) => setFormData({ ...formData, music_url: e.target.value })}
+                    >
+                      {MUSIC_OPTIONS.map((option) => (
+                        <option key={option.value} value={option.value}>
+                          {option.label}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div className="rounded-[24px] bg-white/5 border border-white/10 p-4">
+                    <label className="flex items-center gap-3 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={formData.animation_enabled}
+                        onChange={(e) => setFormData({ ...formData, animation_enabled: e.target.checked })}
+                        className="w-5 h-5 accent-amber-500"
+                      />
+                      <div>
+                        <p className="text-sm font-black uppercase text-white/80 tracking-widest">ანიმირებული ჭიქების მიჭახუნება</p>
+                        <p className="text-[10px] text-white/40 mt-1">ბარათის ბოლოში სპეციალური ღილაკი ღვინის ჭიქების ანიმაციით</p>
+                      </div>
+                    </label>
+                  </div>
 
                   <div className="space-y-3">
                     <label className="block text-white/60 font-bold text-sm text-center">
