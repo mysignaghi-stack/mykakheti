@@ -200,9 +200,10 @@ export default function AdsSection({
         {currentAds.length > 0 ? (
           currentAds.map((ad, index) => {
             // სურათის განსაზღვრა (დაცვით)
+            const fallbackImg = 'data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22400%22 height=%22300%22 viewBox=%220 0 400 300%22%3E%3Cdefs%3E%3ClinearGradient id=%22g%22 x1=%220%22 y1=%220%22 x2=%221%22 y2=%221%22%3E%3Cstop stop-color=%22%23262639%22 offset=%220%25%22/%3E%3Cstop stop-color=%22%232f3b52%22 offset=%22100%25%22/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width=%22400%22 height=%22300%22 fill=%22url(%23g)%22/%3E%3Ctext x=%22200%22 y=%22155%22 fill=%22%23ffffff%22 font-size=%2230%22 font-family=%22Arial,sans-serif%22 text-anchor=%22middle%22%3ENo Image%3C/text%3E%3C/svg%3E';
             const mainImage = (ad.all_images && Array.isArray(ad.all_images) && ad.all_images.length > 0) 
               ? ad.all_images[0] 
-              : (ad.image_url || 'https://via.placeholder.com/400x300?text=No+Image');
+              : (ad.image_url || fallbackImg);
 
             return (
               <Link 
@@ -249,7 +250,14 @@ export default function AdsSection({
 
                   <div className="mt-auto pt-4 border-t border-white/5 flex justify-between items-center">
                     <span className="text-amber-500 font-black text-lg">
-                      {parseFloat(ad.price) > 0 ? `${ad.price} ${ad.currency === 'USD' ? '$' : '₾'}` : 'შეთანხმებით'}
+                      {(() => {
+                        const numeric = Number(ad.price);
+                        if (!ad.price) return 'შეთანხმებით';
+                        if (!Number.isNaN(numeric) && Number.isFinite(numeric) && numeric > 0) {
+                          return `${ad.price} ${ad.currency === 'USD' ? '$' : '₾'}`;
+                        }
+                        return ad.price; // display raw string (e.g., ranges)
+                      })()}
                     </span>
                     <span className="text-[10px] text-white/30 flex items-center gap-1">
                       📍 {(ad.location || '').split(',')[0]}

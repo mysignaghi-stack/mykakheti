@@ -40,24 +40,32 @@ const extractData = <T>(result: SettledResponse<T>, label: string): T[] => {
   return [];
 };
 
-const mapAnnouncementRow = (row: AnnouncementRow): Ad => ({
-  id: row.id,
-  title: row.title ?? '',
-  description: row.description ?? null,
-  price: row.price ? String(row.price) : '',
-  currency: row.currency ?? null,
-  location: row.location ?? '',
-  category: row.category ?? 'სხვა',
-  image_url: row.image_url ?? null,
-  all_images: Array.isArray(row.all_images) ? row.all_images : null,
-  contact_info: row.contact_info ?? null,
-  phone: row.phone ?? null,
-  is_approved: row.is_approved ?? null,
-  is_archived: row.is_archived ?? null,
-  created_at: row.created_at ?? null,
-  expires_at: (row as AnnouncementRow & { expires_at?: string | null }).expires_at ?? null,
-  user_id: (row as AnnouncementRow & { user_id?: string | null }).user_id ?? null,
-});
+const mapAnnouncementRow = (row: AnnouncementRow): Ad => {
+  const allImages = Array.isArray(row.all_images)
+    ? row.all_images
+    : typeof row.all_images === 'string'
+      ? [row.all_images]
+      : null;
+
+  return {
+    id: row.id,
+    title: row.title ?? '',
+    description: row.description ?? null,
+    price: row.price ? String(row.price) : '',
+    currency: row.currency ?? null,
+    location: row.location ?? '',
+    category: row.category ?? 'სხვა',
+    image_url: row.image_url ?? null,
+    all_images: allImages,
+    contact_info: row.contact_info ?? null,
+    phone: row.phone ?? null,
+    is_approved: row.is_approved ?? null,
+    is_archived: row.is_archived ?? null,
+    created_at: row.created_at ?? null,
+    expires_at: (row as AnnouncementRow & { expires_at?: string | null }).expires_at ?? null,
+    user_id: (row as AnnouncementRow & { user_id?: string | null }).user_id ?? null,
+  };
+};
 
 const mapAgroRow = (row: AgroRow): AgroItem => ({
   id: row.id,
