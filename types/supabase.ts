@@ -444,6 +444,41 @@ export type Database = {
           },
         ]
       }
+      agro_prices: {
+        Row: {
+          id: string;
+          name: string | null;
+          unit: string | null;
+          price: number | null;
+          color: string | null;
+          icon: string | null;
+          category: string | null;
+          details: string[] | null;
+          created_at: string | null;
+        };
+        Insert: {
+          id?: string;
+          name?: string | null;
+          unit?: string | null;
+          price?: number | null;
+          color?: string | null;
+          icon?: string | null;
+          category?: string | null;
+          details?: string[] | null;
+          created_at?: string | null;
+        };
+        Update: {
+          name?: string | null;
+          unit?: string | null;
+          price?: number | null;
+          color?: string | null;
+          icon?: string | null;
+          category?: string | null;
+          details?: string[] | null;
+          created_at?: string | null;
+        };
+        Relationships: [];
+      }
     }
     Views: {
       [_ in never]: never

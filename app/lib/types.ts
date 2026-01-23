@@ -35,14 +35,14 @@ export interface TransportRoute {
 }
 
 export interface AgroItem {
-  id: number;
+  id: string;
   name: string;
   unit: string;
   price: string;
   color: string;
   icon: string;
   category: string;
-  details: { place: string; rate: string | number }[] | null;
+  details: { place: string; rate: string | number }[] | string[] | null;
 }
 
 // 👇 განახლებული ტიპი ადმინისტრაციის პოსტებისთვის

@@ -122,7 +122,7 @@ export const KAKHETI_FACTS = [
 // აგრო მონაცემები
 export const DEFAULT_AGRO_DATA: AgroItem[] = [
   { 
-    id: 1, 
+    id: '1', 
     name: 'რქაწითელი', 
     unit: '1 კგ', 
     price: '1.50 - 2.00 ₾', 
@@ -135,7 +135,7 @@ export const DEFAULT_AGRO_DATA: AgroItem[] = [
     ] 
   },
   { 
-    id: 2, 
+    id: '2', 
     name: 'საფერავი', 
     unit: '1 კგ', 
     price: '2.50 - 3.50 ₾', 
@@ -148,7 +148,7 @@ export const DEFAULT_AGRO_DATA: AgroItem[] = [
     ] 
   },
   { 
-    id: 3, 
+    id: '3', 
     name: 'ხორბალი', 
     unit: '1 ტონა', 
     price: '600 - 650 ₾', 
@@ -161,7 +161,7 @@ export const DEFAULT_AGRO_DATA: AgroItem[] = [
     ] 
   },
   { 
-    id: 4, 
+    id: '4', 
     name: 'ქერი', 
     unit: '1 ტონა', 
     price: '550 - 580 ₾', 
@@ -174,7 +174,7 @@ export const DEFAULT_AGRO_DATA: AgroItem[] = [
     ] 
   },
   { 
-    id: 5, 
+    id: '5', 
     name: 'ატამი', 
     unit: '1 კგ', 
     price: '1.20 - 2.50 ₾', 
@@ -187,7 +187,7 @@ export const DEFAULT_AGRO_DATA: AgroItem[] = [
     ] 
   },
   { 
-    id: 6, 
+    id: '6', 
     name: 'საზამთრო', 
     unit: '1 კგ', 
     price: '0.40 - 0.70 ₾', 

@@ -8,10 +8,32 @@ ALTER TABLE public.kakheti_heritage DROP CONSTRAINT IF EXISTS kakheti_heritage_c
 ALTER TABLE public.kakheti_heritage ADD CONSTRAINT kakheti_heritage_category_check
 CHECK (category IN ('ისტორია', 'ბუნება', 'ღვინის კულტურა', 'ცნობილი ადამიანები', 'ლეგენდები'));
 
--- Add insert policy for authenticated users (or you can modify this based on your auth setup)
-CREATE POLICY "Allow insert for authenticated users" ON public.kakheti_heritage
-FOR INSERT WITH CHECK (true);
+-- Add insert policy for admins only
+CREATE POLICY "Allow insert for admins" ON public.kakheti_heritage
+FOR INSERT WITH CHECK (
+  EXISTS (
+    SELECT 1 FROM auth.users
+    WHERE auth.users.id = auth.uid()
+    AND auth.users.raw_user_meta_data->>'role' = 'admin'
+  )
+);
 
--- Or if you want to allow anyone to insert (for development):
--- DROP POLICY IF EXISTS "Kakheti heritage is publicly readable" ON public.kakheti_heritage;
--- CREATE POLICY "Allow all operations" ON public.kakheti_heritage FOR ALL USING (true);
+-- Add update policy for admins
+CREATE POLICY "Allow update for admins" ON public.kakheti_heritage
+FOR UPDATE USING (
+  EXISTS (
+    SELECT 1 FROM auth.users
+    WHERE auth.users.id = auth.uid()
+    AND auth.users.raw_user_meta_data->>'role' = 'admin'
+  )
+);
+
+-- Add delete policy for admins
+CREATE POLICY "Allow delete for admins" ON public.kakheti_heritage
+FOR DELETE USING (
+  EXISTS (
+    SELECT 1 FROM auth.users
+    WHERE auth.users.id = auth.uid()
+    AND auth.users.raw_user_meta_data->>'role' = 'admin'
+  )
+);

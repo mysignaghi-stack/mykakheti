@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
 import { Ad } from '../lib/types';
 import type { Tables } from '@/types/helpers';
@@ -24,27 +24,41 @@ const mapRowToAd = (row: AnnouncementRow): Ad => ({
   user_id: (row as AnnouncementRow & { user_id?: string | null }).user_id ?? null,
 });
 
-export function useAdsData() {
-  const [ads, setAds] = useState<Ad[]>([]);
+export function useAdsData(initialAds: Ad[] = []) {
+  const [ads, setAds] = useState<Ad[]>(initialAds);
   const [loading, setLoading] = useState(false);
 
   const fetchAds = useCallback(async () => {
     setLoading(true);
-    const { data } = await supabase.from('announcements').select('*').eq('is_approved', true).order('created_at', { ascending: false });
-    if (data) {
-      const now = Date.now();
-      const filtered = data.filter((row) => {
-        const extra = row as AnnouncementRow & { publish_at?: string | null; expires_at?: string | null };
-        const publishAt = extra.publish_at;
-        const expiresAt = extra.expires_at;
-        const publishOk = !publishAt || new Date(publishAt).getTime() <= now;
-        const expiresOk = !expiresAt || new Date(expiresAt).getTime() > now;
-        return publishOk && expiresOk;
-      });
-      setAds(filtered.map(mapRowToAd));
+    try {
+      const { data, error } = await supabase
+        .from('announcements')
+        .select('*')
+        .eq('is_approved', true)
+        .order('created_at', { ascending: false });
+      if (error) throw error;
+      if (data) {
+        const now = Date.now();
+        const filtered = data.filter((row) => {
+          const extra = row as AnnouncementRow & { publish_at?: string | null; expires_at?: string | null };
+          const publishAt = extra.publish_at;
+          const expiresAt = extra.expires_at;
+          const publishOk = !publishAt || new Date(publishAt).getTime() <= now;
+          const expiresOk = !expiresAt || new Date(expiresAt).getTime() > now;
+          return publishOk && expiresOk;
+        });
+        setAds(filtered.map(mapRowToAd));
+      }
+    } catch (error) {
+      console.error('Failed to fetch announcements', error);
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   }, []);
+
+  useEffect(() => {
+    setAds(initialAds);
+  }, [initialAds]);
 
   const archiveAd = async (id: string) => {
     const { error } = await (supabase.from('announcements') as any).update({ is_archived: true }).eq('id', id);

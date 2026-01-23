@@ -20,12 +20,23 @@ type CardConfig = {
   hrefBuilder?: (id: string) => string;
   placeholder: string;
 };
+interface CommunityWidgetsProps {
+  initialObituaries?: ObituaryRow[];
+  initialLostFound?: LostFoundRow[];
+  initialMasters?: MasterRow[];
+  initialCongrats?: CongratsRow[];
+}
 
-export default function CommunityWidgets() {
-  const [obituaries, setObituaries] = useState<ObituaryRow[]>([]);
-  const [lostFound, setLostFound] = useState<LostFoundRow[]>([]);
-  const [masters, setMasters] = useState<MasterRow[]>([]);
-  const [congrats, setCongrats] = useState<CongratsRow[]>([]);
+export default function CommunityWidgets({
+  initialObituaries = [],
+  initialLostFound = [],
+  initialMasters = [],
+  initialCongrats = [],
+}: CommunityWidgetsProps) {
+  const [obituaries, setObituaries] = useState<ObituaryRow[]>(initialObituaries);
+  const [lostFound, setLostFound] = useState<LostFoundRow[]>(initialLostFound);
+  const [masters, setMasters] = useState<MasterRow[]>(initialMasters);
+  const [congrats, setCongrats] = useState<CongratsRow[]>(initialCongrats);
 
   const [obIndex, setObIndex] = useState(0);
   const [lfIndex, setLfIndex] = useState(0);
@@ -33,38 +44,61 @@ export default function CommunityWidgets() {
   const [congratsIndex, setCongratsIndex] = useState(0);
 
   useEffect(() => {
-    const fetchData = async () => {
-      const [obRes, lfRes, masterRes, congratsRes] = await Promise.all([
-        supabase
-          .from("obituaries")
-          .select("id, full_name, funeral_at, funeral_place, image_url, is_approved, created_at")
-          .eq("is_approved", true)
-          .order("created_at", { ascending: false }),
-        supabase
-          .from("lost_found")
-          .select("id, title, location, image_url, kind, is_approved, created_at")
-          .eq("is_approved", true)
-          .order("created_at", { ascending: false }),
-        supabase
-          .from("masters")
-          .select("id, full_name, profession, location, description, rating_avg, is_approved, created_at")
-          .eq("is_approved", true)
-          .order("created_at", { ascending: false }),
-        supabase
-          .from("congratulations")
-          .select("id, sender_name, recipient_name, message, image_url, occasion, created_at")
-          .eq("is_approved", true)
-          .order("created_at", { ascending: false }),
-      ]);
+    setObituaries(initialObituaries);
+  }, [initialObituaries]);
 
-      setObituaries(obRes.data ?? []);
-      setLostFound(lfRes.data ?? []);
-      setMasters(masterRes.data ?? []);
-      setCongrats(congratsRes.data ?? []);
+  useEffect(() => {
+    setLostFound(initialLostFound);
+  }, [initialLostFound]);
+
+  useEffect(() => {
+    setMasters(initialMasters);
+  }, [initialMasters]);
+
+  useEffect(() => {
+    setCongrats(initialCongrats);
+  }, [initialCongrats]);
+
+  useEffect(() => {
+    const shouldFetch = [initialObituaries.length, initialLostFound.length, initialMasters.length, initialCongrats.length].some((len) => len === 0);
+    if (!shouldFetch) return;
+
+    const fetchData = async () => {
+      try {
+        const [obRes, lfRes, masterRes, congratsRes] = await Promise.all([
+          supabase
+            .from("obituaries")
+            .select("id, full_name, funeral_at, funeral_place, image_url, is_approved, created_at")
+            .eq("is_approved", true)
+            .order("created_at", { ascending: false }),
+          supabase
+            .from("lost_found")
+            .select("id, title, location, image_url, kind, is_approved, created_at")
+            .eq("is_approved", true)
+            .order("created_at", { ascending: false }),
+          supabase
+            .from("masters")
+            .select("id, full_name, profession, location, description, rating_avg, is_approved, created_at")
+            .eq("is_approved", true)
+            .order("created_at", { ascending: false }),
+          supabase
+            .from("congratulations")
+            .select("id, sender_name, recipient_name, message, image_url, occasion, created_at")
+            .eq("is_approved", true)
+            .order("created_at", { ascending: false }),
+        ]);
+
+        setObituaries(obRes.data ?? []);
+        setLostFound(lfRes.data ?? []);
+        setMasters(masterRes.data ?? []);
+        setCongrats(congratsRes.data ?? []);
+      } catch (error) {
+        console.error('Failed to load community widgets', error);
+      }
     };
 
     fetchData();
-  }, []);
+  }, [initialObituaries.length, initialLostFound.length, initialMasters.length, initialCongrats.length]);
 
   useEffect(() => {
     const timer = setInterval(() => {

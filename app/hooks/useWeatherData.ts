@@ -1,13 +1,12 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '../lib/supabase';
-import type { Database } from '../../types/supabase';
 import { WeatherItem } from '../lib/types';
 import { WEATHER_POINTS } from '../lib/constants';
 
-type WeatherRow = any;
+type WeatherRow = WeatherItem;
 
-export function useWeatherData() {
-  const [weatherData, setWeatherData] = useState<WeatherItem[]>([]);
+export function useWeatherData(initialWeather: WeatherItem[] = []) {
+  const [weatherData, setWeatherData] = useState<WeatherItem[]>(initialWeather);
   const [loading, setLoading] = useState(false);
 
   const fetchWeatherData = useCallback(async () => {
@@ -53,8 +52,14 @@ export function useWeatherData() {
   }, []);
 
   useEffect(() => {
-    fetchWeatherData();
-  }, [fetchWeatherData]);
+    setWeatherData(initialWeather);
+  }, [initialWeather]);
+
+  useEffect(() => {
+    if (initialWeather.length === 0) {
+      fetchWeatherData();
+    }
+  }, [fetchWeatherData, initialWeather.length]);
 
   return {
     weatherData,

@@ -2,12 +2,12 @@ import React, { useState, useEffect } from 'react';
 import { supabase } from '../../lib/supabase';
 import type { Database } from '../../../types/supabase';
 
-type KakhetiHeritageRow = Database['public']['Tables']['kakheti_heritage']['Row'];
+type KakhetiHeritageRow = any;
 
 const fetchKakhetiHeritage = async (): Promise<KakhetiHeritageRow[]> => {
   try {
     const { data, error } = await (supabase as any)
-      .from('kakheti_heritage')
+      .from('kakheti_heritage' as any)
       .select('*')
       .order('created_at', { ascending: false });
 
@@ -45,6 +45,13 @@ export default function ServiceWidgets({ onMapSearch }: ServiceWidgetsProps) {
     };
 
     fetchPlaces();
+
+    // Fallback: set loading to false after 10 seconds
+    const timeout = setTimeout(() => {
+      setLoading(false);
+    }, 10000);
+
+    return () => clearTimeout(timeout);
   }, []);
 
   // Filter places by selected category
@@ -72,9 +79,9 @@ export default function ServiceWidgets({ onMapSearch }: ServiceWidgetsProps) {
     const categoryIcons: Record<string, string> = {
       'ისტორია': '🏰',
       'ბუნება': '🏞️',
-      'ღვინის კულტურა': '🍷',
-      'ცნობილი ადამიანები': '👤',
-      'ლეგენდები': '📖'
+      'ღვინო': '🍷',
+      'პერსონაჟი': '👤',
+      'ლეგენდა': '📖'
     };
 
     return categoryIcons[place.category || ''] || '🏛️';
@@ -116,7 +123,7 @@ export default function ServiceWidgets({ onMapSearch }: ServiceWidgetsProps) {
             >
               ყველა
             </button>
-            {['ისტორია', 'ბუნება', 'ღვინის კულტურა', 'ცნობილი ადამიანები', 'ლეგენდები'].map((category) => (
+            {['ისტორია', 'ბუნება', 'ღვინო', 'პერსონაჟი', 'ლეგენდა'].map((category) => (
               <button
                 key={category}
                 onClick={() => setSelectedCategory(category)}

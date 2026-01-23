@@ -1,13 +1,13 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '../lib/supabase';
-import type { Database } from '../../types/supabase';
 import { AgroItem } from '../lib/types';
 import { DEFAULT_AGRO_DATA } from '../lib/constants';
 
-type AgroRow = any;
+type AgroRow = AgroItem & { details: AgroItem['details'] };
 
-export function useAgroData() {
-  const [agroData, setAgroData] = useState<AgroItem[]>(DEFAULT_AGRO_DATA);
+export function useAgroData(initialData: AgroItem[] = DEFAULT_AGRO_DATA) {
+  const fallback = initialData.length > 0 ? initialData : DEFAULT_AGRO_DATA;
+  const [agroData, setAgroData] = useState<AgroItem[]>(fallback);
   const [loading, setLoading] = useState(false);
   const [editAgroItem, setEditAgroItem] = useState<AgroItem | null>(null);
   const [selectedAgro, setSelectedAgro] = useState<AgroItem | null>(null);
@@ -15,26 +15,38 @@ export function useAgroData() {
 
   const fetchAgroData = useCallback(async () => {
     setLoading(true);
-    const { data, error } = await (supabase.from('agro_prices' as any) as any).select('*');
-    if (!error && data) {
-      const normalized: AgroItem[] = (data as AgroRow[]).map((row) => ({
-        id: row.id,
-        name: row.name,
-        unit: row.unit,
-        price: row.price,
-        color: row.color,
-        icon: row.icon,
-        category: row.category,
-        details: Array.isArray(row.details) ? (row.details as AgroItem['details']) : null,
-      }));
-      setAgroData(normalized);
+    try {
+      const { data, error } = await (supabase.from('agro_prices' as any) as any).select('*');
+      if (error) throw error;
+      if (data) {
+        const normalized: AgroItem[] = (data as AgroRow[]).map((row) => ({
+          id: row.id,
+          name: row.name,
+          unit: row.unit,
+          price: row.price,
+          color: row.color,
+          icon: row.icon,
+          category: row.category,
+          details: Array.isArray(row.details) ? (row.details as AgroItem['details']) : null,
+        }));
+        setAgroData(normalized);
+      }
+    } catch (error) {
+      console.error('Failed to fetch agro data', error);
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   }, []);
 
   useEffect(() => {
-    fetchAgroData();
-  }, [fetchAgroData]);
+    setAgroData(initialData.length > 0 ? initialData : DEFAULT_AGRO_DATA);
+  }, [initialData]);
+
+  useEffect(() => {
+    if (initialData.length === 0) {
+      fetchAgroData();
+    }
+  }, [fetchAgroData, initialData.length]);
 
 
 
