@@ -1,4 +1,5 @@
 import { supabase } from '../../lib/supabase';
+import { createClient } from '../../lib/supabase-server';
 import { Metadata } from 'next';
 import AnnouncementDetailsClient from './AnnouncementDetailsClient';
 
@@ -12,7 +13,9 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   // ხარვეზის გასწორება: ჯერ ველოდებით params-ს
   const { id } = await params;
 
-  const { data: ad } = await (supabase.from('announcements' as any) as any)
+  const supabaseServer = await createClient();
+  const { data: ad } = await (supabaseServer as any)
+    .from('announcements')
     .select('*')
     .eq('id', id)
     .single();
@@ -42,7 +45,8 @@ export default async function Page({ params }: Props) {
   const { id } = await params;
 
   // მონაცემების წამოღება სერვერზე
-  const { data: ad } = await supabase
+  const supabaseServer = await createClient();
+  const { data: ad } = await (supabaseServer as any)
     .from('announcements')
     .select('*')
     .eq('id', id)

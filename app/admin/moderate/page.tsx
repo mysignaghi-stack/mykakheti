@@ -141,7 +141,7 @@ export default function ModerateAds() {
     const fromIso = new Date(rangeFrom).toISOString();
     const toIso = new Date(rangeTo).toISOString();
 
-    const { error } = await supabase
+    const { error } = await (supabase as any)
       .from('announcements')
       .update({ is_archived: true })
       .gte('created_at', fromIso)

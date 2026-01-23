@@ -67,7 +67,9 @@ export default function AdminAnnouncements() {
   async function deleteAd(id: string) {
     if (!confirm('ნამდვილად გსურთ ამ განცხადების წაშლა?')) return;
     const { error } = await (supabase as any).from('announcements').delete().eq('id', id);
-    if (!error) {
+    if (error) {
+      alert(`შეცდომა წაშლისას: ${error.message}`);
+    } else {
       setPendingAds(prev => prev.filter(a => a.id !== id));
       setLiveAds(prev => prev.filter(a => a.id !== id));
     }
