@@ -137,6 +137,13 @@ export default function HomePageClient({
     setNewPrice,
   } = useAgroData(initialAgroData);
   const [editDetails, setEditDetails] = useState<{ place: string; rate: string | number }[]>([]);
+  const normalizeDetails = useCallback(
+    (details: AgroItem['details'], price: string) =>
+      (details ?? []).map((detail) =>
+        typeof detail === 'string' ? { place: detail, rate: price } : detail
+      ),
+    []
+  );
   const [editLoading, setEditLoading] = useState(false);
   const [snackbar, setSnackbar] = useState<{ open: boolean; message: string; type?: 'success' | 'error' | 'info' }>({ open: false, message: '', type: 'info' });
 
@@ -464,7 +471,7 @@ export default function HomePageClient({
               <p className="w-full text-[10px] text-white/40 font-bold uppercase tracking-[0.2em] mb-3 leading-tight">საორიენტაციო ფასები · დააჭირე პროდუქტს რომ ნახო მიმღები ობიექტები</p>
               <div className="w-full space-y-2">
                 {agroData.filter(i => i.category === 'grape').map(item => (
-                  <button key={item.id} onClick={() => isAdmin ? (() => { setEditAgroItem(item); setNewPrice(item.price); setEditDetails(item.details || []); })() : setSelectedAgro(item)} className={`w-full flex justify-between items-center bg-black/40 p-3 rounded-xl border border-white/5 transition-all group/item hover:bg-white/5 ${isAdmin ? 'hover:border-amber-500' : ''}`}>
+                  <button key={item.id} onClick={() => isAdmin ? (() => { setEditAgroItem(item); setNewPrice(item.price); setEditDetails(normalizeDetails(item.details, item.price)); })() : setSelectedAgro(item)} className={`w-full flex justify-between items-center bg-black/40 p-3 rounded-xl border border-white/5 transition-all group/item hover:bg-white/5 ${isAdmin ? 'hover:border-amber-500' : ''}`}>
                     <span className="text-xs font-black uppercase text-purple-300 flex gap-2">{item.name} {isAdmin && '✏️'}</span>
                     <span className="text-sm font-black italic">{item.price}</span>
                   </button>
@@ -501,7 +508,7 @@ export default function HomePageClient({
                    <p className="w-full text-[10px] text-white/40 font-bold uppercase tracking-[0.2em] mb-3 leading-tight">საორიენტაციო ფასები · დააჭირე პროდუქტს რომ ნახო მიმღები ობიექტები</p>
                    <div className="w-full space-y-2">
                      {agroData.filter(i => i.category === 'grape').map(item => (
-                       <button key={item.id} onClick={() => isAdmin ? (() => { setEditAgroItem(item); setNewPrice(item.price); setEditDetails(item.details || []); })() : setSelectedAgro(item)} className={`w-full flex justify-between items-center bg-black/40 p-3 rounded-xl border border-white/5 transition-all group/item hover:bg-white/5 ${isAdmin ? 'hover:border-amber-500' : ''}`}>
+                       <button key={item.id} onClick={() => isAdmin ? (() => { setEditAgroItem(item); setNewPrice(item.price); setEditDetails(normalizeDetails(item.details, item.price)); })() : setSelectedAgro(item)} className={`w-full flex justify-between items-center bg-black/40 p-3 rounded-xl border border-white/5 transition-all group/item hover:bg-white/5 ${isAdmin ? 'hover:border-amber-500' : ''}`}>
                          <span className="text-xs font-black uppercase text-purple-300 flex gap-2">{item.name} {isAdmin && '✏️'}</span>
                          <span className="text-sm font-black italic">{item.price}</span>
                        </button>
@@ -557,7 +564,7 @@ export default function HomePageClient({
                  <p className="w-full text-[10px] text-white/40 font-bold uppercase tracking-[0.2em] mb-3 leading-tight">საორიენტაციო ფასები · დააჭირე პროდუქტს რომ ნახო მიმღები ობიექტები</p>
                  <div className="w-full space-y-2">
                    {agroData.filter(i => i.category === 'grain').map(item => (
-                     <button key={item.id} onClick={() => isAdmin ? (() => { setEditAgroItem(item); setNewPrice(item.price); setEditDetails(item.details || []); })() : setSelectedAgro(item)} className={`w-full flex justify-between items-center bg-black/40 p-3 rounded-xl border border-white/5 transition-all group/item hover:bg-white/5 ${isAdmin ? 'hover:border-amber-500' : ''}`}>
+                     <button key={item.id} onClick={() => isAdmin ? (() => { setEditAgroItem(item); setNewPrice(item.price); setEditDetails(normalizeDetails(item.details, item.price)); })() : setSelectedAgro(item)} className={`w-full flex justify-between items-center bg-black/40 p-3 rounded-xl border border-white/5 transition-all group/item hover:bg-white/5 ${isAdmin ? 'hover:border-amber-500' : ''}`}>
                        <span className="text-xs font-black uppercase text-yellow-500 flex gap-2">{item.name} {isAdmin && '✏️'}</span>
                        <span className="text-sm font-black italic">{item.price}</span>
                      </button>
@@ -582,7 +589,7 @@ export default function HomePageClient({
               <p className="w-full text-[10px] text-white/40 font-bold uppercase tracking-[0.2em] mb-3 leading-tight">საორიენტაციო ფასები · დააჭირე პროდუქტს რომ ნახო მიმღები ობიექტები</p>
               <div className="w-full space-y-2">
                 {agroData.filter(i => i.category === 'grain').map(item => (
-                  <button key={item.id} onClick={() => isAdmin ? (() => { setEditAgroItem(item); setNewPrice(item.price); setEditDetails(item.details || []); })() : setSelectedAgro(item)} className={`w-full flex justify-between items-center bg-black/40 p-3 rounded-xl border border-white/5 transition-all group/item hover:bg-white/5 ${isAdmin ? 'hover:border-amber-500' : ''}`}>
+                  <button key={item.id} onClick={() => isAdmin ? (() => { setEditAgroItem(item); setNewPrice(item.price); setEditDetails(normalizeDetails(item.details, item.price)); })() : setSelectedAgro(item)} className={`w-full flex justify-between items-center bg-black/40 p-3 rounded-xl border border-white/5 transition-all group/item hover:bg-white/5 ${isAdmin ? 'hover:border-amber-500' : ''}`}>
                     <span className="text-xs font-black uppercase text-yellow-500 flex gap-2">{item.name} {isAdmin && '✏️'}</span>
                     <span className="text-sm font-black italic">{item.price}</span>
                   </button>

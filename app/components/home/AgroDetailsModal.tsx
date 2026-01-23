@@ -9,6 +9,9 @@ const AgroDetailsModal = ({ selectedAgro, onClose }: AgroDetailsModalProps) => {
   if (!selectedAgro) return null;
 
   const details = selectedAgro.details ?? [];
+  const normalizedDetails = details.map((detail) =>
+    typeof detail === 'string' ? { place: detail, rate: selectedAgro.price } : detail
+  );
 
   return (
     <div
@@ -40,8 +43,8 @@ const AgroDetailsModal = ({ selectedAgro, onClose }: AgroDetailsModalProps) => {
           </p>
         </div>
         <div className="space-y-4">
-          {details.length > 0 ? (
-            details.map((detail, idx) => (
+          {normalizedDetails.length > 0 ? (
+            normalizedDetails.map((detail, idx) => (
               <div
                 key={`${detail.place}-${idx}`}
                 className="flex justify-between items-center bg-white/[0.04] p-5 sm:p-6 rounded-2xl sm:rounded-3xl border border-white/10 hover:bg-white/[0.08] transition-all shadow-xl text-left"
