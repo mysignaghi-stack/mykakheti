@@ -123,12 +123,13 @@ export const fetchHomePageData = async (): Promise<HomePageData> => {
       .from('announcements')
       .select('id,title,description,price,currency,location,category,image_url,all_images,contact_info,phone,is_approved,is_archived,created_at,publish_at,user_id')
       .order('created_at', { ascending: false })
-      .limit(80),
+      .limit(60),
     supabase
       .from('admin_posts')
       .select('*')
       .order('priority', { ascending: false })
-      .order('created_at', { ascending: false }),
+      .order('created_at', { ascending: false })
+      .limit(30),
     supabase
       .from('agro_prices')
       .select('*'),

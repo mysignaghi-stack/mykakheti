@@ -30,13 +30,17 @@ export default function AdminLogin() {
     setError('');
 
     try {
+      console.log('Attempting login with email:', email);
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
 
+      console.log('Login response:', data, error);
+
       // Check authentication
       const { data: { user }, error: authError } = await supabase.auth.getUser();
+      console.log('User after login:', user, 'authError:', authError);
       if (authError || !user) {
         alert('გთხოვთ გაიაროთ ავტორიზაცია');
         return;
@@ -48,8 +52,10 @@ export default function AdminLogin() {
       }
 
       if (data.user && isAdminUser(data.user)) {
+        console.log('Admin login successful, redirecting...');
         router.push('/admin');
       } else {
+        console.log('Not admin user, signing out...');
         await supabase.auth.signOut();
         setError('ადმინისტრატორის წვდომა არ არის');
       }

@@ -5,6 +5,8 @@ export function isAdminUser(user: User | null | undefined): boolean {
   const um = (user.user_metadata ?? {}) as Record<string, unknown>;
   const am = (user.app_metadata ?? {}) as Record<string, unknown>;
 
+  console.log('Checking admin for user:', user.email, 'metadata:', um, 'app_metadata:', am);
+
   const emailRaw = (typeof user.email === 'string' ? user.email : (typeof um.email === 'string' ? um.email : null)) ?? null;
   const email = emailRaw ? emailRaw.toLowerCase() : null;
   const adminEmails = (process.env.NEXT_PUBLIC_ADMIN_EMAILS ?? '')
@@ -30,10 +32,11 @@ export function isAdminUser(user: User | null | undefined): boolean {
   const rolesA = getRoles(am);
 
   if (email && adminEmails.length > 0 && isGoogleUser() && adminEmails.includes(email)) {
+    console.log('Admin via email and Google:', email);
     return true;
   }
 
-  return (
+  const result = (
     um.role === 'admin' ||
     am.role === 'admin' ||
     um.is_admin === true ||
@@ -41,6 +44,9 @@ export function isAdminUser(user: User | null | undefined): boolean {
     rolesU.includes('admin') ||
     rolesA.includes('admin')
   );
+
+  console.log('Admin check result:', result);
+  return result;
 }
 
 export function getAdminIndicators(user: User | null | undefined) {

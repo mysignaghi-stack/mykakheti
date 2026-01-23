@@ -42,9 +42,12 @@ export function useAdminAuth() {
     // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (_event, session) => {
+        console.log('Auth state change:', _event, session?.user?.email);
         if (session?.user) {
           setUser(session.user);
-          setIsAdmin(isAdminUser(session.user));
+          const adminStatus = isAdminUser(session.user);
+          console.log('Admin status:', adminStatus, 'for user:', session.user.email);
+          setIsAdmin(adminStatus);
         } else {
           setIsAdmin(false);
           setUser(null);
