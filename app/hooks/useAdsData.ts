@@ -27,8 +27,8 @@ const mapRowToAd = (row: AnnouncementRow): Ad => {
     is_approved: row.is_approved ?? null,
     is_archived: row.is_archived ?? null,
     created_at: row.created_at ?? null,
-    expires_at: (row as AnnouncementRow & { expires_at?: string | null }).expires_at ?? null,
-    user_id: (row as AnnouncementRow & { user_id?: string | null }).user_id ?? null,
+    expires_at: null, // expires_at column doesn't exist in the table
+    user_id: row.user_id ?? null,
   };
 };
 
@@ -39,26 +39,42 @@ export function useAdsData(initialAds: Ad[] = []) {
   const fetchAds = useCallback(async () => {
     setLoading(true);
     try {
+      console.log('Fetching announcements...');
       const { data, error } = await supabase
         .from('announcements')
         .select('*')
         .eq('is_approved', true)
         .order('created_at', { ascending: false });
-      if (error) throw error;
+
+      if (error) {
+        console.error('Supabase error:', error);
+        if (typeof error === 'object') {
+          // @ts-ignore
+          console.error('Supabase error details:', { code: error.code, message: error.message, hint: error.hint, details: error.details });
+        }
+        throw error;
+      }
+
+      console.log('Fetched announcements data:', data);
       if (data) {
         const now = Date.now();
         const filtered = data.filter((row) => {
-          const extra = row as AnnouncementRow & { publish_at?: string | null; expires_at?: string | null };
+          const extra = row as AnnouncementRow & { publish_at?: string | null };
           const publishAt = extra.publish_at;
-          const expiresAt = extra.expires_at;
           const publishOk = !publishAt || new Date(publishAt).getTime() <= now;
-          const expiresOk = !expiresAt || new Date(expiresAt).getTime() > now;
-          return publishOk && expiresOk;
+          // Note: expires_at column doesn't exist in the table, so we skip expiration filtering
+          return publishOk;
         });
         setAds(filtered.map(mapRowToAd));
+        console.log('Filtered and mapped ads:', filtered.length);
       }
     } catch (error) {
       console.error('Failed to fetch announcements', error);
+      console.error('Error details:', {
+        message: error instanceof Error ? error.message : 'Unknown error',
+        name: error instanceof Error ? error.name : 'Unknown',
+        stack: error instanceof Error ? error.stack : undefined
+      });
     } finally {
       setLoading(false);
     }

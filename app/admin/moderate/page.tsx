@@ -5,6 +5,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import type { Database } from '../../../types/supabase';
 import { supabase } from '../../lib/supabase';
+import { useAdminAuth } from '../../hooks/useAdminAuth';
 
 type AnnouncementRow = Database['public']['Tables']['announcements']['Row'];
 
@@ -14,21 +15,28 @@ export default function ModerateAds() {
   const [expiryDrafts, setExpiryDrafts] = useState<Record<string, string>>({});
   const [rangeFrom, setRangeFrom] = useState('');
   const [rangeTo, setRangeTo] = useState('');
+  const { isAdmin, loading: authLoading } = useAdminAuth();
 
   // 1. დაუდასტურებელი განცხადებების წამოღება
   const fetchPending = async () => {
     setLoading(true);
-    const { data } = await supabase
+    const { data, error } = await supabase
       .from('announcements')
       .select('*')
       .eq('is_approved', false)
       .order('created_at', { ascending: false });
-    
+
+    if (error) {
+      console.error('Pending fetch error (announcements)', error);
+    }
+
     if (data) setPendingAds(data);
     setLoading(false);
   };
 
   useEffect(() => { 
+    if (!isAdmin || authLoading) return;
+
     fetchPending(); 
 
     // რეალტაიმი განახლება ახალი განცხადებებისთვის
@@ -52,7 +60,25 @@ export default function ModerateAds() {
       supabase.removeChannel(channel); 
       clearInterval(refreshInterval);
     };
-  }, []);
+  }, [isAdmin, authLoading]);
+
+  if (authLoading) {
+    return (
+      <div className="min-h-screen bg-[#050510] flex flex-col items-center justify-center">
+        <div className="w-12 h-12 border-4 border-amber-500 border-t-transparent rounded-full animate-spin mb-4" />
+        <p className="text-white/20 font-black uppercase italic tracking-widest text-xs animate-pulse">ავტორიზაცია მოწმდება...</p>
+      </div>
+    );
+  }
+
+  if (!isAdmin) {
+    return (
+      <div className="min-h-screen bg-[#050510] flex flex-col items-center justify-center gap-4 text-white text-center px-6">
+        <p className="text-lg font-black uppercase italic tracking-widest">მხოლოდ ადმინებისთვის</p>
+        <Link href="/login" className="px-4 py-2 rounded-xl bg-amber-600 text-black font-black uppercase text-xs">ავტორიზაცია</Link>
+      </div>
+    );
+  }
 
   // 2. დადასტურების ფუნქცია (Optimistic Update)
   const approveAd = async (id: string) => {
@@ -89,16 +115,21 @@ export default function ModerateAds() {
   const scheduleDelete = async (id: string) => {
     const value = expiryDrafts[id];
     if (!value) return alert('აირჩიეთ თარიღი და დრო');
-    const iso = new Date(value).toISOString();
+    
+    // If date is in the future, we can't schedule it yet.
+    // Prevent immediate archiving if user selects future date.
+    if (new Date(value).getTime() > Date.now()) {
+      return alert('სამომავლო წაშლა დროებით შეზღუდულია (expires_at ველი არ არსებობს). გთხოვთ აირჩიოთ მიმდინარე დრო ან გამოიყენოთ მყისიერი წაშლა.');
+    }
 
     const { error } = await (supabase.from('announcements' as any) as any)
-      .update({ expires_at: iso })
+      .update({ is_archived: true })
       .eq('id', id);
 
     if (error) {
       alert('დაგეგმვა ვერ მოხერხდა');
     } else {
-      alert('წაშლა დაიგეგმა');
+      alert('განცხადება გაითიშა');
       fetchPending();
     }
   };
@@ -112,14 +143,14 @@ export default function ModerateAds() {
 
     const { error } = await supabase
       .from('announcements')
-      .delete()
+      .update({ is_archived: true })
       .gte('created_at', fromIso)
       .lte('created_at', toIso);
 
     if (error) {
       alert('წაშლა ვერ მოხერხდა');
     } else {
-      alert('არჩეული პერიოდის განცხადებები წაიშალა');
+      alert('არჩეული პერიოდის განცხადებები გაითიშა');
       fetchPending();
     }
   };

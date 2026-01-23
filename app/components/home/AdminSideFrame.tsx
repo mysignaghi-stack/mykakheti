@@ -11,6 +11,7 @@ import 'swiper/css/pagination';
 import 'swiper/css/effect-fade';
 import 'swiper/css/autoplay';
 import { supabase } from '../../lib/supabase';
+import { formatGeorgianDate } from '../../lib/utils';
 // წავშალეთ AdminPost იმპორტი lib/types-დან კონფლიქტის თავიდან ასაცილებლად
 import { Ad } from '../../lib/types'; 
 import type { Database } from '@/types/supabase';
@@ -509,7 +510,7 @@ export default function AdminSideFrame({ post, position, isAdmin, onRefresh, con
           ) : null}
           <div className="flex justify-between items-center mt-3">
             <div className="text-xs text-white/40 font-mono">
-              {createdDate && createdDate.toLocaleDateString('ka-GE')}
+              {createdDate && formatGeorgianDate(createdDate)}
             </div>
             {post.priority && post.priority > 0 && (
               <span className="bg-green-600/20 text-green-400 px-2 py-1 rounded text-xs font-bold">

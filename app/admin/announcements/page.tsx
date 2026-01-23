@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import type { Database } from '@/types/supabase';
 import { supabase } from '../../lib/supabase';
+import { useAdminAuth } from '../../hooks/useAdminAuth';
 
 type Announcement = Database['public']['Tables']['announcements']['Row'];
 
@@ -17,6 +18,7 @@ export default function AdminAnnouncements() {
   const [bulkTo, setBulkTo] = useState<string>('');
   const [bulkPublishAt, setBulkPublishAt] = useState<string>('');
   const [bulkExpireAt, setBulkExpireAt] = useState<string>('');
+  const { isAdmin, loading: authLoading } = useAdminAuth();
 
   const toInputValue = (iso?: string | null) => {
     if (!iso) return '';
@@ -26,8 +28,9 @@ export default function AdminAnnouncements() {
   };
 
   useEffect(() => {
+    if (!isAdmin || authLoading) return;
     fetchAllAds();
-  }, []);
+  }, [isAdmin, authLoading]);
 
   async function fetchAllAds() {
     setLoading(true);
@@ -36,6 +39,9 @@ export default function AdminAnnouncements() {
         (supabase as any).from('announcements').select('*').eq('is_approved', false).order('created_at', { ascending: false }),
         (supabase as any).from('announcements').select('*').eq('is_approved', true).order('created_at', { ascending: false }),
       ]);
+
+      if (pendingRes.error) console.error('Pending ads fetch error', pendingRes.error);
+      if (liveRes.error) console.error('Live ads fetch error', liveRes.error);
 
       if (pendingRes.data) setPendingAds(pendingRes.data);
       if (liveRes.data) setLiveAds(liveRes.data);
@@ -54,7 +60,7 @@ export default function AdminAnnouncements() {
     if (!error) {
       const adToApprove = pendingAds.find(a => a.id === id);
       setPendingAds(prev => prev.filter(a => a.id !== id));
-      if (adToApprove) setLiveAds(prev => [adToApprove, ...prev]);
+      if (adToApprove) setLiveAds(prev => [{ ...adToApprove, is_approved: true }, ...prev]);
     }
   }
 
@@ -74,7 +80,13 @@ export default function AdminAnnouncements() {
 
     const payload: Record<string, string | boolean | null> = {};
     if (publishValue) payload.publish_at = new Date(publishValue).toISOString();
-    if (expireValue) payload.expires_at = new Date(expireValue).toISOString();
+    
+    // Only archive if the date is in the past (soft expiration)
+    // Future expiration requires cron/triggers or expires_at column
+    if (expireValue && new Date(expireValue).getTime() <= Date.now()) {
+      payload.is_archived = true;
+    }
+    
     if (approveOnSave) payload.is_approved = true;
 
     const { error } = await (supabase as any)
@@ -104,7 +116,10 @@ export default function AdminAnnouncements() {
     const payload: Record<string, string | boolean> = {};
 
     if (bulkPublishAt) payload.publish_at = new Date(bulkPublishAt).toISOString();
-    if (bulkExpireAt) payload.expires_at = new Date(bulkExpireAt).toISOString();
+    // Only archive if date is passed
+    if (bulkExpireAt && new Date(bulkExpireAt).getTime() <= Date.now()) {
+      payload.is_archived = true;
+    }
     if (bulkPublishAt) payload.is_approved = true;
 
     const { error } = await (supabase as any)
@@ -122,6 +137,17 @@ export default function AdminAnnouncements() {
   }
 
   return (
+    authLoading ? (
+      <div className="min-h-screen bg-[#050510] flex flex-col items-center justify-center">
+        <div className="w-12 h-12 border-4 border-amber-500 border-t-transparent rounded-full animate-spin mb-4"></div>
+        <p className="font-black text-white/20 uppercase italic tracking-widest animate-pulse">ავტორიზაცია მოწმდება...</p>
+      </div>
+    ) : !isAdmin ? (
+      <div className="min-h-screen bg-[#050510] flex flex-col items-center justify-center gap-4 text-white text-center px-6">
+        <p className="text-lg font-black uppercase italic tracking-widest">მხოლოდ ადმინებისთვის</p>
+        <Link href="/login" className="px-4 py-2 rounded-xl bg-amber-600 text-black font-black uppercase text-xs">ავტორიზაცია</Link>
+      </div>
+    ) : (
     <main className="min-h-screen bg-[#050510] p-6 md:p-10 font-sans text-white">
       <div className="max-w-6xl mx-auto relative z-10">
         <div className="flex flex-col md:flex-row justify-between items-center mb-12 bg-white/[0.03] backdrop-blur-3xl p-8 rounded-[40px] border border-white/10 shadow-2xl gap-6">
@@ -336,5 +362,6 @@ export default function AdminAnnouncements() {
         )}
       </div>
     </main>
+    )
   );
 }

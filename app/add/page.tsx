@@ -178,7 +178,8 @@ export default function AddPage() {
         if (uploadError) {
           const status = (uploadError as { statusCode?: number }).statusCode;
           const statusInfo = status ? ` (სტატუსი: ${status})` : '';
-          throw new Error(`Storage upload failed: ${uploadError.message}${statusInfo}`);
+          // Hint for missing storage policy allowing owner insert
+          throw new Error(`Storage upload failed: ${uploadError.message}${statusInfo}. If status is 403, run fix_announcements_storage_policies.sql in Supabase SQL Editor.`);
         }
 
         const { data: { publicUrl } } = supabase.storage.from('announcements').getPublicUrl(fileName);
@@ -395,3 +396,36 @@ export default function AddPage() {
     </main>
   );
 }
+
+/* -- fix_announcements_storage_policies.sql
+-- Fix storage policies for the 'announcements' bucket
+-- Run this in Supabase SQL Editor
+
+-- Ensure bucket exists
+INSERT INTO storage.buckets (id, name, public)
+VALUES ('announcements', 'announcements', true)
+ON CONFLICT (id) DO NOTHING;
+
+-- Drop old policies
+DROP POLICY IF EXISTS "Anyone can view announcements" ON storage.objects;
+DROP POLICY IF EXISTS "Authenticated can upload announcements" ON storage.objects;
+DROP POLICY IF EXISTS "Authenticated can delete own announcements" ON storage.objects;
+DROP POLICY IF EXISTS "Authenticated can delete announcements" ON storage.objects;
+
+-- Allow public read
+CREATE POLICY "Anyone can view announcements" ON storage.objects
+FOR SELECT USING (bucket_id = 'announcements');
+
+-- Allow any authenticated user to upload/delete in this bucket
+CREATE POLICY "Authenticated can upload announcements" ON storage.objects
+FOR INSERT WITH CHECK (
+  bucket_id = 'announcements'
+  AND auth.uid() IS NOT NULL
+);
+
+CREATE POLICY "Authenticated can delete announcements" ON storage.objects
+FOR DELETE USING (
+  bucket_id = 'announcements'
+  AND auth.uid() IS NOT NULL
+);
+*/

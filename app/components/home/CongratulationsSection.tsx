@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { supabase } from '../../lib/supabase';
+import { formatGeorgianDate } from '../../lib/utils';
 
 interface Congratulations {
   id: string;
@@ -99,7 +100,7 @@ export default function CongratulationsSection() {
                     {item.message}
                   </p>
                   <div className="text-white/40 text-xs mt-1">
-                    {item.created_at ? new Date(item.created_at).toLocaleDateString('ka-GE') : ''}
+                    {item.created_at ? formatGeorgianDate(item.created_at) : ''}
                   </div>
                 </div>
               </div>

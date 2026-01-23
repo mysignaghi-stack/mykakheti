@@ -5,6 +5,7 @@ import type { User } from '@supabase/supabase-js';
 import Image from 'next/image';
 import { supabase } from '../../lib/supabase';
 import { AdminPost } from '../../lib/types';
+import { formatGeorgianDate } from '../../lib/utils';
 
 interface AdminBoardProps {
   isAdmin: boolean;
@@ -135,7 +136,7 @@ export default function AdminBoard({ isAdmin, user: _user, children }: AdminBoar
                {isAdmin && <button onClick={() => handleDelete(post.id)} className="text-red-500 hover:text-white text-xs">✕</button>}
             </div>
             <p className="text-xs text-white/70 leading-relaxed line-clamp-6 whitespace-pre-line mb-3">{post.content}</p>
-            <span className="text-[9px] text-white/20 mt-auto font-mono text-right">{new Date(post.created_at).toLocaleDateString('ka-GE')}</span>
+            <span className="text-[9px] text-white/20 mt-auto font-mono text-right">{formatGeorgianDate(post.created_at)}</span>
          </div>
       </div>
     );

@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { supabase } from '../lib/supabase';
+import { formatGeorgianDate } from '../lib/utils';
 
 interface Announcement {
   id: string;
@@ -75,7 +76,7 @@ export default function AnnouncementsPage() {
                       <p className="text-white/80 italic leading-relaxed line-clamp-2">{item.description}</p>
                       <div className="flex justify-between items-center mt-2">
                         <div className="text-white/40 text-xs">
-                          {new Date(item.created_at).toLocaleDateString('ka-GE')}
+                          {formatGeorgianDate(item.created_at)}
                         </div>
                         <div className="text-amber-500 font-black text-lg">
                           {item.price} {item.currency === 'USD' ? '$' : '₾'}
