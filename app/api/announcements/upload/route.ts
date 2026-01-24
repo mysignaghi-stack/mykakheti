@@ -1,0 +1,68 @@
+import { cookies } from 'next/headers';
+import { NextResponse } from 'next/server';
+import { createServerClient } from '@supabase/ssr';
+import { createClient } from '@supabase/supabase-js';
+import type { Database } from '../../../../types/supabase';
+
+export async function POST(request: Request) {
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+  const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+  if (!supabaseUrl || !supabaseAnonKey || !serviceRoleKey) {
+    return NextResponse.json(
+      { error: 'Server misconfiguration: missing Supabase env vars.' },
+      { status: 500 }
+    );
+  }
+
+  const cookieStore = await cookies();
+  const authClient = createServerClient<Database>(supabaseUrl, supabaseAnonKey, {
+    cookies: {
+      get(name: string) {
+        return cookieStore.get(name)?.value;
+      },
+      set(name: string, value: string, options: Record<string, unknown>) {
+        cookieStore.set({ name, value, ...options });
+      },
+      remove(name: string, options: Record<string, unknown>) {
+        cookieStore.set({ name, value: '', ...options });
+      },
+    },
+  });
+
+  const { data: { user } } = await authClient.auth.getUser();
+  if (!user) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
+  const formData = await request.formData();
+  const file = formData.get('file');
+  if (!(file instanceof File)) {
+    return NextResponse.json({ error: 'Missing file' }, { status: 400 });
+  }
+
+  const extension = file.name.split('.').pop() || 'jpg';
+  const fileName = `announcements-${Date.now()}-${crypto.randomUUID()}.${extension}`;
+
+  const serviceClient = createClient<Database>(supabaseUrl, serviceRoleKey, {
+    auth: { persistSession: false },
+  });
+
+  const { error: uploadError } = await serviceClient.storage
+    .from('announcements')
+    .upload(fileName, file, { contentType: file.type });
+
+  if (uploadError) {
+    return NextResponse.json(
+      { error: uploadError.message },
+      { status: 500 }
+    );
+  }
+
+  const { data: { publicUrl } } = serviceClient.storage
+    .from('announcements')
+    .getPublicUrl(fileName);
+
+  return NextResponse.json({ publicUrl });
+}

@@ -158,28 +158,40 @@ export default function AddPage() {
 
     setLoading(true);
     try {
-      // Get current user (can be null for anonymous)
+      // Get current session directly
+      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+      if (sessionError || !session) {
+        return alert('გთხოვთ გაიაროთ ავტორიზაცია ატვირთვამდე');
+      }
+
+      // Get current user
       const { data: { user } } = await supabase.auth.getUser();
       const userId = user?.id || null;
 
       const uploadedUrls: string[] = [];
-      
+
       // ✅ ავტომატური კომპრესია ატვირთვისას
       for (const img of images) {
         const options = { maxSizeMB: 0.8, maxWidthOrHeight: 1280, useWebWorker: true };
         const compressedFile = await imageCompression(img, options);
         const fileName = `${Date.now()}-${Math.random().toString(36).substring(7)}.${img.name.split('.').pop()}`;
-        
-        const { error: uploadError } = await supabase.storage.from('announcements').upload(fileName, compressedFile);
-        if (uploadError) {
-          const status = (uploadError as { statusCode?: number }).statusCode;
-          const statusInfo = status ? ` (სტატუსი: ${status})` : '';
-          // Hint for missing storage policy allowing owner insert
-          throw new Error(`Storage upload failed: ${uploadError.message}${statusInfo}. If status is 403, run fix_announcements_storage_policies.sql in Supabase SQL Editor.`);
+
+        const formData = new FormData();
+        formData.append('file', compressedFile, img.name);
+        formData.append('fileName', fileName);
+        formData.append('bucket', 'announcements');
+
+        const response = await fetch('/api/upload', {
+          method: 'POST',
+          body: formData,
+        });
+
+        const result = await response.json();
+        if (!response.ok) {
+          throw new Error(result?.error || 'Storage upload failed');
         }
 
-        const { data: { publicUrl } } = supabase.storage.from('announcements').getPublicUrl(fileName);
-        uploadedUrls.push(publicUrl);
+        uploadedUrls.push(result.url as string);
       }
 
       const { data: insertedData, error: dbError } = await ((supabase as any).from('announcements')).insert([{ 

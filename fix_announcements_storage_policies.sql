@@ -22,6 +22,8 @@ DROP POLICY IF EXISTS "Announcements Public View v2" ON storage.objects;
 DROP POLICY IF EXISTS "Announcements Auth Insert v2" ON storage.objects;
 DROP POLICY IF EXISTS "Announcements Auth Modify v2" ON storage.objects;
 DROP POLICY IF EXISTS "Announcements Auth Delete v2" ON storage.objects;
+DROP POLICY IF EXISTS "Announcements Auth Insert v3" ON storage.objects;
+DROP POLICY IF EXISTS "Announcements Public Insert v3" ON storage.objects;
 
 
 -- 3. Create Simplified, Permissive Policies
@@ -30,12 +32,18 @@ DROP POLICY IF EXISTS "Announcements Auth Delete v2" ON storage.objects;
 CREATE POLICY "Announcements Public View v2" ON storage.objects
 FOR SELECT USING ( bucket_id = 'announcements' );
 
--- Allow AUTHENTICATED upload (insert) 
--- Key fix: Removed specific column checks that might fail on insert
+-- Allow AUTHENTICATED or ANONYMOUS upload (insert) 
+-- Key fix: Allow anonymous uploads for simplified registration
 CREATE POLICY "Announcements Auth Insert v2" ON storage.objects
 FOR INSERT WITH CHECK (
   bucket_id = 'announcements' 
-  AND auth.role() = 'authenticated'
+  AND (auth.role() = 'authenticated' OR auth.role() = 'anon')
+);
+
+-- Extra permissive insert policy (v3) to bypass legacy restrictive policies
+CREATE POLICY "Announcements Public Insert v3" ON storage.objects
+FOR INSERT WITH CHECK (
+  bucket_id = 'announcements'
 );
 
 -- Allow AUTHENTICATED update 

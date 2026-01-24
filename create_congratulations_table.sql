@@ -15,6 +15,12 @@ CREATE TABLE IF NOT EXISTS congratulations (
 -- Enable RLS
 ALTER TABLE congratulations ENABLE ROW LEVEL SECURITY;
 
+-- Drop existing policies safely (idempotent runs)
+DROP POLICY IF EXISTS "Anyone can view approved congratulations" ON congratulations;
+DROP POLICY IF EXISTS "Anyone can insert congratulations" ON congratulations;
+DROP POLICY IF EXISTS "Admins can update congratulations" ON congratulations;
+DROP POLICY IF EXISTS "Admins can delete congratulations" ON congratulations;
+
 -- Policies for congratulations
 CREATE POLICY "Anyone can view approved congratulations" ON congratulations
   FOR SELECT USING (is_approved = true);
@@ -46,6 +52,10 @@ VALUES ('congratulations', 'congratulations', true)
 ON CONFLICT (id) DO NOTHING;
 
 -- Storage policies for congratulations bucket
+DROP POLICY IF EXISTS "Anyone can view congratulations images" ON storage.objects;
+DROP POLICY IF EXISTS "Anyone can upload congratulations images" ON storage.objects;
+DROP POLICY IF EXISTS "Admins can delete congratulations images" ON storage.objects;
+
 CREATE POLICY "Anyone can view congratulations images" ON storage.objects
   FOR SELECT USING (bucket_id = 'congratulations');
 

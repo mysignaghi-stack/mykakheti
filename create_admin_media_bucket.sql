@@ -7,7 +7,10 @@ ON CONFLICT (id) DO NOTHING;
 
 -- Create storage policies for admin-media bucket
 CREATE POLICY "Admin can upload to admin-media" ON storage.objects
-FOR INSERT WITH CHECK (bucket_id = 'admin-media');
+FOR INSERT WITH CHECK (
+  bucket_id = 'admin-media' 
+  AND auth.role() = 'authenticated'
+);
 
 CREATE POLICY "Anyone can view admin-media" ON storage.objects
 FOR SELECT USING (bucket_id = 'admin-media');
