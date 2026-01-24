@@ -152,10 +152,9 @@ export default function SubmitCongratulations() {
           table: 'congratulations',
           values: {
             sender_name: formData.sender_name,
-            receiver_name: formData.recipient_name,
+            recipient_name: formData.recipient_name,
             message: formData.message,
-            category: formData.category,
-            theme: 'ელეგანტური',
+            occasion: formData.category,
             image_url: imageUrl,
             all_images: imageUrls.length > 0 ? imageUrls : null,
             is_approved: false,

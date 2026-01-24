@@ -121,6 +121,7 @@ export type Database = {
       }
       congratulations: {
         Row: {
+          all_images: string[] | null
           animation_enabled: boolean | null
           approved_at: string | null
           approved_by: string | null
@@ -130,11 +131,15 @@ export type Database = {
           image_url: string | null
           is_approved: boolean | null
           message: string
+          music_url: string | null
           occasion: string
           recipient_name: string
           sender_name: string
+          template: string | null
+          toast: string | null
         }
         Insert: {
+          all_images?: string[] | null
           animation_enabled?: boolean | null
           approved_at?: string | null
           approved_by?: string | null
@@ -144,11 +149,15 @@ export type Database = {
           image_url?: string | null
           is_approved?: boolean | null
           message: string
+          music_url?: string | null
           occasion: string
           recipient_name: string
           sender_name: string
+          template?: string | null
+          toast?: string | null
         }
         Update: {
+          all_images?: string[] | null
           animation_enabled?: boolean | null
           approved_at?: string | null
           approved_by?: string | null
@@ -158,9 +167,12 @@ export type Database = {
           image_url?: string | null
           is_approved?: boolean | null
           message?: string
+          music_url?: string | null
           occasion?: string
           recipient_name?: string
           sender_name?: string
+          template?: string | null
+          toast?: string | null
         }
         Relationships: []
       }
