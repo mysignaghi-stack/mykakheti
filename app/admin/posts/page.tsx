@@ -186,21 +186,24 @@ export default function AdminPosts() {
       for (const file of selectedFiles) {
         const safeName = buildSafeFileName(file.name);
         const fileName = `admin-posts/${Date.now()}-${safeName}`;
-        const { error: uploadError } = await supabase.storage
-          .from('announcements')
-          .upload(fileName, file, {
-            contentType: file.type || undefined,
-            upsert: false,
-            cacheControl: '3600',
-          });
 
-        if (uploadError) throw uploadError;
+        // Use API endpoint for upload to bypass RLS restrictions
+        const formData = new FormData();
+        formData.append('file', file);
 
-        const { data: urlData } = supabase.storage
-          .from('announcements')
-          .getPublicUrl(fileName);
+        const response = await fetch('/api/admin/upload', {
+          method: 'POST',
+          body: formData,
+        });
 
-        uploadedUrls.push(urlData.publicUrl);
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.error || 'Upload failed');
+        }
+
+        const { publicUrl } = await response.json();
+
+        uploadedUrls.push(publicUrl);
       }
 
       setFormData(prev => ({
