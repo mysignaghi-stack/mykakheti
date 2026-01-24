@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import Image from 'next/image';
 import Link from 'next/link';
 import type { Database } from '@/types/supabase';
 import { supabase } from '../../lib/supabase';
@@ -19,6 +20,15 @@ export default function AdminAnnouncements() {
   const [bulkPublishAt, setBulkPublishAt] = useState<string>('');
   const [bulkExpireAt, setBulkExpireAt] = useState<string>('');
   const { isAdmin, loading: authLoading } = useAdminAuth();
+
+  const getAnnouncementImages = (ad: Announcement) => {
+    const allImages = Array.isArray((ad as Announcement & { all_images?: string[] | null }).all_images)
+      ? (ad as Announcement & { all_images?: string[] | null }).all_images!.filter(Boolean)
+      : [];
+    const primary = (ad as Announcement & { image_url?: string | null }).image_url ?? null;
+    const combined = primary ? [primary, ...allImages] : allImages;
+    return Array.from(new Set(combined));
+  };
 
   const toInputValue = (iso?: string | null) => {
     if (!iso) return '';
@@ -53,15 +63,21 @@ export default function AdminAnnouncements() {
   }
 
   async function approveAd(id: string) {
-    const { error } = await (supabase as any)
-      .from('announcements')
-      .update({ is_approved: true })
-      .eq('id', id);
-    if (!error) {
-      const adToApprove = pendingAds.find(a => a.id === id);
-      setPendingAds(prev => prev.filter(a => a.id !== id));
-      if (adToApprove) setLiveAds(prev => [{ ...adToApprove, is_approved: true }, ...prev]);
+    const response = await fetch('/api/admin/announcements/approve', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id }),
+    });
+
+    if (!response.ok) {
+      const payload = await response.json().catch(() => ({}));
+      alert(payload?.error ?? 'დადასტურება ვერ მოხერხდა');
+      return;
     }
+
+    const adToApprove = pendingAds.find(a => a.id === id);
+    setPendingAds(prev => prev.filter(a => a.id !== id));
+    if (adToApprove) setLiveAds(prev => [{ ...adToApprove, is_approved: true }, ...prev]);
   }
 
   async function deleteAd(id: string) {
@@ -233,19 +249,52 @@ export default function AdminAnnouncements() {
                   <p className="text-white/40 text-sm">მოლოდინში განცხადებები არ არის.</p>
                 ) : (
                   <div className="space-y-3">
-                    {pendingAds.map(ad => (
-                      <div key={ad.id} className="bg-black/40 border border-white/10 rounded-2xl p-4 flex flex-col gap-3">
-                        <div className="flex items-start justify-between gap-3">
-                          <div>
-                            <p className="text-sm uppercase tracking-wide text-white/50">{ad.category}</p>
-                            <h3 className="text-lg font-black text-white">{ad.title}</h3>
-                            <p className="text-white/60 text-sm">{ad.location}</p>
+                    {pendingAds.map(ad => {
+                      const images = getAnnouncementImages(ad);
+                      return (
+                        <div key={ad.id} className="bg-black/40 border border-white/10 rounded-2xl p-4 flex flex-col gap-3">
+                          {images.length > 0 && (
+                            <div className="flex items-center gap-3">
+                              <div className="relative w-20 h-20 rounded-xl overflow-hidden border border-white/10 bg-white/5 shrink-0">
+                                <Image
+                                  src={images[0]}
+                                  alt={ad.title ?? ''}
+                                  fill
+                                  sizes="80px"
+                                  className="object-cover"
+                                />
+                              </div>
+                              <div className="flex flex-wrap gap-2">
+                                {images.slice(1, 4).map((url, idx) => (
+                                  <div key={`${ad.id}-thumb-${idx}`} className="relative w-12 h-12 rounded-lg overflow-hidden border border-white/10 bg-white/5">
+                                    <Image
+                                      src={url}
+                                      alt={ad.title ?? ''}
+                                      fill
+                                      sizes="48px"
+                                      className="object-cover"
+                                    />
+                                  </div>
+                                ))}
+                                {images.length > 4 && (
+                                  <div className="w-12 h-12 rounded-lg border border-white/10 bg-white/5 flex items-center justify-center text-[10px] text-white/60 font-black">
+                                    +{images.length - 4}
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                          )}
+                          <div className="flex items-start justify-between gap-3">
+                            <div>
+                              <p className="text-sm uppercase tracking-wide text-white/50">{ad.category}</p>
+                              <h3 className="text-lg font-black text-white">{ad.title}</h3>
+                              <p className="text-white/60 text-sm">{ad.location}</p>
+                            </div>
+                            <div className="text-right text-sm text-white/50">
+                              <p>{new Date(ad.created_at ?? '').toLocaleString('ka-GE')}</p>
+                              <p className="font-black text-amber-400">{ad.price} {ad.currency}</p>
+                            </div>
                           </div>
-                          <div className="text-right text-sm text-white/50">
-                            <p>{new Date(ad.created_at ?? '').toLocaleString('ka-GE')}</p>
-                            <p className="font-black text-amber-400">{ad.price} {ad.currency}</p>
-                          </div>
-                        </div>
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                           <div>
                             <label className="text-[10px] text-white/40 uppercase">გამოქვეყნება</label>
@@ -286,8 +335,9 @@ export default function AdminAnnouncements() {
                             წაშლა
                           </button>
                         </div>
-                      </div>
-                    ))}
+                        </div>
+                      );
+                    })}
                   </div>
                 )}
               </div>
@@ -301,19 +351,52 @@ export default function AdminAnnouncements() {
                   <p className="text-white/40 text-sm">აქტიური განცხადებები არ არის.</p>
                 ) : (
                   <div className="space-y-3">
-                    {liveAds.map(ad => (
-                      <div key={ad.id} className="bg-black/40 border border-white/10 rounded-2xl p-4 flex flex-col gap-3">
-                        <div className="flex items-start justify-between gap-3">
-                          <div>
-                            <p className="text-sm uppercase tracking-wide text-white/50">{ad.category}</p>
-                            <h3 className="text-lg font-black text-white">{ad.title}</h3>
-                            <p className="text-white/60 text-sm">{ad.location}</p>
+                    {liveAds.map(ad => {
+                      const images = getAnnouncementImages(ad);
+                      return (
+                        <div key={ad.id} className="bg-black/40 border border-white/10 rounded-2xl p-4 flex flex-col gap-3">
+                          {images.length > 0 && (
+                            <div className="flex items-center gap-3">
+                              <div className="relative w-20 h-20 rounded-xl overflow-hidden border border-white/10 bg-white/5 shrink-0">
+                                <Image
+                                  src={images[0]}
+                                  alt={ad.title ?? ''}
+                                  fill
+                                  sizes="80px"
+                                  className="object-cover"
+                                />
+                              </div>
+                              <div className="flex flex-wrap gap-2">
+                                {images.slice(1, 4).map((url, idx) => (
+                                  <div key={`${ad.id}-thumb-${idx}`} className="relative w-12 h-12 rounded-lg overflow-hidden border border-white/10 bg-white/5">
+                                    <Image
+                                      src={url}
+                                      alt={ad.title ?? ''}
+                                      fill
+                                      sizes="48px"
+                                      className="object-cover"
+                                    />
+                                  </div>
+                                ))}
+                                {images.length > 4 && (
+                                  <div className="w-12 h-12 rounded-lg border border-white/10 bg-white/5 flex items-center justify-center text-[10px] text-white/60 font-black">
+                                    +{images.length - 4}
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                          )}
+                          <div className="flex items-start justify-between gap-3">
+                            <div>
+                              <p className="text-sm uppercase tracking-wide text-white/50">{ad.category}</p>
+                              <h3 className="text-lg font-black text-white">{ad.title}</h3>
+                              <p className="text-white/60 text-sm">{ad.location}</p>
+                            </div>
+                            <div className="text-right text-sm text-white/50">
+                              <p>{new Date(ad.created_at ?? '').toLocaleString('ka-GE')}</p>
+                              <p className="font-black text-amber-400">{ad.price} {ad.currency}</p>
+                            </div>
                           </div>
-                          <div className="text-right text-sm text-white/50">
-                            <p>{new Date(ad.created_at ?? '').toLocaleString('ka-GE')}</p>
-                            <p className="font-black text-amber-400">{ad.price} {ad.currency}</p>
-                          </div>
-                        </div>
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                           <div>
                             <label className="text-[10px] text-white/40 uppercase">გამოქვეყნება</label>
@@ -354,8 +437,9 @@ export default function AdminAnnouncements() {
                             წაშლა
                           </button>
                         </div>
-                      </div>
-                    ))}
+                        </div>
+                      );
+                    })}
                   </div>
                 )}
               </div>

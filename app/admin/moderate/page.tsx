@@ -84,14 +84,17 @@ export default function ModerateAds() {
   const approveAd = async (id: string) => {
     // სიიდან მაშინვე ვაქრობთ ვიზუალურად
     setPendingAds(prev => prev.filter(ad => ad.id !== id));
-    
-    const { error } = await (supabase.from('announcements' as any) as any)
-      .update({ is_approved: true })
-      .eq('id', id);
-    
-    if (error) {
-      alert("დადასტურება ვერ მოხერხდა");
-      fetchPending(); // შეცდომის შემთხვევაში ვაბრუნებთ სიას
+
+    const response = await fetch('/api/admin/announcements/approve', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id }),
+    });
+
+    if (!response.ok) {
+      const payload = await response.json().catch(() => ({}));
+      alert(payload?.error ?? 'დადასტურება ვერ მოხერხდა');
+      fetchPending();
     }
   };
 
