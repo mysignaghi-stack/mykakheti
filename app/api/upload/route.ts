@@ -18,10 +18,15 @@ export async function POST(request: NextRequest) {
     const userId = formData.get('userId') as string;
     const bucketName = (formData.get('bucket') as string) || 'announcements';
 
-    const supabaseAdmin = createClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.SUPABASE_SERVICE_ROLE_KEY! // გვერდს ავლის RLS-ს
-    );
+    let supabaseAdmin;
+    try {
+      supabaseAdmin = createClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        process.env.SUPABASE_SERVICE_ROLE_KEY! // გვერდს ავლის RLS-ს
+      );
+    } catch (err) {
+      return NextResponse.json({ error: 'Failed to create Supabase client' }, { status: 500 });
+    }
 
     // 1. ფოტოს ატვირთვა
     const { data: uploadData, error: uploadError } = await supabaseAdmin.storage

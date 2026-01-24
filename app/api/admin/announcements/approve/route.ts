@@ -44,9 +44,14 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'Missing announcement id' }, { status: 400 });
   }
 
-  const serviceClient = createClient<Database>(supabaseUrl, serviceRoleKey, {
-    auth: { persistSession: false },
-  });
+  let serviceClient;
+  try {
+    serviceClient = createClient<Database>(supabaseUrl, serviceRoleKey, {
+      auth: { persistSession: false },
+    });
+  } catch (err) {
+    return NextResponse.json({ error: 'Failed to create Supabase client' }, { status: 500 });
+  }
 
   const { data, error } = await serviceClient
     .from('announcements')
