@@ -121,7 +121,7 @@ function CongratulationsInline() {
     const { data: pending, error: pendingError } = await supabase
       .from('congratulations')
       .select('*')
-      .eq('is_approved', false)
+      .or('is_approved.is.null,is_approved.eq.false')
       .order('created_at', { ascending: false });
 
     const { data: approved, error: approvedError } = await supabase
@@ -232,7 +232,11 @@ function ModerationPanel({ table, title, renderItem, highlight }: { table: strin
 
   const fetchItems = async () => {
     setLoading(true);
-    const { data: pending, error: pendErr } = await (supabase as any).from(table).select('*').eq('is_approved', false).order('created_at', { ascending: false });
+    const { data: pending, error: pendErr } = await (supabase as any)
+      .from(table)
+      .select('*')
+      .or('is_approved.is.null,is_approved.eq.false')
+      .order('created_at', { ascending: false });
     const { data: approved, error: appErr } = await (supabase as any).from(table).select('*').eq('is_approved', true).order('created_at', { ascending: false });
     if (pendErr) console.error(table, 'pending fetch', pendErr);
     if (appErr) console.error(table, 'approved fetch', appErr);
