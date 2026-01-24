@@ -158,13 +158,9 @@ export default function AddPage() {
 
     setLoading(true);
     try {
-      const { data: { session: freshSession } } = await supabase.auth.getSession();
-      if (!freshSession?.user?.id) {
-        alert('განცხადების დასამატებლად გთხოვთ გაიაროთ ავტორიზაცია Google ან Facebook-ით.');
-        setLoading(false);
-        return;
-      }
-      setSession(freshSession);
+      // Get current user (can be null for anonymous)
+      const { data: { user } } = await supabase.auth.getUser();
+      const userId = user?.id || null;
 
       const uploadedUrls: string[] = [];
       
@@ -186,24 +182,24 @@ export default function AddPage() {
         uploadedUrls.push(publicUrl);
       }
 
-      const { error: dbError } = await ((supabase as any).from('announcements')).insert([{ 
+      const { data: insertedData, error: dbError } = await ((supabase as any).from('announcements')).insert([{ 
         ...formData, 
         price: formData.price, 
         image_url: uploadedUrls[0], 
         all_images: uploadedUrls, 
         is_approved: false,
-        user_id: freshSession.user.id
-      }]);
+        user_id: userId
+      }]).select().single();
 
       if (dbError) throw dbError;
       alert('თქვენი განცხადება წარმატებით გაიგზავნა მოდერაციაზე! 🚀');
-      router.push('/');
+      router.push(`/announcements/${insertedData.id}`);
     } catch (err: unknown) {
       const message = getErrorMessage(err);
       console.error('Upload error details:', err);
       alert(`შეცდომა ატვირთვისას: ${message}`);
-    } finally { 
-      setLoading(false); 
+    } finally {
+      setLoading(false);
     }
   };
 
