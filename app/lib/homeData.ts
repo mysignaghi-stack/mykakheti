@@ -215,6 +215,13 @@ export const fetchHomePageData = async (): Promise<HomePageData> => {
     })
     .map(mapAnnouncementRow);
 
+  const filteredAdminPosts = adminPosts
+    .filter((post) => {
+      const publishAt = (post as AdminPostRow & { publish_at?: string | null }).publish_at;
+      const publishOk = !publishAt || new Date(publishAt).getTime() <= now;
+      return (post.is_published ?? true) && !(post.is_archived ?? false) && publishOk;
+    });
+
   const agroData = agroRows.length > 0 ? agroRows.map(mapAgroRow) : DEFAULT_AGRO_DATA;
   const weatherData = weatherRows.length > 0 ? weatherRows.map(mapWeatherRow) : buildFallbackWeather();
 
@@ -225,7 +232,7 @@ export const fetchHomePageData = async (): Promise<HomePageData> => {
     ads,
     agroData,
     weatherData,
-    adminPosts,
+    adminPosts: filteredAdminPosts,
     backgroundUrl,
     marqueeText,
     community: {

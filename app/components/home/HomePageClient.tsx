@@ -246,7 +246,12 @@ export default function HomePageClient({
         .order('created_at', { ascending: false });
       if (error) throw error;
       if (data) {
-        setAdminPosts(data.filter((post: AdminPost) => post.priority !== -1));
+        const now = Date.now();
+        setAdminPosts(data.filter((post: AdminPost) => {
+          const publishAt = (post as AdminPost & { publish_at?: string | null }).publish_at;
+          const publishOk = !publishAt || new Date(publishAt).getTime() <= now;
+          return post.priority !== -1 && (post.is_published ?? true) && !(post.is_archived ?? false) && publishOk;
+        }));
       }
     } catch (error) {
       console.error('Failed to load admin posts', error);

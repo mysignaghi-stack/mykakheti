@@ -26,6 +26,9 @@ export default function AdminPosts() {
     link: '',
     position: '',
     badge_text: '',
+    is_published: true,
+    publish_at: '',
+    is_archived: false,
   });
 
   useEffect(() => {
@@ -61,6 +64,7 @@ export default function AdminPosts() {
       const data = {
         ...formData,
         media_urls: formData.media_urls.length > 0 ? formData.media_urls : null,
+        publish_at: formData.publish_at ? new Date(formData.publish_at).toISOString() : null,
       };
 
       console.log('Data to insert/update:', data);
@@ -100,6 +104,9 @@ export default function AdminPosts() {
         link: '',
         position: '',
         badge_text: '',
+        is_published: true,
+        publish_at: '',
+        is_archived: false,
       });
 
       fetchPosts();
@@ -176,6 +183,9 @@ export default function AdminPosts() {
       link: post.link || '',
       position: post.position || '',
       badge_text: post.badge_text || '',
+      is_published: post.is_published ?? true,
+      publish_at: post.publish_at ? new Date(post.publish_at).toISOString().slice(0, 16) : '',
+      is_archived: post.is_archived ?? false,
     });
   };
 
@@ -192,6 +202,9 @@ export default function AdminPosts() {
       link: '',
       position: '',
       badge_text: '',
+      is_published: true,
+      publish_at: '',
+      is_archived: false,
     });
   };
 
@@ -386,6 +399,38 @@ export default function AdminPosts() {
                 </label>
               </div>
 
+              <div>
+                <label className="flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    checked={formData.is_published}
+                    onChange={(e) => setFormData(prev => ({ ...prev, is_published: e.target.checked }))}
+                  />
+                  <span className="text-sm font-bold text-white/60">გამოქვეყნებული</span>
+                </label>
+              </div>
+
+              <div>
+                <label className="block text-sm font-bold text-white/60 mb-2">გამოქვეყნების დრო</label>
+                <input
+                  type="datetime-local"
+                  value={formData.publish_at}
+                  onChange={(e) => setFormData(prev => ({ ...prev, publish_at: e.target.value }))}
+                  className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-white"
+                />
+              </div>
+
+              <div>
+                <label className="flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    checked={formData.is_archived}
+                    onChange={(e) => setFormData(prev => ({ ...prev, is_archived: e.target.checked }))}
+                  />
+                  <span className="text-sm font-bold text-white/60">დაარქივებული</span>
+                </label>
+              </div>
+
               <div className="flex gap-4">
                 <button type="submit" className="bg-amber-600 hover:bg-amber-500 text-white px-6 py-3 rounded-xl font-black uppercase text-sm">
                   {editingPost ? 'განახლება' : 'შენახვა'}
@@ -415,6 +460,19 @@ export default function AdminPosts() {
                   </div>
                   <p className="text-white/60 text-sm mb-2">{post.category}</p>
                   <p className="text-white/80 text-sm line-clamp-2">{post.content}</p>
+                  <div className="flex gap-2 mt-2">
+                    <span className={`text-xs px-2 py-1 rounded ${post.is_published ? 'bg-green-600' : 'bg-red-600'}`}>
+                      {post.is_published ? 'გამოქვეყნებული' : 'დამალული'}
+                    </span>
+                    {post.is_archived && (
+                      <span className="text-xs px-2 py-1 rounded bg-gray-600">დაარქივებული</span>
+                    )}
+                    {post.publish_at && (
+                      <span className="text-xs px-2 py-1 rounded bg-blue-600">
+                        {new Date(post.publish_at).toLocaleString('ka-GE')}
+                      </span>
+                    )}
+                  </div>
                   <p className="text-white/40 text-xs mt-2">{post.created_at ? new Date(post.created_at).toLocaleDateString('ka-GE') : 'თარიღი არ არის'}</p>
                 </div>
               ))}
