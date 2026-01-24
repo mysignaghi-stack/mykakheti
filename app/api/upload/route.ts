@@ -17,6 +17,11 @@ export async function POST(request: NextRequest) {
     const phone = formData.get('phone') as string;
     const userId = formData.get('userId') as string;
 
+    // ვალიდაცია: შევამოწმოთ აუცილებელი ველები
+    if (!title || !category || !location || !price) {
+      return NextResponse.json({ error: 'აუცილებელი ველები არ არის შევსებული: title, category, location, price' }, { status: 400 });
+    }
+
     const supabaseAdmin = createClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
       process.env.SUPABASE_SERVICE_ROLE_KEY! // გვერდს ავლის RLS-ს
