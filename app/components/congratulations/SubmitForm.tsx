@@ -2,7 +2,7 @@
 
 import { useState, type FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
-import { supabase } from '../../../lib/supabase';
+import { supabase } from '../../lib/supabase';
 import imageCompression from 'browser-image-compression';
 
 const CATEGORY_OPTIONS = [
