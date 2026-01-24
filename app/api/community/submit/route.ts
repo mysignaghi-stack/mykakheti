@@ -54,7 +54,9 @@ export async function POST(request: Request) {
     auth: { persistSession: false },
   });
 
-  const { error } = await (serviceClient as any).from(table).insert(values);
+  const payload = { ...values, user_id: user.id };
+
+  const { error } = await (serviceClient as any).from(table).insert(payload);
 
   if (error) {
     return NextResponse.json({ error: error.message }, { status: 500 });
