@@ -103,19 +103,32 @@ export default function LostFoundSubmit() {
         imageUrl = uploads[0] ?? null;
       }
 
-      const { error } = await (supabase as any).from('lost_found').insert({
-        kind, title, category,
-        description: description||null,
-        location: location||null,
-        event_date: event_date||null,
-        contact: contact||null,
-        reward,
-        reward_note: reward ? (reward_note||null) : null,
-        image_url: imageUrl,
-        all_images: imageUrls.length > 0 ? imageUrls : null,
-        is_approved: false
+      const response = await fetch('/api/community/submit', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          table: 'lost_found',
+          values: {
+            kind,
+            title,
+            category,
+            description: description || null,
+            location: location || null,
+            event_date: event_date || null,
+            contact: contact || null,
+            reward,
+            reward_note: reward ? (reward_note || null) : null,
+            image_url: imageUrl,
+            all_images: imageUrls.length > 0 ? imageUrls : null,
+            is_approved: false,
+          },
+        }),
       });
-      if (error) throw error;
+
+      if (!response.ok) {
+        const payload = await response.json().catch(() => ({}));
+        throw new Error(payload?.error ?? 'უცნობი შეცდომა');
+      }
       setSubmitted(true);
     } catch (error: unknown) {
       const message = getErrorMessage(error);

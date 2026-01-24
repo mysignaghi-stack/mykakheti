@@ -25,13 +25,30 @@ export default function MastersSubmit() {
       alert('ოსტატის/სპეციალისტის პროფილის დასამატებლად გაიარეთ ავტორიზაცია.');
       return;
     }
-    const { error } = await (supabase as any).from('masters').insert({
-      full_name, profession, category,
-      phone: phone||null, location: location||null, description: description||null,
-      photo_url: photo_url||null, service_area: service_area||null, price_note: price_note||null,
-      is_approved: false
+    const response = await fetch('/api/community/submit', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        table: 'masters',
+        values: {
+          full_name,
+          profession,
+          category,
+          phone: phone || null,
+          location: location || null,
+          description: description || null,
+          photo_url: photo_url || null,
+          service_area: service_area || null,
+          price_note: price_note || null,
+          is_approved: false,
+        },
+      }),
     });
-    if (error) return alert('შეცდომა: '+error.message);
+
+    if (!response.ok) {
+      const payload = await response.json().catch(() => ({}));
+      return alert('შეცდომა: ' + (payload?.error ?? 'უცნობი შეცდომა'));
+    }
     setSubmitted(true);
   };
 

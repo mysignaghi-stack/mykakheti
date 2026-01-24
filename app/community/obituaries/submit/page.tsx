@@ -22,16 +22,27 @@ export default function ObituariesSubmit() {
       alert('სამძიმრის დასამატებლად გაიარეთ ავტორიზაცია.');
       return;
     }
-    const { error } = await (supabase as any).from('obituaries').insert({
-      full_name,
-      date_of_death: date_of_death || null,
-      funeral_at: funeral_at || null,
-      funeral_place: funeral_place || null,
-      contacts: contacts || null,
-      notes: notes || null,
-      is_approved: false
+    const response = await fetch('/api/community/submit', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        table: 'obituaries',
+        values: {
+          full_name,
+          date_of_death: date_of_death || null,
+          funeral_at: funeral_at || null,
+          funeral_place: funeral_place || null,
+          contacts: contacts || null,
+          notes: notes || null,
+          is_approved: false,
+        },
+      }),
     });
-    if (error) return alert('შეცდომა: '+error.message);
+
+    if (!response.ok) {
+      const payload = await response.json().catch(() => ({}));
+      return alert('შეცდომა: ' + (payload?.error ?? 'უცნობი შეცდომა'));
+    }
     setSubmitted(true);
   };
 

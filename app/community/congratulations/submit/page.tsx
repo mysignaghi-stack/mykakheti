@@ -140,23 +140,32 @@ export default function SubmitCongratulations() {
         imageUrl = uploads[0] ?? null;
       }
 
-      const { error } = await (supabase as any).from('congratulations').insert([{
-        sender_name: formData.sender_name,
-        receiver_name: formData.recipient_name,
-        message: formData.message,
-        category: formData.category,
-        theme: 'ელეგანტური', // Keep theme for backward compatibility
-        image_url: imageUrl,
-        all_images: imageUrls.length > 0 ? imageUrls : null,
-        is_approved: false,
-        // New fields - will be added when database is updated
-        ...(formData.template && { template: formData.template }),
-        ...(formData.toast && { toast: formData.toast }),
-        ...(formData.music_url && { music_url: formData.music_url }),
-        ...(typeof formData.animation_enabled === 'boolean' && { animation_enabled: formData.animation_enabled }),
-      }]);
+      const response = await fetch('/api/community/submit', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          table: 'congratulations',
+          values: {
+            sender_name: formData.sender_name,
+            receiver_name: formData.recipient_name,
+            message: formData.message,
+            category: formData.category,
+            theme: 'ელეგანტური',
+            image_url: imageUrl,
+            all_images: imageUrls.length > 0 ? imageUrls : null,
+            is_approved: false,
+            ...(formData.template && { template: formData.template }),
+            ...(formData.toast && { toast: formData.toast }),
+            ...(formData.music_url && { music_url: formData.music_url }),
+            ...(typeof formData.animation_enabled === 'boolean' && { animation_enabled: formData.animation_enabled }),
+          },
+        }),
+      });
 
-      if (error) throw error;
+      if (!response.ok) {
+        const payload = await response.json().catch(() => ({}));
+        throw new Error(payload?.error ?? 'უცნობი შეცდომა');
+      }
 
       alert('მისალოცი ბარათი გაიგზავნა! ადმინისტრატორის დადასტურების შემდეგ გამოჩნდება საიტზე.');
       router.push('/community/congratulations');
