@@ -87,17 +87,22 @@ export default function LostFoundSubmit() {
         for (const file of files) {
           const compressed = await imageCompression(file, { maxSizeMB: 0.5, maxWidthOrHeight: 1200, useWebWorker: true });
           const fileName = `lost-found-${Date.now()}-${Math.random().toString(36).slice(2)}.jpg`;
-          const { error: uploadError } = await supabase.storage
-            .from('lost_found')
-            .upload(fileName, compressed);
+          const formData = new FormData();
+          formData.append('file', compressed, fileName);
+          formData.append('fileName', fileName);
+          formData.append('bucket', 'lost_found');
 
-          if (uploadError) throw uploadError;
+          const response = await fetch('/api/upload', {
+            method: 'POST',
+            body: formData,
+          });
 
-          const { data: { publicUrl } } = supabase.storage
-            .from('lost_found')
-            .getPublicUrl(fileName);
+          const result = await response.json();
+          if (!response.ok) {
+            throw new Error(result?.error || 'Storage upload failed');
+          }
 
-          uploads.push(publicUrl);
+          uploads.push(result.url as string);
         }
         imageUrls = uploads;
         imageUrl = uploads[0] ?? null;
