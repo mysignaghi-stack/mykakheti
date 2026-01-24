@@ -12,9 +12,12 @@ export default function AdminPosts() {
   const { isAdmin, loading: authLoading } = useAdminAuth();
   const [posts, setPosts] = useState<AdminPost[]>([]);
   const [loading, setLoading] = useState(true);
+  const [fetchError, setFetchError] = useState<string>('');
   const [editingPost, setEditingPost] = useState<AdminPost | null>(null);
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const [uploading, setUploading] = useState(false);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [statusFilter, setStatusFilter] = useState<'all' | 'published' | 'hidden' | 'archived'>('all');
   const [formData, setFormData] = useState({
     title: '',
     content: '',
@@ -32,21 +35,27 @@ export default function AdminPosts() {
   });
 
   useEffect(() => {
-    fetchPosts();
-  }, []);
+    if (!authLoading && isAdmin) {
+      fetchPosts();
+    }
+  }, [authLoading, isAdmin]);
 
   const fetchPosts = async () => {
     setLoading(true);
+    setFetchError('');
     try {
       const { data, error } = await (supabase as any)
         .from('admin_posts')
         .select('*')
-        .order('created_at', { ascending: false });
+        .order('created_at', { ascending: false })
+        .limit(300);
 
       if (error) throw error;
       setPosts(data || []);
     } catch (error) {
       console.error('Error fetching posts:', error);
+      const message = (error as { message?: string })?.message || 'ვერ ჩაიტვირთა პოსტები';
+      setFetchError(message);
     } finally {
       setLoading(false);
     }
@@ -61,10 +70,25 @@ export default function AdminPosts() {
     }
 
     try {
+      const hasMedia = formData.media_urls.length > 0 || !!formData.media_url;
+      const mediaTypeFromUrls = (() => {
+        const allUrls = [...formData.media_urls, formData.media_url].filter(Boolean) as string[];
+        if (allUrls.length === 0) return null;
+        const isVideo = allUrls.some((url) => /\.(mp4|mov|avi|webm)$/i.test(url));
+        if (allUrls.length > 1) return 'gallery';
+        return isVideo ? 'video' : 'image';
+      })();
+      const mediaTypeFromFiles = (() => {
+        if (selectedFiles.length === 0) return null;
+        if (selectedFiles.length > 1) return 'gallery';
+        return selectedFiles[0].type.startsWith('video/') ? 'video' : 'image';
+      })();
+
       const data = {
         ...formData,
         media_urls: formData.media_urls.length > 0 ? formData.media_urls : null,
         publish_at: formData.publish_at ? new Date(formData.publish_at).toISOString() : null,
+        media_type: mediaTypeFromFiles ?? mediaTypeFromUrls ?? (hasMedia ? 'image' : null),
       };
 
       console.log('Data to insert/update:', data);
@@ -138,18 +162,29 @@ export default function AdminPosts() {
 
     setUploading(true);
     try {
+      const oversized = selectedFiles.find((file) => file.size > 50 * 1024 * 1024);
+      if (oversized) {
+        alert('ვიდეოს მაქსიმალური ზომაა 50MB');
+        return;
+      }
+
       const uploadedUrls: string[] = [];
 
       for (const file of selectedFiles) {
-        const fileName = `admin-post-${Date.now()}-${file.name}`;
-        const { data: uploadData, error: uploadError } = await supabase.storage
-          .from('site-assets')
-          .upload(fileName, file);
+        const safeName = file.name.replace(/\s+/g, '-');
+        const fileName = `admin-posts/${Date.now()}-${safeName}`;
+        const { error: uploadError } = await supabase.storage
+          .from('admin-media')
+          .upload(fileName, file, {
+            contentType: file.type || undefined,
+            upsert: false,
+            cacheControl: '3600',
+          });
 
         if (uploadError) throw uploadError;
 
         const { data: urlData } = supabase.storage
-          .from('site-assets')
+          .from('admin-media')
           .getPublicUrl(fileName);
 
         uploadedUrls.push(urlData.publicUrl);
@@ -164,7 +199,8 @@ export default function AdminPosts() {
       alert('ფაილები წარმატებით აიტვირთა');
     } catch (error) {
       console.error('Upload error:', error);
-      alert('შეცდომა ატვირთვისას');
+      const message = error instanceof Error ? error.message : 'უცნობი შეცდომა';
+      alert(`შეცდომა ატვირთვისას: ${message}`);
     } finally {
       setUploading(false);
     }
@@ -226,6 +262,17 @@ export default function AdminPosts() {
     const files = Array.from(e.target.files || []);
     setSelectedFiles(prev => [...prev, ...files]);
   };
+
+  const filteredPosts = posts.filter((post) => {
+    const matchesText = `${post.title ?? ''} ${post.category ?? ''}`
+      .toLowerCase()
+      .includes(searchTerm.trim().toLowerCase());
+    if (!matchesText) return false;
+    if (statusFilter === 'archived') return post.is_archived ?? false;
+    if (statusFilter === 'published') return (post.is_published ?? true) && !(post.is_archived ?? false);
+    if (statusFilter === 'hidden') return (post.is_published === false) && !(post.is_archived ?? false);
+    return true;
+  });
 
   if (authLoading) {
     return (
@@ -448,8 +495,41 @@ export default function AdminPosts() {
           <div className="bg-white/5 rounded-3xl border border-white/10 p-6">
             <h2 className="text-xl font-black text-amber-400 mb-4">არსებული პოსტები</h2>
 
+            {fetchError && (
+              <div className="mb-4 rounded-xl border border-red-500/40 bg-red-500/10 p-3 text-sm text-red-200">
+                {fetchError}
+              </div>
+            )}
+
+            <div className="mb-4 space-y-3">
+              <input
+                type="text"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                placeholder="ძებნა სათაურით ან კატეგორიით"
+                className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-white"
+              />
+              <div className="flex flex-wrap gap-2">
+                {([
+                  { key: 'all', label: 'ყველა' },
+                  { key: 'published', label: 'გამოქვეყნებული' },
+                  { key: 'hidden', label: 'დამალული' },
+                  { key: 'archived', label: 'დაარქივებული' },
+                ] as const).map((item) => (
+                  <button
+                    key={item.key}
+                    type="button"
+                    onClick={() => setStatusFilter(item.key)}
+                    className={`px-3 py-1 rounded-xl text-xs font-bold ${statusFilter === item.key ? 'bg-amber-600 text-white' : 'bg-white/5 text-white/60'}`}
+                  >
+                    {item.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
             <div className="space-y-4 max-h-96 overflow-y-auto">
-              {posts.map(post => (
+              {filteredPosts.map(post => (
                 <div key={post.id} className="bg-black/40 rounded-2xl p-4 border border-white/10">
                   <div className="flex justify-between items-start mb-2">
                     <h3 className="font-bold text-white">{post.title}</h3>
@@ -476,7 +556,7 @@ export default function AdminPosts() {
                   <p className="text-white/40 text-xs mt-2">{post.created_at ? new Date(post.created_at).toLocaleDateString('ka-GE') : 'თარიღი არ არის'}</p>
                 </div>
               ))}
-              {posts.length === 0 && (
+              {filteredPosts.length === 0 && (
                 <div className="text-center py-8 text-white/40">
                   პოსტები არ არის
                 </div>
