@@ -13,18 +13,74 @@ ALTER TABLE square_messages ENABLE ROW LEVEL SECURITY;
 -- Announcements table policies
 -- Allow anyone to view approved announcements
 CREATE POLICY "Anyone can view approved announcements" ON announcements
-FOR SELECT USING (is_approved = true);
+-- Announcements table policies
+-- Allow public users to view only approved announcements, but allow admins to view all
+CREATE POLICY "Public can view approved announcements; admins can view all" ON announcements
+FOR SELECT USING (
+	is_approved = true
+	OR EXISTS (
+		SELECT 1 FROM auth.users u WHERE u.id = auth.uid() AND (
+			u.raw_user_meta_data->> 'role' = 'admin'
+			OR (u.raw_user_meta_data->'roles')::jsonb ? 'admin'
+			OR u.raw_user_meta_data->> 'is_admin' = 'true'
+			OR u.raw_app_meta_data->> 'role' = 'admin'
+			OR (u.raw_app_meta_data->'roles')::jsonb ? 'admin'
+			OR u.raw_app_meta_data->> 'is_admin' = 'true'
+		)
+	)
+);
 
--- Allow anyone to insert new announcements
-CREATE POLICY "Anyone can create announcements" ON announcements
-FOR INSERT WITH CHECK (true);
+-- Allow only authenticated users to create announcements and ensure the row's user_id matches the authenticated user
+CREATE POLICY "Authenticated users can create their announcements" ON announcements
+FOR INSERT WITH CHECK (
+	auth.uid() IS NOT NULL
+	AND auth.uid() = user_id
+);
 
--- Allow admin operations (you'll need to implement proper admin auth)
-CREATE POLICY "Admin can update announcements" ON announcements
-FOR UPDATE USING (true);
+-- Allow owners or admins to update announcements
+CREATE POLICY "Owners or admins can update announcements" ON announcements
+FOR UPDATE USING (
+	auth.uid() = user_id
+	OR EXISTS (
+		SELECT 1 FROM auth.users u WHERE u.id = auth.uid() AND (
+			u.raw_user_meta_data->> 'role' = 'admin'
+			OR (u.raw_user_meta_data->'roles')::jsonb ? 'admin'
+			OR u.raw_user_meta_data->> 'is_admin' = 'true'
+			OR u.raw_app_meta_data->> 'role' = 'admin'
+			OR (u.raw_app_meta_data->'roles')::jsonb ? 'admin'
+			OR u.raw_app_meta_data->> 'is_admin' = 'true'
+		)
+	)
+)
+WITH CHECK (
+	auth.uid() = user_id
+	OR EXISTS (
+		SELECT 1 FROM auth.users u WHERE u.id = auth.uid() AND (
+			u.raw_user_meta_data->> 'role' = 'admin'
+			OR (u.raw_user_meta_data->'roles')::jsonb ? 'admin'
+			OR u.raw_user_meta_data->> 'is_admin' = 'true'
+			OR u.raw_app_meta_data->> 'role' = 'admin'
+			OR (u.raw_app_meta_data->'roles')::jsonb ? 'admin'
+			OR u.raw_app_meta_data->> 'is_admin' = 'true'
+		)
+	)
+);
 
-CREATE POLICY "Admin can delete announcements" ON announcements
-FOR DELETE USING (true);
+-- Allow owners or admins to delete announcements
+CREATE POLICY "Owners or admins can delete announcements" ON announcements
+FOR DELETE USING (
+	auth.uid() = user_id
+	OR EXISTS (
+		SELECT 1 FROM auth.users u WHERE u.id = auth.uid() AND (
+			u.raw_user_meta_data->> 'role' = 'admin'
+			OR (u.raw_user_meta_data->'roles')::jsonb ? 'admin'
+			OR u.raw_user_meta_data->> 'is_admin' = 'true'
+			OR u.raw_app_meta_data->> 'role' = 'admin'
+			OR (u.raw_app_meta_data->'roles')::jsonb ? 'admin'
+			OR u.raw_app_meta_data->> 'is_admin' = 'true'
+		)
+	)
+);
 
 -- Contact messages policies
 CREATE POLICY "Anyone can send contact messages" ON contact_messages
