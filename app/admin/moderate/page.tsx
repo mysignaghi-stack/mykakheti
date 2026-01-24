@@ -17,6 +17,15 @@ export default function ModerateAds() {
   const [rangeTo, setRangeTo] = useState('');
   const { isAdmin, loading: authLoading } = useAdminAuth();
 
+  const getAnnouncementImages = (ad: AnnouncementRow) => {
+    const allImages = Array.isArray((ad as AnnouncementRow & { all_images?: string[] | null }).all_images)
+      ? (ad as AnnouncementRow & { all_images?: string[] | null }).all_images!.filter(Boolean)
+      : [];
+    const primary = (ad as AnnouncementRow & { image_url?: string | null }).image_url ?? null;
+    const combined = primary ? [primary, ...allImages] : allImages;
+    return Array.from(new Set(combined));
+  };
+
   // 1. დაუდასტურებელი განცხადებების წამოღება
   const fetchPending = async () => {
     setLoading(true);
@@ -232,16 +241,34 @@ export default function ModerateAds() {
                 
                 {/* Image Preview with Badge */}
                 <div className="relative w-full md:w-48 h-48 bg-black/40 rounded-[32px] overflow-hidden shrink-0 border border-white/5">
-                  <Image src={ad.image_url || '/placeholder.jpg'} alt="" fill sizes="192px" className="object-cover group-hover:scale-110 transition-transform duration-700" />
-                  {ad.all_images && ad.all_images.length > 1 && (
+                  {getAnnouncementImages(ad)[0] ? (
+                    <Image src={getAnnouncementImages(ad)[0]} alt="" fill sizes="192px" className="object-cover group-hover:scale-110 transition-transform duration-700" />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center text-white/30 text-xs">ფოტო არ არის</div>
+                  )}
+                  {getAnnouncementImages(ad).length > 1 && (
                     <div className="absolute bottom-4 right-4 bg-amber-600 text-white text-[9px] font-black px-3 py-1 rounded-full shadow-xl">
-                      +{ad.all_images.length - 1} ფოტო
+                      +{getAnnouncementImages(ad).length - 1} ფოტო
                     </div>
                   )}
                 </div>
                 
                 {/* Info Content */}
                 <div className="flex-grow space-y-3 text-center md:text-left">
+                  {getAnnouncementImages(ad).length > 1 && (
+                    <div className="flex flex-wrap gap-2 justify-center md:justify-start">
+                      {getAnnouncementImages(ad).slice(1, 5).map((img, idx) => (
+                        <div key={`${ad.id}-thumb-${idx}`} className="relative w-12 h-12 rounded-xl overflow-hidden border border-white/10 bg-white/5">
+                          <Image src={img} alt="" fill sizes="48px" className="object-cover" />
+                        </div>
+                      ))}
+                      {getAnnouncementImages(ad).length > 5 && (
+                        <div className="w-12 h-12 rounded-xl border border-white/10 bg-white/5 flex items-center justify-center text-[10px] text-white/60 font-black">
+                          +{getAnnouncementImages(ad).length - 5}
+                        </div>
+                      )}
+                    </div>
+                  )}
                   <div className="flex flex-col md:flex-row md:items-center gap-3">
                     <h3 className="text-xl font-black text-white uppercase italic tracking-tight">{ad.title}</h3>
                     <span className="inline-block bg-white/5 px-3 py-1 rounded-full text-[9px] font-black text-amber-500 uppercase italic">

@@ -12,7 +12,14 @@ type Announcement = Database['public']['Tables']['announcements']['Row'];
 export default function AnnouncementDetailsClient({ initialAd }: { initialAd: Announcement | null }) {
   const { id } = useParams<{ id: string }>();
   const [ad, setAd] = useState<Announcement | null>(initialAd);
-  const [activeImg, setActiveImg] = useState<string | null>(initialAd?.image_url || initialAd?.all_images?.[0] || null);
+  const getImages = (item: Announcement | null) => {
+    if (!item) return [] as string[];
+    const allImages = Array.isArray(item.all_images) ? item.all_images.filter(Boolean) : [];
+    const primary = item.image_url ?? null;
+    const combined = primary ? [primary, ...allImages] : allImages;
+    return Array.from(new Set(combined));
+  };
+  const [activeImg, setActiveImg] = useState<string | null>(getImages(initialAd)[0] ?? null);
   const [shareUrl, setShareUrl] = useState('');
 
   // Share URL-ის დაყენება კლიენტის მხარეს
@@ -28,7 +35,7 @@ export default function AnnouncementDetailsClient({ initialAd }: { initialAd: An
         const { data } = await (supabase as any).from('announcements').select('*').eq('id', id).single();
         if (data) {
           setAd(data);
-          setActiveImg(data.image_url || data.all_images?.[0] || null);
+          setActiveImg(getImages(data)[0] ?? null);
         }
       };
       fetchAd();
@@ -89,15 +96,9 @@ export default function AnnouncementDetailsClient({ initialAd }: { initialAd: An
             )}
           </div>
           
-          {ad.all_images && ad.all_images.length > 0 && (
+          {getImages(ad).length > 0 && (
             <div className="flex gap-4 overflow-x-auto custom-scrollbar py-2 px-2">
-                {/* მთავარი ფოტოც რომ იყოს არჩევაში */}
-                {ad.image_url && (
-                    <button onClick={() => setActiveImg(ad.image_url)} className={`w-20 h-20 md:w-24 md:h-24 rounded-2xl overflow-hidden border-2 shrink-0 transition-all duration-300 ${activeImg === ad.image_url ? 'border-amber-500 scale-105' : 'border-white/10 opacity-60'}`}>
-                    <Image src={ad.image_url} alt="Main" width={96} height={96} className="w-full h-full object-contain" />
-                    </button>
-                )}
-                {ad.all_images.map((img: string, i: number) => (
+                {getImages(ad).map((img: string, i: number) => (
                 <button 
                     key={i} 
                     onClick={() => setActiveImg(img)} 

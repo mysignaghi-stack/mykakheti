@@ -194,11 +194,13 @@ export default function AddPage() {
         uploadedUrls.push(result.url as string);
       }
 
+      const uniqueUploadedUrls = Array.from(new Set(uploadedUrls));
+
       const { data: insertedData, error: dbError } = await ((supabase as any).from('announcements')).insert([{ 
         ...formData, 
         price: formData.price, 
-        image_url: uploadedUrls[0], 
-        all_images: uploadedUrls, 
+        image_url: uniqueUploadedUrls[0], 
+        all_images: uniqueUploadedUrls, 
         is_approved: false,
         user_id: userId
       }]).select().single();
