@@ -248,9 +248,9 @@ export default function HomePageClient({
       if (data) {
         const now = Date.now();
         setAdminPosts(data.filter((post: AdminPost) => {
-          const publishAt = (post as AdminPost & { publish_at?: string | null }).publish_at;
+          const publishAt = (post as any).publish_at;
           const publishOk = !publishAt || new Date(publishAt).getTime() <= now;
-          return post.priority !== -1 && (post.is_published ?? true) && !(post.is_archived ?? false) && publishOk;
+          return post.priority !== -1 && ((post as any).is_published ?? true) && !((post as any).is_archived ?? false) && publishOk;
         }));
       }
     } catch (error) {

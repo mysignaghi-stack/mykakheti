@@ -170,11 +170,24 @@ export default function AdminPosts() {
 
       const uploadedUrls: string[] = [];
 
+      const buildSafeFileName = (originalName: string) => {
+        const parts = originalName.split('.');
+        const ext = parts.length > 1 ? `.${parts.pop()}` : '';
+        const base = parts.join('.');
+        const safeBase = base
+          .normalize('NFKD')
+          .replace(/[^a-zA-Z0-9_-]+/g, '-')
+          .replace(/-+/g, '-')
+          .replace(/^-|-$/g, '')
+          .toLowerCase();
+        return `${safeBase || 'file'}${ext}`;
+      };
+
       for (const file of selectedFiles) {
-        const safeName = file.name.replace(/\s+/g, '-');
+        const safeName = buildSafeFileName(file.name);
         const fileName = `admin-posts/${Date.now()}-${safeName}`;
         const { error: uploadError } = await supabase.storage
-          .from('admin-media')
+          .from('announcements')
           .upload(fileName, file, {
             contentType: file.type || undefined,
             upsert: false,
@@ -184,7 +197,7 @@ export default function AdminPosts() {
         if (uploadError) throw uploadError;
 
         const { data: urlData } = supabase.storage
-          .from('admin-media')
+          .from('announcements')
           .getPublicUrl(fileName);
 
         uploadedUrls.push(urlData.publicUrl);
@@ -219,9 +232,9 @@ export default function AdminPosts() {
       link: post.link || '',
       position: post.position || '',
       badge_text: post.badge_text || '',
-      is_published: post.is_published ?? true,
-      publish_at: post.publish_at ? new Date(post.publish_at).toISOString().slice(0, 16) : '',
-      is_archived: post.is_archived ?? false,
+      is_published: (post as any).is_published ?? true,
+      publish_at: (post as any).publish_at ? new Date((post as any).publish_at).toISOString().slice(0, 16) : '',
+      is_archived: (post as any).is_archived ?? false,
     });
   };
 
@@ -268,9 +281,9 @@ export default function AdminPosts() {
       .toLowerCase()
       .includes(searchTerm.trim().toLowerCase());
     if (!matchesText) return false;
-    if (statusFilter === 'archived') return post.is_archived ?? false;
-    if (statusFilter === 'published') return (post.is_published ?? true) && !(post.is_archived ?? false);
-    if (statusFilter === 'hidden') return (post.is_published === false) && !(post.is_archived ?? false);
+    if (statusFilter === 'archived') return (post as any).is_archived ?? false;
+    if (statusFilter === 'published') return ((post as any).is_published ?? true) && !((post as any).is_archived ?? false);
+    if (statusFilter === 'hidden') return ((post as any).is_published === false) && !((post as any).is_archived ?? false);
     return true;
   });
 
@@ -541,15 +554,15 @@ export default function AdminPosts() {
                   <p className="text-white/60 text-sm mb-2">{post.category}</p>
                   <p className="text-white/80 text-sm line-clamp-2">{post.content}</p>
                   <div className="flex gap-2 mt-2">
-                    <span className={`text-xs px-2 py-1 rounded ${post.is_published ? 'bg-green-600' : 'bg-red-600'}`}>
-                      {post.is_published ? 'გამოქვეყნებული' : 'დამალული'}
+                    <span className={`text-xs px-2 py-1 rounded ${(post as any).is_published ? 'bg-green-600' : 'bg-red-600'}`}>
+                      {(post as any).is_published ? 'გამოქვეყნებული' : 'დამალული'}
                     </span>
-                    {post.is_archived && (
+                    {(post as any).is_archived && (
                       <span className="text-xs px-2 py-1 rounded bg-gray-600">დაარქივებული</span>
                     )}
-                    {post.publish_at && (
+                    {(post as any).publish_at && (
                       <span className="text-xs px-2 py-1 rounded bg-blue-600">
-                        {new Date(post.publish_at).toLocaleString('ka-GE')}
+                        {new Date((post as any).publish_at).toLocaleString('ka-GE')}
                       </span>
                     )}
                   </div>
