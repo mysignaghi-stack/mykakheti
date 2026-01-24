@@ -1,0 +1,1 @@
+ALTER TABLE congratulations ADD COLUMN IF NOT EXISTS animation_enabled BOOLEAN DEFAULT FALSE;

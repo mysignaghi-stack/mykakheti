@@ -37,6 +37,7 @@ export default function AddPage() {
   const [images, setImages] = useState<File[]>([]);
   const [previews, setPreviews] = useState<string[]>([]);
   const [registerData, setRegisterData] = useState({ firstName: '', lastName: '', email: '', phone: '' });
+  const [isSubmitted, setIsSubmitted] = useState(false);
   
   // ✨ Added 'currency' to form state (default: GEL)
   const [formData, setFormData] = useState({ 
@@ -152,66 +153,37 @@ export default function AddPage() {
 
   const handlePost = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    if (!formData.category || images.length === 0) {
-      return alert('გთხოვთ შეავსოთ ყველა ველი და ატვირთოთ მინიმუმ 1 ფოტო');
-    }
+    if (loading) return;
 
     setLoading(true);
     try {
-      // Get current session directly
-      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
-      if (sessionError || !session) {
-        return alert('გთხოვთ გაიაროთ ავტორიზაცია ატვირთვამდე');
-      }
+      const { data: { session } } = await supabase.auth.getSession();
+      const file = images[0]; // ვიღებთ პირველ ფოტოს
+      const fileName = `${Date.now()}-${file.name}`;
 
-      // Get current user
-      const { data: { user } } = await supabase.auth.getUser();
-      const userId = user?.id || null;
+      const data = new FormData();
+      data.append('file', file);
+      data.append('fileName', fileName);
+      data.append('title', formData.title);
+      data.append('description', formData.description);
+      data.append('category', formData.category);
+      data.append('location', formData.location);
+      data.append('price', formData.price);
+      data.append('currency', formData.currency);
+      data.append('phone', formData.phone);
+      data.append('userId', session?.user?.id || '');
 
-      const uploadedUrls: string[] = [];
+      const response = await fetch('/api/upload', {
+        method: 'POST',
+        body: data,
+      });
 
-      // ✅ ავტომატური კომპრესია ატვირთვისას
-      for (const img of images) {
-        const options = { maxSizeMB: 0.8, maxWidthOrHeight: 1280, useWebWorker: true };
-        const compressedFile = await imageCompression(img, options);
-        const fileName = `${Date.now()}-${Math.random().toString(36).substring(7)}.${img.name.split('.').pop()}`;
+      const result = await response.json();
+      if (!response.ok) throw new Error(result.error);
 
-        const formData = new FormData();
-        formData.append('file', compressedFile, img.name);
-        formData.append('fileName', fileName);
-        formData.append('bucket', 'announcements');
-
-        const response = await fetch('/api/upload', {
-          method: 'POST',
-          body: formData,
-        });
-
-        const result = await response.json();
-        if (!response.ok) {
-          throw new Error(result?.error || 'Storage upload failed');
-        }
-
-        uploadedUrls.push(result.url as string);
-      }
-
-      const uniqueUploadedUrls = Array.from(new Set(uploadedUrls));
-
-      const { data: insertedData, error: dbError } = await ((supabase as any).from('announcements')).insert([{ 
-        ...formData, 
-        price: formData.price, 
-        image_url: uniqueUploadedUrls[0], 
-        all_images: uniqueUploadedUrls, 
-        is_approved: false,
-        user_id: userId
-      }]).select().single();
-
-      if (dbError) throw dbError;
-      alert('თქვენი განცხადება წარმატებით გაიგზავნა მოდერაციაზე! 🚀');
-      router.push(`/announcements/${insertedData.id}`);
-    } catch (err: unknown) {
-      const message = getErrorMessage(err);
-      console.error('Upload error details:', err);
-      alert(`შეცდომა ატვირთვისას: ${message}`);
+      setIsSubmitted(true); // ვაჩვენებთ მილოცვას
+    } catch (err: any) {
+      alert(`შეცდომა: ${err.message}`);
     } finally {
       setLoading(false);
     }
@@ -327,7 +299,7 @@ export default function AddPage() {
             </div>
           )}
 
-          {isAuthenticated && (
+          {isAuthenticated && !isSubmitted && (
           <form onSubmit={handlePost} className="space-y-6">
             <div className="grid grid-cols-3 md:grid-cols-5 gap-3 mb-8">
                {previews.map((src, i) => (
@@ -400,6 +372,12 @@ export default function AddPage() {
               {loading ? 'მიმდინარეობს ატვირთვა...' : isAuthenticated ? 'გამოქვეყნება 🚀' : 'ავტორიზაცია სჭირდება'}
             </button>
           </form>
+          )}
+
+          {isSubmitted && (
+            <div className="text-center py-8">
+              <p className="text-emerald-300 text-lg font-semibold">თქვენი განცხადება წარმატებით გაიგზავნა მოდერაციაზე! 🚀</p>
+            </div>
           )}
         </div>
       </div>

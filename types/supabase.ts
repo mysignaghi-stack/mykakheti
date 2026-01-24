@@ -121,6 +121,7 @@ export type Database = {
       }
       congratulations: {
         Row: {
+          animation_enabled: boolean | null
           approved_at: string | null
           approved_by: string | null
           category: string | null
@@ -134,6 +135,7 @@ export type Database = {
           sender_name: string
         }
         Insert: {
+          animation_enabled?: boolean | null
           approved_at?: string | null
           approved_by?: string | null
           category?: string | null
@@ -147,6 +149,7 @@ export type Database = {
           sender_name: string
         }
         Update: {
+          animation_enabled?: boolean | null
           approved_at?: string | null
           approved_by?: string | null
           category?: string | null
