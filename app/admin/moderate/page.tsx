@@ -103,14 +103,16 @@ export default function ModerateAds() {
     if (!confirm('ნამდვილად გსურთ ამ განცხადების წაშლა?')) return;
 
     setPendingAds(prev => prev.filter(ad => ad.id !== id));
-    
-    const { error } = await supabase
-      .from('announcements')
-      .delete()
-      .eq('id', id);
-    
-    if (error) {
-      alert("წაშლა ვერ მოხერხდა");
+
+    const response = await fetch('/api/admin/announcements/delete', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id }),
+    });
+
+    if (!response.ok) {
+      const payload = await response.json().catch(() => ({}));
+      alert(payload?.error ?? 'წაშლა ვერ მოხერხდა');
       fetchPending();
     }
   };

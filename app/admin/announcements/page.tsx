@@ -82,13 +82,20 @@ export default function AdminAnnouncements() {
 
   async function deleteAd(id: string) {
     if (!confirm('ნამდვილად გსურთ ამ განცხადების წაშლა?')) return;
-    const { error } = await (supabase as any).from('announcements').delete().eq('id', id);
-    if (error) {
-      alert(`შეცდომა წაშლისას: ${error.message}`);
-    } else {
-      setPendingAds(prev => prev.filter(a => a.id !== id));
-      setLiveAds(prev => prev.filter(a => a.id !== id));
+    const response = await fetch('/api/admin/announcements/delete', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id }),
+    });
+
+    if (!response.ok) {
+      const payload = await response.json().catch(() => ({}));
+      alert(`შეცდომა წაშლისას: ${payload?.error ?? 'უცნობი შეცდომა'}`);
+      return;
     }
+
+    setPendingAds(prev => prev.filter(a => a.id !== id));
+    setLiveAds(prev => prev.filter(a => a.id !== id));
   }
 
   async function saveSchedule(id: string, approveOnSave: boolean) {
