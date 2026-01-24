@@ -244,6 +244,8 @@ export type Database = {
       }
       lost_found: {
         Row: {
+          all_images: string[] | null
+          category: string | null
           contact: string | null
           created_at: string | null
           description: string | null
@@ -258,6 +260,8 @@ export type Database = {
           title: string
         }
         Insert: {
+          all_images?: string[] | null
+          category?: string | null
           contact?: string | null
           created_at?: string | null
           description?: string | null
@@ -272,6 +276,8 @@ export type Database = {
           title: string
         }
         Update: {
+          all_images?: string[] | null
+          category?: string | null
           contact?: string | null
           created_at?: string | null
           description?: string | null
@@ -324,6 +330,7 @@ export type Database = {
       }
       masters: {
         Row: {
+          category: string | null
           created_at: string | null
           description: string | null
           full_name: string
@@ -331,11 +338,15 @@ export type Database = {
           is_approved: boolean | null
           location: string | null
           phone: string | null
+          photo_url: string | null
+          price_note: string | null
           profession: string
           rating_avg: number | null
           ratings_count: number | null
+          service_area: string | null
         }
         Insert: {
+          category?: string | null
           created_at?: string | null
           description?: string | null
           full_name: string
@@ -343,11 +354,15 @@ export type Database = {
           is_approved?: boolean | null
           location?: string | null
           phone?: string | null
+          photo_url?: string | null
+          price_note?: string | null
           profession: string
           rating_avg?: number | null
           ratings_count?: number | null
+          service_area?: string | null
         }
         Update: {
+          category?: string | null
           created_at?: string | null
           description?: string | null
           full_name?: string
@@ -355,9 +370,12 @@ export type Database = {
           is_approved?: boolean | null
           location?: string | null
           phone?: string | null
+          photo_url?: string | null
+          price_note?: string | null
           profession?: string
           rating_avg?: number | null
           ratings_count?: number | null
+          service_area?: string | null
         }
         Relationships: []
       }

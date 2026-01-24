@@ -205,7 +205,7 @@ export default function SubmitCongratulations() {
             </p>
           </div>
 
-          <SubmissionAuthGate redirectPath="/community/congratulations/submit" heading="განცხადებების გამოქვეყნება შესაძლებელია გამარტივებული ავტორიზაციის დასრულების შემდეგ.">
+          <SubmissionAuthGate redirectPath="/community/congratulations" heading="განცხადებების გამოქვეყნება შესაძლებელია გამარტივებული ავტორიზაციის დასრულების შემდეგ.">
             {() => (
               <form onSubmit={handleSubmit} className="space-y-6">
                 <div className="space-y-4">

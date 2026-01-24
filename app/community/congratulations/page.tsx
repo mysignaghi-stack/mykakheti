@@ -6,14 +6,24 @@ import Link from 'next/link';
 import { supabase } from '../../lib/supabase';
 import type { Database } from '../../../types/supabase';
 import { useSearchParams } from 'next/navigation';
+import SubmitForm from '../../components/congratulations/SubmitForm';
 
 type Congratulations = Database['public']['Tables']['congratulations']['Row'];
 
 function CongratulationsPageContent() {
   const [items, setItems] = useState<Congratulations[]>([]);
   const [loading, setLoading] = useState(true);
+  const [session, setSession] = useState<any>(null);
   const searchParams = useSearchParams();
   const selectedId = searchParams.get('selectedId');
+
+  useEffect(() => {
+    const loadSession = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      setSession(session);
+    };
+    loadSession();
+  }, []);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -81,6 +91,12 @@ function CongratulationsPageContent() {
                 ჯერ არ არის დადასტურებული მისალოცი ბარათები
               </div>
             )}
+          </div>
+        )}
+
+        {session && (
+          <div className="max-w-md mx-auto">
+            <SubmitForm />
           </div>
         )}
       </div>
