@@ -19,6 +19,8 @@ const nextConfig = {
       },
     ],
   },
+  // Configure server external packages for better compatibility
+  serverExternalPackages: [],
 };
 
 export default nextConfig;

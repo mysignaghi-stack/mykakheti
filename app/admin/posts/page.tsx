@@ -162,9 +162,9 @@ export default function AdminPosts() {
 
     setUploading(true);
     try {
-      const oversized = selectedFiles.find((file) => file.size > 50 * 1024 * 1024);
+      const oversized = selectedFiles.find((file) => file.size > 10 * 1024 * 1024);
       if (oversized) {
-        alert('ვიდეოს მაქსიმალური ზომაა 50MB');
+        alert('ვიდეოს მაქსიმალური ზომაა 10MB. ამჟამად მხოლოდ მცირე ფაილების ატვირთვაა შესაძლებელი.');
         return;
       }
 
@@ -184,16 +184,18 @@ export default function AdminPosts() {
       };
 
       for (const file of selectedFiles) {
+        // Check file size before upload (10MB limit for API routes)
+        const maxSize = 10 * 1024 * 1024; // 10MB
+        if (file.size > maxSize) {
+          alert(`ფაილი "${file.name}" ძალიან დიდია. მაქსიმალური ზომაა 10MB. ამჟამად მხოლოდ მცირე ფაილების ატვირთვაა შესაძლებელი.`);
+          continue;
+        }
+
         const safeName = buildSafeFileName(file.name);
         const fileName = `admin-posts/${Date.now()}-${safeName}`;
 
-        // Use API endpoint for upload to bypass RLS restrictions
-        const formData = new FormData();
-        formData.append('file', file);
-
-        console.log('Uploading file:', file.name, 'Size:', file.size);
-
-        const response = await fetch('/api/admin/upload', {
+        // Use the existing announcements upload API which might have better limits
+        const response = await fetch('/api/announcements/upload', {
           method: 'POST',
           body: formData,
         });
