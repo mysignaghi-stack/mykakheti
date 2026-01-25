@@ -193,12 +193,6 @@ export default function HomePageClient({
   const [adminPosts, setAdminPosts] = useState<AdminPost[]>(initialAdminPosts);
   const [factIndex, setFactIndex] = useState(0);
 
-  const [frameContentTypes, setFrameContentTypes] = useState({
-    left_top: 'post' as 'post' | 'announcement',
-    right_top: 'post' as 'post' | 'announcement',
-    right_bottom: 'post' as 'post' | 'announcement',
-  });
-
   useEffect(() => {
     setBgImage(initialBgImage ?? null);
   }, [initialBgImage]);
@@ -210,32 +204,6 @@ export default function HomePageClient({
   useEffect(() => {
     setAdminPosts(initialAdminPosts);
   }, [initialAdminPosts]);
-
-  // Load frame content types from localStorage
-  useEffect(() => {
-    const saved = localStorage.getItem('frameContentTypes');
-    if (saved) {
-      try {
-        const parsed = JSON.parse(saved);
-        setFrameContentTypes(prev => ({ ...prev, ...parsed }));
-      } catch (e) {
-        console.error('Failed to parse frameContentTypes from localStorage', e);
-      }
-    }
-  }, []);
-
-  // Set default content type to announcement if announcements exist
-  useEffect(() => {
-    if (ads.length > 0) {
-      setFrameContentTypes(prev => {
-        const newTypes = { ...prev };
-        if (prev.left_top === 'post') newTypes.left_top = 'announcement';
-        if (prev.right_top === 'post') newTypes.right_top = 'announcement';
-        localStorage.setItem('frameContentTypes', JSON.stringify(newTypes));
-        return newTypes;
-      });
-    }
-  }, [ads]);
 
   const fetchAdminPosts = useCallback(async () => {
     try {
@@ -290,14 +258,6 @@ export default function HomePageClient({
   }, [fetchAds, fetchAdminPosts]);
 
   const getPostByPos = (pos: string) => adminPosts.find(p => p.position === pos);
-
-  const changeFrameContentType = (position: string, type: 'post' | 'announcement') => {
-    setFrameContentTypes(prev => {
-      const newTypes = { ...prev, [position]: type };
-      localStorage.setItem('frameContentTypes', JSON.stringify(newTypes));
-      return newTypes;
-    });
-  };
 
   // Confirmation modal state
   const [confirmModal, setConfirmModal] = useState<{ open: boolean; message: string; onConfirm: () => Promise<void> } | null>(null);
@@ -412,8 +372,6 @@ export default function HomePageClient({
 
   const seasonal = getSeasonalContent();
 
-  const firstAnnouncement = ads.find(ad => ad.is_approved && !ad.is_archived);
-
 
   return (
     <main className="min-h-screen relative flex flex-col bg-[#050510] overflow-x-hidden text-left selection:bg-amber-500 selection:text-white text-white">
@@ -490,9 +448,6 @@ export default function HomePageClient({
                 position="left_top" 
                 isAdmin={isAdmin} 
                 onRefresh={fetchAdminPosts}
-                contentType={frameContentTypes.left_top}
-                announcement={frameContentTypes.left_top === 'announcement' ? firstAnnouncement : null}
-                onContentTypeChange={(type) => changeFrameContentType('left_top', type)}
               />
             </div>
           </div>
@@ -526,10 +481,7 @@ export default function HomePageClient({
                      post={getPostByPos('right_bottom')} 
                      position="right_bottom" 
                      isAdmin={isAdmin} 
-                     onRefresh={fetchAdminPosts}
-                     contentType={frameContentTypes.right_bottom}
-                     announcement={frameContentTypes.right_bottom === 'announcement' ? firstAnnouncement : null}
-                     onContentTypeChange={(type) => changeFrameContentType('right_bottom', type)}
+                       onRefresh={fetchAdminPosts}
                    />
                  </div>
                 {/* CommunityHub removed: community entry moved to navbar center */}
@@ -609,9 +561,6 @@ export default function HomePageClient({
                   position="right_top" 
                   isAdmin={isAdmin} 
                   onRefresh={fetchAdminPosts}
-                  contentType={frameContentTypes.right_top}
-                  announcement={frameContentTypes.right_top === 'announcement' ? firstAnnouncement : null}
-                  onContentTypeChange={(type) => changeFrameContentType('right_top', type)}
                 />
               </div>
             </div>

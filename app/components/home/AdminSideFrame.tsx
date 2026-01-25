@@ -11,9 +11,7 @@ import 'swiper/css/pagination';
 import 'swiper/css/effect-fade';
 import 'swiper/css/autoplay';
 import { supabase } from '../../lib/supabase';
-import { formatGeorgianDate } from '../../lib/utils';
 // წავშალეთ AdminPost იმპორტი lib/types-დან კონფლიქტის თავიდან ასაცილებლად
-import { Ad } from '../../lib/types'; 
 import type { Database } from '@/types/supabase';
 
 // ტიპებს ვიღებთ პირდაპირ ბაზის სტრუქტურიდან, რომ 100% ზუსტი იყოს
@@ -25,12 +23,9 @@ interface AdminSideFrameProps {
   position: string;
   isAdmin: boolean;
   onRefresh: () => void;
-  contentType?: 'post' | 'announcement';
-  announcement?: Ad | null;
-  onContentTypeChange?: (type: 'post' | 'announcement') => void;
 }
 
-export default function AdminSideFrame({ post, position, isAdmin, onRefresh, contentType = 'post', announcement, onContentTypeChange }: AdminSideFrameProps) {
+export default function AdminSideFrame({ post, position, isAdmin, onRefresh }: AdminSideFrameProps) {
   const [showForm, setShowForm] = useState(false);
   const [editingPost, setEditingPost] = useState<AdminPost | null>(null);
   const [formData, setFormData] = useState({
@@ -47,11 +42,11 @@ export default function AdminSideFrame({ post, position, isAdmin, onRefresh, con
   const [showFullContent, setShowFullContent] = useState(false);
   const [lightbox, setLightbox] = useState<{ open: boolean; media: string[]; currentIndex: number; isVideo: boolean } | null>(null);
 
-  // Reset states when content type or announcement changes
+  // Reset states when the displayed admin post changes
   useEffect(() => {
     setLightbox(null);
     setShowFullContent(false);
-  }, [contentType, announcement]);
+  }, [post]);
 
   const resetForm = () => {
     setFormData({ title: '', content: '', category: '', priority: 0, link: '', files: [], mediaType: null, videoBackground: false });
@@ -214,15 +209,6 @@ export default function AdminSideFrame({ post, position, isAdmin, onRefresh, con
       {/* Header with controls */}
       <div className="flex justify-end items-center mb-2 pt-2">
         <div className="flex gap-2">
-          {isAdmin && onContentTypeChange && (
-            <button
-              onClick={() => onContentTypeChange(contentType === 'post' ? 'announcement' : 'post')}
-              className="px-2 py-1 bg-amber-600/20 text-amber-400 rounded text-xs font-bold hover:bg-amber-600 hover:text-white transition-all"
-              title={contentType === 'post' ? 'განცხადებაზე გადართვა' : 'პოსტზე გადართვა'}
-            >
-              {contentType === 'post' ? '📢' : '📄'}
-            </button>
-          )}
           {isAdmin && (
             <button
               onClick={() => setShowForm(!showForm)}
@@ -236,7 +222,7 @@ export default function AdminSideFrame({ post, position, isAdmin, onRefresh, con
       </div>
 
       {/* Media Display - Moved to top */}
-      {contentType === 'post' && post && ((post.media_urls && post.media_urls.length > 0) || (post as any).media_url) ? (
+      {post && ((post.media_urls && post.media_urls.length > 0) || (post as any).media_url) ? (
         <div className="mb-1 mt-4">
           {post.media_type === 'video' ? (
             <div className="relative w-full h-[200px] p-0.5 flex items-center justify-center overflow-hidden rounded-[20px]">
@@ -412,45 +398,7 @@ export default function AdminSideFrame({ post, position, isAdmin, onRefresh, con
       )}
 
       {/* Content Display */}
-      {contentType === 'announcement' && announcement ? (
-        <div className="space-y-1">
-          <h4 className="text-amber-500 font-black text-lg italic">{announcement.title}</h4>
-          <p className="text-white/80 text-sm leading-relaxed">{announcement.description}</p>
-          {announcement.image_url && (
-            <div className="relative mt-4 w-full h-[140px] overflow-hidden rounded-[20px] shadow-2xl border-2 border-amber-500/40 cursor-pointer" onClick={() => setLightbox({ open: true, media: [announcement.image_url!], currentIndex: 0, isVideo: announcement.image_url!.includes('.mp4') || announcement.image_url!.includes('.mov') || announcement.image_url!.includes('.avi') || announcement.image_url!.includes('.webm') })}>
-              {announcement.image_url.includes('.mp4') || announcement.image_url.includes('.mov') || announcement.image_url.includes('.avi') || announcement.image_url.includes('.webm') ? (
-                <div className="relative w-full h-full p-0.5 flex items-center justify-center">
-                  <div className="absolute inset-0 bg-gradient-to-br from-amber-600/20 via-yellow-400/10 to-amber-600/20 rounded-[20px] shadow-[inset_0_2px_10px_rgba(0,0,0,0.5)]"></div>
-                  <video
-                    src={announcement.image_url}
-                    controls={false}
-                    autoPlay={true}
-                    muted={true}
-                    loop={true}
-                    className="relative z-10 w-full h-full object-contain rounded-[20px] shadow-xl border-2 border-amber-500/40"
-                    style={{ objectPosition: 'center' }}
-                  />
-                </div>
-              ) : (
-                <div className="relative w-full h-full p-0.5 flex items-center justify-center">
-                  <Image
-                    src={announcement.image_url}
-                    alt=""
-                    fill
-                    sizes="(max-width: 768px) 100vw, 600px"
-                    className="object-contain rounded-[20px] border-2 border-amber-500/40"
-                    priority
-                  />
-                </div>
-              )}
-            </div>
-          )}
-          <div className="flex gap-2 flex-wrap">
-            <span className="px-2 py-1 bg-amber-600/20 text-amber-400 rounded text-xs font-bold">{announcement.category}</span>
-            <span className="px-2 py-1 bg-blue-600/20 text-blue-400 rounded text-xs font-bold">{announcement.location}</span>
-          </div>
-        </div>
-      ) : post ? (
+      {post ? (
         <div className="space-y-1">
           <div className="flex justify-between items-start">
             <h4 className="text-amber-500 font-black text-base italic flex-1">{post.title}</h4>
