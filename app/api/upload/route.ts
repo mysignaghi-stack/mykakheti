@@ -2,6 +2,10 @@ import { createClient } from '@supabase/supabase-js';
 import { NextRequest, NextResponse } from 'next/server';
 import { revalidatePath } from 'next/cache';
 
+export async function GET() {
+  return NextResponse.json({ status: 'ready' });
+}
+
 export async function POST(request: NextRequest) {
   try {
     const formData = await request.formData();
@@ -64,40 +68,38 @@ export async function POST(request: NextRequest) {
     }
 
     // თუ ეს არის განცხადების ატვირთვა (title არსებობს), ჩავწეროთ ბაზაში
-    if (title) {
-      // ვალიდაცია: შევამოწმოთ აუცილებელი ველები
-      if (!category || !location || !price) {
-        return NextResponse.json({ error: 'აუცილებელი ველები არ არის შევსებული: category, location, price' }, { status: 400 });
-      }
+    // თუ title არ არის, ავტომატურად შევქმნათ სათაური კატეგორიის მიხედვით
+    const finalTitle = title || `ახალი ${normalizedCategory}`;
 
-      // 2. ბაზაში ჩაწერა
-      const { data: dbData, error: dbError } = await supabaseAdmin
-        .from('announcements')
-        .insert([{
-          title,
-          description,
-          category: normalizedCategory,
-          location,
-          price,
-          currency,
-          phone,
-          image_url: publicUrls[0] ?? null,
-          all_images: publicUrls,
-          is_approved: false, // მოდერაციაზე გასაგზავნად
-          user_id: userId
-        }])
-        .select()
-        .single();
-
-      if (dbError) throw dbError;
-
-      revalidatePath('/admin/moderate');
-      revalidatePath('/admin/moderation');
-      return NextResponse.json({ success: true, data: dbData });
-    } else {
-      // უბრალოდ ფოტო(ების) URL-ების დაბრუნება
-      return NextResponse.json({ urls: publicUrls });
+    // ვალიდაცია: შევამოწმოთ აუცილებელი ველები
+    if (!category || !location || !price) {
+      return NextResponse.json({ error: 'აუცილებელი ველები არ არის შევსებული: category, location, price' }, { status: 400 });
     }
+
+    // 2. ბაზაში ჩაწერა
+    const { data: dbData, error: dbError } = await supabaseAdmin
+      .from('announcements')
+      .insert([{
+        title: finalTitle,
+        description,
+        category: normalizedCategory,
+        location,
+        price,
+        currency,
+        phone,
+        image_url: publicUrls[0] ?? null,
+        all_images: publicUrls,
+        is_approved: false, // მოდერაციაზე გასაგზავნად
+        user_id: userId
+      }])
+      .select()
+      .single();
+
+    if (dbError) throw dbError;
+
+    revalidatePath('/admin/moderate');
+    revalidatePath('/admin/moderation');
+    return NextResponse.json({ success: true, data: dbData });
   } catch (error: any) {
     console.error('Server Error:', error.message);
     return NextResponse.json({ error: error.message }, { status: 500 });

@@ -14,6 +14,7 @@ const ADMIN_LINKS = [
   { href: '/admin/square', title: 'კახური მოედანი', desc: 'ჩატის მესიჯების მართვა' },
   { href: '/admin/transport', title: 'ტრანსპორტი', desc: 'მარშრუტების და განრიგის მართვა' },
   { href: '/admin/site-settings', title: 'საიტის პარამეტრები', desc: 'უკანა ფონის და სხვა პარამეტრების მართვა' },
+  { href: '/admin/health', title: 'სისტემური აუდიტი', desc: 'საიტის სისტემური დიაგნოსტიკა' },
   { href: '/admin/diagnostic', title: 'დიაგნოსტიკა', desc: 'ადმინისტრატორის სტატუსის შემოწმება' },
 ];
 

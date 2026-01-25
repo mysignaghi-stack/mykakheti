@@ -42,7 +42,8 @@ function DiagnosticSector() {
 
       const pendingResp = await fetch('/api/admin/announcements/pending', { cache: 'no-store' });
       if (!pendingResp.ok) {
-        setApiError(`Pending API error: ${pendingResp.status} ${pendingResp.statusText}`);
+        const errorText = await pendingResp.text().catch(() => 'Unable to read error response');
+        setApiError(`Pending API error: ${pendingResp.status} ${pendingResp.statusText} - ${errorText}`);
       }
       const pendingJson = await pendingResp.json().catch(() => ({ data: [] }));
       setApiCount(Array.isArray(pendingJson?.data) ? pendingJson.data.length : 0);
@@ -71,7 +72,7 @@ function DiagnosticSector() {
     const allowed = new Set(COMMUNITY_CATEGORIES);
     return rawRows.map((row) => ({
       ...row,
-      mismatch: row.category ? !allowed.has(row.category) : true,
+      mismatch: row.category ? !allowed.has(row.category as typeof COMMUNITY_CATEGORIES[number]) : true,
       hasNulls: !row.title || !row.category,
     }));
   }, [rawRows]);
@@ -116,7 +117,6 @@ function DiagnosticSector() {
                     <th className="px-3 py-2 text-left">კატეგორია (raw)</th>
                     <th className="px-3 py-2 text-left">დამტკიცებული?</th>
                     <th className="px-3 py-2 text-left">User ID</th>
-                    <th className="px-3 py-2 text-left">შექმნილია</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -128,11 +128,18 @@ function DiagnosticSector() {
                         <span className="inline-block px-2 py-1 rounded bg-white/10 border border-white/10 text-white/90">
                           {row.category || '—'}
                         </span>
+                        {row.category && (
+                          <span className="ml-2 text-xs font-black uppercase" style={{ color: row.mismatch ? '#ef4444' : '#22c55e' }}>
+                            {row.mismatch ? 'არ ემთხვევა' : 'ემთხვევა'}
+                          </span>
+                        )}
                         {row.mismatch && (
                           <span className="ml-2 text-xs font-black text-red-400 uppercase">შეუსაბამო კატეგორია</span>
                         )}
                         {row.hasNulls && (
-                          <span className="ml-2 text-xs font-black text-amber-400 uppercase">NULL ველი</span>
+                          <span className="ml-2 text-xs font-black text-amber-400 uppercase">
+                            NULL: {!row.title ? 'სათაური ' : ''}{!row.category ? 'კატეგორია' : ''}
+                          </span>
                         )}
                       </td>
                       <td className="px-3 py-2 align-top">
@@ -141,7 +148,6 @@ function DiagnosticSector() {
                         </span>
                       </td>
                       <td className="px-3 py-2 align-top text-white/70">{row.user_id || '—'}</td>
-                      <td className="px-3 py-2 align-top text-white/70">{row.created_at ? new Date(row.created_at).toLocaleString('ka-GE') : '—'}</td>
                     </tr>
                   ))}
                   {rowsWithFlags.length === 0 && (
@@ -155,6 +161,7 @@ function DiagnosticSector() {
           )}
 
           <div className="text-xs text-white/50">
+            დაშვებული კატეგორიები: {COMMUNITY_CATEGORIES.join(', ')}<br />
             თუ API Counter &gt; 0 ხოლო Pending UI = 0, პრობლემა ფრონტენდ ფილტრაციაშია.
           </div>
         </section>
