@@ -40,6 +40,7 @@ export async function POST(request: NextRequest) {
       'lost-found': 'დაკარგული/ნაპოვნი',
       'master': 'ოსტატი',
       'ოსტატი': 'ოსტატი',
+      'ოსტატი/სპეციალისტი': 'ოსტატი',
       'congratulation': 'მილოცვა',
       'მილოცვა': 'მილოცვა',
     };
@@ -92,6 +93,7 @@ export async function POST(request: NextRequest) {
       if (dbError) throw dbError;
 
       revalidatePath('/admin/moderate');
+      revalidatePath('/admin/moderation');
       return NextResponse.json({ success: true, data: dbData });
     } else {
       // უბრალოდ ფოტო(ების) URL-ების დაბრუნება
