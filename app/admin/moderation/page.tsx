@@ -1,9 +1,7 @@
-'use client';
+import { redirect } from 'next/navigation';
+
 export const dynamic = 'force-dynamic';
 
-// Reuse the main moderation UI
-import ModerateAds from '../moderate/page';
-
 export default function AdminModerationPage() {
-  return <ModerateAds />;
+  redirect('/admin/moderate');
 }

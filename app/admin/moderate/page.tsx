@@ -21,8 +21,8 @@ export default function ModerateAds() {
   const COMMUNITY_CATEGORIES = [
     { value: 'სამძიმარი', label: 'სამძიმრის გამოქვეყნება' },
     { value: 'დაკარგული/ნაპოვნი', label: 'დაკარგული/ნაპოვნის გამოქვეყნება' },
-    { value: 'ოსტატები/სპეციალისტები', label: 'ოსტატის პროფილის გამოქვეყნება' },
-    { value: 'მისალოცი ბარათები', label: 'მისალოცი ბარათი' },
+    { value: 'ოსტატი', label: 'ოსტატის პროფილის გამოქვეყნება' },
+    { value: 'მილოცვა', label: 'მისალოცი ბარათი' },
   ];
 
   const getAnnouncementImages = (ad: AnnouncementRow) => {
@@ -45,6 +45,7 @@ export default function ModerateAds() {
         throw new Error('Failed to fetch pending announcements');
       }
       const result = await response.json();
+      console.log('API Raw Data:', result.data);
       setPendingAds(result.data || []);
     } catch (error) {
       console.error('Pending fetch error (announcements)', error);
