@@ -48,7 +48,6 @@ function ObituariesPageContent() {
           </Link>
         </div>
         <h1 className="text-2xl font-black text-amber-500 uppercase italic mb-6">სამძიმარი და ჭირისუფალი</h1>
-        <h2 className="text-xl font-black text-amber-500 uppercase italic mb-4">Announcement Feed</h2>
         {loading ? (
           <div className="opacity-50">იტვირთება...</div>
         ) : (

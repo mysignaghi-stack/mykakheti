@@ -18,7 +18,6 @@ import EditAgroModal from '@/app/components/layout/EditAgroModal';
 import HeroSection from '@/app/components/home/HeroSection';
 import ServiceWidgets from '@/app/components/home/ServiceWidgets';
 import RightSidebar from '@/app/components/home/RightSidebar';
-import AdsSection from '@/app/components/home/AdsSection';
 import KakhetianSquare from '@/app/components/features/KakhetianSquare';
 import TransportModal from '@/app/components/features/transport/TransportModal';
 import AdminSideFrame from '@/app/components/home/AdminSideFrame';
@@ -567,11 +566,12 @@ export default function HomePageClient({
           </div>
         </div>
       </section>
-      <AdsSection 
+      {/* AdsSection removed - announcements now only appear on dedicated /announcements page */}
+      {/* <AdsSection 
         ads={ads} filteredAds={filteredAds} isAdmin={isAdmin} showArchive={false}
         searchTerm={searchTerm} setSearchTerm={setSearchTerm} selectedCategories={selectedCategories} setSelectedCategories={setSelectedCategories}
         onArchive={handleArchiveAd} onRestore={handleRestoreAd} onDelete={handlePermanentDelete} onFBShare={handleFBShare} onCopyShare={handleCopyShare}
-      />
+      /> */}
 
       {showTransport && <TransportModal isAdmin={isAdmin} onClose={() => setShowTransport(false)} staticSchedule={TRANSPORT_SCHEDULE} />}
 
