@@ -137,7 +137,7 @@ export default function SubmitForm() {
             throw new Error(result?.error || 'Storage upload failed');
           }
 
-          uploads.push(result.url as string);
+          uploads.push(result.urls[0] as string);
         }
         imageUrls = uploads;
         imageUrl = uploads[0] ?? null;

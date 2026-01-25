@@ -67,13 +67,19 @@ export async function POST(request: NextRequest) {
       publicUrls.push(publicUrl);
     }
 
+    // თუ ეს არის მხოლოდ ფაილების ატვირთვა (title და category არ არის), დავაბრუნოთ URL-ები
+    if (!title && !category) {
+      return NextResponse.json({ success: true, url: publicUrls[0], urls: publicUrls });
+    }
+
     // თუ ეს არის განცხადების ატვირთვა (title არსებობს), ჩავწეროთ ბაზაში
     // თუ title არ არის, ავტომატურად შევქმნათ სათაური კატეგორიის მიხედვით
     const finalTitle = title || `ახალი ${normalizedCategory}`;
 
     // ვალიდაცია: შევამოწმოთ აუცილებელი ველები
-    if (!category || !location || !price) {
-      return NextResponse.json({ error: 'აუცილებელი ველები არ არის შევსებული: category, location, price' }, { status: 400 });
+    const requiresLocationAndPrice = !['სამძიმარი', 'მილოცვა'].includes(normalizedCategory);
+    if (!category || (requiresLocationAndPrice && (!location || !price))) {
+      return NextResponse.json({ error: 'აუცილებელი ველები არ არის შევსებული: category' + (requiresLocationAndPrice ? ', location, price' : '') }, { status: 400 });
     }
 
     // 2. ბაზაში ჩაწერა
@@ -83,8 +89,8 @@ export async function POST(request: NextRequest) {
         title: finalTitle,
         description,
         category: normalizedCategory,
-        location,
-        price,
+        location: location || null,
+        price: price || null,
         currency,
         phone,
         image_url: publicUrls[0] ?? null,
