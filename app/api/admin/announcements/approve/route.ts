@@ -1,5 +1,6 @@
 import { cookies } from 'next/headers';
 import { NextResponse } from 'next/server';
+import { revalidatePath } from 'next/cache';
 import { createServerClient } from '@supabase/ssr';
 import { createClient } from '@supabase/supabase-js';
 import type { Database } from '../../../../../types/supabase';
@@ -63,6 +64,67 @@ export async function POST(request: Request) {
   if (error) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
+  const announcement = data;
 
-  return NextResponse.json({ data });
+  // Mirror to community tables based on category so cards show approved items
+  const images = Array.isArray(announcement.all_images) && announcement.all_images.length > 0
+    ? announcement.all_images
+    : announcement.image_url
+      ? [announcement.image_url]
+      : [];
+
+  const category = announcement.category;
+
+  if (category === 'სამძიმარი') {
+    await serviceClient.from('obituaries').upsert({
+      id: announcement.id,
+      full_name: announcement.title,
+      funeral_place: announcement.location,
+      notes: announcement.description,
+      contacts: announcement.phone,
+      image_url: images[0] || null,
+      is_approved: true,
+      user_id: announcement.user_id,
+    }, { onConflict: 'id' });
+  } else if (category === 'დაკარგული/ნაპოვნი') {
+    await serviceClient.from('lost_found').upsert({
+      id: announcement.id,
+      title: announcement.title,
+      location: announcement.location,
+      description: announcement.description,
+      image_url: images[0] || null,
+      all_images: images.length ? images : null,
+      contact: announcement.phone,
+      kind: 'lost',
+      is_approved: true,
+      user_id: announcement.user_id,
+    }, { onConflict: 'id' });
+  } else if (category === 'ოსტატი/სპეციალისტი') {
+    await serviceClient.from('masters').upsert({
+      id: announcement.id,
+      full_name: announcement.title,
+      profession: announcement.description || 'სპეციალისტი',
+      location: announcement.location,
+      phone: announcement.phone,
+      photo_url: images[0] || null,
+      is_approved: true,
+      user_id: announcement.user_id,
+    }, { onConflict: 'id' });
+  } else if (category === 'მილოცვა') {
+    await serviceClient.from('congratulations').upsert({
+      id: announcement.id,
+      sender_name: 'მომხმარებელი',
+      recipient_name: announcement.title || 'მისალოცი',
+      message: announcement.description || announcement.title || 'მისალოცი',
+      occasion: 'სათემო ჩართულობა',
+      image_url: images[0] || null,
+      all_images: images.length ? images : null,
+      is_approved: true,
+      user_id: announcement.user_id,
+    }, { onConflict: 'id' });
+  }
+
+  revalidatePath('/admin/moderate');
+  revalidatePath('/');
+  return NextResponse.json({ data: announcement });
 }
