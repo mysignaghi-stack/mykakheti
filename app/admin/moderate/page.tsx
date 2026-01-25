@@ -1,4 +1,5 @@
 'use client';
+export const dynamic = 'force-dynamic';
 
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
@@ -20,7 +21,7 @@ export default function ModerateAds() {
   const COMMUNITY_CATEGORIES = [
     { value: 'სამძიმარი', label: 'სამძიმრის გამოქვეყნება' },
     { value: 'დაკარგული/ნაპოვნი', label: 'დაკარგული/ნაპოვნის გამოქვეყნება' },
-    { value: 'ოსტატი/სპეციალისტი', label: 'ოსტატის პროფილის გამოქვეყნება' },
+    { value: 'ოსტატი', label: 'ოსტატის პროფილის გამოქვეყნება' },
     { value: 'მილოცვა', label: 'მისალოცი ბარათი' },
   ];
 
@@ -250,7 +251,7 @@ export default function ModerateAds() {
               <h3 className="text-sm font-black uppercase text-white/50 tracking-[0.3em]">ქომუნითი მოდერაცია (announcements)</h3>
               <div className="grid grid-cols-1 gap-6">
                 {COMMUNITY_CATEGORIES.map(cat => {
-                  const ads = pendingAds.filter(ad => ad.category === cat.value);
+                  const ads = pendingAds.filter(ad => ad.category === cat.value && ad.is_approved === false);
                   return (
                     <div key={cat.value} className="bg-white/[0.02] border border-white/10 rounded-[28px] p-5">
                       <div className="flex items-center justify-between mb-4">
