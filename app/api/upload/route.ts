@@ -33,16 +33,17 @@ export async function POST(request: NextRequest) {
 
     // Normalize category to expected Georgian labels used in admin panels
     const categoryMap: Record<string, string> = {
-      'condolence': 'სამძიმარი',
+      condolence: 'სამძიმარი',
       'სამძიმარი': 'სამძიმარი',
-      'lost_found': 'დაკარგული/ნაპოვნი',
+      lost_found: 'დაკარგული/ნაპოვნი',
       'დაკარგული/ნაპოვნი': 'დაკარგული/ნაპოვნი',
       'lost-found': 'დაკარგული/ნაპოვნი',
-      'master': 'ოსტატი',
-      'ოსტატი': 'ოსტატი',
-      'ოსტატი/სპეციალისტი': 'ოსტატი',
-      'congratulation': 'მილოცვა',
-      'მილოცვა': 'მილოცვა',
+      master: 'ოსტატები/სპეციალისტები',
+      'ოსტატი': 'ოსტატები/სპეციალისტები',
+      'ოსტატი/სპეციალისტი': 'ოსტატები/სპეციალისტები',
+      congratulation: 'მისალოცი ბარათები',
+      'მილოცვა': 'მისალოცი ბარათები',
+      'მისალოცი ბარათი': 'მისალოცი ბარათები',
     };
     const normalizedCategory = categoryMap[category] || category;
 

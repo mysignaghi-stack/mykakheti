@@ -21,8 +21,8 @@ export default function ModerateAds() {
   const COMMUNITY_CATEGORIES = [
     { value: 'სამძიმარი', label: 'სამძიმრის გამოქვეყნება' },
     { value: 'დაკარგული/ნაპოვნი', label: 'დაკარგული/ნაპოვნის გამოქვეყნება' },
-    { value: 'ოსტატი', label: 'ოსტატის პროფილის გამოქვეყნება' },
-    { value: 'მილოცვა', label: 'მისალოცი ბარათი' },
+    { value: 'ოსტატები/სპეციალისტები', label: 'ოსტატის პროფილის გამოქვეყნება' },
+    { value: 'მისალოცი ბარათები', label: 'მისალოცი ბარათი' },
   ];
 
   const getAnnouncementImages = (ad: AnnouncementRow) => {
