@@ -240,7 +240,7 @@ export default function AdminSideFrame({ post, position, isAdmin, onRefresh, con
         <div className="mb-1 mt-4">
           {post.media_type === 'video' ? (
             <div className="relative w-full h-[200px] p-0.5 flex items-center justify-center overflow-hidden rounded-[20px]">
-              <div className="absolute inset-0 bg-gradient-to-br from-amber-600/20 via-yellow-400/10 to-amber-600/20 rounded-[20px] shadow-inner backdrop-blur-lg shadow-[inset_0_2px_10px_rgba(0,0,0,0.5)]"></div>
+              <div className="absolute inset-0 bg-gradient-to-br from-amber-600/20 via-yellow-400/10 to-amber-600/20 rounded-[20px] backdrop-blur-lg shadow-[inset_0_2px_10px_rgba(0,0,0,0.5)]"></div>
               <video
                 src={(post.media_urls?.[0] || (post as any).media_url)!}
                 controls={false}
@@ -268,7 +268,7 @@ export default function AdminSideFrame({ post, position, isAdmin, onRefresh, con
                 {(post.media_urls || [(post as any).media_url]).filter(Boolean).map((url: string, idx: number) => (
                   <SwiperSlide key={idx}>
                     <div className="relative w-full h-full flex items-center justify-center">
-                      <div className="absolute inset-0 bg-gradient-to-br from-amber-600/20 via-yellow-400/10 to-amber-600/20 rounded-[20px] shadow-inner backdrop-blur-lg shadow-[inset_0_2px_10px_rgba(0,0,0,0.5)]"></div>
+                      <div className="absolute inset-0 bg-gradient-to-br from-amber-600/20 via-yellow-400/10 to-amber-600/20 rounded-[20px] backdrop-blur-lg shadow-[inset_0_2px_10px_rgba(0,0,0,0.5)]"></div>
                       {url.includes('.mp4') || url.includes('.mov') || url.includes('.avi') || url.includes('.webm') ? (
                         <video
                           src={url}
@@ -297,7 +297,7 @@ export default function AdminSideFrame({ post, position, isAdmin, onRefresh, con
              <div className="relative w-full h-32 cursor-pointer" onClick={() => setLightbox({ open: true, media: [(post.media_urls?.[0] || (post as any).media_url)!], currentIndex: 0, isVideo: (post.media_urls?.[0] || (post as any).media_url)!.includes('.mp4') || (post.media_urls?.[0] || (post as any).media_url)!.includes('.mov') || (post.media_urls?.[0] || (post as any).media_url)!.includes('.avi') || (post.media_urls?.[0] || (post as any).media_url)!.includes('.webm') })}>
               {(post.media_urls?.[0] || (post as any).media_url)!.includes('.mp4') || (post.media_urls?.[0] || (post as any).media_url)!.includes('.mov') || (post.media_urls?.[0] || (post as any).media_url)!.includes('.avi') || (post.media_urls?.[0] || (post as any).media_url)!.includes('.webm') ? (
                 <div className="relative w-full h-full p-0.5 flex items-center justify-center overflow-hidden rounded-[20px]">
-                  <div className="absolute inset-0 bg-gradient-to-br from-amber-600/20 via-yellow-400/10 to-amber-600/20 rounded-[20px] shadow-inner backdrop-blur-lg shadow-[inset_0_2px_10px_rgba(0,0,0,0.5)]"></div>
+                  <div className="absolute inset-0 bg-gradient-to-br from-amber-600/20 via-yellow-400/10 to-amber-600/20 rounded-[20px] backdrop-blur-lg shadow-[inset_0_2px_10px_rgba(0,0,0,0.5)]"></div>
                   <video
                     src={(post.media_urls?.[0] || (post as any).media_url)!}
                     controls={false}
@@ -420,7 +420,7 @@ export default function AdminSideFrame({ post, position, isAdmin, onRefresh, con
             <div className="relative mt-4 w-full h-[140px] overflow-hidden rounded-[20px] shadow-2xl border-2 border-amber-500/40 cursor-pointer" onClick={() => setLightbox({ open: true, media: [announcement.image_url!], currentIndex: 0, isVideo: announcement.image_url!.includes('.mp4') || announcement.image_url!.includes('.mov') || announcement.image_url!.includes('.avi') || announcement.image_url!.includes('.webm') })}>
               {announcement.image_url.includes('.mp4') || announcement.image_url.includes('.mov') || announcement.image_url.includes('.avi') || announcement.image_url.includes('.webm') ? (
                 <div className="relative w-full h-full p-0.5 flex items-center justify-center">
-                  <div className="absolute inset-0 bg-gradient-to-br from-amber-600/20 via-yellow-400/10 to-amber-600/20 rounded-[20px] shadow-inner shadow-[inset_0_2px_10px_rgba(0,0,0,0.5)]"></div>
+                  <div className="absolute inset-0 bg-gradient-to-br from-amber-600/20 via-yellow-400/10 to-amber-600/20 rounded-[20px] shadow-[inset_0_2px_10px_rgba(0,0,0,0.5)]"></div>
                   <video
                     src={announcement.image_url}
                     controls={false}
