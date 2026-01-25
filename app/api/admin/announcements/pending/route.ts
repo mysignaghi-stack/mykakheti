@@ -32,7 +32,7 @@ export async function GET() {
   });
 
   const { data: { session }, error: sessionError } = await supabase.auth.getSession();
-  console.log('Session User:', session?.user);
+  console.log('Admin Session:', session?.user);
   // Admin guard temporarily disabled for debugging 401s
   if (sessionError) {
     console.error('Session error while checking admin session:', sessionError);
@@ -47,6 +47,8 @@ export async function GET() {
     .select('*')
     .is('is_approved', false)
     .order('created_at', { ascending: false });
+
+  console.log('Found Rows:', data?.length);
 
   if (error) {
     console.error('Pending announcements fetch error:', error);

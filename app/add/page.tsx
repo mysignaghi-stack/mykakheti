@@ -20,10 +20,8 @@ const LOCATION_OPTIONS = Array.from(new Set(
   ])
 ));
 
-// ✅ ყველა კატეგორია (სამუშაო ჯგუფით)
-const CATEGORIES = [
-  'უძრავი ქონება', 'ავტო', 'დასაქმება', 'სოფლის მეურნეობა', 'ცხოველები', 'ტექნიკა', 'ელექტრონიკა', 'სამედიცინო', 'განათლება', 'მომსახურება', 'სპორტი', 'ტურიზმი', 'სამშენებლო', 'სასტუმროები', 'რესტორნები', 'ვაკანსიები', 'დრიური საწოლი', 'სამუშაო ჯგუფი', 'ტურისტული', 'ღვინო და მარნები', 'კულტურა', 'სხვა'
-];
+// ✅ Canonical community categories (must match upload API and moderation)
+const CATEGORIES = ['სამძიმარი', 'დაკარგული/ნაპოვნი', 'ოსტატი', 'მილოცვა'];
 
 export default function AddPage() {
   const router = useRouter();
@@ -41,7 +39,7 @@ export default function AddPage() {
   
   // ✨ Added 'currency' to form state (default: GEL)
   const [formData, setFormData] = useState({ 
-    title: '', description: '', price: '', phone: '', location: LOCATION_OPTIONS[0] ?? '', category: '', currency: 'GEL' 
+    title: '', description: '', price: '', phone: '', location: LOCATION_OPTIONS[0] ?? '', category: CATEGORIES[0], currency: 'GEL' 
   });
   const isAuthenticated = Boolean(session);
 
@@ -154,6 +152,11 @@ export default function AddPage() {
   const handlePost = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (loading) return;
+    if (!formData.title) {
+      alert('გთხოვთ მიუთითოთ სათაური');
+      return;
+    }
+
     if (images.length === 0) {
       alert('გთხოვთ ატვირთოთ მინიმუმ ერთი ფოტო');
       return;
