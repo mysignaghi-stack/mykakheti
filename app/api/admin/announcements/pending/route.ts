@@ -45,7 +45,7 @@ export async function GET() {
   const { data, error } = await supabaseAdmin
     .from('announcements')
     .select('*')
-    .eq('is_approved', false)
+    .or('is_approved.is.null,is_approved.eq.false')
     .order('created_at', { ascending: false });
 
   if (error) {
