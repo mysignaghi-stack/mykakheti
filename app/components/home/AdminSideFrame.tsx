@@ -237,7 +237,7 @@ export default function AdminSideFrame({ post, position, isAdmin, onRefresh, con
 
       {/* Media Display - Moved to top */}
       {contentType === 'post' && post && ((post.media_urls && post.media_urls.length > 0) || (post as any).media_url) ? (
-        <div className="mb-1">
+        <div className="mb-1 mt-3">
           {post.media_type === 'video' ? (
             <div className="relative w-full h-[200px] p-0.5 flex items-center justify-center overflow-hidden rounded-xl">
               <div className="absolute inset-0 bg-gradient-to-br from-amber-400/20 via-yellow-400/10 to-amber-500/20 rounded-xl shadow-inner backdrop-blur-lg"></div>
@@ -417,7 +417,7 @@ export default function AdminSideFrame({ post, position, isAdmin, onRefresh, con
           <h4 className="text-amber-500 font-black text-lg italic">{announcement.title}</h4>
           <p className="text-white/80 text-sm leading-relaxed">{announcement.description}</p>
           {announcement.image_url && (
-            <div className="relative mt-1 w-full h-[140px] overflow-hidden rounded-xl shadow-2xl ring-2 ring-amber-400/30 cursor-pointer" onClick={() => setLightbox({ open: true, media: [announcement.image_url!], currentIndex: 0, isVideo: announcement.image_url!.includes('.mp4') || announcement.image_url!.includes('.mov') || announcement.image_url!.includes('.avi') || announcement.image_url!.includes('.webm') })}>
+            <div className="relative mt-3 w-full h-[140px] overflow-hidden rounded-xl shadow-2xl ring-2 ring-amber-400/30 cursor-pointer" onClick={() => setLightbox({ open: true, media: [announcement.image_url!], currentIndex: 0, isVideo: announcement.image_url!.includes('.mp4') || announcement.image_url!.includes('.mov') || announcement.image_url!.includes('.avi') || announcement.image_url!.includes('.webm') })}>
               {announcement.image_url.includes('.mp4') || announcement.image_url.includes('.mov') || announcement.image_url.includes('.avi') || announcement.image_url.includes('.webm') ? (
                 <div className="relative w-full h-full p-0.5 flex items-center justify-center">
                   <div className="absolute inset-0 bg-gradient-to-br from-amber-400/20 via-yellow-400/10 to-amber-500/20 rounded-xl shadow-inner"></div>
