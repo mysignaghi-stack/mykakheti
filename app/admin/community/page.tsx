@@ -237,7 +237,7 @@ function ModerationPanel({ table, title, renderItem, highlight }: { table: strin
       const pendingResponse = await fetch(`/api/admin/${table}/pending`);
       if (!pendingResponse.ok) throw new Error('Failed to fetch pending');
       const pendingResult = await pendingResponse.json();
-      setPendingItems(pendingResult.data || []);
+      setPendingItems(pendingResult || []);
     } catch (pendErr) {
       console.error(table, 'pending fetch', pendErr);
       setPendingItems([]);

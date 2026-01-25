@@ -22,8 +22,15 @@ DROP POLICY IF EXISTS "Admins can update congratulations" ON congratulations;
 DROP POLICY IF EXISTS "Admins can delete congratulations" ON congratulations;
 
 -- Policies for congratulations
-CREATE POLICY "Anyone can view approved congratulations" ON congratulations
-  FOR SELECT USING (is_approved = true);
+CREATE POLICY "Anyone can view approved congratulations; admins can view all" ON congratulations
+  FOR SELECT USING (
+    is_approved = true
+    OR EXISTS (
+      SELECT 1 FROM auth.users
+      WHERE auth.users.id = auth.uid()
+      AND auth.users.raw_user_meta_data->>'role' = 'admin'
+    )
+  );
 
 CREATE POLICY "Anyone can insert congratulations" ON congratulations
   FOR INSERT WITH CHECK (true);

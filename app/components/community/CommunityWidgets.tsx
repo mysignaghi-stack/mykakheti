@@ -6,6 +6,13 @@ import Image from "next/image";
 import { supabase } from "../../lib/supabase";
 import type { Database } from "../../../types/supabase";
 
+const formatGeorgianDate = (date: Date): string => {
+  const day = date.getDate();
+  const month = date.getMonth() + 1;
+  const year = date.getFullYear();
+  return `${day}.${month}.${year}`;
+};
+
 const ROTATE_MS = 3000;
 
 type ObituaryRow = Pick<Database["public"]["Tables"]["obituaries"]["Row"], "id" | "full_name" | "funeral_at" | "funeral_place" | "image_url" | "is_approved" | "created_at">;
@@ -161,7 +168,7 @@ export default function CommunityWidgets({
         badge="სამძიმარი"
         description={currentObituary ? currentObituary.funeral_place || "" : ""}
         title={currentObituary?.full_name || cards[0].placeholder}
-        meta={currentObituary?.funeral_at ? new Date(currentObituary.funeral_at).toLocaleDateString("ka-GE") : undefined}
+        meta={currentObituary?.funeral_at ? formatGeorgianDate(new Date(currentObituary.funeral_at)) : undefined}
         href={`/community/obituaries?selectedId=${currentObituary?.id}`}
         image={currentObituary?.image_url || undefined}
       />
