@@ -4,8 +4,10 @@ import { NextRequest, NextResponse } from 'next/server';
 export async function POST(request: NextRequest) {
   try {
     const formData = await request.formData();
-    const file = formData.get('file') as File;
-    const fileName = formData.get('fileName') as string;
+    const files = (formData.getAll('file') as File[]).filter((f) => f instanceof File);
+    if (files.length === 0) {
+      return NextResponse.json({ error: 'ფაილები ვერ მოიძებნა' }, { status: 400 });
+    }
     
     // ვიღებთ დანარჩენ მონაცემებს ფორმიდან
     const title = formData.get('title') as string;
@@ -28,16 +30,23 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Failed to create Supabase client' }, { status: 500 });
     }
 
-    // 1. ფოტოს ატვირთვა
-    const { data: uploadData, error: uploadError } = await supabaseAdmin.storage
-      .from(bucketName)
-      .upload(fileName, file, { upsert: true });
+    // 1. ფოტოების ატვირთვა (თითოეულ ფაილს უნიკალური სახელი აქვს)
+    const publicUrls: string[] = [];
+    for (const file of files) {
+      const extension = file.name.split('.').pop() || 'jpg';
+      const uniqueName = `${Date.now()}-${Math.random().toString(36).slice(2)}.${extension}`;
 
-    if (uploadError) throw uploadError;
+      const { error: uploadError } = await supabaseAdmin.storage
+        .from(bucketName)
+        .upload(uniqueName, file, { upsert: true });
 
-    const { data: { publicUrl } } = supabaseAdmin.storage
-      .from(bucketName)
-      .getPublicUrl(fileName);
+      if (uploadError) throw uploadError;
+
+      const { data: { publicUrl } } = supabaseAdmin.storage
+        .from(bucketName)
+        .getPublicUrl(uniqueName);
+      publicUrls.push(publicUrl);
+    }
 
     // თუ ეს არის განცხადების ატვირთვა (title არსებობს), ჩავწეროთ ბაზაში
     if (title) {
@@ -57,8 +66,8 @@ export async function POST(request: NextRequest) {
           price,
           currency,
           phone,
-          image_url: publicUrl,
-          all_images: [publicUrl],
+          image_url: publicUrls[0] ?? null,
+          all_images: publicUrls,
           is_approved: false, // მოდერაციაზე გასაგზავნად
           user_id: userId
         }])
@@ -69,8 +78,8 @@ export async function POST(request: NextRequest) {
 
       return NextResponse.json({ success: true, data: dbData });
     } else {
-      // უბრალოდ ფოტოს URL დაბრუნება
-      return NextResponse.json({ url: publicUrl });
+      // უბრალოდ ფოტო(ების) URL-ების დაბრუნება
+      return NextResponse.json({ urls: publicUrls });
     }
   } catch (error: any) {
     console.error('Server Error:', error.message);

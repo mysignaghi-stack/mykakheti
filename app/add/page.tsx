@@ -154,16 +154,16 @@ export default function AddPage() {
   const handlePost = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (loading) return;
+    if (images.length === 0) {
+      alert('გთხოვთ ატვირთოთ მინიმუმ ერთი ფოტო');
+      return;
+    }
 
     setLoading(true);
     try {
       const { data: { session } } = await supabase.auth.getSession();
-      const file = images[0]; // ვიღებთ პირველ ფოტოს
-      const fileName = `${Date.now()}-${file.name}`;
-
       const data = new FormData();
-      data.append('file', file);
-      data.append('fileName', fileName);
+      images.forEach((file) => data.append('file', file));
       data.append('title', formData.title);
       data.append('description', formData.description);
       data.append('category', formData.category);
