@@ -191,19 +191,41 @@ export default function AdminPosts() {
         const formData = new FormData();
         formData.append('file', file);
 
+        console.log('Uploading file:', file.name, 'Size:', file.size);
+
         const response = await fetch('/api/admin/upload', {
           method: 'POST',
           body: formData,
         });
 
+        console.log('Response status:', response.status);
+        console.log('Response headers:', Object.fromEntries(response.headers.entries()));
+
         if (!response.ok) {
-          const errorData = await response.json();
-          throw new Error(errorData.error || 'Upload failed');
+          let errorMessage = 'Upload failed';
+          try {
+            const contentType = response.headers.get('content-type');
+            console.log('Response content-type:', contentType);
+            if (contentType && contentType.includes('application/json')) {
+              const errorData = await response.json();
+              console.log('Error data:', errorData);
+              errorMessage = errorData.error || errorMessage;
+            } else {
+              const textResponse = await response.text();
+              console.log('Non-JSON response:', textResponse.substring(0, 500));
+              errorMessage = `HTTP ${response.status}: ${response.statusText}`;
+            }
+          } catch (e) {
+            console.error('Error parsing response:', e);
+            errorMessage = `HTTP ${response.status}: ${response.statusText}`;
+          }
+          throw new Error(errorMessage);
         }
 
-        const { publicUrl } = await response.json();
+        const result = await response.json();
+        console.log('Success result:', result);
 
-        uploadedUrls.push(publicUrl);
+        uploadedUrls.push(result.publicUrl);
       }
 
       setFormData(prev => ({
