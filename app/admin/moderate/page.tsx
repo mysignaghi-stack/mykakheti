@@ -29,18 +29,21 @@ export default function ModerateAds() {
   // 1. დაუდასტურებელი განცხადებების წამოღება
   const fetchPending = async () => {
     setLoading(true);
-    const { data, error } = await supabase
-      .from('announcements')
-      .select('*')
-      .eq('is_approved', false)
-      .order('created_at', { ascending: false });
-
-    if (error) {
+    try {
+      const response = await fetch('/api/admin/announcements/pending', {
+        cache: 'no-store'
+      });
+      if (!response.ok) {
+        throw new Error('Failed to fetch pending announcements');
+      }
+      const result = await response.json();
+      setPendingAds(result.data || []);
+    } catch (error) {
       console.error('Pending fetch error (announcements)', error);
+      setPendingAds([]);
+    } finally {
+      setLoading(false);
     }
-
-    if (data) setPendingAds(data);
-    setLoading(false);
   };
 
   useEffect(() => { 
