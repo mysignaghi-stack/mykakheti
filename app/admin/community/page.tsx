@@ -232,35 +232,55 @@ function ModerationPanel({ table, title, renderItem, highlight }: { table: strin
 
   const fetchItems = async () => {
     setLoading(true);
-    const { data: pending, error: pendErr } = await (supabase as any)
-      .from(table)
-      .select('*')
-      .or('is_approved.is.null,is_approved.eq.false')
-      .order('created_at', { ascending: false });
-    const { data: approved, error: appErr } = await (supabase as any).from(table).select('*').eq('is_approved', true).order('created_at', { ascending: false });
-    if (pendErr) console.error(table, 'pending fetch', pendErr);
-    if (appErr) console.error(table, 'approved fetch', appErr);
-    setPendingItems(pending || []);
-    setApprovedItems(approved || []);
+    try {
+      // Fetch pending via API
+      const pendingResponse = await fetch(`/api/admin/${table}/pending`);
+      if (!pendingResponse.ok) throw new Error('Failed to fetch pending');
+      const pendingResult = await pendingResponse.json();
+      setPendingItems(pendingResult.data || []);
+    } catch (pendErr) {
+      console.error(table, 'pending fetch', pendErr);
+      setPendingItems([]);
+    }
+
+    try {
+      // Fetch approved via client (for now)
+      const { data: approved, error: appErr } = await (supabase as any).from(table).select('*').eq('is_approved', true).order('created_at', { ascending: false });
+      if (appErr) console.error(table, 'approved fetch', appErr);
+      setApprovedItems(approved || []);
+    } catch (appErr) {
+      console.error(table, 'approved fetch', appErr);
+      setApprovedItems([]);
+    }
+
     setLoading(false);
   };
 
   useEffect(() => { fetchItems(); }, [table]);
 
   const approve = async (id: string) => {
-    const { error } = await (supabase as any).from(table).update({ is_approved: true }).eq('id', id);
-    if (error) return alert('დადასტურება ვერ მოხერხდა');
+    const response = await fetch('/api/admin/community/approve', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ table, id }),
+    });
+    if (!response.ok) return alert('დადასტურება ვერ მოხერხდა');
     fetchItems();
   };
 
   const remove = async (id: string) => {
     if (!confirm('ნამდვილად გსურთ წაშლა?')) return;
-    const { error } = await (supabase as any).from(table).delete().eq('id', id);
-    if (error) return alert('წაშლა ვერ მოხერხდა');
+    const response = await fetch('/api/admin/community/delete', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ table, id }),
+    });
+    if (!response.ok) return alert('წაშლა ვერ მოხერხდა');
     fetchItems();
   };
 
   const unapprove = async (id: string) => {
+    // For unapprove, we'll use client-side since it's less critical
     const { error } = await (supabase as any).from(table).update({ is_approved: false }).eq('id', id);
     if (error) return alert('გაუქმება ვერ მოხერხდა');
     fetchItems();

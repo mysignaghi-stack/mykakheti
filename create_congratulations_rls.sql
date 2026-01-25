@@ -15,9 +15,31 @@ FOR INSERT WITH CHECK (auth.uid() IS NOT NULL);
 
 -- Authenticated users can moderate (approve/delete)
 DROP POLICY IF EXISTS "Authenticated can update congratulations" ON public.congratulations;
-CREATE POLICY "Authenticated can update congratulations" ON public.congratulations
-FOR UPDATE USING (auth.uid() IS NOT NULL);
+CREATE POLICY "Admin can update congratulations" ON public.congratulations
+FOR UPDATE USING (
+  EXISTS (
+    SELECT 1 FROM auth.users u WHERE u.id = auth.uid() AND (
+      u.raw_user_meta_data->> 'role' = 'admin'
+      OR (u.raw_user_meta_data->'roles')::jsonb ? 'admin'
+      OR u.raw_user_meta_data->> 'is_admin' = 'true'
+      OR u.raw_app_meta_data->> 'role' = 'admin'
+      OR (u.raw_app_meta_data->'roles')::jsonb ? 'admin'
+      OR u.raw_app_meta_data->> 'is_admin' = 'true'
+    )
+  )
+);
 
 DROP POLICY IF EXISTS "Authenticated can delete congratulations" ON public.congratulations;
-CREATE POLICY "Authenticated can delete congratulations" ON public.congratulations
-FOR DELETE USING (auth.uid() IS NOT NULL);
+CREATE POLICY "Admin can delete congratulations" ON public.congratulations
+FOR DELETE USING (
+  EXISTS (
+    SELECT 1 FROM auth.users u WHERE u.id = auth.uid() AND (
+      u.raw_user_meta_data->> 'role' = 'admin'
+      OR (u.raw_user_meta_data->'roles')::jsonb ? 'admin'
+      OR u.raw_user_meta_data->> 'is_admin' = 'true'
+      OR u.raw_app_meta_data->> 'role' = 'admin'
+      OR (u.raw_app_meta_data->'roles')::jsonb ? 'admin'
+      OR u.raw_app_meta_data->> 'is_admin' = 'true'
+    )
+  )
+);

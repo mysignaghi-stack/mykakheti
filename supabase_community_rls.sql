@@ -40,7 +40,18 @@ create policy "Anyone can submit obituaries" on public.obituaries
 for insert with check (true);
 
 create policy "Admin can manage obituaries" on public.obituaries
-for all using (true);
+for all using (
+  EXISTS (
+    SELECT 1 FROM auth.users u WHERE u.id = auth.uid() AND (
+      u.raw_user_meta_data->> 'role' = 'admin'
+      OR (u.raw_user_meta_data->'roles')::jsonb ? 'admin'
+      OR u.raw_user_meta_data->> 'is_admin' = 'true'
+      OR u.raw_app_meta_data->> 'role' = 'admin'
+      OR (u.raw_app_meta_data->'roles')::jsonb ? 'admin'
+      OR u.raw_app_meta_data->> 'is_admin' = 'true'
+    )
+  )
+);
 
 -- Lost & Found
 create policy "Public can view approved lost_found" on public.lost_found
@@ -50,7 +61,18 @@ create policy "Anyone can submit lost_found" on public.lost_found
 for insert with check (true);
 
 create policy "Admin can manage lost_found" on public.lost_found
-for all using (true);
+for all using (
+  EXISTS (
+    SELECT 1 FROM auth.users u WHERE u.id = auth.uid() AND (
+      u.raw_user_meta_data->> 'role' = 'admin'
+      OR (u.raw_user_meta_data->'roles')::jsonb ? 'admin'
+      OR u.raw_user_meta_data->> 'is_admin' = 'true'
+      OR u.raw_app_meta_data->> 'role' = 'admin'
+      OR (u.raw_app_meta_data->'roles')::jsonb ? 'admin'
+      OR u.raw_app_meta_data->> 'is_admin' = 'true'
+    )
+  )
+);
 
 -- Masters
 create policy "Public can view approved masters" on public.masters
@@ -60,7 +82,18 @@ create policy "Anyone can submit masters" on public.masters
 for insert with check (true);
 
 create policy "Admin can manage masters" on public.masters
-for all using (true);
+for all using (
+  EXISTS (
+    SELECT 1 FROM auth.users u WHERE u.id = auth.uid() AND (
+      u.raw_user_meta_data->> 'role' = 'admin'
+      OR (u.raw_user_meta_data->'roles')::jsonb ? 'admin'
+      OR u.raw_user_meta_data->> 'is_admin' = 'true'
+      OR u.raw_app_meta_data->> 'role' = 'admin'
+      OR (u.raw_app_meta_data->'roles')::jsonb ? 'admin'
+      OR u.raw_app_meta_data->> 'is_admin' = 'true'
+    )
+  )
+);
 
 -- Ratings (საჯარო კითხვა და დამატება)
 create policy "Anyone can view ratings" on public.master_ratings
