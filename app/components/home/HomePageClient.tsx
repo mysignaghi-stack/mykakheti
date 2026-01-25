@@ -521,7 +521,7 @@ export default function HomePageClient({
                    </div>
                  </div>
                  {/* 🏛️ ადმინისტრაციული განცხადება */}
-                 <div className="bg-gradient-to-br from-amber-900/40 via-black/50 to-amber-700/20 backdrop-blur-sm rounded-[24px] border border-amber-500/30 shadow-[0_0_20px_4px_rgba(255,191,0,0.1)] p-4 ring-1 ring-amber-400/20 relative">
+                 <div className="-mt-8 bg-gradient-to-br from-amber-900/40 via-black/50 to-amber-700/20 backdrop-blur-sm rounded-[24px] border border-amber-500/30 shadow-[0_0_20px_4px_rgba(255,191,0,0.1)] p-4 ring-1 ring-amber-400/20 relative">
                    <AdminSideFrame 
                      post={getPostByPos('right_bottom')} 
                      position="right_bottom" 

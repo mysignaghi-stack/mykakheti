@@ -424,23 +424,23 @@ export default function AdminSideFrame({ post, position, isAdmin, onRefresh, con
             <a href={post.link} target="_blank" rel="noopener noreferrer" className="inline-block px-2 py-1 bg-cyan-600/20 text-cyan-400 rounded text-xs font-bold hover:bg-cyan-600 hover:text-white transition-all">🔗 ბმული</a>
           )}
           {(post.media_urls && post.media_urls.length > 0) || (post as any).media_url ? (
-            <div className="mt-3">
+            <div className="-mt-4">
               {post.media_type === 'video' ? (
-                <div className="relative w-full h-[400px] flex items-center justify-center">
-                  <div className="absolute inset-0 bg-gradient-to-br from-amber-400/20 via-yellow-400/10 to-amber-500/20 rounded-3xl shadow-inner backdrop-blur-lg"></div>
+                <div className="relative w-full h-[260px] p-3 flex items-center justify-center overflow-hidden rounded-2xl">
+                  <div className="absolute inset-0 bg-gradient-to-br from-amber-400/20 via-yellow-400/10 to-amber-500/20 rounded-2xl shadow-inner backdrop-blur-lg"></div>
                   <video
                     src={(post.media_urls?.[0] || (post as any).media_url)!}
                     controls={false}
                     autoPlay={true}
                     muted={true}
                     loop={true}
-                    className="relative z-10 w-full h-[400px] object-contain rounded-3xl shadow-2xl shadow-indigo-900/50 animate-pulse ring-2 ring-amber-400/90 ring-inset cursor-pointer hover:ring-3 hover:ring-amber-400/70 hover:shadow-3xl hover:shadow-amber-400/40 transition-all duration-300"
-                    style={{ objectPosition: 'center', transform: 'perspective(1000px) rotateX(5deg)' }}
+                    className="relative z-10 w-full h-full object-contain rounded-2xl shadow-2xl shadow-indigo-900/40 ring-2 ring-amber-400/70 ring-inset cursor-pointer hover:ring-amber-400/80 transition-all duration-300"
+                    style={{ objectPosition: 'center' }}
                     onClick={() => setLightbox({ open: true, media: [(post.media_urls?.[0] || (post as any).media_url)!], currentIndex: 0, isVideo: true })}
                   />
                 </div>
               ) : post.media_type === 'gallery' ? (
-                <div className="mt-3">
+                 <div className="mt-1">
                   <Swiper
                     modules={[Navigation, Pagination, EffectFade, Autoplay]}
                     spaceBetween={10}
@@ -481,18 +481,18 @@ export default function AdminSideFrame({ post, position, isAdmin, onRefresh, con
                   </Swiper>
                 </div>
               ) : (
-                <div className="relative w-full h-32 cursor-pointer" onClick={() => setLightbox({ open: true, media: [(post.media_urls?.[0] || (post as any).media_url)!], currentIndex: 0, isVideo: (post.media_urls?.[0] || (post as any).media_url)!.includes('.mp4') || (post.media_urls?.[0] || (post as any).media_url)!.includes('.mov') || (post.media_urls?.[0] || (post as any).media_url)!.includes('.avi') || (post.media_urls?.[0] || (post as any).media_url)!.includes('.webm') })}>
+                 <div className="relative w-full h-32 cursor-pointer" onClick={() => setLightbox({ open: true, media: [(post.media_urls?.[0] || (post as any).media_url)!], currentIndex: 0, isVideo: (post.media_urls?.[0] || (post as any).media_url)!.includes('.mp4') || (post.media_urls?.[0] || (post as any).media_url)!.includes('.mov') || (post.media_urls?.[0] || (post as any).media_url)!.includes('.avi') || (post.media_urls?.[0] || (post as any).media_url)!.includes('.webm') })}>
                   {(post.media_urls?.[0] || (post as any).media_url)!.includes('.mp4') || (post.media_urls?.[0] || (post as any).media_url)!.includes('.mov') || (post.media_urls?.[0] || (post as any).media_url)!.includes('.avi') || (post.media_urls?.[0] || (post as any).media_url)!.includes('.webm') ? (
-                    <div className="relative w-full h-[200px] flex items-center justify-center">
-                      <div className="absolute inset-0 bg-gradient-to-br from-amber-400/20 via-yellow-400/10 to-amber-500/20 rounded-3xl shadow-inner backdrop-blur-lg"></div>
+                    <div className="relative w-full h-[180px] p-3 flex items-center justify-center overflow-hidden rounded-2xl">
+                      <div className="absolute inset-0 bg-gradient-to-br from-amber-400/20 via-yellow-400/10 to-amber-500/20 rounded-2xl shadow-inner backdrop-blur-lg"></div>
                       <video
                         src={(post.media_urls?.[0] || (post as any).media_url)!}
                         controls={false}
                         autoPlay={true}
                         muted={true}
                         loop={true}
-                        className="relative z-10 w-full h-[200px] object-contain rounded-3xl shadow-2xl shadow-indigo-900/50 animate-pulse ring-2 ring-amber-400/90 ring-inset hover:ring-3 hover:ring-amber-400/70 hover:shadow-3xl hover:shadow-amber-400/40 transition-all duration-300"
-                        style={{ objectPosition: 'center', transform: 'perspective(1000px) rotateX(5deg)' }}
+                        className="relative z-10 w-full h-full object-contain rounded-2xl shadow-2xl shadow-indigo-900/40 ring-2 ring-amber-400/70 ring-inset hover:ring-amber-400/80 transition-all duration-300"
+                        style={{ objectPosition: 'center' }}
                       />
                     </div>
                   ) : (
