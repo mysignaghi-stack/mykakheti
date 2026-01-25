@@ -194,10 +194,14 @@ export default function AdminPosts() {
         const safeName = buildSafeFileName(file.name);
         const fileName = `admin-posts/${Date.now()}-${safeName}`;
 
-        // Use the existing announcements upload API which might have better limits
-        const response = await fetch('/api/announcements/upload', {
+        const uploadData = new FormData();
+        uploadData.append('file', file, file.name);
+        uploadData.append('fileName', fileName);
+        uploadData.append('bucket', 'admin-media');
+
+        const response = await fetch('/api/upload', {
           method: 'POST',
-          body: formData,
+          body: uploadData,
         });
 
         console.log('Response status:', response.status);
@@ -227,7 +231,7 @@ export default function AdminPosts() {
         const result = await response.json();
         console.log('Success result:', result);
 
-        uploadedUrls.push(result.publicUrl);
+        uploadedUrls.push(result.url);
       }
 
       setFormData(prev => ({
