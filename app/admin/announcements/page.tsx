@@ -62,7 +62,7 @@ export default function AdminAnnouncements() {
     }
   }
 
-  async function approveAd(id: string) {
+  async function approveAd( id: string) {
     const response = await fetch('/api/admin/announcements/approve', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },

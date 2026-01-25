@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { supabase } from '../../lib/supabase';
 import { useAdminAuth } from '../../hooks/useAdminAuth';
 import type { Database } from '@/types/supabase';
@@ -307,16 +308,12 @@ export default function AdminPosts() {
     setSelectedFiles(prev => [...prev, ...files]);
   };
 
-  const filteredPosts = posts.filter((post) => {
-    const matchesText = `${post.title ?? ''} ${post.category ?? ''}`
-      .toLowerCase()
-      .includes(searchTerm.trim().toLowerCase());
-    if (!matchesText) return false;
-    if (statusFilter === 'archived') return (post as any).is_archived ?? false;
-    if (statusFilter === 'published') return ((post as any).is_published ?? true) && !((post as any).is_archived ?? false);
-    if (statusFilter === 'hidden') return ((post as any).is_published === false) && !((post as any).is_archived ?? false);
-    return true;
-  });
+  const getPostMedia = (post: AdminPost) => {
+    const allImages = Array.isArray(post.media_urls) ? post.media_urls.filter(Boolean) : [];
+    const primary = post.media_url ?? null;
+    const combined = primary ? [primary, ...allImages] : allImages;
+    return Array.from(new Set(combined));
+  };
 
   if (authLoading) {
     return (
@@ -353,6 +350,17 @@ export default function AdminPosts() {
       </main>
     );
   }
+
+  const filteredPosts = posts.filter((post) => {
+    const matchesText = `${post.title ?? ''} ${post.category ?? ''}`
+      .toLowerCase()
+      .includes(searchTerm.trim().toLowerCase());
+    if (!matchesText) return false;
+    if (statusFilter === 'archived') return (post as any).is_archived ?? false;
+    if (statusFilter === 'published') return ((post as any).is_published ?? true) && !((post as any).is_archived ?? false);
+    if (statusFilter === 'hidden') return ((post as any).is_published === false) && !((post as any).is_archived ?? false);
+    return true;
+  });
 
   return (
     <main className="min-h-screen bg-[#050510] p-6 md:p-10 text-white font-sans">
@@ -583,6 +591,40 @@ export default function AdminPosts() {
                     </div>
                   </div>
                   <p className="text-white/60 text-sm mb-2">{post.category}</p>
+                  {(() => {
+                    const media = getPostMedia(post);
+                    return media.length > 0 ? (
+                      <div className="mb-3 flex items-center gap-3 overflow-hidden">
+                        <div className="relative w-16 h-16 rounded-xl overflow-hidden border border-white/10 bg-white/5 shrink-0">
+                          <Image
+                            src={media[0]}
+                            alt={post.title ?? ''}
+                            fill
+                            sizes="64px"
+                            className="object-cover"
+                          />
+                        </div>
+                        <div className="flex flex-wrap gap-2 overflow-hidden">
+                          {media.slice(1, 3).map((url, idx) => (
+                            <div key={`${post.id}-thumb-${idx}`} className="relative w-10 h-10 rounded-lg overflow-hidden border border-white/10 bg-white/5 shrink-0">
+                              <Image
+                                src={url}
+                                alt={post.title ?? ''}
+                                fill
+                                sizes="40px"
+                                className="object-cover"
+                              />
+                            </div>
+                          ))}
+                          {media.length > 3 && (
+                            <div className="w-10 h-10 rounded-lg border border-white/10 bg-white/5 flex items-center justify-center text-[8px] text-white/60 font-black shrink-0">
+                              +{media.length - 3}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    ) : null;
+                  })()}
                   <p className="text-white/80 text-sm line-clamp-2">{post.content}</p>
                   <div className="flex gap-2 mt-2">
                     <span className={`text-xs px-2 py-1 rounded ${(post as any).is_published ? 'bg-green-600' : 'bg-red-600'}`}>

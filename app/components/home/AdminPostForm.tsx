@@ -2,12 +2,14 @@
 
 import React, { useState } from 'react';
 import { supabase } from '../../lib/supabase';
+import { useAdminAuth } from '../../hooks/useAdminAuth';
 
 interface AdminPostFormProps {
   onPostAdded: () => void; // მშობელ კომპონენტს ვაცნობებთ, რომ განაახლოს სია
 }
 
 export default function AdminPostForm({ onPostAdded }: AdminPostFormProps) {
+  const { isAdmin } = useAdminAuth();
   const [isOpen, setIsOpen] = useState(false);
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
@@ -85,6 +87,10 @@ export default function AdminPostForm({ onPostAdded }: AdminPostFormProps) {
       setVideoAsBackground(false); // reset
     }
   };
+
+  if (!isAdmin) {
+    return null; // Or a message, but since it's admin-only, hide it
+  }
 
   return (
     <div className="w-full mb-8">

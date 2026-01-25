@@ -5,7 +5,7 @@ import type { Tables } from '@/types/helpers';
 
 type AnnouncementRow = Tables<'announcements'> & { publish_at?: string | null; expires_at?: string | null };
 type AdminPostRow = Tables<'admin_posts'>;
-type AgroRow = Tables<'agro_prices'>;
+type AgroRow = AgroItem;
 type WeatherRow = {
   name?: string | null;
   lat?: number | null;
@@ -131,9 +131,6 @@ export const fetchHomePageData = async (): Promise<HomePageData> => {
       .order('created_at', { ascending: false })
       .limit(30),
     supabase
-      .from('agro_prices')
-      .select('*'),
-    supabase
       .from('weather' as any)
       .select('*')
       .order('created_at', { ascending: false }),
@@ -170,7 +167,6 @@ export const fetchHomePageData = async (): Promise<HomePageData> => {
   const [
     announcementsResult,
     adminPostsResult,
-    agroResult,
     weatherResult,
     siteSettingsResult,
     obituariesResult,
@@ -187,7 +183,7 @@ export const fetchHomePageData = async (): Promise<HomePageData> => {
     adminPostsResult as SettledResponse<AdminPostRow>,
     'admin_posts'
   ).filter((post) => post.priority !== -1);
-  const agroRows: AgroRow[] = extractData<AgroRow>(agroResult as SettledResponse<AgroRow>, 'agro_prices');
+  const agroRows: AgroRow[] = DEFAULT_AGRO_DATA;
   const weatherRows: WeatherRow[] = extractData<WeatherRow>(weatherResult as any, 'weather');
   const siteSettings: SiteSettingRow[] = extractData<SiteSettingRow>(
     siteSettingsResult as SettledResponse<SiteSettingRow>,

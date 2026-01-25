@@ -16,64 +16,117 @@ export type Database = {
     Tables: {
       admin_posts: {
         Row: {
-          id: number;
-          title: string;
-          content: string;
-          image_url: string | null;
-          position: string | null;
-          created_at: string;
-          updated_at: string;
-        };
+          badge_text: string | null
+          category: string | null
+          content: string | null
+          created_at: string | null
+          id: number
+          is_archived: boolean | null
+          is_published: boolean | null
+          link: string | null
+          media_type: string | null
+          media_url: string | null
+          media_urls: string[] | null
+          position: string | null
+          priority: number | null
+          publish_at: string | null
+          title: string
+          video_background: boolean | null
+        }
         Insert: {
-          id?: number;
-          title: string;
-          content: string;
-          image_url?: string | null;
-          position?: string | null;
-          created_at?: string;
-          updated_at?: string;
-        };
+          badge_text?: string | null
+          category?: string | null
+          content?: string | null
+          created_at?: string | null
+          id?: number
+          is_archived?: boolean | null
+          is_published?: boolean | null
+          link?: string | null
+          media_type?: string | null
+          media_url?: string | null
+          media_urls?: string[] | null
+          position?: string | null
+          priority?: number | null
+          publish_at?: string | null
+          title: string
+          video_background?: boolean | null
+        }
         Update: {
-          id?: number;
-          title?: string;
-          content?: string;
-          image_url?: string | null;
-          position?: string | null;
-          created_at?: string;
-          updated_at?: string;
-        };
-      };
+          badge_text?: string | null
+          category?: string | null
+          content?: string | null
+          created_at?: string | null
+          id?: number
+          is_archived?: boolean | null
+          is_published?: boolean | null
+          link?: string | null
+          media_type?: string | null
+          media_url?: string | null
+          media_urls?: string[] | null
+          position?: string | null
+          priority?: number | null
+          publish_at?: string | null
+          title?: string
+          video_background?: boolean | null
+        }
+        Relationships: []
+      }
       announcements: {
         Row: {
-          id: number;
-          name: string;
-          phone: string;
-          title: string;
-          description: string;
-          image_url: string | null;
-          approved: boolean;
-          created_at: string;
-        };
+          all_images: string[] | null
+          category: string
+          contact_info: string | null
+          created_at: string | null
+          currency: string | null
+          description: string | null
+          id: string
+          image_url: string | null
+          is_approved: boolean | null
+          is_archived: boolean | null
+          location: string
+          phone: string | null
+          price: string
+          publish_at: string | null
+          title: string
+          user_id: string | null
+        }
         Insert: {
-          id?: number;
-          name: string;
-          phone: string;
-          title: string;
-          description: string;
-          image_url?: string | null;
-          approved?: boolean;
-          created_at?: string;
-        };
+          all_images?: string[] | null
+          category: string
+          contact_info?: string | null
+          created_at?: string | null
+          currency?: string | null
+          description?: string | null
+          id?: string
+          image_url?: string | null
+          is_approved?: boolean | null
+          is_archived?: boolean | null
+          location: string
+          phone?: string | null
+          price: string
+          publish_at?: string | null
+          title: string
+          user_id?: string | null
+        }
         Update: {
-          id?: number;
-          name?: string;
-          phone?: string;
-          title?: string;
-          description?: string;
-          image_url?: string | null;
-          approved?: boolean;
-          created_at?: string;
-        };
+          all_images?: string[] | null
+          category?: string
+          contact_info?: string | null
+          created_at?: string | null
+          currency?: string | null
+          description?: string | null
+          id?: string
+          image_url?: string | null
+          is_approved?: boolean | null
+          is_archived?: boolean | null
+          location?: string
+          phone?: string | null
+          price?: string
+          publish_at?: string | null
+          title?: string
+          user_id?: string | null
+        }
+        Relationships: []
       }
       congratulations: {
         Row: {
@@ -93,6 +146,7 @@ export type Database = {
           sender_name: string
           template: string | null
           toast: string | null
+          user_id: string | null
         }
         Insert: {
           all_images?: string[] | null
@@ -111,6 +165,7 @@ export type Database = {
           sender_name: string
           template?: string | null
           toast?: string | null
+          user_id?: string | null
         }
         Update: {
           all_images?: string[] | null
@@ -129,6 +184,7 @@ export type Database = {
           sender_name?: string
           template?: string | null
           toast?: string | null
+          user_id?: string | null
         }
         Relationships: []
       }
@@ -214,6 +270,7 @@ export type Database = {
           reward: boolean | null
           reward_note: string | null
           title: string
+          user_id: string | null
         }
         Insert: {
           all_images?: string[] | null
@@ -230,6 +287,7 @@ export type Database = {
           reward?: boolean | null
           reward_note?: string | null
           title: string
+          user_id?: string | null
         }
         Update: {
           all_images?: string[] | null
@@ -246,6 +304,7 @@ export type Database = {
           reward?: boolean | null
           reward_note?: string | null
           title?: string
+          user_id?: string | null
         }
         Relationships: []
       }
@@ -300,6 +359,7 @@ export type Database = {
           rating_avg: number | null
           ratings_count: number | null
           service_area: string | null
+          user_id: string | null
         }
         Insert: {
           category?: string | null
@@ -316,6 +376,7 @@ export type Database = {
           rating_avg?: number | null
           ratings_count?: number | null
           service_area?: string | null
+          user_id?: string | null
         }
         Update: {
           category?: string | null
@@ -332,6 +393,7 @@ export type Database = {
           rating_avg?: number | null
           ratings_count?: number | null
           service_area?: string | null
+          user_id?: string | null
         }
         Relationships: []
       }
@@ -347,6 +409,7 @@ export type Database = {
           image_url: string | null
           is_approved: boolean | null
           notes: string | null
+          user_id: string | null
         }
         Insert: {
           contacts?: string | null
@@ -359,6 +422,7 @@ export type Database = {
           image_url?: string | null
           is_approved?: boolean | null
           notes?: string | null
+          user_id?: string | null
         }
         Update: {
           contacts?: string | null
@@ -371,6 +435,7 @@ export type Database = {
           image_url?: string | null
           is_approved?: boolean | null
           notes?: string | null
+          user_id?: string | null
         }
         Relationships: []
       }
@@ -435,41 +500,6 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
-      }
-      agro_prices: {
-        Row: {
-          id: string;
-          name: string | null;
-          unit: string | null;
-          price: number | null;
-          color: string | null;
-          icon: string | null;
-          category: string | null;
-          details: string[] | null;
-          created_at: string | null;
-        };
-        Insert: {
-          id?: string;
-          name?: string | null;
-          unit?: string | null;
-          price?: number | null;
-          color?: string | null;
-          icon?: string | null;
-          category?: string | null;
-          details?: string[] | null;
-          created_at?: string | null;
-        };
-        Update: {
-          name?: string | null;
-          unit?: string | null;
-          price?: number | null;
-          color?: string | null;
-          icon?: string | null;
-          category?: string | null;
-          details?: string[] | null;
-          created_at?: string | null;
-        };
-        Relationships: [];
       }
     }
     Views: {
