@@ -29,6 +29,7 @@ export default function HealthPage() {
   const [checks, setChecks] = useState<Record<string, HealthCheck>>({});
   const [loading, setLoading] = useState(false);
   const [cleanupLoading, setCleanupLoading] = useState(false);
+  const [fixLoading, setFixLoading] = useState(false);
 
   const updateCheck = (key: string, status: HealthCheck['status'], message: string, details?: any) => {
     setChecks(prev => ({
@@ -94,15 +95,14 @@ export default function HealthPage() {
       }
 
       // Category mismatch
-      const { data: allAnnouncements, error: catError } = await supabase
+      const { data: allAnnouncements, error: catError } = await (supabase as any)
         .from('announcements')
-        .select('id, title, category')
-        .not('category', 'in', COMMUNITY_CATEGORIES);
+        .select('id, title, category');
 
       if (catError) {
         updateCheck('category_mismatch', 'fail', 'შეცდომა კატეგორიების შემოწმებისას');
       } else {
-        const mismatches = allAnnouncements || [];
+        const mismatches = allAnnouncements?.filter((ann: any) => !COMMUNITY_CATEGORIES.includes(ann.category)) || [];
         updateCheck('category_mismatch', mismatches.length > 0 ? 'fail' : 'pass',
           mismatches.length > 0 ? `ნაპოვნია ${mismatches.length} შეუსაბამო კატეგორია` : 'ყველა კატეგორია სწორია',
           mismatches);
@@ -224,6 +224,54 @@ export default function HealthPage() {
     }
   };
 
+  const fixInvalidPosts = async () => {
+    setFixLoading(true);
+    try {
+      // Get invalid posts
+      const { data: adminPosts, error } = await (supabase as any)
+        .from('admin_posts')
+        .select('id, title, media_url, publish_at');
+
+      if (error) {
+        alert('შეცდომა პოსტების მიღებისას');
+        return;
+      }
+
+      const invalidPosts = adminPosts?.filter((post: any) =>
+        !post.media_url ||
+        !post.publish_at ||
+        isNaN(new Date(post.publish_at).getTime())
+      ) || [];
+
+      if (invalidPosts.length === 0) {
+        alert('არ არის არასწორი პოსტები');
+        return;
+      }
+
+      // Fix each invalid post
+      const updates = invalidPosts.map((post: any) => ({
+        id: post.id,
+        media_url: post.media_url || 'https://via.placeholder.com/400x300?text=No+Image',
+        publish_at: post.publish_at && !isNaN(new Date(post.publish_at).getTime()) ? post.publish_at : new Date().toISOString(),
+      }));
+
+      const updatePromises = updates.map((update: any) =>
+        (supabase as any).from('admin_posts').update(update).eq('id', update.id)
+      );
+
+      const results = await Promise.allSettled(updatePromises);
+      const successful = results.filter(r => r.status === 'fulfilled').length;
+      const failed = results.filter(r => r.status === 'rejected').length;
+
+      alert(`გამოსწორდა ${successful} პოსტი, ვერ გამოსწორდა ${failed}`);
+      runHealthCheck(); // Refresh checks
+    } catch (err) {
+      alert('შეცდომა: ' + err);
+    } finally {
+      setFixLoading(false);
+    }
+  };
+
   useEffect(() => {
     if (!authLoading && isAdmin) {
       runHealthCheck();
@@ -301,6 +349,15 @@ export default function HealthPage() {
                 </div>
               ))}
             </div>
+            {Object.values(checks).some(c => c.name === 'admin_posts' && c.status === 'fail') && (
+              <button
+                onClick={fixInvalidPosts}
+                disabled={fixLoading}
+                className="px-4 py-2 rounded-lg bg-orange-600 text-white hover:bg-orange-500 transition disabled:opacity-50"
+              >
+                {fixLoading ? 'გასწორება...' : 'Fix Invalid Posts'}
+              </button>
+            )}
           </div>
 
           {/* Storage & Media */}
@@ -329,13 +386,13 @@ export default function HealthPage() {
                 </div>
               ))}
             </div>
-            {Object.values(checks).some(c => c.name === 'orphaned_files' && c.status === 'fail') && (
+            {Object.values(checks).some(c => c.name === 'admin_posts' && c.status === 'fail') && (
               <button
-                onClick={cleanupOrphanedFiles}
-                disabled={cleanupLoading}
-                className="px-4 py-2 rounded-lg bg-red-600 text-white hover:bg-red-500 transition disabled:opacity-50"
+                onClick={fixInvalidPosts}
+                disabled={fixLoading}
+                className="px-4 py-2 rounded-lg bg-orange-600 text-white hover:bg-orange-500 transition disabled:opacity-50"
               >
-                {cleanupLoading ? 'იშლება...' : 'Delete Orphaned Files'}
+                {fixLoading ? 'გასწორება...' : 'Fix Invalid Posts'}
               </button>
             )}
           </div>
