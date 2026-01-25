@@ -73,6 +73,7 @@ export type Database = {
       }
       announcements: {
         Row: {
+          [x: string]: boolean
           all_images: string[] | null
           category: string
           contact_info: string | null
