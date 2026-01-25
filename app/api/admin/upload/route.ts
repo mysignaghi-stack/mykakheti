@@ -46,7 +46,6 @@ export async function POST(request: Request) {
 
     // For now, skip authentication and just test upload
     // TODO: Restore authentication after testing
-    /*
     const cookieStore = await cookies();
     const authClient = createServerClient<Database>(supabaseUrl, supabaseAnonKey, {
       cookies: {
@@ -64,6 +63,7 @@ export async function POST(request: Request) {
 
     const { data: { user }, error: userError } = await authClient.auth.getUser();
     if (userError || !user) {
+      console.log('Authentication failed:', userError?.message);
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
@@ -75,9 +75,9 @@ export async function POST(request: Request) {
       .single();
 
     if (profileError || !profile || (profile as any).role !== 'admin') {
+      console.log('Admin check failed:', profileError?.message, 'Profile:', profile);
       return NextResponse.json({ error: 'Admin access required' }, { status: 403 });
     }
-    */
     const extension = file.name.split('.').pop() || 'bin';
     const randomId = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
     const fileName = `admin-posts/${Date.now()}-${randomId}.${extension}`;
