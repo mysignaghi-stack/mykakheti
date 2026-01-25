@@ -56,35 +56,60 @@ export default function CommunityEngagement() {
 
   return (
     <>
-      {/* Main Cards Section */}
-      <div className="bg-black/70 backdrop-blur-2xl rounded-[30px] border border-white/10 p-6 shadow-xl">
-        <div className="text-center mb-6">
-          <h3 className="text-xl font-black text-white uppercase tracking-[0.1em] mb-3">
-            სათემო ჩართულობა
-          </h3>
-          <p className="text-white/70 text-sm leading-relaxed max-w-2xl mx-auto">
-            გააზიარეთ თქვენი სიახლეები, მოძებნეთ საჭირო სპეციალისტები ან გამოხატეთ თანაგრძნობა. თქვენი განცხადება ადმინისტრაციის მიერ გადამოწმების შემდეგ გამოჩნდება საიტის მთავარი გვერდის ზედა სათემო ბარათებში.
-          </p>
-        </div>
+      {/* Main Cards Section - Glassmorphism Design */}
+      <div className="relative">
+        {/* Background blur effect */}
+        <div className="absolute inset-0 bg-gradient-to-br from-slate-900/20 via-slate-800/10 to-slate-900/20 backdrop-blur-xl rounded-[16px] border border-white/5" />
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          {COMMUNITY_CARDS.map(card => (
-            <button
-              key={card.id}
-              onClick={() => handleCardClick(card)}
-              className="group bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 rounded-2xl p-6 transition-all duration-300 text-left"
-            >
-              <div className="text-3xl mb-3 group-hover:scale-110 transition-transform duration-300">
-                {card.icon}
-              </div>
-              <h4 className="text-lg font-bold text-white mb-2 group-hover:text-amber-400 transition-colors">
-                {card.title}
-              </h4>
-              <p className="text-white/60 text-sm group-hover:text-white/80 transition-colors">
-                {card.value}
-              </p>
-            </button>
-          ))}
+        <div className="relative p-2">
+          <div className="text-center mb-3">
+            <h3 className="text-sm font-black text-white uppercase tracking-[0.15em] mb-2">
+              სათემო ჩართულობა
+            </h3>
+            <p className="text-white/60 text-xs leading-relaxed max-w-2xl mx-auto">
+              გააზიარეთ თქვენი სიახლეები, მოძებნეთ საჭირო სპეციალისტები ან გამოხატეთ თანაგრძნობა. თქვენი განცხადება ადმინისტრაციის მიერ გადამოწმების შემდეგ გამოჩნდება საიტის მთავარი გვერდის ზედა სათემო ბარათებში.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2">
+            {COMMUNITY_CARDS.map(card => (
+              <button
+                key={card.id}
+                onClick={() => handleCardClick(card)}
+                className="group relative overflow-hidden rounded-[20px] bg-gradient-to-br from-white/8 via-white/4 to-white/8 backdrop-blur-2xl border border-white/10 hover:border-white/20 transition-all duration-500 hover:scale-[1.01] hover:-translate-y-0.5 hover:shadow-2xl hover:shadow-white/10"
+              >
+                {/* Inner glow effect on hover */}
+                <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-[20px]" />
+
+                {/* Crystal-like structure */}
+                <div className="relative p-2 md:p-3 flex flex-col items-center justify-center min-h-[80px] text-center">
+                  {/* Icon with glass effect */}
+                  <div className="relative mb-2">
+                    <div className="text-2xl text-white/80 group-hover:text-white/95 transition-all duration-500 filter drop-shadow-lg">
+                      {card.icon}
+                    </div>
+                    {/* Subtle inner glow */}
+                    <div className="absolute inset-0 text-2xl text-white/20 group-hover:text-white/30 transition-all duration-500 blur-sm">
+                      {card.icon}
+                    </div>
+                  </div>
+
+                  {/* Title with glass text effect */}
+                  <h4 className="text-xs md:text-sm font-bold text-white/90 group-hover:text-white transition-all duration-500 mb-0.5 tracking-wide">
+                    {card.title}
+                  </h4>
+
+                  {/* Subtitle */}
+                  <p className="text-white/50 group-hover:text-white/70 transition-all duration-500 text-xs leading-tight">
+                    {card.value}
+                  </p>
+                </div>
+
+                {/* Luminous border effect on hover */}
+                <div className="absolute inset-0 rounded-[20px] ring-1 ring-white/0 group-hover:ring-white/20 transition-all duration-500" />
+              </button>
+            ))}
+          </div>
         </div>
       </div>
     </>
