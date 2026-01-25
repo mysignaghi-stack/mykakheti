@@ -1,5 +1,6 @@
 import { createClient } from '@supabase/supabase-js';
 import { NextRequest, NextResponse } from 'next/server';
+import { revalidatePath } from 'next/cache';
 
 export async function POST(request: NextRequest) {
   try {
@@ -29,6 +30,20 @@ export async function POST(request: NextRequest) {
     } catch (err) {
       return NextResponse.json({ error: 'Failed to create Supabase client' }, { status: 500 });
     }
+
+    // Normalize category to expected Georgian labels used in admin panels
+    const categoryMap: Record<string, string> = {
+      'condolence': 'სამძიმარი',
+      'სამძიმარი': 'სამძიმარი',
+      'lost_found': 'დაკარგული/ნაპოვნი',
+      'დაკარგული/ნაპოვნი': 'დაკარგული/ნაპოვნი',
+      'lost-found': 'დაკარგული/ნაპოვნი',
+      'master': 'ოსტატი/სპეციალისტი',
+      'ოსტატი/სპეციალისტი': 'ოსტატი/სპეციალისტი',
+      'congratulation': 'მილოცვა',
+      'მილოცვა': 'მილოცვა',
+    };
+    const normalizedCategory = categoryMap[category] || category;
 
     // 1. ფოტოების ატვირთვა (თითოეულ ფაილს უნიკალური სახელი აქვს)
     const publicUrls: string[] = [];
@@ -61,7 +76,7 @@ export async function POST(request: NextRequest) {
         .insert([{
           title,
           description,
-          category,
+          category: normalizedCategory,
           location,
           price,
           currency,
@@ -76,6 +91,7 @@ export async function POST(request: NextRequest) {
 
       if (dbError) throw dbError;
 
+      revalidatePath('/admin/moderate');
       return NextResponse.json({ success: true, data: dbData });
     } else {
       // უბრალოდ ფოტო(ების) URL-ების დაბრუნება

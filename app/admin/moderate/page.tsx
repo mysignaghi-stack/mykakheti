@@ -17,6 +17,13 @@ export default function ModerateAds() {
   const [rangeTo, setRangeTo] = useState('');
   const { isAdmin, loading: authLoading } = useAdminAuth();
 
+  const COMMUNITY_CATEGORIES = [
+    { value: 'სამძიმარი', label: 'სამძიმრის გამოქვეყნება' },
+    { value: 'დაკარგული/ნაპოვნი', label: 'დაკარგული/ნაპოვნის გამოქვეყნება' },
+    { value: 'ოსტატი/სპეციალისტი', label: 'ოსტატის პროფილის გამოქვეყნება' },
+    { value: 'მილოცვა', label: 'მისალოცი ბარათი' },
+  ];
+
   const getAnnouncementImages = (ad: AnnouncementRow) => {
     const allImages = Array.isArray((ad as AnnouncementRow & { all_images?: string[] | null }).all_images)
       ? (ad as AnnouncementRow & { all_images?: string[] | null }).all_images!.filter(Boolean)
@@ -238,102 +245,161 @@ export default function ModerateAds() {
              <p className="text-white/20 italic font-black uppercase tracking-[0.3em] text-xs">ყველა განცხადება მოდერირებულია</p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 gap-8">
-            {pendingAds.map(ad => (
-              <div key={ad.id} className="group bg-white/[0.02] backdrop-blur-3xl p-6 md:p-8 rounded-[45px] border border-white/5 hover:border-amber-500/20 transition-all duration-500 shadow-2xl flex flex-col md:flex-row gap-8 items-center">
-                
-                {/* Image Preview with Badge */}
-                <div className="relative w-full md:w-48 h-48 bg-black/40 rounded-[32px] overflow-hidden shrink-0 border border-white/5">
-                  {getAnnouncementImages(ad)[0] ? (
-                    <Image src={getAnnouncementImages(ad)[0]} alt="" fill sizes="192px" className="object-cover group-hover:scale-110 transition-transform duration-700" />
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center text-white/30 text-xs">ფოტო არ არის</div>
-                  )}
-                  {getAnnouncementImages(ad).length > 1 && (
-                    <div className="absolute bottom-4 right-4 bg-amber-600 text-white text-[9px] font-black px-3 py-1 rounded-full shadow-xl">
-                      +{getAnnouncementImages(ad).length - 1} ფოტო
-                    </div>
-                  )}
-                </div>
-                
-                {/* Info Content */}
-                <div className="flex-grow space-y-3 text-center md:text-left">
-                  {getAnnouncementImages(ad).length > 1 && (
-                    <div className="flex flex-wrap gap-2 justify-center md:justify-start">
-                      {getAnnouncementImages(ad).slice(1, 5).map((img, idx) => (
-                        <div key={`${ad.id}-thumb-${idx}`} className="relative w-12 h-12 rounded-xl overflow-hidden border border-white/10 bg-white/5">
-                          <Image src={img} alt="" fill sizes="48px" className="object-cover" />
-                        </div>
-                      ))}
-                      {getAnnouncementImages(ad).length > 5 && (
-                        <div className="w-12 h-12 rounded-xl border border-white/10 bg-white/5 flex items-center justify-center text-[10px] text-white/60 font-black">
-                          +{getAnnouncementImages(ad).length - 5}
+          <div className="space-y-10">
+            <div className="space-y-6">
+              <h3 className="text-sm font-black uppercase text-white/50 tracking-[0.3em]">ქომუნითი მოდერაცია (announcements)</h3>
+              <div className="grid grid-cols-1 gap-6">
+                {COMMUNITY_CATEGORIES.map(cat => {
+                  const ads = pendingAds.filter(ad => ad.category === cat.value);
+                  return (
+                    <div key={cat.value} className="bg-white/[0.02] border border-white/10 rounded-[28px] p-5">
+                      <div className="flex items-center justify-between mb-4">
+                        <h4 className="text-lg font-black text-amber-400 uppercase italic">{cat.label}</h4>
+                        <span className="text-[10px] font-black text-white/40 uppercase tracking-widest">{ads.length} ერთეული</span>
+                      </div>
+                      {ads.length === 0 ? (
+                        <p className="text-white/30 text-sm">ამ კატეგორიაში განცხადება არ არის.</p>
+                      ) : (
+                        <div className="grid grid-cols-1 gap-5">
+                          {ads.map(ad => (
+                            <AnnouncementCard
+                              key={ad.id}
+                              ad={ad}
+                              getAnnouncementImages={getAnnouncementImages}
+                              approveAd={approveAd}
+                              deleteAd={deleteAd}
+                              scheduleDelete={scheduleDelete}
+                              expiryDrafts={expiryDrafts}
+                              setExpiryDrafts={setExpiryDrafts}
+                            />
+                          ))}
                         </div>
                       )}
                     </div>
-                  )}
-                  <div className="flex flex-col md:flex-row md:items-center gap-3">
-                    <h3 className="text-xl font-black text-white uppercase italic tracking-tight">{ad.title}</h3>
-                    <span className="inline-block bg-white/5 px-3 py-1 rounded-full text-[9px] font-black text-amber-500 uppercase italic">
-                      {ad.category}
-                    </span>
-                  </div>
-                  
-                  <div className="text-2xl font-black text-amber-500 italic tracking-tighter">
-                    {ad.price} ₾
-                  </div>
-                  
-                  <p className="text-sm text-white/50 font-medium italic line-clamp-2 leading-relaxed">
-                    {ad.description}
-                  </p>
-                  
-                  <div className="pt-4 border-t border-white/5 flex flex-wrap justify-center md:justify-start gap-4">
-                    <span className="text-[10px] font-black text-white/30 uppercase tracking-widest italic">📞 {ad.phone}</span>
-                    <span className="text-[10px] font-black text-white/30 uppercase tracking-widest italic">📍 {ad.location}</span>
-                  </div>
-                </div>
-
-                {/* Actions */}
-                <div className="flex flex-col gap-3 w-full md:w-48">
-                  <button 
-                    onClick={() => approveAd(ad.id)} 
-                    className="w-full bg-green-600 hover:bg-green-500 text-white py-4 rounded-2xl font-black text-[11px] uppercase italic transition-all shadow-lg shadow-green-900/20 active:scale-95"
-                  >
-                    დადასტურება ✅
-                  </button>
-                  <button 
-                    onClick={() => deleteAd(ad.id)} 
-                    className="w-full bg-white/5 hover:bg-red-600 text-white/40 hover:text-white py-4 rounded-2xl font-black text-[11px] uppercase italic transition-all active:scale-95"
-                  >
-                    წაშლა 🗑️
-                  </button>
-                  <div className="flex flex-col gap-2">
-                    <input
-                      type="datetime-local"
-                      value={expiryDrafts[ad.id] || ''}
-                      onChange={(e) => setExpiryDrafts(prev => ({ ...prev, [ad.id]: e.target.value }))}
-                      className="w-full bg-white/5 border border-white/10 rounded-2xl px-3 py-2 text-[10px] text-white"
-                    />
-                    <button
-                      onClick={() => scheduleDelete(ad.id)}
-                      className="w-full bg-amber-600 hover:bg-amber-500 text-white py-3 rounded-2xl font-black text-[10px] uppercase italic transition-all"
-                    >
-                      დაგეგმვა ⏳
-                    </button>
-                  </div>
-                  <Link 
-                    href={`/announcements/${ad.id}`} 
-                    target="_blank"
-                    className="w-full bg-white/5 text-center py-4 rounded-2xl font-black text-[9px] uppercase italic text-white/20 hover:text-white transition-all"
-                  >
-                    სრული ნახვა
-                  </Link>
-                </div>
+                  );
+                })}
               </div>
-            ))}
+            </div>
+
+            <div className="grid grid-cols-1 gap-8">
+              {pendingAds.map(ad => (
+                <AnnouncementCard
+                  key={ad.id}
+                  ad={ad}
+                  getAnnouncementImages={getAnnouncementImages}
+                  approveAd={approveAd}
+                  deleteAd={deleteAd}
+                  scheduleDelete={scheduleDelete}
+                  expiryDrafts={expiryDrafts}
+                  setExpiryDrafts={setExpiryDrafts}
+                />
+              ))}
+            </div>
           </div>
         )}
       </div>
     </main>
+  );
+}
+
+interface AnnouncementCardProps {
+  ad: AnnouncementRow;
+  getAnnouncementImages: (ad: AnnouncementRow) => string[];
+  approveAd: (id: string) => void;
+  deleteAd: (id: string) => void;
+  scheduleDelete: (id: string) => void;
+  expiryDrafts: Record<string, string>;
+  setExpiryDrafts: React.Dispatch<React.SetStateAction<Record<string, string>>>;
+}
+
+function AnnouncementCard({ ad, getAnnouncementImages, approveAd, deleteAd, scheduleDelete, expiryDrafts, setExpiryDrafts }: AnnouncementCardProps) {
+  const images = getAnnouncementImages(ad);
+  return (
+    <div className="group bg-white/[0.02] backdrop-blur-3xl p-6 md:p-8 rounded-[45px] border border-white/5 hover:border-amber-500/20 transition-all duration-500 shadow-2xl flex flex-col md:flex-row gap-8 items-center">
+      <div className="relative w-full md:w-48 h-48 bg-black/40 rounded-[32px] overflow-hidden shrink-0 border border-white/5">
+        {images[0] ? (
+          <Image src={images[0]} alt="" fill sizes="192px" className="object-cover group-hover:scale-110 transition-transform duration-700" />
+        ) : (
+          <div className="w-full h-full flex items-center justify-center text-white/30 text-xs">ფოტო არ არის</div>
+        )}
+        {images.length > 1 && (
+          <div className="absolute bottom-4 right-4 bg-amber-600 text-white text-[9px] font-black px-3 py-1 rounded-full shadow-xl">
+            +{images.length - 1} ფოტო
+          </div>
+        )}
+      </div>
+
+      <div className="flex-grow space-y-3 text-center md:text-left">
+        {images.length > 1 && (
+          <div className="flex flex-wrap gap-2 justify-center md:justify-start">
+            {images.slice(1, 5).map((img, idx) => (
+              <div key={`${ad.id}-thumb-${idx}`} className="relative w-12 h-12 rounded-xl overflow-hidden border border-white/10 bg-white/5">
+                <Image src={img} alt="" fill sizes="48px" className="object-cover" />
+              </div>
+            ))}
+            {images.length > 5 && (
+              <div className="w-12 h-12 rounded-xl border border-white/10 bg-white/5 flex items-center justify-center text-[10px] text-white/60 font-black">
+                +{images.length - 5}
+              </div>
+            )}
+          </div>
+        )}
+        <div className="flex flex-col md:flex-row md:items-center gap-3">
+          <h3 className="text-xl font-black text-white uppercase italic tracking-tight">{ad.title}</h3>
+          <span className="inline-block bg-white/5 px-3 py-1 rounded-full text-[9px] font-black text-amber-500 uppercase italic">
+            {ad.category}
+          </span>
+        </div>
+
+        <div className="text-2xl font-black text-amber-500 italic tracking-tighter">
+          {ad.price} ₾
+        </div>
+
+        <p className="text-sm text-white/50 font-medium italic line-clamp-2 leading-relaxed">
+          {ad.description}
+        </p>
+
+        <div className="pt-4 border-t border-white/5 flex flex-wrap justify-center md:justify-start gap-4">
+          <span className="text-[10px] font-black text-white/30 uppercase tracking-widest italic">📞 {ad.phone}</span>
+          <span className="text-[10px] font-black text-white/30 uppercase tracking-widest italic">📍 {ad.location}</span>
+        </div>
+      </div>
+
+      <div className="flex flex-col gap-3 w-full md:w-48">
+        <button 
+          onClick={() => approveAd(ad.id)} 
+          className="w-full bg-green-600 hover:bg-green-500 text-white py-4 rounded-2xl font-black text-[11px] uppercase italic transition-all shadow-lg shadow-green-900/20 active:scale-95"
+        >
+          დადასტურება ✅
+        </button>
+        <button 
+          onClick={() => deleteAd(ad.id)} 
+          className="w-full bg-white/5 hover:bg-red-600 text-white/40 hover:text-white py-4 rounded-2xl font-black text-[11px] uppercase italic transition-all active:scale-95"
+        >
+          წაშლა 🗑️
+        </button>
+        <div className="flex flex-col gap-2">
+          <input
+            type="datetime-local"
+            value={expiryDrafts[ad.id] || ''}
+            onChange={(e) => setExpiryDrafts(prev => ({ ...prev, [ad.id]: e.target.value }))}
+            className="w-full bg-white/5 border border-white/10 rounded-2xl px-3 py-2 text-[10px] text-white"
+          />
+          <button
+            onClick={() => scheduleDelete(ad.id)}
+            className="w-full bg-amber-600 hover:bg-amber-500 text-white py-3 rounded-2xl font-black text-[10px] uppercase italic transition-all"
+          >
+            დაგეგმვა ⏳
+          </button>
+        </div>
+        <Link 
+          href={`/announcements/${ad.id}`} 
+          target="_blank"
+          className="w-full bg-white/5 text-center py-4 rounded-2xl font-black text-[9px] uppercase italic text-white/20 hover:text-white transition-all"
+        >
+          სრული ნახვა
+        </Link>
+      </div>
+    </div>
   );
 }
