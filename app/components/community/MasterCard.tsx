@@ -23,10 +23,32 @@ export default function MasterCard({ master }: { master: Master }) {
 
   const submitRating = async () => {
     if (stars < 1 || stars > 5) return alert('აირჩიეთ 1-5 ვარსკვლავი');
+    if (!master.id) return alert('ოსტატის ID არ არის');
+
     setSubmitting(true);
     try {
       const fingerprint = typeof window !== 'undefined' ? (localStorage.getItem('fingerprint') || (Math.random().toString(36).slice(2))) : 'web';
       localStorage.setItem('fingerprint', fingerprint);
+
+      console.log('Submitting rating:', { masterId: master.id, stars, comment, fingerprint });
+
+      // First check if this user has already rated this master
+      const { data: existingRating, error: checkError } = await (supabase as any)
+        .from('master_ratings')
+        .select('id')
+        .eq('master_id', master.id)
+        .eq('rater_fingerprint', fingerprint)
+        .single();
+
+      if (checkError && checkError.code !== 'PGRST116') { // PGRST116 is "not found" which is expected
+        throw checkError;
+      }
+
+      if (existingRating) {
+        alert('თქვენ უკვე შეაფასეთ ეს ოსტატი');
+        return;
+      }
+
       const { error: rateErr } = await (supabase as any).from('master_ratings').insert({
         master_id: master.id,
         stars,
@@ -34,16 +56,34 @@ export default function MasterCard({ master }: { master: Master }) {
         rater_fingerprint: fingerprint
       });
       if (rateErr) throw rateErr;
-      // update aggregate
-      const newCount = (master.ratings_count || 0) + 1;
-      const newAvg = ((master.rating_avg || 0) * (master.ratings_count || 0) + stars) / newCount;
-      const { error: updErr } = await (supabase as any).from('masters').update({ rating_avg: newAvg, ratings_count: newCount }).eq('id', master.id);
-      if (updErr) throw updErr;
+
+      // Note: Skipping masters table update due to RLS restrictions
+      // Ratings will be calculated on-demand when fetching masters
+      // TODO: Implement proper rating aggregation (database function or view)
+
       alert('მიმოხილვა დამატებულია!');
       setStars(0); setComment('');
     } catch (e: unknown) {
-      const message = e instanceof Error ? e.message : 'შეცდომა შეფასების დამატებისას';
-      console.error(e);
+      // Handle Supabase errors specifically
+      let message = 'შეცდომა შეფასების დამატებისას';
+      if (e && typeof e === 'object' && 'message' in e) {
+        message = String((e as any).message);
+      } else if (e instanceof Error) {
+        message = e.message;
+      }
+
+      console.error('Master rating submission error:', {
+        error: e,
+        masterId: master.id,
+        stars,
+        comment,
+        fingerprint: typeof window !== 'undefined' ? localStorage.getItem('fingerprint') : 'web',
+        errorType: typeof e,
+        errorMessage: message,
+        supabaseDetails: e && typeof e === 'object' && 'details' in e ? (e as any).details : 'no details',
+        supabaseHint: e && typeof e === 'object' && 'hint' in e ? (e as any).hint : 'no hint',
+        supabaseCode: e && typeof e === 'object' && 'code' in e ? (e as any).code : 'no code'
+      });
       alert(message);
     } finally {
       setSubmitting(false);

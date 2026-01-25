@@ -18,12 +18,40 @@ function MastersPageContent() {
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
-      const { data } = await (supabase as any)
+      
+      // Fetch masters
+      const { data: mastersData } = await (supabase as any)
         .from('masters')
         .select('*')
         .eq('is_approved', true)
         .order('created_at', { ascending: false });
-      setItems((data || []) as Master[]);
+      
+      if (mastersData) {
+        // Fetch ratings for all masters
+        const masterIds = mastersData.map((m: any) => m.id);
+        const { data: ratingsData } = await (supabase as any)
+          .from('master_ratings')
+          .select('master_id, stars')
+          .in('master_id', masterIds);
+        
+        // Calculate ratings
+        const mastersWithRatings = mastersData.map((master: any) => {
+          const masterRatings = ratingsData?.filter((r: any) => r.master_id === master.id) || [];
+          const rating_avg = masterRatings.length > 0 
+            ? masterRatings.reduce((sum: number, r: any) => sum + r.stars, 0) / masterRatings.length 
+            : 0;
+          const ratings_count = masterRatings.length;
+          
+          return {
+            ...master,
+            rating_avg,
+            ratings_count
+          };
+        });
+        
+        setItems(mastersWithRatings as Master[]);
+      }
+      
       setLoading(false);
     };
     fetchData();

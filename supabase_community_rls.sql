@@ -81,6 +81,21 @@ for select using (is_approved = true);
 create policy "Anyone can submit masters" on public.masters
 for insert with check (true);
 
+create policy "Anyone can update master ratings" on public.masters
+for update using (true)
+with check (
+  -- Only allow updates to rating fields
+  (OLD.rating_avg IS DISTINCT FROM NEW.rating_avg OR OLD.ratings_count IS DISTINCT FROM NEW.ratings_count)
+  AND OLD.id = NEW.id
+  AND OLD.full_name = NEW.full_name
+  AND OLD.profession = NEW.profession
+  AND OLD.phone = NEW.phone
+  AND OLD.location = NEW.location
+  AND OLD.description = NEW.description
+  AND OLD.is_approved = NEW.is_approved
+  AND OLD.created_at = NEW.created_at
+);
+
 create policy "Admin can manage masters" on public.masters
 for all using (
   EXISTS (

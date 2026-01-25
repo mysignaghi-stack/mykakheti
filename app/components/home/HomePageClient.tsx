@@ -24,6 +24,7 @@ import AdminSideFrame from '@/app/components/home/AdminSideFrame';
 import ChatPopup from '@/app/components/features/ChatPopup';
 import AgroDetailsModal from '@/app/components/home/AgroDetailsModal';
 import CommunityWidgets from '@/app/components/community/CommunityWidgets';
+import CommunityEngagement from '../../components/home/CommunityEngagement';
 import type { CommunityDataset } from '@/app/lib/homeData';
 
 type AdminPost = Tables<'admin_posts'>;
@@ -411,8 +412,6 @@ export default function HomePageClient({
         />
       </div>
 
-      {/* Community unit moved nearer to announcements (no duplicate) */}
-
       {/* Informational grid section, now outside header for independent styling */}
       <section className="relative z-10 w-full px-4 sm:px-6 md:px-10 max-w-[1800px] mx-auto mt-10">
         <div className="grid grid-cols-1 lg:grid-cols-[minmax(260px,340px)_1fr_minmax(260px,340px)] gap-4 md:gap-8 xl:gap-12 items-start text-white bg-black/70 backdrop-blur-2xl rounded-[30px] border border-white/10 p-4 sm:p-8 shadow-xl">
@@ -505,29 +504,12 @@ export default function HomePageClient({
 
             {/* CommunityHub removed: community entry moved to navbar center */}
 
-            <ServiceWidgets 
-              onMapSearch={handleMapSearch} 
+            <ServiceWidgets
+              onMapSearch={handleMapSearch}
             />
 
-             <div className="flex flex-col gap-4 w-full lg:hidden text-left">
-               <div className="h-[450px] bg-black/60 backdrop-blur-xl rounded-[30px] border border-white/5">
-                 <RightSidebar weatherData={weatherData} seasonal={seasonal} fact={KAKHETI_FACTS[factIndex]} onShowTransport={() => setShowTransport(true)} />
-               </div>
-               {/* 🌾 მარცვლეული */}
-               <div className="bg-white/[0.03] backdrop-blur-3xl rounded-[30px] border border-white/10 p-5 flex flex-col items-center group relative overflow-hidden transition-all hover:border-yellow-500/30 shadow-xl">
-                 <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-yellow-500 to-transparent opacity-30" />
-                 <h4 className="text-[10px] font-black text-yellow-500 uppercase tracking-[0.4em] mb-4 w-full text-left">🌾 მარცვლეული</h4>
-                 <p className="w-full text-[10px] text-white/40 font-bold uppercase tracking-[0.2em] mb-3 leading-tight">საორიენტაციო ფასები · დააჭირე პროდუქტს რომ ნახო მიმღები ობიექტები</p>
-                 <div className="w-full space-y-2">
-                   {agroData.filter(i => i.category === 'grain').map(item => (
-                     <button key={item.id} onClick={() => isAdmin ? (() => { setEditAgroItem(item); setNewPrice(item.price); setEditDetails(normalizeDetails(item.details, item.price)); })() : setSelectedAgro(item)} className={`w-full flex justify-between items-center bg-black/40 p-3 rounded-xl border border-white/5 transition-all group/item hover:bg-white/5 ${isAdmin ? 'hover:border-amber-500' : ''}`}>
-                       <span className="text-xs font-black uppercase text-yellow-500 flex gap-2">{item.name} {isAdmin && '✏️'}</span>
-                       <span className="text-sm font-black italic">{item.price}</span>
-                     </button>
-                   ))}
-                 </div>
-               </div>
-             </div>
+            {/* Community Engagement Section */}
+            <CommunityEngagement />
           </div>
 
           {/* --- მარჯვენა სვეტი (Desktop Only) --- */}
@@ -566,6 +548,7 @@ export default function HomePageClient({
           </div>
         </div>
       </section>
+
       {/* AdsSection removed - announcements now only appear on dedicated /announcements page */}
       {/* <AdsSection 
         ads={ads} filteredAds={filteredAds} isAdmin={isAdmin} showArchive={false}
