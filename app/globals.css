@@ -152,10 +152,10 @@ body {
 .text-center { text-align: center !important; }
 .text-right { text-align: right !important; }
 
-/* Layout overflow fixes */
-* {
-  box-sizing: border-box;
+/* Layout overflow fixes: only constrain media, do not cap all elements */
+img, picture, video, canvas, svg {
   max-width: 100%;
+  height: auto;
 }
 
 html, body, #__next {

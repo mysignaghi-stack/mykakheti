@@ -35,3 +35,7 @@ create policy "Admins can manage banned users" on public.banned_users
       where key = 'admin_session' and value = current_setting('request.jwt.claims', true)::json->>'sub'
     )
   );
+
+-- Allow public to check if their session is banned
+create policy "Anyone can check if banned" on public.banned_users
+  for select using (true);
