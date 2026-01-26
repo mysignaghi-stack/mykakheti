@@ -375,7 +375,7 @@ export default function HomePageClient({
 
 
   return (
-    <main className="min-h-screen relative flex flex-col bg-[#050510] overflow-x-hidden text-left selection:bg-amber-500 selection:text-white text-white">
+    <main className="min-h-screen relative flex flex-col bg-[#050510] overflow-x-hidden text-left selection:bg-amber-500 selection:text-white text-white w-full">
       {/* Background */}
       <div className="fixed inset-0 z-0 pointer-events-none">
         {bgImage && (
@@ -404,7 +404,7 @@ export default function HomePageClient({
 
       <Navbar />
 
-      <div className="relative z-10 w-full px-4 sm:px-6 md:px-10 max-w-[1800px] mx-auto mt-6">
+      <div className="relative z-10 w-full px-4 sm:px-6 md:px-10 max-w-[1800px] mx-auto mt-6 overflow-hidden">
         <CommunityWidgets
           initialObituaries={initialCommunity.obituaries}
           initialLostFound={initialCommunity.lostFound}
@@ -414,10 +414,10 @@ export default function HomePageClient({
       </div>
 
       {/* Informational grid section, now outside header for independent styling */}
-      <section className="relative z-10 w-full px-4 sm:px-6 md:px-10 max-w-[1800px] mx-auto mt-10">
-        <div className="grid grid-cols-1 lg:grid-cols-[minmax(260px,340px)_1fr_minmax(260px,340px)] gap-4 md:gap-8 xl:gap-12 items-start text-white bg-black/70 backdrop-blur-2xl rounded-[30px] border border-white/10 p-4 sm:p-8 shadow-xl">
+      <section className="relative z-10 w-full px-4 sm:px-6 md:px-10 max-w-[1800px] mx-auto mt-10 overflow-hidden">
+        <div className="grid grid-cols-1 lg:grid-cols-[280px_1fr_280px] xl:grid-cols-[320px_1fr_320px] gap-4 md:gap-6 xl:gap-8 items-start text-white bg-black/70 backdrop-blur-2xl rounded-[30px] border border-white/10 p-4 sm:p-6 md:p-8 shadow-xl w-full max-w-full overflow-hidden">
           {/* --- მარცხენა სვეტი (Desktop Only) --- */}
-          <div className="hidden lg:flex flex-col gap-6 sticky top-24 order-1 min-w-[280px]">
+          <div className="hidden lg:flex flex-col gap-6 sticky top-24 order-1 w-full max-w-[320px]">
             {/* კახური მოედანი (სქროლით) */}
             <div 
               className="w-full h-[450px] overflow-hidden bg-black/60 backdrop-blur-xl rounded-[30px] border border-white/5 relative"
@@ -517,7 +517,7 @@ export default function HomePageClient({
           </div>
 
           {/* --- მარჯვენა სვეტი (Desktop Only) --- */}
-          <div className="hidden lg:flex flex-col gap-6 sticky top-24 order-3 min-w-[280px]">
+          <div className="hidden lg:flex flex-col gap-6 sticky top-24 order-3 w-full max-w-[320px]">
             {/* ჰაბი */}
             <div className="w-full h-[450px] overflow-y-auto custom-scrollbar bg-black/60 backdrop-blur-xl rounded-[30px] border border-white/5 relative">
               <div className="p-1">

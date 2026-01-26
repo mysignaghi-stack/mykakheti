@@ -5,7 +5,7 @@ CREATE TABLE square_messages (
   sender_name text,
   media_url text,
   media_type text,
-  ip_address inet,
+  ip_address text,
   fingerprint text,
   parent_id uuid REFERENCES square_messages(id),
   archived_at timestamp with time zone,
@@ -19,8 +19,8 @@ ALTER TABLE square_messages ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "Anyone can view square messages" ON square_messages
 FOR SELECT USING (true);
 
-CREATE POLICY "Authenticated users can insert square messages" ON square_messages
-FOR INSERT WITH CHECK (auth.uid() IS NOT NULL);
+CREATE POLICY "Anyone can insert square messages" ON square_messages
+FOR INSERT WITH CHECK (true);
 
 CREATE POLICY "Users can update their own square messages" ON square_messages
 FOR UPDATE USING (auth.uid() IS NOT NULL);

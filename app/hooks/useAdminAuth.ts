@@ -16,6 +16,14 @@ export function useAdminAuth() {
 
         if (error) {
           console.error('Auth session error:', error);
+          // Handle refresh token errors gracefully
+          if (error.message?.includes('Invalid Refresh Token') || error.message?.includes('Refresh Token Not Found')) {
+            console.log('Refresh token invalid, clearing session...');
+            await supabase.auth.signOut();
+            setIsAdmin(false);
+            setUser(null);
+            return;
+          }
           setIsAdmin(false);
           setUser(null);
           return;

@@ -55,6 +55,8 @@ body {
   overflow-x: hidden; /* ჰორიზონტალური სქროლის დამალვა */
   font-family: 'Inter', -apple-system, sans-serif;
   scroll-behavior: smooth;
+  width: 100%;
+  max-width: 100vw;
 }
 
 /* 🌑 Custom Scrollbar (თქვენი ძველი დიზაინი) */
@@ -149,3 +151,15 @@ body {
 .text-left { text-align: left !important; }
 .text-center { text-align: center !important; }
 .text-right { text-align: right !important; }
+
+/* Layout overflow fixes */
+* {
+  box-sizing: border-box;
+  max-width: 100%;
+}
+
+html, body, #__next {
+  width: 100%;
+  max-width: 100vw;
+  overflow-x: hidden;
+}
