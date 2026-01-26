@@ -61,12 +61,12 @@ export default function CommunityEngagement() {
         {/* Background blur effect */}
         <div className="absolute inset-0 bg-gradient-to-br from-slate-900/20 via-slate-800/10 to-slate-900/20 backdrop-blur-xl rounded-[16px] border border-white/5" />
 
-        <div className="relative p-2">
-          <div className="text-center mb-3">
-            <h3 className="text-sm font-black text-white uppercase tracking-[0.15em] mb-2">
+        <div className="relative p-1">
+          <div className="text-center mb-1.5">
+            <h3 className="text-[11px] font-black text-white uppercase tracking-[0.15em] mb-1">
               სათემო ჩართულობა
             </h3>
-            <p className="text-white/60 text-xs leading-relaxed max-w-2xl mx-auto">
+            <p className="text-white/60 text-[9px] leading-snug max-w-2xl mx-auto">
               გააზიარეთ თქვენი სიახლეები, მოძებნეთ საჭირო სპეციალისტები ან გამოხატეთ თანაგრძნობა. თქვენი განცხადება ადმინისტრაციის მიერ გადამოწმების შემდეგ გამოჩნდება საიტის მთავარი გვერდის ზედა სათემო ბარათებში.
             </p>
           </div>
@@ -82,25 +82,25 @@ export default function CommunityEngagement() {
                 <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-[20px]" />
 
                 {/* Crystal-like structure */}
-                <div className="relative p-2 md:p-3 flex flex-col items-center justify-center min-h-[80px] text-center">
+                <div className="relative p-1.5 flex flex-col items-center justify-center min-h-[56px] text-center">
                   {/* Icon with glass effect */}
-                  <div className="relative mb-2">
-                    <div className="text-2xl text-white/80 group-hover:text-white/95 transition-all duration-500 filter drop-shadow-lg">
+                  <div className="relative mb-1.5">
+                    <div className="text-lg text-white/80 group-hover:text-white/95 transition-all duration-500 filter drop-shadow-lg">
                       {card.icon}
                     </div>
                     {/* Subtle inner glow */}
-                    <div className="absolute inset-0 text-2xl text-white/20 group-hover:text-white/30 transition-all duration-500 blur-sm">
+                    <div className="absolute inset-0 text-lg text-white/20 group-hover:text-white/30 transition-all duration-500 blur-sm">
                       {card.icon}
                     </div>
                   </div>
 
                   {/* Title with glass text effect */}
-                  <h4 className="text-xs md:text-sm font-bold text-white/90 group-hover:text-white transition-all duration-500 mb-0.5 tracking-wide">
+                  <h4 className="text-[10px] md:text-[11px] font-bold text-white/90 group-hover:text-white transition-all duration-500 mb-0.5 tracking-wide">
                     {card.title}
                   </h4>
 
                   {/* Subtitle */}
-                  <p className="text-white/50 group-hover:text-white/70 transition-all duration-500 text-xs leading-tight">
+                  <p className="text-white/50 group-hover:text-white/70 transition-all duration-500 text-[9px] leading-tight">
                     {card.value}
                   </p>
                 </div>

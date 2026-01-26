@@ -25,7 +25,6 @@ import ChatPopup from '@/app/components/features/ChatPopup';
 import AgroDetailsModal from '@/app/components/home/AgroDetailsModal';
 import CommunityWidgets from '@/app/components/community/CommunityWidgets';
 import CommunityEngagement from '../../components/home/CommunityEngagement';
-import AnnouncementsSection from '../../components/home/AnnouncementsSection';
 import type { CommunityDataset } from '@/app/lib/homeData';
 
 type AdminPost = Tables<'admin_posts'>;
@@ -512,8 +511,6 @@ export default function HomePageClient({
             {/* Community Engagement Section */}
             <CommunityEngagement />
 
-            {/* Announcements Section */}
-            <AnnouncementsSection />
           </div>
 
           {/* --- მარჯვენა სვეტი (Desktop Only) --- */}
