@@ -163,3 +163,14 @@ html, body, #__next {
   max-width: 100vw;
   overflow-x: hidden;
 }
+
+/* Shared layout shell to prevent horizontal overflow on wide sections */
+.layout-shell {
+  width: 100%;
+  max-width: min(1800px, 100vw);
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: 1rem;
+  padding-right: 1rem;
+  overflow-x: hidden;
+}

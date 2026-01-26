@@ -38,8 +38,8 @@ export default function AnnouncementsPage() {
   }, []);
 
   return (
-    <main className="min-h-screen bg-[#050510] p-6 md:p-10 text-white">
-      <div className="max-w-5xl mx-auto">
+    <main className="min-h-screen bg-[#050510] p-6 md:p-10 text-white overflow-x-hidden">
+      <div className="layout-shell max-w-5xl">
         <div className="flex justify-start mb-4">
           <Link href="/" className="text-[11px] font-black uppercase italic text-white/50 hover:text-white transition">← მთავარი გვერდი</Link>
         </div>

@@ -79,7 +79,7 @@ export default function AnnouncementsSection() {
   };
 
   return (
-    <div className="w-full space-y-6">
+    <div className="w-full max-w-full overflow-hidden space-y-6">
       {/* Header */}
       <div className="text-center">
         <h2 className="text-2xl font-bold text-white/90 mb-2">
@@ -92,7 +92,7 @@ export default function AnnouncementsSection() {
 
       {/* Categories Bar */}
       <div className="w-full">
-        <div className="flex items-center gap-3 overflow-x-auto pb-2 custom-scrollbar">
+        <div className="flex items-center gap-3 overflow-x-auto pb-2 custom-scrollbar w-full max-w-full">
           {MAIN_CATEGORIES.map(category => (
             <button
               key={category.id}
@@ -125,11 +125,11 @@ export default function AnnouncementsSection() {
           <div className="text-white/60 text-sm">იტვირთება...</div>
         </div>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 w-full max-w-full">
           {filteredAnnouncements.map(announcement => (
             <div
               key={announcement.id}
-              className="group relative overflow-hidden rounded-lg bg-gradient-to-br from-white/5 to-white/10 backdrop-blur-xl border border-white/10 hover:border-white/20 transition-all duration-300 hover:scale-[1.02] cursor-pointer"
+              className="group relative overflow-hidden rounded-lg bg-gradient-to-br from-white/5 to-white/10 backdrop-blur-xl border border-white/10 hover:border-white/20 transition-all duration-300 hover:scale-[1.02] cursor-pointer w-full max-w-full"
               onClick={() => window.open(`/announcements/${announcement.id}`, '_blank')}
             >
               {/* Main Image */}
@@ -165,24 +165,24 @@ export default function AnnouncementsSection() {
               </div>
 
               {/* Content */}
-              <div className="p-3 space-y-2">
+              <div className="p-3 space-y-2 min-w-0">
                 {/* Date */}
                 <div className="text-xs text-white/50">
                   {formatGeorgianDate(announcement.created_at)}
                 </div>
 
                 {/* Title */}
-                <h3 className="text-base font-bold text-white line-clamp-2 group-hover:text-blue-300 transition-colors">
+                <h3 className="text-base font-bold text-white line-clamp-2 group-hover:text-blue-300 transition-colors break-words">
                   {announcement.title}
                 </h3>
 
                 {/* Description */}
-                <p className="text-sm text-white/70 line-clamp-3">
+                <p className="text-sm text-white/70 line-clamp-3 break-words">
                   {announcement.description || 'აღწერა არ არის'}
                 </p>
 
                 {/* Location */}
-                <div className="flex items-center gap-2 text-xs text-white/60">
+                <div className="flex items-center gap-2 text-xs text-white/60 truncate">
                   <span>📍</span>
                   <span className="truncate">{announcement.location}</span>
                 </div>
