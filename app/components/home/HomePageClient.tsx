@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import Image from 'next/image';
+import Link from 'next/link';
 import { useAdminAuth } from '@/app/hooks/useAdminAuth';
 import { useAdsData } from '@/app/hooks/useAdsData';
 import { useAgroData } from '@/app/hooks/useAgroData';
@@ -37,6 +38,48 @@ interface AgroDetail {
 }
 
 const FALLBACK_MARQUEE = 'საიტი მუშაობს სატესტო რეჟიმში';
+
+const ANNOUNCEMENT_CATEGORIES = [
+  'უძრავი ქონება',
+  'ავტო',
+  'დასაქმება',
+  'სოფლის მეურნეობა',
+  'ღვინო და მარნები',
+  'აგრო-მიწები',
+  'აგრო-ტექნიკა',
+  'გადაზიდვები',
+  'გიდის მომსახურება',
+  'განათლება',
+  'დრიური საწოლი',
+  'ელექტრონიკა',
+  'ვაკანსიები',
+  'ვენახის მოვლა',
+  'ვეტერინარია',
+  'ადგილობრივი პროდუქტები',
+  'კულტურა',
+  'მომსახურება',
+  'მეფუტკრეობა',
+  'ნერგები და თესლები',
+  'რესტორნები',
+  'რთველი',
+  'სამშენებლო',
+  'სამუშაო ჯგუფი',
+  'სამედიცინო',
+  'სარიტუალო მომსახურება',
+  'სასუქები და ქიმიკატები',
+  'სასტუმროები',
+  'სპორტი',
+  'ტექნიკა',
+  'ტრადიციული რეწვა',
+  'ტურიზმი',
+  'ტურისტული',
+  'ცხოველები',
+  'შეშა და სათბობი',
+  'ღვინის ინვენტარი',
+  'სხვა'
+];
+
+const COMMUNITY_CATEGORIES = ['სამძიმარი', 'დაკარგული/ნაპოვნი', 'ოსტატი', 'მილოცვა'] as const;
 
 interface HomePageClientProps {
   initialAds: Ad[];
@@ -146,6 +189,7 @@ export default function HomePageClient({
   );
   const [editLoading, setEditLoading] = useState(false);
   const [snackbar, setSnackbar] = useState<{ open: boolean; message: string; type?: 'success' | 'error' | 'info' }>({ open: false, message: '', type: 'info' });
+  const [showAllCategories, setShowAllCategories] = useState(false);
 
   const showSnackbar = useCallback((message: string, type: 'success' | 'error' | 'info' = 'info') => {
     setSnackbar({ open: true, message, type });
@@ -354,6 +398,15 @@ export default function HomePageClient({
     }
   }, [editAgroItem, setEditAgroItem]);
 
+  useEffect(() => {
+    if (!showAllCategories) return;
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.body.style.overflow = previousOverflow;
+    };
+  }, [showAllCategories]);
+
   // Remove inline ConfirmModal, use component below
 
   // ...admin auth logic now comes from useAdminAuth
@@ -369,6 +422,33 @@ export default function HomePageClient({
       return matchCat && matchLoc && matchSearch;
     });
   }, [ads, selectedCategories, selectedLocation, searchTerm]);
+
+
+  const allNonCommunityCategories = useMemo(() => {
+    const derivedFromAds = Array.from(
+      new Set(
+        ads
+          .filter(ad => !ad.is_archived)
+          .map(ad => ad.category)
+          .filter((category): category is string => Boolean(category))
+          .filter(category => !COMMUNITY_CATEGORIES.includes(category as typeof COMMUNITY_CATEGORIES[number]))
+      )
+    );
+
+    const fallback = ANNOUNCEMENT_CATEGORIES.filter(
+      category => !COMMUNITY_CATEGORIES.includes(category as typeof COMMUNITY_CATEGORIES[number])
+    );
+
+    return [
+      ...derivedFromAds,
+      ...fallback.filter(category => !derivedFromAds.includes(category)),
+    ];
+  }, [ads]);
+
+  const visibleCategories = useMemo(
+    () => allNonCommunityCategories.slice(0, 6),
+    [allNonCommunityCategories]
+  );
 
   const seasonal = getSeasonalContent();
 
@@ -403,7 +483,7 @@ export default function HomePageClient({
 
       <Navbar />
 
-      <div className="layout-shell relative z-10 w-full max-w-full xl:max-w-[1800px] px-4 sm:px-6 md:px-10 mx-auto mt-6 overflow-hidden">
+      <div className="layout-shell relative z-10 w-full max-w-full xl:max-w-[1800px] px-4 sm:px-6 md:px-10 mx-auto mt-6 mb-3 overflow-hidden">
         <CommunityWidgets
           initialObituaries={initialCommunity.obituaries}
           initialLostFound={initialCommunity.lostFound}
@@ -440,7 +520,7 @@ export default function HomePageClient({
               </div>
             </div>
             {/* 🏛️ ადმინისტრაციული განცხადება */}
-            <div className="w-full bg-gradient-to-br from-amber-900/40 via-black/50 to-amber-700/20 backdrop-blur-sm rounded-[24px] border border-amber-500/30 shadow-[0_0_20px_4px_rgba(255,191,0,0.1)] p-4 ring-1 ring-amber-400/20 relative" style={{ minWidth: '240px' }}>
+            <div className="w-full min-w-[260px] xl:min-w-[300px] bg-gradient-to-br from-amber-900/40 via-black/50 to-amber-700/20 backdrop-blur-sm rounded-[24px] border border-amber-500/30 shadow-[0_0_20px_4px_rgba(255,191,0,0.1)] p-4 ring-1 ring-amber-400/20 relative">
               <AdminSideFrame 
                 post={getPostByPos('left_top')} 
                 position="left_top" 
@@ -589,6 +669,67 @@ export default function HomePageClient({
       />
   {/* Snackbar: modular and accessible */}
   <SnackbarWrapper open={snackbar.open} message={snackbar.message} type={snackbar.type} onClose={closeSnackbar} />
+
+      <div className="w-full max-w-6xl mx-auto px-6 md:px-10 mt-8 mb-10">
+        <div className="relative bg-black/50 border border-amber-500/30 rounded-2xl px-5 py-5 min-h-[64px] shadow-[0_8px_30px_rgba(0,0,0,0.35)]">
+          <div className="absolute top-3 left-4 right-4 flex flex-wrap items-center gap-x-3 gap-y-2 text-[11px] md:text-xs font-extrabold uppercase tracking-[0.2em] text-white/90">
+            <span>განცხადებები</span>
+            <span className="text-amber-400 text-base md:text-lg tracking-normal">{ads.length}</span>
+            <div className="flex flex-wrap items-center gap-2">
+              {visibleCategories.map((category) => (
+                <span
+                  key={category}
+                  className="px-2.5 py-1 rounded-full border border-white/10 bg-white/5 text-[10px] md:text-[11px] font-black uppercase tracking-[0.2em] text-white/70"
+                >
+                  {category}
+                </span>
+              ))}
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={() => setShowAllCategories(true)}
+            className="absolute top-3 right-4 text-[10px] md:text-[11px] font-black uppercase tracking-[0.2em] text-amber-300 hover:text-amber-200 transition"
+          >
+            ყველა კატეგორია
+          </button>
+        </div>
+      </div>
+
+      {showAllCategories && (
+        <div className="fixed inset-0 z-[120]" onClick={() => setShowAllCategories(false)}>
+          <div className="absolute inset-0 bg-black/95 backdrop-blur-[20px] animate-in fade-in duration-300" />
+          <div
+            className="relative max-w-4xl mx-auto mt-24 bg-[#0b0b15]/90 border border-white/10 rounded-[28px] p-6 md:p-10 shadow-[0_20px_80px_rgba(0,0,0,0.6)] animate-in zoom-in-95 fade-in duration-300 max-h-[75vh] overflow-y-auto"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between mb-6">
+              <div>
+                <h3 className="text-2xl font-black text-white uppercase tracking-widest">ყველა კატეგორია</h3>
+                <p className="text-white/50 text-sm mt-1">სათემო ჩართულობის გარდა არსებული კატეგორიები</p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowAllCategories(false)}
+                className="text-white/40 hover:text-white transition text-sm font-black uppercase"
+              >
+                დახურვა ✕
+              </button>
+            </div>
+
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+              {allNonCommunityCategories.map((category) => (
+                <div
+                  key={category}
+                  className="px-3 py-3 rounded-2xl bg-white/5 border border-white/10 text-[11px] md:text-xs font-black uppercase tracking-[0.2em] text-white/80 text-center"
+                >
+                  {category}
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
 
       <Footer />
     </main>

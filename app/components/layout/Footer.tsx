@@ -3,7 +3,7 @@ import Link from 'next/link';
 
 export default function Footer() {
   return (
-    <footer className="bg-black/60 backdrop-blur-3xl border-t border-white/5 pt-16 md:pt-24 pb-12 px-6 md:px-10 relative z-50 text-left">
+    <footer className="bg-black/60 backdrop-blur-3xl border-t border-white/5 pt-16 md:pt-24 pb-12 px-6 md:px-10 relative z-50 text-left mt-8 md:mt-12">
       <div className="max-w-[1700px] mx-auto text-left">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-12 sm:gap-16 mb-16 sm:mb-20 text-left">
           <div className="space-y-6 text-left">
@@ -34,7 +34,7 @@ export default function Footer() {
             <p className="text-[10px] md:text-[11px] font-black uppercase italic text-white/10 tracking-widest text-center md:text-left">
               © 2026 MYKAKHETI.GE. ALL RIGHTS RESERVED.
             </p>
-            <p className="text-[9px] md:text-[10px] font-bold italic text-white/20 text-center md:text-left">
+            <p className="text-[9px] md:text-[10px] font-bold italic text-white/20 text-center md:text-left mt-2">
               შექმნილია <span className="text-amber-500/40">Kakhi Jaliashvili</span>-ს მიერ
             </p>
           </div>
