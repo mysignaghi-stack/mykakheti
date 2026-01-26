@@ -415,9 +415,9 @@ export default function HomePageClient({
 
       {/* Informational grid section, now outside header for independent styling */}
       <section className="layout-shell relative z-10 w-full max-w-full xl:max-w-[1800px] px-4 sm:px-6 md:px-10 mx-auto mt-10 overflow-hidden">
-        <div className="grid grid-cols-1 lg:grid-cols-[280px_1fr_280px] xl:grid-cols-[320px_1fr_320px] gap-4 md:gap-6 xl:gap-8 items-start text-white bg-black/70 backdrop-blur-2xl rounded-[30px] border border-white/10 p-4 sm:p-6 md:p-8 shadow-xl w-full max-w-full overflow-hidden">
+        <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,260px)_minmax(0,1fr)_minmax(0,260px)] xl:grid-cols-[minmax(0,300px)_minmax(0,1fr)_minmax(0,300px)] gap-4 md:gap-6 xl:gap-8 items-start text-white bg-black/70 backdrop-blur-2xl rounded-[30px] border border-white/10 p-4 sm:p-6 md:p-8 shadow-xl w-full max-w-full overflow-hidden">
           {/* --- მარცხენა სვეტი (Desktop Only) --- */}
-          <div className="hidden lg:flex flex-col gap-6 sticky top-24 order-1 w-full max-w-[320px]">
+          <div className="hidden lg:flex flex-col gap-6 sticky top-24 order-1 w-full max-w-full min-w-0">
             {/* კახური მოედანი (სქროლით) */}
             <div 
               className="w-full h-[450px] overflow-hidden bg-black/60 backdrop-blur-xl rounded-[30px] border border-white/5 relative"
@@ -452,7 +452,7 @@ export default function HomePageClient({
           </div>
 
           {/* --- ცენტრალური სვეტი --- */}
-          <div className="flex flex-col items-center text-center space-y-8 animate-in fade-in duration-1000 w-full order-1 lg:order-2">
+          <div className="flex flex-col items-center text-center space-y-8 animate-in fade-in duration-1000 w-full min-w-0 order-1 lg:order-2">
              {/* მობილური ვერსია - მარცხენა მხარე */}
              <div className="flex flex-col gap-4 w-full lg:hidden">
                  <div className="h-[450px] bg-black/60 backdrop-blur-xl rounded-[30px] border border-white/5">
@@ -517,7 +517,7 @@ export default function HomePageClient({
           </div>
 
           {/* --- მარჯვენა სვეტი (Desktop Only) --- */}
-          <div className="hidden lg:flex flex-col gap-6 sticky top-24 order-3 w-full max-w-[320px]">
+          <div className="hidden lg:flex flex-col gap-6 sticky top-24 order-3 w-full max-w-full min-w-0">
             {/* ჰაბი */}
             <div className="w-full h-[450px] overflow-y-auto custom-scrollbar bg-black/60 backdrop-blur-xl rounded-[30px] border border-white/5 relative">
               <div className="p-1">
