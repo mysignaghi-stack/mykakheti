@@ -266,9 +266,9 @@ export default function AnnouncementsSection() {
             >
               {/* Main Image */}
               <div className="relative h-40 overflow-hidden">
-                {announcement.media_urls && announcement.media_urls.length > 0 ? (
+                {((announcement.all_images && announcement.all_images[0]) || announcement.image_url) ? (
                   <Image
-                    src={announcement.media_urls[0]}
+                    src={(announcement.all_images && announcement.all_images[0]) || announcement.image_url || ''}
                     alt={announcement.title}
                     fill
                     className="object-cover group-hover:scale-105 transition-transform duration-300"
