@@ -1,8 +1,8 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import Link from 'next/link';
 import { supabase } from '../../lib/supabase';
+import AdminNav from '../../components/admin/AdminNav';
 
 type SquareMessage = {
   id: string;
@@ -152,7 +152,7 @@ export default function AdminSquare() {
       <div className="max-w-6xl mx-auto">
         <div className="flex items-center justify-between mb-6">
           <h1 className="text-2xl font-black italic uppercase border-l-4 border-amber-600 pl-4">კახური მოედანი</h1>
-          <Link href="/admin" className="bg-white/5 px-4 py-2 rounded-xl text-xs font-black uppercase">← ადმინ ჰაბი</Link>
+          <AdminNav />
         </div>
 
         <div className="bg-white/5 rounded-3xl border border-white/10 p-6 mb-6">

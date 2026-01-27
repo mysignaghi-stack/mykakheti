@@ -125,7 +125,7 @@ export default function HomePageClient({
   } = useWeatherData(initialWeatherData);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategories, setSelectedCategories] = useState<string[]>(['ყველა']);
-  const [selectedLocation, setSelectedLocation] = useState('ყველა კახეთი');
+  const [selectedLocations, setSelectedLocations] = useState<string[]>(['ყველა კახეთი']);
   const [showAllAnnouncements, setShowAllAnnouncements] = useState(false);
   const [announcementsPage, setAnnouncementsPage] = useState(0);
   const [bgImage, setBgImage] = useState<string | null>(initialBgImage ?? null);
@@ -416,16 +416,27 @@ export default function HomePageClient({
 
     // ...moved to useAgroData
 
+  const normalizeText = useCallback((value: string | null | undefined) => {
+    return (value ?? '')
+      .toLowerCase()
+      .replace(/\s+/g, ' ')
+      .trim();
+  }, []);
+
   const filteredAds = useMemo(() => {
+    const selectedLocs = selectedLocations
+      .filter((loc) => loc !== 'ყველა კახეთი')
+      .map((loc) => normalizeText(loc));
     return ads.filter(ad => {
       if (COMMUNITY_CATEGORIES.includes(ad.category as typeof COMMUNITY_CATEGORIES[number])) return false;
       if (ad.is_archived) return false;
       const matchCat = selectedCategories.length === 0 || selectedCategories.includes('ყველა') || selectedCategories.includes(ad.category);
-      const matchLoc = selectedLocation === 'ყველა კახეთი' || ad.location.includes(selectedLocation);
-      const matchSearch = (ad.title || '').toLowerCase().includes(searchTerm.toLowerCase());
+      const adLocation = normalizeText(ad.location);
+      const matchLoc = selectedLocations.includes('ყველა კახეთი') || selectedLocs.some((loc) => adLocation.includes(loc));
+      const matchSearch = normalizeText(ad.title || '').includes(normalizeText(searchTerm));
       return matchCat && matchLoc && matchSearch;
     });
-  }, [ads, selectedCategories, selectedLocation, searchTerm]);
+  }, [ads, normalizeText, selectedCategories, selectedLocations, searchTerm]);
 
   const selectCategory = (category: string) => {
     if (category === 'ყველა') {
@@ -434,7 +445,13 @@ export default function HomePageClient({
       setAnnouncementsPage(0);
       return;
     }
-    setSelectedCategories([category]);
+
+    setSelectedCategories((prev) => {
+      const withoutAll = prev.filter((c) => c !== 'ყველა');
+      const exists = withoutAll.includes(category);
+      const next = exists ? withoutAll.filter((c) => c !== category) : [...withoutAll, category];
+      return next.length === 0 ? ['ყველა'] : next;
+    });
     setShowAllAnnouncements(false);
     setAnnouncementsPage(0);
   };
@@ -505,6 +522,7 @@ export default function HomePageClient({
       </div>
 
       <Navbar />
+
 
       <div className="layout-shell relative z-10 w-full max-w-full xl:max-w-[1800px] px-4 sm:px-6 md:px-10 mx-auto mt-6 mb-3 overflow-hidden">
         <CommunityWidgets
@@ -590,7 +608,7 @@ export default function HomePageClient({
 
              <HeroSection 
                 searchTerm={searchTerm} setSearchTerm={setSearchTerm} filteredAds={filteredAds}
-                selectedLocation={selectedLocation} setSelectedLocation={setSelectedLocation}
+               selectedLocations={selectedLocations} setSelectedLocations={setSelectedLocations}
                isLocOpen={isLocOpen} setIsLocOpen={setIsLocOpen} locRef={locRef as React.RefObject<HTMLDivElement>}
              />
 
@@ -790,7 +808,6 @@ export default function HomePageClient({
                   type="button"
                   onClick={() => {
                     selectCategory(category);
-                    setShowAllCategories(false);
                   }}
                   className={`px-3 py-3 rounded-2xl border text-[11px] md:text-xs font-black uppercase tracking-[0.2em] transition text-center ${
                     selectedCategories.includes(category)

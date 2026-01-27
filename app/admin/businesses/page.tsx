@@ -2,10 +2,10 @@
 import { useEffect, useState } from 'react';
 import type { ChangeEvent, FormEvent } from 'react';
 import Image from 'next/image';
-import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import imageCompression from 'browser-image-compression';
 import { supabase } from '../../lib/supabase';
+import AdminNav from '../../components/admin/AdminNav';
 
 const BUSINESS_CATEGORIES = [
   'მარნები და ღვინო', 
@@ -115,9 +115,7 @@ export default function AdminBusinesses() {
         
         {/* Nav Bar */}
         <div className="flex flex-col md:flex-row justify-between items-center mb-12 bg-white/[0.03] backdrop-blur-3xl p-8 rounded-[40px] border border-white/10 shadow-2xl gap-6">
-          <Link href="/admin" className="text-[10px] font-black uppercase italic text-white/40 hover:text-amber-500 transition-all">
-            ← ადმინ პანელზე დაბრუნება
-          </Link>
+          <AdminNav />
           <h1 className="text-3xl font-black uppercase italic text-white tracking-tighter leading-none">
             ბიზნეს ობიექტების <span className="text-amber-500">მართვა</span>
           </h1>

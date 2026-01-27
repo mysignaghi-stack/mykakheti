@@ -6,6 +6,7 @@ import Image from 'next/image';
 import { supabase } from '../../lib/supabase';
 import { useAdminAuth } from '../../hooks/useAdminAuth';
 import type { Database } from '@/types/supabase';
+import AdminNav from '../../components/admin/AdminNav';
 
 type AdminPost = Database['public']['Tables']['admin_posts']['Row'];
 
@@ -367,7 +368,7 @@ export default function AdminPosts() {
       <div className="max-w-6xl mx-auto">
         <div className="flex items-center justify-between mb-6">
           <h1 className="text-2xl font-black italic uppercase border-l-4 border-amber-600 pl-4">ადმინისტრატორის განცხადებები</h1>
-          <Link href="/admin" className="bg-white/5 px-4 py-2 rounded-xl text-xs font-black uppercase">← ადმინ ჰაბი</Link>
+          <AdminNav />
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">

@@ -1,14 +1,9 @@
-'use client';
-
-import { useEffect, useState, useCallback } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
-import { useAdminAuth } from '../hooks/useAdminAuth';
-import { supabase } from '../lib/supabase';
+import { adminSignOut, getAdminDashboardStats, refreshAdminDashboard } from './actions';
+
+export const dynamic = 'force-dynamic';
 
 const ADMIN_LINKS = [
-  // community link removed — community moderation is available from the main cards above
-  // 'მისალოცები' merged into 'ქომუნითი' to avoid duplicate panels
   { href: '/admin/messages', title: 'შეტყობინებები', desc: 'კონტაქტის ფორმის მესიჯები' },
   { href: '/admin/posts', title: 'ადმინისტრატორის განცხადებები', desc: 'ადმინის პოსტების მართვა' },
   { href: '/admin/square', title: 'კახური მოედანი', desc: 'ჩატის მესიჯების მართვა' },
@@ -18,83 +13,43 @@ const ADMIN_LINKS = [
   { href: '/admin/diagnostic', title: 'დიაგნოსტიკა', desc: 'ადმინისტრატორის სტატუსის შემოწმება' },
 ];
 
-export default function AdminDashboard() {
-  const router = useRouter();
-  const { isAdmin, user, loading, handleAdminLogout } = useAdminAuth();
-  const [statsLoading, setStatsLoading] = useState(false);
-  const [stats, setStats] = useState({
-    pendingAds: 0,
-    pendingCongrats: 0,
-    pendingObituaries: 0,
-    pendingLostFound: 0,
-    pendingMasters: 0,
-    approvedAds: 0,
-    approvedCongrats: 0,
-    approvedObituaries: 0,
-    approvedLostFound: 0,
-    approvedMasters: 0,
-  });
+const VERCEL_ANALYTICS_URL = 'https://vercel.com/dashboard';
 
-  const totalCommunityPending = stats.approvedObituaries + stats.approvedLostFound + stats.approvedMasters + stats.approvedCongrats;
+type StatsCardProps = {
+  title: string;
+  value: string | number;
+  description?: string;
+  icon: JSX.Element;
+  href?: string;
+};
 
-  const loadStats = useCallback(async () => {
-    if (!isAdmin) return;
-    setStatsLoading(true);
-    try {
-      const [{ count: pendingAds }, { count: approvedAds }, { count: pendingCongrats }, { count: pendingObituaries }, { count: pendingLostFound }, { count: pendingMasters }, { count: approvedCongrats }, { count: approvedObituaries }, { count: approvedLostFound }, { count: approvedMasters }] = await Promise.all([
-        supabase.from('announcements').select('*', { count: 'exact', head: true }).eq('is_approved', false),
-        supabase.from('announcements').select('*', { count: 'exact', head: true }).eq('is_approved', true),
-        supabase.from('congratulations').select('*', { count: 'exact', head: true }).eq('is_approved', false),
-        supabase.from('obituaries').select('*', { count: 'exact', head: true }).eq('is_approved', false),
-        supabase.from('lost_found').select('*', { count: 'exact', head: true }).eq('is_approved', false),
-        supabase.from('masters').select('*', { count: 'exact', head: true }).eq('is_approved', false),
-        supabase.from('congratulations').select('*', { count: 'exact', head: true }).eq('is_approved', true),
-        supabase.from('obituaries').select('*', { count: 'exact', head: true }).eq('is_approved', true),
-        supabase.from('lost_found').select('*', { count: 'exact', head: true }).eq('is_approved', true),
-        supabase.from('masters').select('*', { count: 'exact', head: true }).eq('is_approved', true),
-      ]);
+function StatsCard({ title, value, description, icon, href }: StatsCardProps) {
+  const content = (
+    <div className="bg-white/5 border border-white/10 rounded-3xl p-6 backdrop-blur-3xl shadow-2xl hover:border-amber-500/40 transition-all group">
+      <div className="flex items-center justify-between">
+        <div className="text-xs uppercase font-black text-white/60 tracking-[0.2em]">{title}</div>
+        <div className="text-amber-400/90 group-hover:text-amber-300 transition">{icon}</div>
+      </div>
+      <div className="text-3xl font-black mt-4 text-white">{value}</div>
+      {description && <p className="text-white/50 text-xs mt-2">{description}</p>}
+    </div>
+  );
 
-      setStats({
-        pendingAds: pendingAds ?? 0,
-        approvedAds: approvedAds ?? 0,
-        pendingCongrats: pendingCongrats ?? 0,
-        pendingObituaries: pendingObituaries ?? 0,
-        pendingLostFound: pendingLostFound ?? 0,
-        pendingMasters: pendingMasters ?? 0,
-        approvedCongrats: approvedCongrats ?? 0,
-        approvedObituaries: approvedObituaries ?? 0,
-        approvedLostFound: approvedLostFound ?? 0,
-        approvedMasters: approvedMasters ?? 0,
-      });
-    } finally {
-      setStatsLoading(false);
-    }
-  }, [isAdmin]);
-
-  useEffect(() => {
-    if (!loading && !isAdmin) {
-      router.replace('/admin/login');
-    }
-  }, [loading, isAdmin, router]);
-
-  useEffect(() => {
-    if (isAdmin) {
-      loadStats();
-    }
-  }, [isAdmin, loadStats]);
-
-  if (loading) {
+  if (href) {
     return (
-      <main className="min-h-screen bg-[#050510] flex items-center justify-center text-white">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-amber-500 mx-auto mb-4" />
-          <p>იტვირთება...</p>
-        </div>
-      </main>
+      <a href={href} target="_blank" rel="noreferrer" className="block">
+        {content}
+      </a>
     );
   }
 
-  if (!isAdmin) {
+  return content;
+}
+
+export default async function AdminDashboard() {
+  const stats = await getAdminDashboardStats();
+
+  if (!stats) {
     return (
       <main className="min-h-screen bg-[#050510] flex items-center justify-center text-white">
         <div className="text-center">
@@ -111,33 +66,70 @@ export default function AdminDashboard() {
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
           <div>
             <h1 className="text-3xl font-black uppercase italic text-amber-500">ადმინისტრატორის პანელი</h1>
-            <p className="text-white/50 text-sm">მომხმარებელი: {user?.email ?? '—'}</p>
+            <p className="text-white/50 text-sm">მომხმარებელი: {stats.email ?? '—'}</p>
           </div>
-          <div className="flex gap-3">
+          <div className="flex gap-3 flex-wrap">
             <Link href="/" className="bg-white/5 border border-white/10 px-5 py-2 rounded-xl text-xs font-black uppercase">მთავარი</Link>
-            <button
-              onClick={loadStats}
-              className="bg-white/5 border border-white/10 px-5 py-2 rounded-xl text-xs font-black uppercase"
-            >
-              {statsLoading ? 'განახლება...' : 'განახლება'}
-            </button>
-            <button onClick={handleAdminLogout} className="bg-red-600 px-5 py-2 rounded-xl text-xs font-black uppercase">გამოსვლა</button>
+            <form action={refreshAdminDashboard}>
+              <button type="submit" className="bg-white/5 border border-white/10 px-5 py-2 rounded-xl text-xs font-black uppercase">განახლება</button>
+            </form>
+            <form action={adminSignOut}>
+              <button type="submit" className="bg-red-600 px-5 py-2 rounded-xl text-xs font-black uppercase">გამოსვლა</button>
+            </form>
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-10">
-          <Link href="/admin/announcements" className="bg-blue-600/20 border border-blue-600/40 rounded-2xl p-6 hover:bg-blue-600/30 transition-all">
-            <div className="text-xs uppercase font-black text-blue-300">მომხმარებლების განცხადებები</div>
-            <div className="text-3xl font-black mt-2">{stats.approvedAds}</div>
-            <p className="text-white/60 text-sm mt-1">გამოქვეყნებული განცხადება</p>
-          </Link>
-          <Link href="/admin/community" className="bg-white/5 border border-white/10 rounded-2xl p-6 hover:border-amber-500/50 transition-all">
-            <div className="text-xs uppercase font-black text-white/60">ქომუნითი</div>
-            <div className="text-3xl font-black mt-2">{totalCommunityPending}</div>
-            <p className="text-white/50 text-sm mt-1">აქტიური სამძიმარი/დაკარგული/ოსტატები-სპეციალისტები/მისალოცი</p>
-            <div className="text-[11px] text-white/40 mt-2">სამძიმარი: {stats.approvedObituaries} • დაკარგული: {stats.approvedLostFound} • ოსტატები-სპეციალისტები: {stats.approvedMasters} • მისალოცი: {stats.approvedCongrats}</div>
-          </Link>
-          {/* 'მისალოცები' moved into the community page (use /admin/community) */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-10">
+          <StatsCard
+            title="მომხმარებლები"
+            value={stats.usersCount}
+            description="რეგისტრირებული მომხმარებლები"
+            icon={(
+              <svg className="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+                <circle cx="8.5" cy="7" r="4" />
+                <path d="M20 8v6" />
+                <path d="M23 11h-6" />
+              </svg>
+            )}
+          />
+          <StatsCard
+            title="განცხადებები"
+            value={stats.activeAnnouncements}
+            description="აქტიური განცხადებები"
+            icon={(
+              <svg className="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                <path d="M14 2v6h6" />
+                <path d="M8 13h8" />
+                <path d="M8 17h5" />
+              </svg>
+            )}
+          />
+          <StatsCard
+            title="მოსალოდნელი"
+            value={stats.pendingAnnouncements}
+            description="მოდერაციაზე მყოფი განცხადებები"
+            icon={(
+              <svg className="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <circle cx="12" cy="12" r="10" />
+                <path d="M12 6v6l4 2" />
+              </svg>
+            )}
+          />
+          <StatsCard
+            title="ვიზიტორების ანალიტიკა"
+            value="Vercel"
+            description="Real User Traffic"
+            href={VERCEL_ANALYTICS_URL}
+            icon={(
+              <svg className="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M12 20V10" />
+                <path d="M18 20V4" />
+                <path d="M6 20v-4" />
+              </svg>
+            )}
+          />
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">

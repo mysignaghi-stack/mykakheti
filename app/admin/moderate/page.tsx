@@ -7,6 +7,7 @@ import Link from 'next/link';
 import type { Database } from '../../../types/supabase';
 import { supabase } from '../../lib/supabase';
 import { useAdminAuth } from '../../hooks/useAdminAuth';
+import AdminNav from '../../components/admin/AdminNav';
 
 type AnnouncementRow = Database['public']['Tables']['announcements']['Row'];
 
@@ -206,9 +207,7 @@ export default function ModerateAds() {
               მოოდინშია: {pendingAds.length} განცხადება
             </p>
           </div>
-          <Link href="/admin" className="bg-white/5 text-white px-8 py-3 rounded-2xl font-black uppercase italic text-[11px] border border-white/10 hover:bg-white hover:text-black transition-all">
-            ← ადმინ ჰაბი
-          </Link>
+          <AdminNav />
         </div>
 
         <div className="bg-white/[0.03] backdrop-blur-3xl p-6 rounded-[32px] border border-white/10 shadow-xl mb-10">

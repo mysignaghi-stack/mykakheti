@@ -1,9 +1,9 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import Link from 'next/link';
 import imageCompression from 'browser-image-compression';
 import { supabase } from '../../lib/supabase';
+import AdminNav from '../../components/admin/AdminNav';
 
 export default function AdminSiteSettings() {
   const [loading, setLoading] = useState(false);
@@ -136,7 +136,7 @@ export default function AdminSiteSettings() {
       <div className="max-w-4xl mx-auto">
         <div className="flex items-center justify-between mb-6">
           <h1 className="text-2xl font-black italic uppercase border-l-4 border-amber-600 pl-4">საიტის პარამეტრები</h1>
-          <Link href="/admin" className="bg-white/5 px-4 py-2 rounded-xl text-xs font-black uppercase">← ადმინ ჰაბი</Link>
+          <AdminNav />
         </div>
 
         <div className="space-y-8">

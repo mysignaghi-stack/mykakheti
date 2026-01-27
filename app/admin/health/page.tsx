@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useAdminAuth } from '../../hooks/useAdminAuth';
 import { supabase } from '../../lib/supabase';
+import AdminNav from '../../components/admin/AdminNav';
 
 type HealthCheck = {
   name: string;
@@ -289,6 +290,7 @@ export default function HealthPage() {
   return (
     <main className="min-h-screen bg-[#050510] text-white p-6 md:p-10 font-sans">
       <div className="max-w-6xl mx-auto space-y-6">
+        <AdminNav />
         <div className="flex items-center justify-between gap-3">
           <h1 className="text-2xl font-black uppercase italic tracking-tight">სისტემური აუდიტი</h1>
           <button

@@ -1,11 +1,10 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 // ხაზი 4: ვიყენებთ ალიასს (@), რომ თავიდან ავიცილოთ გზის შეცდომა
 import type { Database } from '@/types/supabase'; 
 import { supabase } from '@/app/lib/supabase'; // დარწმუნდით, რომ გზა ზუსტია
+import AdminNav from '../../components/admin/AdminNav';
 
 /**
  * 1. ტიპების განსაზღვრა (აშორებს "Unexpected any" შეცდომებს)
@@ -38,7 +37,6 @@ const getItemLabel = (item: CommunityItem): string => {
 };
 
 export default function AdminCommunityPage() {
-  const router = useRouter();
   const [selectedCategory, setSelectedCategory] = useState<string>('');
 
   return (
@@ -46,10 +44,7 @@ export default function AdminCommunityPage() {
       <div className="max-w-6xl mx-auto">
         <div className="flex items-center justify-between mb-6">
           <h1 className="text-2xl font-black italic uppercase border-l-4 border-amber-600 pl-4">ქომუნითი მოდერაცია</h1>
-          <div className="flex gap-3">
-            <Link href="/admin" className="bg-white/5 px-4 py-2 rounded-xl text-xs font-black uppercase">← ადმინ ჰაბი</Link>
-            <button onClick={() => router.back()} className="bg-white/5 px-4 py-2 rounded-xl text-xs font-black uppercase">უკან</button>
-          </div>
+          <AdminNav />
         </div>
 
         <div className="mb-6">

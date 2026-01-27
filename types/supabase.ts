@@ -454,6 +454,89 @@ export type Database = {
         }
         Relationships: []
       }
+      banned_users: {
+        Row: {
+          id: string
+      transport_routes: {
+        Row: {
+          id: number
+          origin: string
+          destination: string
+          price: number
+          stops: string | null
+          created_at: string | null
+        }
+        Insert: {
+          id?: number
+          origin: string
+          destination: string
+          price: number
+          stops?: string | null
+          created_at?: string | null
+        }
+        Update: {
+          id?: number
+          origin?: string
+          destination?: string
+          price?: number
+          stops?: string | null
+          created_at?: string | null
+        }
+        Relationships: []
+      }
+      transport_schedules: {
+        Row: {
+          id: number
+          route_id: number
+          depart_time: string | null
+          status: string
+          created_at: string | null
+        }
+        Insert: {
+          id?: number
+          route_id: number
+          depart_time?: string | null
+          status?: string
+          created_at?: string | null
+        }
+        Update: {
+          id?: number
+          route_id?: number
+          depart_time?: string | null
+          status?: string
+          created_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "transport_schedules_route_id_fkey"
+            columns: ["route_id"]
+            isOneToOne: false
+            referencedRelation: "transport_routes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+          ip_address: string
+          reason: string | null
+          banned_at: string | null
+          banned_by: string | null
+        }
+        Insert: {
+          id?: string
+          ip_address: string
+          reason?: string | null
+          banned_at?: string | null
+          banned_by?: string | null
+        }
+        Update: {
+          id?: string
+          ip_address?: string
+          reason?: string | null
+          banned_at?: string | null
+          banned_by?: string | null
+        }
+        Relationships: []
+      }
       square_messages: {
         Row: {
           archived_at: string | null

@@ -1,9 +1,9 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import Link from 'next/link';
 import type { Database } from '../../../types/supabase';
 import { supabase } from '../../lib/supabase';
+import AdminNav from '../../components/admin/AdminNav';
 
 type ContactMessageRow = Database['public']['Tables']['contact_messages']['Row'];
 
@@ -54,9 +54,7 @@ export default function AdminMessages() {
               კონტაქტის ფორმის მართვა • Core
             </p>
           </div>
-          <Link href="/admin" className="bg-white/5 text-white px-8 py-3 rounded-2xl font-black uppercase italic text-[11px] border border-white/10 hover:bg-amber-600 transition-all">
-            ← უკან
-          </Link>
+          <AdminNav />
         </div>
 
         {loading ? (

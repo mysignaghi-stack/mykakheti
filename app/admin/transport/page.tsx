@@ -3,8 +3,37 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/app/lib/supabase';
 import { AdminRoute, AdminSchedule } from '@/app/lib/types';
+import AdminNav from '../../components/admin/AdminNav';
 
 export default function AdminTransport() {
+  const getErrorMessage = (error: unknown) => {
+    if (error instanceof Error) return error.message;
+    if (error && typeof error === 'object' && 'message' in error) {
+      return String((error as { message?: unknown }).message);
+    }
+    return 'Unknown error';
+  };
+
+  const normalizeTime = (value: string | null | undefined) => {
+    if (!value) return '';
+    const trimmed = value.trim();
+    const ampmMatch = trimmed.match(/^(\d{1,2}):(\d{2})(?::\d{2})?\s*([AP]M)$/i);
+    if (ampmMatch) {
+      let hour = Number(ampmMatch[1]);
+      const minute = ampmMatch[2];
+      const meridiem = ampmMatch[3].toUpperCase();
+      if (meridiem === 'PM' && hour < 12) hour += 12;
+      if (meridiem === 'AM' && hour === 12) hour = 0;
+      return `${String(hour).padStart(2, '0')}:${minute}`;
+    }
+    const timeMatch = trimmed.match(/^(\d{1,2}):(\d{2})(?::\d{2})?$/);
+    if (timeMatch) {
+      const hour = String(timeMatch[1]).padStart(2, '0');
+      return `${hour}:${timeMatch[2]}`;
+    }
+    return trimmed;
+  };
+
   // --- STATE ---
   const [activeTab, setActiveTab] = useState<'routes' | 'schedule'>('routes');
   const [loading, setLoading] = useState(false);
@@ -70,9 +99,9 @@ export default function AdminTransport() {
       }
 
     } catch (error: unknown) {
-      const message = error instanceof Error ? error.message : 'Unknown error';
-      console.error('Error fetching transport data:', message);
-      alert('მონაცემების წამოღება ვერ მოხერხდა');
+      const message = getErrorMessage(error);
+      console.error('Error fetching transport data:', message, error);
+      alert('მონაცემების წამოღება ვერ მოხერხდა: ' + message);
     } finally {
       setLoading(false);
     }
@@ -113,7 +142,7 @@ export default function AdminTransport() {
       )
         .insert({
           route_id: routeData.id,
-          depart_time: newEntry.departTime || '00:00',
+          depart_time: normalizeTime(newEntry.departTime) || '00:00',
           status: 'Active'
         });
 
@@ -125,8 +154,8 @@ export default function AdminTransport() {
       alert('რეისი წარმატებით დაემატა! ✅');
 
     } catch (error: unknown) {
-      const message = error instanceof Error ? error.message : 'Unknown error';
-      console.error('Error adding entry:', message);
+      const message = getErrorMessage(error);
+      console.error('Error adding entry:', message, error);
       alert('დამატება ვერ მოხერხდა: ' + message);
     } finally {
       setLoading(false);
@@ -148,7 +177,7 @@ export default function AdminTransport() {
 
       await fetchData();
     } catch (error: unknown) {
-      const message = error instanceof Error ? error.message : 'Unknown error';
+      const message = getErrorMessage(error);
       alert('წაშლა ვერ მოხერხდა: ' + message);
     } finally {
       setLoading(false);
@@ -196,6 +225,7 @@ export default function AdminTransport() {
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 p-6">
       <div className="max-w-7xl mx-auto">
         <div className="mb-8">
+          <AdminNav className="mb-4" />
           <h1 className="text-3xl font-bold text-white mb-2">ტრანსპორტის მართვა</h1>
           <p className="text-gray-400">მარშრუტების და განრიგის კორექტირება</p>
         </div>
@@ -271,10 +301,13 @@ export default function AdminTransport() {
                   className="bg-white/5 border border-white/10 rounded-lg px-4 py-2 text-white placeholder-gray-400"
                 />
                 <input
-                  type="time"
-                  placeholder="გასვლის დრო"
+                  type="text"
+                  placeholder="HH:MM"
                   value={newEntry.departTime}
                   onChange={(e) => setNewEntry(prev => ({ ...prev, departTime: e.target.value }))}
+                  onBlur={(e) => setNewEntry(prev => ({ ...prev, departTime: normalizeTime(e.target.value) }))}
+                  pattern="^([01]\\d|2[0-3]):[0-5]\\d$"
+                  title="შეიყვანეთ დრო 24-საათიან ფორმატში (HH:MM)"
                   className="bg-white/5 border border-white/10 rounded-lg px-4 py-2 text-white placeholder-gray-400"
                 />
                 <button
@@ -330,9 +363,12 @@ export default function AdminTransport() {
                         <div className="flex items-center gap-2">
                           <label className="text-gray-400 text-sm">დრო:</label>
                           <input
-                            type="time"
-                            value={schedule.departTime}
-                            onChange={(e) => handleTimeUpdate(schedule.id, e.target.value)}
+                            type="text"
+                            value={normalizeTime(schedule.departTime)}
+                            onChange={(e) => handleTimeUpdate(schedule.id, normalizeTime(e.target.value))}
+                            onBlur={(e) => handleTimeUpdate(schedule.id, normalizeTime(e.target.value))}
+                            pattern="^([01]\\d|2[0-3]):[0-5]\\d$"
+                            title="შეიყვანეთ დრო 24-საათიან ფორმატში (HH:MM)"
                             className="bg-white/5 border border-white/10 rounded px-2 py-1 text-white text-sm"
                           />
                         </div>

@@ -12,6 +12,34 @@ interface TransportModalProps {
 }
 
 export default function TransportModal({ isAdmin, onClose, staticSchedule }: TransportModalProps) {
+  const getErrorMessage = (error: unknown) => {
+    if (error instanceof Error) return error.message;
+    if (error && typeof error === 'object' && 'message' in error) {
+      return String((error as { message?: unknown }).message);
+    }
+    return 'Unknown error';
+  };
+
+  const normalizeTime = (value: string | null | undefined) => {
+    if (!value) return '';
+    const trimmed = value.trim();
+    const ampmMatch = trimmed.match(/^(\d{1,2}):(\d{2})(?::\d{2})?\s*([AP]M)$/i);
+    if (ampmMatch) {
+      let hour = Number(ampmMatch[1]);
+      const minute = ampmMatch[2];
+      const meridiem = ampmMatch[3].toUpperCase();
+      if (meridiem === 'PM' && hour < 12) hour += 12;
+      if (meridiem === 'AM' && hour === 12) hour = 0;
+      return `${String(hour).padStart(2, '0')}:${minute}`;
+    }
+    const timeMatch = trimmed.match(/^(\d{1,2}):(\d{2})(?::\d{2})?$/);
+    if (timeMatch) {
+      const hour = String(timeMatch[1]).padStart(2, '0');
+      return `${hour}:${timeMatch[2]}`;
+    }
+    return trimmed;
+  };
+
   // --- STATE ---
   const [transActiveTab, setTransActiveTab] = useState<'routes' | 'schedule'>('routes');
   const [loading, setLoading] = useState(false);
@@ -86,11 +114,8 @@ export default function TransportModal({ isAdmin, onClose, staticSchedule }: Tra
       }
 
     } catch (error: unknown) {
-      const message =
-        error && typeof error === 'object' && 'message' in error
-          ? String((error as { message?: string }).message)
-          : 'Unknown error';
-      console.warn('Error fetching transport data:', message);
+      const message = getErrorMessage(error);
+      console.warn('Error fetching transport data:', message, error);
     } finally {
       setLoading(false);
     }
@@ -132,7 +157,7 @@ export default function TransportModal({ isAdmin, onClose, staticSchedule }: Tra
       )
         .insert({
           route_id: routeData.id,
-          depart_time: newEntry.departTime || '00:00',
+          depart_time: normalizeTime(newEntry.departTime) || '00:00',
           status: 'Active'
         });
 
@@ -144,8 +169,8 @@ export default function TransportModal({ isAdmin, onClose, staticSchedule }: Tra
       alert('რეისი წარმატებით დაემატა! ✅');
 
     } catch (error: unknown) {
-      const message = error instanceof Error ? error.message : 'Unknown error';
-      console.error('Error adding entry:', message);
+      const message = getErrorMessage(error);
+      console.error('Error adding entry:', message, error);
       alert('დამატება ვერ მოხერხდა: ' + message);
     } finally {
       setLoading(false);
@@ -167,7 +192,7 @@ export default function TransportModal({ isAdmin, onClose, staticSchedule }: Tra
       
       await fetchData();
     } catch (error: unknown) {
-      const message = error instanceof Error ? error.message : 'Unknown error';
+      const message = getErrorMessage(error);
       alert('წაშლა ვერ მოხერხდა: ' + message);
     } finally {
       setLoading(false);
@@ -266,7 +291,7 @@ export default function TransportModal({ isAdmin, onClose, staticSchedule }: Tra
                               <div className="md:col-span-4 grid grid-cols-1 gap-4 border-t border-white/5 pt-4 mt-2">
                                   <div className="space-y-1">
                                       <label className="text-[10px] text-amber-500/80 uppercase font-bold ml-1">გასვლის დრო</label>
-                                      <input type="time" className="w-full p-3 bg-black/40 border border-white/10 rounded-xl text-white text-xs outline-none focus:border-amber-500" value={newEntry.departTime} onChange={(e) => setNewEntry({...newEntry, departTime: e.target.value})} required />
+                                      <input type="text" className="w-full p-3 bg-black/40 border border-white/10 rounded-xl text-white text-xs outline-none focus:border-amber-500" value={newEntry.departTime} onChange={(e) => setNewEntry({...newEntry, departTime: e.target.value})} onBlur={(e) => setNewEntry({...newEntry, departTime: normalizeTime(e.target.value)})} required pattern="^([01]\\d|2[0-3]):[0-5]\\d$" title="შეიყვანეთ დრო 24-საათიან ფორმატში (HH:MM)" placeholder="HH:MM" />
                                   </div>
                               </div>
                               <div className="md:col-span-4 mt-2">
@@ -328,7 +353,7 @@ export default function TransportModal({ isAdmin, onClose, staticSchedule }: Tra
                                   <tr key={item.id} className="hover:bg-white/5 transition-colors">
                                     <td className="p-3 text-sm font-bold">{getRouteName(item.routeId)}</td>
                                     <td className="p-3">
-                                      <input type="time" value={item.departTime} onChange={(e) => handleTimeUpdate(item.id, e.target.value)} className="bg-black/30 text-white border border-white/10 rounded px-2 py-1 text-xs outline-none focus:border-amber-500" />
+                                      <input type="text" value={normalizeTime(item.departTime)} onChange={(e) => handleTimeUpdate(item.id, normalizeTime(e.target.value))} onBlur={(e) => handleTimeUpdate(item.id, normalizeTime(e.target.value))} className="bg-black/30 text-white border border-white/10 rounded px-2 py-1 text-xs outline-none focus:border-amber-500" pattern="^([01]\\d|2[0-3]):[0-5]\\d$" title="შეიყვანეთ დრო 24-საათიან ფორმატში (HH:MM)" placeholder="HH:MM" />
                                     </td>
                                     <td className="p-3">
                                       <select 
@@ -374,7 +399,7 @@ export default function TransportModal({ isAdmin, onClose, staticSchedule }: Tra
                            <div className="text-[10px] font-bold text-white/40 uppercase tracking-wider">{item.station}</div>
                         </div>
                         <div className="text-right flex flex-col items-end">
-                           <div className="text-amber-500 font-black italic text-sm mb-1">{item.time}</div>
+                           <div className="text-amber-500 font-black italic text-sm mb-1">{normalizeTime(item.time)}</div>
                            <div className="bg-white/10 px-3 py-1 rounded-lg text-[11px] font-bold">{item.price}</div>
                         </div>
                      </div>

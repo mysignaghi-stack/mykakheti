@@ -2,9 +2,9 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import Link from 'next/link';
 import { supabase } from '../../lib/supabase';
 import { isAdminUser } from '../../lib/adminAuth';
+import AdminNav from '../../components/admin/AdminNav';
 
 export default function AdminLogin() {
   const [email, setEmail] = useState('');
@@ -75,6 +75,9 @@ export default function AdminLogin() {
 
   return (
     <main className="min-h-screen bg-[#050510] flex items-center justify-center p-6 font-sans relative overflow-hidden">
+      <div className="absolute top-6 left-6 z-20">
+        <AdminNav />
+      </div>
       
       {/* დეკორატიული ფონი (Blur Effects) */}
       <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-blue-900/20 rounded-full blur-[120px]" />

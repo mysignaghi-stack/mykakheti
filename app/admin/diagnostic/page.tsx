@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { User } from '@supabase/supabase-js';
 import { supabase } from '../../lib/supabase';
 import { getAdminIndicators } from '../../lib/adminAuth';
+import AdminNav from '../../components/admin/AdminNav';
 
 type AdminUserInfo = {
   id: string;
@@ -77,6 +78,7 @@ export default function AdminDiagnostic() {
   return (
     <div className="min-h-screen bg-[#050510] p-6 text-white">
       <div className="max-w-2xl mx-auto">
+        <AdminNav className="mb-6" />
         <h1 className="text-2xl font-black text-amber-500 uppercase italic mb-6">
           🔍 ადმინისტრატორის დიაგნოსტიკა
         </h1>

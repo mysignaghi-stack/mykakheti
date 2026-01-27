@@ -45,6 +45,7 @@
 * {
   box-sizing: border-box;
   -webkit-tap-highlight-color: transparent;
+  min-width: 0;
 }
 
 body {
@@ -153,9 +154,18 @@ body {
 .text-right { text-align: right !important; }
 
 /* Layout overflow fixes: only constrain media, do not cap all elements */
-img, picture, video, canvas, svg {
+img, picture, video, canvas, svg, iframe {
   max-width: 100%;
   height: auto;
+}
+
+table {
+  max-width: 100%;
+}
+
+pre, code {
+  max-width: 100%;
+  overflow-x: auto;
 }
 
 html, body, #__next {
