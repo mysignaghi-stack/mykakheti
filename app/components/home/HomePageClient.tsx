@@ -182,15 +182,16 @@ export default function HomePageClient({
     newPrice,
     setNewPrice,
   } = useAgroData(initialAgroData);
-  const [editDetails, setEditDetails] = useState<{ place: string; rate: string | number }[]>([]);
+  const [editDetails, setEditDetails] = useState<{ place: string; rate: string | number; phone?: string }[]>([]);
   const normalizeDetails = useCallback(
     (details: AgroItem['details'], price: string) =>
       (details ?? []).map((detail) =>
-        typeof detail === 'string' ? { place: detail, rate: price } : detail
+        typeof detail === 'string' ? { place: detail, rate: price, phone: '' } : { phone: '', ...detail }
       ),
     []
   );
   const [editLoading, setEditLoading] = useState(false);
+  const closeEditAgroModal = useCallback(() => setEditAgroItem(null), []);
   const [snackbar, setSnackbar] = useState<{ open: boolean; message: string; type?: 'success' | 'error' | 'info' }>({ open: false, message: '', type: 'info' });
   const [showAllCategories, setShowAllCategories] = useState(false);
 
@@ -697,7 +698,7 @@ export default function HomePageClient({
           details={editDetails}
           onChange={setNewPrice}
           onChangeDetails={setEditDetails}
-          onClose={() => setEditAgroItem(null)}
+          onClose={closeEditAgroModal}
           loading={editLoading}
           onSubmit={async (e) => {
             e.preventDefault();

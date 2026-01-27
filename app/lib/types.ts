@@ -42,7 +42,7 @@ export interface AgroItem {
   color: string;
   icon: string;
   category: string;
-  details: { place: string; rate: string | number }[] | string[] | null;
+  details: { place: string; rate: string | number; phone?: string }[] | string[] | null;
 }
 
 // 👇 განახლებული ტიპი ადმინისტრაციის პოსტებისთვის

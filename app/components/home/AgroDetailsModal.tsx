@@ -10,7 +10,9 @@ const AgroDetailsModal = ({ selectedAgro, onClose }: AgroDetailsModalProps) => {
 
   const details = selectedAgro.details ?? [];
   const normalizedDetails = details.map((detail) =>
-    typeof detail === 'string' ? { place: detail, rate: selectedAgro.price } : detail
+    typeof detail === 'string'
+      ? { place: detail, rate: selectedAgro.price, phone: '' }
+      : { phone: '', ...detail }
   );
 
   return (
@@ -47,11 +49,16 @@ const AgroDetailsModal = ({ selectedAgro, onClose }: AgroDetailsModalProps) => {
             normalizedDetails.map((detail, idx) => (
               <div
                 key={`${detail.place}-${idx}`}
-                className="flex justify-between items-center bg-white/[0.04] p-5 sm:p-6 rounded-2xl sm:rounded-3xl border border-white/10 hover:bg-white/[0.08] transition-all shadow-xl text-left"
+                className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 bg-white/[0.04] p-5 sm:p-6 rounded-2xl sm:rounded-3xl border border-white/10 hover:bg-white/[0.08] transition-all shadow-xl text-left"
               >
-                <span className="text-[13px] sm:text-[15px] font-black italic tracking-tight drop-shadow-sm text-left">
-                  {detail.place}
-                </span>
+                <div className="space-y-1">
+                  <span className="block text-[13px] sm:text-[15px] font-black italic tracking-tight drop-shadow-sm">
+                    {detail.place}
+                  </span>
+                  {detail.phone && (
+                    <span className="block text-[11px] sm:text-[12px] text-white/60 font-bold">📞 {detail.phone}</span>
+                  )}
+                </div>
                 <span className="text-xl sm:text-2xl font-black text-amber-500 italic text-right">{detail.rate}</span>
               </div>
             ))

@@ -159,6 +159,38 @@ export default function AdminPosts() {
     }
   };
 
+  const togglePublish = async (post: AdminPost) => {
+    try {
+      const nextValue = !((post as any).is_published ?? true);
+      const { error } = await (supabase as any)
+        .from('admin_posts')
+        .update({ is_published: nextValue })
+        .eq('id', post.id);
+
+      if (error) throw error;
+      setPosts(prev => prev.map(p => p.id === post.id ? { ...p, is_published: nextValue } : p));
+    } catch (error) {
+      console.error('Toggle publish error:', error);
+      alert('სტატუსის შეცვლა ვერ მოხერხდა');
+    }
+  };
+
+  const toggleArchive = async (post: AdminPost) => {
+    try {
+      const nextValue = !((post as any).is_archived ?? false);
+      const { error } = await (supabase as any)
+        .from('admin_posts')
+        .update({ is_archived: nextValue })
+        .eq('id', post.id);
+
+      if (error) throw error;
+      setPosts(prev => prev.map(p => p.id === post.id ? { ...p, is_archived: nextValue } : p));
+    } catch (error) {
+      console.error('Toggle archive error:', error);
+      alert('არქივაციის შეცვლა ვერ მოხერხდა');
+    }
+  };
+
   const uploadFiles = async () => {
     if (selectedFiles.length === 0) return alert('აირჩიეთ ფაილები');
 
@@ -588,8 +620,14 @@ export default function AdminPosts() {
                 <div key={post.id} className="bg-black/40 rounded-2xl p-4 border border-white/10">
                   <div className="flex justify-between items-start mb-2">
                     <h3 className="font-bold text-white">{post.title}</h3>
-                    <div className="flex gap-2">
+                    <div className="flex flex-wrap gap-2">
                       <button onClick={() => startEdit(post)} className="text-xs bg-blue-600 px-2 py-1 rounded">რედაქტირება</button>
+                      <button onClick={() => togglePublish(post)} className={`text-xs px-2 py-1 rounded ${((post as any).is_published ?? true) ? 'bg-amber-600' : 'bg-green-600'}`}>
+                        {((post as any).is_published ?? true) ? 'დამალვა' : 'გამოჩენა'}
+                      </button>
+                      <button onClick={() => toggleArchive(post)} className={`text-xs px-2 py-1 rounded ${((post as any).is_archived ?? false) ? 'bg-purple-600' : 'bg-gray-700'}`}>
+                        {((post as any).is_archived ?? false) ? 'დარქივიდან ამოღება' : 'დაარქივება'}
+                      </button>
                       <button onClick={() => deletePost(post.id)} className="text-xs bg-red-600 px-2 py-1 rounded">წაშლა</button>
                     </div>
                   </div>

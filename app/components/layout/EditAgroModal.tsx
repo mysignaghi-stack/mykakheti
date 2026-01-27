@@ -5,8 +5,8 @@ interface EditAgroModalProps {
   item: { name: string } | null;
   newPrice: string;
   onChange: (v: string) => void;
-  details: { place: string; rate: string | number }[];
-  onChangeDetails: (v: { place: string; rate: string | number }[]) => void;
+  details: { place: string; rate: string | number; phone?: string }[];
+  onChangeDetails: (v: { place: string; rate: string | number; phone?: string }[]) => void;
   onClose: () => void;
   onSubmit: (e: React.FormEvent) => Promise<void>;
   loading?: boolean;
@@ -28,14 +28,14 @@ const EditAgroModal: React.FC<EditAgroModalProps> = ({ open, item, newPrice, onC
   }, [open, onClose]);
   if (!open || !item) return null;
 
-  const updateDetail = (idx: number, key: 'place' | 'rate', value: string) => {
+  const updateDetail = (idx: number, key: 'place' | 'rate' | 'phone', value: string) => {
     const next = [...details];
     next[idx] = { ...next[idx], [key]: value };
     onChangeDetails(next);
   };
 
   const addDetail = () => {
-    onChangeDetails([...details, { place: '', rate: '' }]);
+    onChangeDetails([...details, { place: '', rate: '', phone: '' }]);
   };
 
   const removeDetail = (idx: number) => {
@@ -75,6 +75,12 @@ const EditAgroModal: React.FC<EditAgroModalProps> = ({ open, item, newPrice, onC
                   />
                   <button type="button" onClick={() => removeDetail(idx)} className="px-3 py-2 bg-red-600/80 hover:bg-red-600 text-white rounded-lg text-sm font-black">✕</button>
                 </div>
+                <input
+                  value={d.phone || ''}
+                  onChange={e => updateDetail(idx, 'phone', e.target.value)}
+                  placeholder="ტელეფონი"
+                  className="w-full p-2 rounded-lg bg-black/30 border border-white/10 text-white text-sm font-bold outline-none focus:border-amber-500"
+                />
               </div>
             ))}
           </div>
