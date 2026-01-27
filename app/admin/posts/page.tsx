@@ -20,6 +20,11 @@ export default function AdminPosts() {
   const [uploading, setUploading] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<'all' | 'published' | 'hidden' | 'archived'>('all');
+  const [visibleCount, setVisibleCount] = useState(30);
+  const [showMediaPreview, setShowMediaPreview] = useState(false);
+  const [currentPage, setCurrentPage] = useState(0);
+  const [hasMore, setHasMore] = useState(true);
+  const pageSize = 50;
   const [formData, setFormData] = useState({
     title: '',
     content: '',
@@ -38,22 +43,31 @@ export default function AdminPosts() {
 
   useEffect(() => {
     if (!authLoading && isAdmin) {
-      fetchPosts();
+      fetchPosts(true, showMediaPreview);
     }
-  }, [authLoading, isAdmin]);
+  }, [authLoading, isAdmin, showMediaPreview]);
 
-  const fetchPosts = async () => {
+  const fetchPosts = async (reset = true, includeMedia = false) => {
     setLoading(true);
     setFetchError('');
     try {
+      const page = reset ? 0 : currentPage + 1;
+      const from = page * pageSize;
+      const to = from + pageSize - 1;
+      const selectColumns = includeMedia
+        ? '*'
+        : 'id,title,content,category,video_background,priority,link,position,badge_text,is_published,publish_at,is_archived,created_at';
       const { data, error } = await (supabase as any)
         .from('admin_posts')
-        .select('*')
+        .select(selectColumns)
         .order('created_at', { ascending: false })
-        .limit(300);
+        .range(from, to);
 
       if (error) throw error;
-      setPosts(data || []);
+      const nextRows = data || [];
+      setHasMore(nextRows.length === pageSize);
+      setCurrentPage(page);
+      setPosts(prev => (reset ? nextRows : [...prev, ...nextRows]));
     } catch (error) {
       console.error('Error fetching posts:', error);
       const message = (error as { message?: string })?.message || 'ვერ ჩაიტვირთა პოსტები';
@@ -135,7 +149,7 @@ export default function AdminPosts() {
         is_archived: false,
       });
 
-      fetchPosts();
+      fetchPosts(true);
     } catch (error) {
       console.error('Submit error:', JSON.stringify(error));
       alert('შეცდომა შენახვისას');
@@ -189,6 +203,11 @@ export default function AdminPosts() {
       console.error('Toggle archive error:', error);
       alert('არქივაციის შეცვლა ვერ მოხერხდა');
     }
+  };
+
+  const loadMorePosts = async () => {
+    if (loading || !hasMore) return;
+    await fetchPosts(false, showMediaPreview);
   };
 
   const uploadFiles = async () => {
@@ -284,23 +303,39 @@ export default function AdminPosts() {
     }
   };
 
-  const startEdit = (post: AdminPost) => {
-    setEditingPost(post);
-    setFormData({
-      title: post.title || '',
-      content: post.content || '',
-      category: post.category || '',
-      media_urls: post.media_urls || [],
-      media_url: post.media_url || '',
-      video_background: post.video_background || false,
-      priority: post.priority || 0,
-      link: post.link || '',
-      position: post.position || '',
-      badge_text: post.badge_text || '',
-      is_published: (post as any).is_published ?? true,
-      publish_at: (post as any).publish_at ? new Date((post as any).publish_at).toISOString().slice(0, 16) : '',
-      is_archived: (post as any).is_archived ?? false,
-    });
+  const startEdit = async (post: AdminPost) => {
+    try {
+      let fullPost = post;
+      if (post.media_urls === undefined && post.media_url === undefined) {
+        const { data, error } = await (supabase as any)
+          .from('admin_posts')
+          .select('*')
+          .eq('id', post.id)
+          .single();
+        if (error) throw error;
+        fullPost = data as AdminPost;
+      }
+
+      setEditingPost(fullPost);
+      setFormData({
+        title: fullPost.title || '',
+        content: fullPost.content || '',
+        category: fullPost.category || '',
+        media_urls: fullPost.media_urls || [],
+        media_url: fullPost.media_url || '',
+        video_background: fullPost.video_background || false,
+        priority: fullPost.priority || 0,
+        link: fullPost.link || '',
+        position: fullPost.position || '',
+        badge_text: fullPost.badge_text || '',
+        is_published: (fullPost as any).is_published ?? true,
+        publish_at: (fullPost as any).publish_at ? new Date((fullPost as any).publish_at).toISOString().slice(0, 16) : '',
+        is_archived: (fullPost as any).is_archived ?? false,
+      });
+    } catch (error) {
+      console.error('Failed to load full post for edit:', error);
+      alert('რედაქტირება ვერ ჩაიტვირთა');
+    }
   };
 
   const cancelEdit = () => {
@@ -396,6 +431,8 @@ export default function AdminPosts() {
     if (statusFilter === 'hidden') return ((post as any).is_published === false) && !((post as any).is_archived ?? false);
     return true;
   });
+
+  const visiblePosts = filteredPosts.slice(0, visibleCount);
 
   return (
     <main className="min-h-screen bg-[#050510] p-6 md:p-10 text-white font-sans">
@@ -596,6 +633,21 @@ export default function AdminPosts() {
                 placeholder="ძებნა სათაურით ან კატეგორიით"
                 className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-white"
               />
+              <div className="flex flex-wrap gap-2 items-center">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowMediaPreview(prev => !prev);
+                    setCurrentPage(0);
+                    setHasMore(true);
+                    setVisibleCount(30);
+                  }}
+                  className="px-3 py-1 rounded-xl text-xs font-bold bg-white/5 text-white/70 hover:bg-white/10"
+                >
+                  {showMediaPreview ? 'მედიის გამორთვა' : 'მედიის ჩართვა'}
+                </button>
+                <span className="text-xs text-white/40">მეტი სისწრაფისთვის მედიის გამორთვა</span>
+              </div>
               <div className="flex flex-wrap gap-2">
                 {([
                   { key: 'all', label: 'ყველა' },
@@ -616,7 +668,7 @@ export default function AdminPosts() {
             </div>
 
             <div className="space-y-4 max-h-96 overflow-y-auto">
-              {filteredPosts.map(post => (
+              {visiblePosts.map(post => (
                 <div key={post.id} className="bg-black/40 rounded-2xl p-4 border border-white/10">
                   <div className="flex justify-between items-start mb-2">
                     <h3 className="font-bold text-white">{post.title}</h3>
@@ -632,7 +684,7 @@ export default function AdminPosts() {
                     </div>
                   </div>
                   <p className="text-white/60 text-sm mb-2">{post.category}</p>
-                  {(() => {
+                  {showMediaPreview && (() => {
                     const media = getPostMedia(post);
                     if (media.length === 0) return null;
                     const primary = media[0];
@@ -644,15 +696,12 @@ export default function AdminPosts() {
 
                     return (
                       <div className="mb-3 flex items-center gap-3 overflow-hidden">
-                        <div className="relative w-16 h-16 rounded-xl overflow-hidden border border-white/10 bg-white/5 shrink-0">
+                        <div className="relative w-16 h-16 rounded-xl overflow-hidden border border-white/10 bg-white/5 shrink-0 flex items-center justify-center">
                           {primaryIsVideo ? (
-                            <video
-                              src={primary}
-                              className="h-full w-full object-cover"
-                              muted
-                              playsInline
-                              preload="metadata"
-                            />
+                            <div className="flex flex-col items-center justify-center text-[9px] font-black text-white/70">
+                              <span className="text-lg">🎥</span>
+                              <span>VIDEO</span>
+                            </div>
                           ) : (
                             <Image
                               src={primary}
@@ -707,6 +756,28 @@ export default function AdminPosts() {
                 </div>
               )}
             </div>
+            {visibleCount < filteredPosts.length && (
+              <div className="mt-4 flex justify-center">
+                <button
+                  type="button"
+                  onClick={() => setVisibleCount((prev) => prev + 30)}
+                  className="px-4 py-2 rounded-xl text-xs font-black uppercase bg-white/5 border border-white/10 text-white/70 hover:bg-white/10"
+                >
+                  მეტის ნახვა ({filteredPosts.length - visibleCount})
+                </button>
+              </div>
+            )}
+            {hasMore && (
+              <div className="mt-3 flex justify-center">
+                <button
+                  type="button"
+                  onClick={loadMorePosts}
+                  className="px-4 py-2 rounded-xl text-xs font-black uppercase bg-white/5 border border-white/10 text-white/60 hover:bg-white/10"
+                >
+                  სერვერიდან დამატებითი პოსტები
+                </button>
+              </div>
+            )}
           </div>
         </div>
       </div>
