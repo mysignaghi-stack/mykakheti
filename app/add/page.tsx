@@ -7,7 +7,7 @@ import { useRouter } from 'next/navigation';
 import imageCompression from 'browser-image-compression';
 import type { Session } from '@supabase/supabase-js';
 import { supabase } from '../lib/supabase';
-import { LOCATIONS } from '../lib/constants';
+import { LOCATIONS, ANNOUNCEMENT_CATEGORIES } from '../lib/constants';
 
 // Flatten nested municipalities → cities → villages into unique label strings for select options.
 const LOCATION_OPTIONS = Array.from(new Set(
@@ -19,47 +19,6 @@ const LOCATION_OPTIONS = Array.from(new Set(
     ]),
   ])
 ));
-
-// ✅ Canonical categories for announcements (must match AdsSection categories)
-const CATEGORIES = [
-  'უძრავი ქონება',
-  'ავტო',
-  'დასაქმება',
-  'სოფლის მეურნეობა',
-  'ღვინო და მარნები',
-  'აგრო-მიწები',
-  'აგრო-ტექნიკა',
-  'გადაზიდვები',
-  'გიდის მომსახურება',
-  'განათლება',
-  'დრიური საწოლი',
-  'ელექტრონიკა',
-  'ვაკანსიები',
-  'ვენახის მოვლა',
-  'ვეტერინარია',
-  'ადგილობრივი პროდუქტები',
-  'კულტურა',
-  'მომსახურება',
-  'მეფუტკრეობა',
-  'ნერგები და თესლები',
-  'რესტორნები',
-  'რთველი',
-  'სამშენებლო',
-  'სამუშაო ჯგუფი',
-  'სამედიცინო',
-  'სარიტუალო მომსახურება',
-  'სასუქები და ქიმიკატები',
-  'სასტუმროები',
-  'სპორტი',
-  'ტექნიკა',
-  'ტრადიციული რეწვა',
-  'ტურიზმი',
-  'ტურისტული',
-  'ცხოველები',
-  'შეშა და სათბობი',
-  'ღვინის ინვენტარი',
-  'სხვა'
-];
 
 export default function AddPage() {
   const router = useRouter();
@@ -77,7 +36,7 @@ export default function AddPage() {
   
   // ✨ Added 'currency' to form state (default: GEL)
   const [formData, setFormData] = useState({ 
-    title: '', description: '', price: '', phone: '', location: LOCATION_OPTIONS[0] ?? '', category: CATEGORIES[0], currency: 'GEL' 
+    title: '', description: '', price: '', phone: '', location: LOCATION_OPTIONS[0] ?? '', category: ANNOUNCEMENT_CATEGORIES[0], currency: 'GEL' 
   });
   const isAuthenticated = Boolean(session);
 
@@ -368,7 +327,7 @@ export default function AddPage() {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <select required className="p-5 bg-white text-slate-950 border-none rounded-2xl font-black text-[11px] uppercase italic cursor-pointer shadow-lg outline-none" onChange={(e: ChangeEvent<HTMLSelectElement>) => setFormData({...formData, category: e.target.value})}>
                   <option value="">აირჩიეთ კატეგორია...</option>
-                  {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
+                  {ANNOUNCEMENT_CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
                 </select>
                 <select className="p-5 bg-white text-slate-950 border-none rounded-2xl font-black text-[11px] uppercase italic cursor-pointer shadow-lg outline-none" onChange={(e: ChangeEvent<HTMLSelectElement>) => setFormData({...formData, location: e.target.value})}>
                   {LOCATION_OPTIONS.map(loc => <option key={loc} value={loc}>{loc}</option>)}
