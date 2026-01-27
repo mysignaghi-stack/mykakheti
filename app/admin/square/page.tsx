@@ -45,12 +45,16 @@ export default function AdminSquare() {
     if (!confirm('ნამდვილად გსურთ მესიჯის წაშლა?')) return;
 
     try {
-      const { error } = await (supabase as any)
-        .from('square_messages')
-        .delete()
-        .eq('id', id);
+      const response = await fetch('/api/admin/square/delete', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ids: [id] }),
+      });
 
-      if (error) throw error;
+      if (!response.ok) {
+        const payload = await response.json().catch(() => ({}));
+        throw new Error(payload?.error || 'Delete failed');
+      }
       setMessages(prev => prev.filter(m => m.id !== id));
     } catch (error) {
       console.error('Delete error:', error);
@@ -63,11 +67,16 @@ export default function AdminSquare() {
     if (!confirm(`ნამდვილად გსურთ ID ${ip}-ის ბანი?`)) return;
 
     try {
-      const { error } = await (supabase as any)
-        .from('banned_users')
-        .insert({ ip_address: ip, reason: 'Admin ban' });
+      const response = await fetch('/api/admin/square/ban', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ip, reason: 'Admin ban' }),
+      });
 
-      if (error) throw error;
+      if (!response.ok) {
+        const payload = await response.json().catch(() => ({}));
+        throw new Error(payload?.error || 'Ban failed');
+      }
       alert('IP დაბანდა');
     } catch (error) {
       console.error('Ban error:', error);
@@ -95,12 +104,16 @@ export default function AdminSquare() {
     if (!confirm(`ნამდვილად გსურთ ${selectedMessages.length} მესიჯის წაშლა?`)) return;
 
     try {
-      const { error } = await (supabase as any)
-        .from('square_messages')
-        .delete()
-        .in('id', selectedMessages);
+      const response = await fetch('/api/admin/square/delete', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ids: selectedMessages }),
+      });
 
-      if (error) throw error;
+      if (!response.ok) {
+        const payload = await response.json().catch(() => ({}));
+        throw new Error(payload?.error || 'Bulk delete failed');
+      }
       setMessages(prev => prev.filter(m => !selectedMessages.includes(m.id)));
       setSelectedMessages([]);
     } catch (error) {
