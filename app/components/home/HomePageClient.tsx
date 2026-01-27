@@ -595,12 +595,20 @@ export default function HomePageClient({
                    </div>
                  </div>
                  {/* 🏛️ ადმინისტრაციული განცხადება */}
-                 <div className="-mt-8 bg-gradient-to-br from-amber-900/40 via-black/50 to-amber-700/20 backdrop-blur-sm rounded-[24px] border border-amber-500/30 shadow-[0_0_20px_4px_rgba(255,191,0,0.1)] p-4 ring-1 ring-amber-400/20 relative">
+                 <div className="mt-2 bg-gradient-to-br from-amber-900/40 via-black/50 to-amber-700/20 backdrop-blur-sm rounded-[24px] border border-amber-500/30 shadow-[0_0_20px_4px_rgba(255,191,0,0.1)] p-4 ring-1 ring-amber-400/20 relative">
                    <AdminSideFrame 
-                     post={getPostByPos('right_bottom')} 
-                     position="right_bottom" 
+                     post={getPostByPos('left_top')} 
+                     position="left_top" 
                      isAdmin={isAdmin} 
-                       onRefresh={fetchAdminPosts}
+                     onRefresh={fetchAdminPosts}
+                   />
+                 </div>
+                 <div className="bg-gradient-to-br from-amber-900/40 via-black/50 to-amber-700/20 backdrop-blur-sm rounded-[24px] border border-amber-500/30 shadow-[0_0_20px_4px_rgba(255,191,0,0.1)] p-4 ring-1 ring-amber-400/20 relative">
+                   <AdminSideFrame 
+                     post={getPostByPos('right_top')} 
+                     position="right_top" 
+                     isAdmin={isAdmin} 
+                     onRefresh={fetchAdminPosts}
                    />
                  </div>
                 {/* CommunityHub removed: community entry moved to navbar center */}
@@ -727,7 +735,7 @@ export default function HomePageClient({
               </button>
             </div>
             <span className="text-amber-400 text-base md:text-lg tracking-normal">{ads.length}</span>
-            <div className="flex flex-wrap items-center gap-2">
+            <div className="hidden md:flex flex-wrap items-center gap-2">
               {visibleCategories.map((category) => (
                   <button
                     key={category}

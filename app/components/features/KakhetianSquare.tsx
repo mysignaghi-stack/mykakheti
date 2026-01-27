@@ -324,8 +324,11 @@ export default function KakhetianSquare({ isAdmin, controlToken }: KakhetianSqua
       if (type === 'image') {
         finalFile = await imageCompression(file, { maxSizeMB: 0.5, maxWidthOrHeight: 1200 });
       }
-      const fileName = `chat-${Date.now()}-${Math.random().toString(36).substring(7)}`;
-      const { error } = await supabase.storage.from('square-media').upload(fileName, finalFile);
+      const extension = file.name.split('.').pop()?.toLowerCase() || (type === 'image' ? 'jpg' : 'mp4');
+      const fileName = `chat-${Date.now()}-${Math.random().toString(36).substring(7)}.${extension}`;
+      const { error } = await supabase.storage
+        .from('square-media')
+        .upload(fileName, finalFile, { contentType: file.type });
       if (error) throw error;
       const { data } = supabase.storage.from('square-media').getPublicUrl(fileName);
       return { url: data.publicUrl, type };

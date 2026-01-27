@@ -309,6 +309,8 @@ export default function AdminPosts() {
     setSelectedFiles(prev => [...prev, ...files]);
   };
 
+  const isVideoUrl = (url?: string | null) => !!url && /\.(mp4|mov|avi|webm|mkv|m4v)$/i.test(url);
+
   const getPostMedia = (post: AdminPost) => {
     const allImages = Array.isArray(post.media_urls) ? post.media_urls.filter(Boolean) : [];
     const primary = post.media_url ?? null;
@@ -594,19 +596,37 @@ export default function AdminPosts() {
                   <p className="text-white/60 text-sm mb-2">{post.category}</p>
                   {(() => {
                     const media = getPostMedia(post);
-                    return media.length > 0 ? (
+                    if (media.length === 0) return null;
+                    const primary = media[0];
+                    const primaryIsVideo = isVideoUrl(primary);
+                    const imageThumbs = media.filter((url) => !isVideoUrl(url));
+                    const extraImages = primaryIsVideo ? imageThumbs.slice(0, 2) : imageThumbs.slice(1, 3);
+                    const displayedCount = 1 + extraImages.length;
+                    const remainingCount = media.length - displayedCount;
+
+                    return (
                       <div className="mb-3 flex items-center gap-3 overflow-hidden">
                         <div className="relative w-16 h-16 rounded-xl overflow-hidden border border-white/10 bg-white/5 shrink-0">
-                          <Image
-                            src={media[0]}
-                            alt={post.title ?? ''}
-                            fill
-                            sizes="64px"
-                            className="object-cover"
-                          />
+                          {primaryIsVideo ? (
+                            <video
+                              src={primary}
+                              className="h-full w-full object-cover"
+                              muted
+                              playsInline
+                              preload="metadata"
+                            />
+                          ) : (
+                            <Image
+                              src={primary}
+                              alt={post.title ?? ''}
+                              fill
+                              sizes="64px"
+                              className="object-cover"
+                            />
+                          )}
                         </div>
                         <div className="flex flex-wrap gap-2 overflow-hidden">
-                          {media.slice(1, 3).map((url, idx) => (
+                          {extraImages.map((url, idx) => (
                             <div key={`${post.id}-thumb-${idx}`} className="relative w-10 h-10 rounded-lg overflow-hidden border border-white/10 bg-white/5 shrink-0">
                               <Image
                                 src={url}
@@ -617,14 +637,14 @@ export default function AdminPosts() {
                               />
                             </div>
                           ))}
-                          {media.length > 3 && (
+                          {remainingCount > 0 && (
                             <div className="w-10 h-10 rounded-lg border border-white/10 bg-white/5 flex items-center justify-center text-[8px] text-white/60 font-black shrink-0">
-                              +{media.length - 3}
+                              +{remainingCount}
                             </div>
                           )}
                         </div>
                       </div>
-                    ) : null;
+                    );
                   })()}
                   <p className="text-white/80 text-sm line-clamp-2">{post.content}</p>
                   <div className="flex gap-2 mt-2">

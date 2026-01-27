@@ -14,14 +14,24 @@ type SquareMessage = {
   archived?: boolean;
 };
 
+type BannedUser = {
+  id: string;
+  ip_address: string;
+  reason?: string | null;
+  banned_at?: string | null;
+  banned_by?: string | null;
+};
+
 export default function AdminSquare() {
   const [messages, setMessages] = useState<SquareMessage[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedMessages, setSelectedMessages] = useState<string[]>([]);
   const [viewingMessage, setViewingMessage] = useState<SquareMessage | null>(null);
+  const [bannedUsers, setBannedUsers] = useState<BannedUser[]>([]);
 
   useEffect(() => {
     fetchMessages();
+    fetchBannedUsers();
   }, []);
 
   const fetchMessages = async () => {
@@ -38,6 +48,20 @@ export default function AdminSquare() {
       console.error('Error fetching messages:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchBannedUsers = async () => {
+    try {
+      const { data, error } = await (supabase as any)
+        .from('banned_users')
+        .select('id, ip_address, reason, banned_at, banned_by')
+        .order('banned_at', { ascending: false });
+
+      if (error) throw error;
+      setBannedUsers(data || []);
+    } catch (error) {
+      console.error('Error fetching banned users:', error);
     }
   };
 
@@ -77,10 +101,34 @@ export default function AdminSquare() {
         const payload = await response.json().catch(() => ({}));
         throw new Error(payload?.error || 'Ban failed');
       }
+      await fetchBannedUsers();
       alert('IP დაბანდა');
     } catch (error) {
       console.error('Ban error:', error);
       alert('შეცდომა ბანისას');
+    }
+  };
+
+  const unbanIP = async (ip: string) => {
+    if (!ip) return alert('ID ვერ მოიძებნა');
+    if (!confirm(`ნამდვილად გსურთ ID ${ip}-ის ბანის მოხსნა?`)) return;
+
+    try {
+      const response = await fetch('/api/admin/square/unban', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ip }),
+      });
+
+      if (!response.ok) {
+        const payload = await response.json().catch(() => ({}));
+        throw new Error(payload?.error || 'Unban failed');
+      }
+      await fetchBannedUsers();
+      alert('ბანი მოიხსნა');
+    } catch (error) {
+      console.error('Unban error:', error);
+      alert('შეცდომა ბანის მოხსნისას');
     }
   };
 
@@ -161,6 +209,31 @@ export default function AdminSquare() {
             <button onClick={deselectAll} className="bg-white/5 px-4 py-2 rounded-xl text-xs font-black uppercase">მოხსნა</button>
             <button onClick={deleteSelected} disabled={selectedMessages.length === 0} className="bg-red-600 disabled:bg-gray-600 px-4 py-2 rounded-xl text-xs font-black uppercase">არჩეულების წაშლა</button>
           </div>
+        </div>
+
+        <div className="bg-white/5 rounded-3xl border border-white/10 p-6 mb-6">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-sm font-black uppercase tracking-[0.3em] text-white/60">დაბანილი მომხმარებლები</h2>
+            <button onClick={fetchBannedUsers} className="bg-white/5 px-4 py-2 rounded-xl text-xs font-black uppercase">განახლება</button>
+          </div>
+          {bannedUsers.length === 0 ? (
+            <div className="text-center py-6 text-white/40 text-sm">დაბანილი მომხმარებელი არ არის</div>
+          ) : (
+            <div className="space-y-3">
+              {bannedUsers.map((ban) => (
+                <div key={ban.id} className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 bg-black/30 rounded-2xl border border-white/10 p-4">
+                  <div>
+                    <div className="text-amber-400 font-black text-sm">ID: {ban.ip_address}</div>
+                    <div className="text-white/50 text-xs mt-1">{ban.reason || '—'}</div>
+                    {ban.banned_at && (
+                      <div className="text-white/30 text-xs">{new Date(ban.banned_at).toLocaleString('ka-GE')}</div>
+                    )}
+                  </div>
+                  <button onClick={() => unbanIP(ban.ip_address)} className="bg-amber-600 px-4 py-2 rounded-xl text-xs font-black uppercase">ბანის მოხსნა</button>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
 
         <div className="space-y-4">

@@ -1,12 +1,14 @@
 import Link from 'next/link';
 import type { ReactNode } from 'react';
-import { adminSignOut, getAdminDashboardStats, refreshAdminDashboard } from './actions';
+import { getAdminDashboardStats } from './actions';
 
 export const dynamic = 'force-dynamic';
 
 const ADMIN_LINKS = [
   { href: '/admin/messages', title: 'შეტყობინებები', desc: 'კონტაქტის ფორმის მესიჯები' },
   { href: '/admin/posts', title: 'ადმინისტრატორის განცხადებები', desc: 'ადმინის პოსტების მართვა' },
+  { href: '/admin/announcements', title: 'მომხმარებლის განცხადებები', desc: 'მომხმარებლების განცხადებების მოდერაცია' },
+  { href: '/admin/community', title: 'სათემო ჩართულობა', desc: 'სათემო სექტორების მოდერაცია' },
   { href: '/admin/square', title: 'კახური მოედანი', desc: 'ჩატის მესიჯების მართვა' },
   { href: '/admin/transport', title: 'ტრანსპორტი', desc: 'მარშრუტების და განრიგის მართვა' },
   { href: '/admin/site-settings', title: 'საიტის პარამეტრები', desc: 'უკანა ფონის და სხვა პარამეტრების მართვა' },
@@ -71,10 +73,10 @@ export default async function AdminDashboard() {
           </div>
           <div className="flex gap-3 flex-wrap">
             <Link href="/" className="bg-white/5 border border-white/10 px-5 py-2 rounded-xl text-xs font-black uppercase">მთავარი</Link>
-            <form action={refreshAdminDashboard}>
+            <form action="/api/admin/refresh" method="post">
               <button type="submit" className="bg-white/5 border border-white/10 px-5 py-2 rounded-xl text-xs font-black uppercase">განახლება</button>
             </form>
-            <form action={adminSignOut}>
+            <form action="/api/admin/signout" method="post">
               <button type="submit" className="bg-red-600 px-5 py-2 rounded-xl text-xs font-black uppercase">გამოსვლა</button>
             </form>
           </div>
