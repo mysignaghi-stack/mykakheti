@@ -40,6 +40,9 @@ export default function AnnouncementsSection() {
   const [loading, setLoading] = useState(true);
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
 
+  const normalizeCategory = (value: string | null | undefined) =>
+    (value ?? '').trim();
+
   useEffect(() => {
     const fetchAnnouncements = async () => {
       setLoading(true);
@@ -72,12 +75,14 @@ export default function AnnouncementsSection() {
   }, []);
 
   const visibleAnnouncements = announcements.filter(
-    (announcement) => announcement.category !== 'სათემო ჩართულობა'
+    (announcement) => normalizeCategory(announcement.category) !== 'სათემო ჩართულობა'
   );
 
   const filteredAnnouncements = selectedCategory === 'all'
     ? visibleAnnouncements
-    : visibleAnnouncements.filter(announcement => announcement.category === selectedCategory);
+    : visibleAnnouncements.filter(
+        announcement => normalizeCategory(announcement.category) === normalizeCategory(selectedCategory)
+      );
 
   const getCategoryColor = (categoryId: string) => {
     const category = MAIN_CATEGORIES.find(cat => cat.id === categoryId);
@@ -206,7 +211,7 @@ export default function AnnouncementsSection() {
             <button
               key={category.id}
               onClick={() => {
-                setSelectedCategory(category.id);
+                setSelectedCategory(normalizeCategory(category.id));
               }}
               className={`flex items-center gap-2 px-4 py-3 rounded-xl backdrop-blur-xl border transition-all duration-300 whitespace-nowrap ${
                 selectedCategory === category.id
@@ -227,11 +232,28 @@ export default function AnnouncementsSection() {
           ყველა კატეგორია
         </h3>
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+          <button
+            onClick={() => setSelectedCategory('all')}
+            className={`group flex items-center gap-4 p-4 rounded-2xl border transition-all duration-300 text-left ${
+              selectedCategory === 'all'
+                ? 'bg-amber-500/15 border-amber-300/50 text-white shadow-[0_0_25px_rgba(230,126,34,0.25)]'
+                : 'bg-white/5 hover:bg-white/10 border-white/10'
+            }`}
+          >
+            <span className="flex items-center justify-center w-12 h-12 rounded-xl bg-black/40 border border-white/10 group-hover:border-white/30">
+              {renderCategoryIcon('all')}
+            </span>
+            <span className="text-sm sm:text-base text-white/90 font-semibold">ყველა</span>
+          </button>
           {ALL_CATEGORIES.filter(category => category.id !== 'სათემო ჩართულობა').map(category => (
             <button
               key={category.id}
-              onClick={() => setSelectedCategory(category.id)}
-              className={`group flex items-center gap-4 p-4 rounded-2xl bg-white/5 hover:bg-white/10 border border-white/10 transition-all duration-300 text-left ${category.glow} ${category.accent}`}
+              onClick={() => setSelectedCategory(normalizeCategory(category.id))}
+              className={`group flex items-center gap-4 p-4 rounded-2xl border transition-all duration-300 text-left ${
+                selectedCategory === category.id
+                  ? 'bg-amber-500/15 border-amber-300/50 text-white shadow-[0_0_25px_rgba(230,126,34,0.25)]'
+                  : 'bg-white/5 hover:bg-white/10 border-white/10'
+              } ${category.glow} ${category.accent}`}
             >
               <span className="flex items-center justify-center w-12 h-12 rounded-xl bg-black/40 border border-white/10 group-hover:border-white/30">
                 {renderCategoryIcon(category.id)}

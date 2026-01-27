@@ -4,12 +4,21 @@ import React from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { formatGeorgianDate } from '@/app/lib/utils';
-import type { Tables } from '@/types/helpers';
-
-type Announcement = Tables<'announcements'>;
+type AnnouncementLike = {
+  id: string;
+  title?: string | null;
+  description?: string | null;
+  price?: string | null;
+  currency?: string | null;
+  location?: string | null;
+  image_url?: string | null;
+  all_images?: string[] | null;
+  phone?: string | null;
+  created_at?: string | null;
+};
 
 interface AnnouncementCardProps {
-  announcement: Announcement;
+  announcement: AnnouncementLike;
 }
 
 export default function AnnouncementCard({ announcement }: AnnouncementCardProps) {
@@ -68,12 +77,25 @@ export default function AnnouncementCard({ announcement }: AnnouncementCardProps
 
         {announcement.phone && (
           <div className="pt-2">
-            <a
-              href={`tel:${announcement.phone}`}
+            <span
+              role="button"
+              tabIndex={0}
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                window.location.href = `tel:${announcement.phone}`;
+              }}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  window.location.href = `tel:${announcement.phone}`;
+                }
+              }}
               className="inline-flex items-center justify-center px-3 py-2 rounded-xl bg-[#e67e22]/15 text-[#e67e22] text-xs font-black border border-[#e67e22]/30 hover:bg-[#e67e22]/25 transition"
             >
               📞 {announcement.phone}
-            </a>
+            </span>
           </div>
         )}
       </div>

@@ -26,6 +26,7 @@ import ChatPopup from '@/app/components/features/ChatPopup';
 import AgroDetailsModal from '@/app/components/home/AgroDetailsModal';
 import CommunityWidgets from '@/app/components/community/CommunityWidgets';
 import CommunityEngagement from '../../components/home/CommunityEngagement';
+import AnnouncementCard from '@/app/components/home/AnnouncementCard';
 import type { CommunityDataset } from '@/app/lib/homeData';
 
 type AdminPost = Tables<'admin_posts'>;
@@ -415,6 +416,7 @@ export default function HomePageClient({
 
   const filteredAds = useMemo(() => {
     return ads.filter(ad => {
+      if (COMMUNITY_CATEGORIES.includes(ad.category as typeof COMMUNITY_CATEGORIES[number])) return false;
       if (ad.is_archived) return false;
       const matchCat = selectedCategories.length === 0 || selectedCategories.includes('ყველა') || selectedCategories.includes(ad.category);
       const matchLoc = selectedLocation === 'ყველა კახეთი' || ad.location.includes(selectedLocation);
@@ -422,6 +424,14 @@ export default function HomePageClient({
       return matchCat && matchLoc && matchSearch;
     });
   }, [ads, selectedCategories, selectedLocation, searchTerm]);
+
+  const selectCategory = (category: string) => {
+    if (category === 'ყველა') {
+      setSelectedCategories(['ყველა']);
+      return;
+    }
+    setSelectedCategories([category]);
+  };
 
 
   const allNonCommunityCategories = useMemo(() => {
@@ -677,12 +687,18 @@ export default function HomePageClient({
             <span className="text-amber-400 text-base md:text-lg tracking-normal">{ads.length}</span>
             <div className="flex flex-wrap items-center gap-2">
               {visibleCategories.map((category) => (
-                <span
-                  key={category}
-                  className="px-2.5 py-1 rounded-full border border-white/10 bg-white/5 text-[10px] md:text-[11px] font-black uppercase tracking-[0.2em] text-white/70"
-                >
-                  {category}
-                </span>
+                  <button
+                    key={category}
+                    type="button"
+                    onClick={() => selectCategory(category)}
+                    className={`px-2.5 py-1 rounded-full border text-[10px] md:text-[11px] font-black uppercase tracking-[0.2em] transition ${
+                      selectedCategories.includes(category)
+                        ? 'border-amber-300/50 bg-amber-500/20 text-amber-200'
+                        : 'border-white/10 bg-white/5 text-white/70 hover:border-white/30'
+                    }`}
+                  >
+                    {category}
+                  </button>
               ))}
             </div>
           </div>
@@ -694,6 +710,20 @@ export default function HomePageClient({
             ყველა კატეგორია
           </button>
         </div>
+      </div>
+
+      <div className="w-full max-w-6xl mx-auto px-6 md:px-10 mt-6">
+        {filteredAds.length > 0 ? (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+            {filteredAds.map((ad) => (
+              <AnnouncementCard key={ad.id} announcement={ad} />
+            ))}
+          </div>
+        ) : (
+          <div className="text-center py-10 text-white/60 text-sm">
+            ამ კატეგორიაში განცხადებები არ მოიძებნა
+          </div>
+        )}
       </div>
 
       {showAllCategories && (
@@ -719,12 +749,21 @@ export default function HomePageClient({
 
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
               {allNonCommunityCategories.map((category) => (
-                <div
+                <button
                   key={category}
-                  className="px-3 py-3 rounded-2xl bg-white/5 border border-white/10 text-[11px] md:text-xs font-black uppercase tracking-[0.2em] text-white/80 text-center"
+                  type="button"
+                  onClick={() => {
+                    selectCategory(category);
+                    setShowAllCategories(false);
+                  }}
+                  className={`px-3 py-3 rounded-2xl border text-[11px] md:text-xs font-black uppercase tracking-[0.2em] transition text-center ${
+                    selectedCategories.includes(category)
+                      ? 'border-amber-300/50 bg-amber-500/20 text-amber-200'
+                      : 'border-white/10 bg-white/5 text-white/80 hover:border-white/30'
+                  }`}
                 >
                   {category}
-                </div>
+                </button>
               ))}
             </div>
           </div>
