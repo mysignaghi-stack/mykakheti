@@ -7,6 +7,7 @@ import { useParams } from "next/navigation";
 import { supabase } from "../../../lib/supabase";
 import type { Database } from "../../../../types/supabase";
 import MasterCard from "../../../components/community/MasterCard";
+import ShareButtons from "../../../components/community/ShareButtons";
 
 type MasterRow = Database["public"]["Tables"]["masters"]["Row"];
 
@@ -66,6 +67,8 @@ export default function MasterDetailsPage() {
         </div>
         
         <MasterCard master={item} />
+
+        <ShareButtons className="pt-2" />
       </div>
     </main>
   );

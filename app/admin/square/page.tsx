@@ -8,7 +8,8 @@ type SquareMessage = {
   id: string;
   message: string;
   user_name: string;
-  ip_address: string;
+  ip_address?: string | null;
+  fingerprint?: string | null;
   created_at: string;
   archived?: boolean;
 };
@@ -58,7 +59,8 @@ export default function AdminSquare() {
   };
 
   const banIP = async (ip: string) => {
-    if (!confirm(`ნამდვილად გსურთ IP ${ip}-ის ბანი?`)) return;
+    if (!ip) return alert('ID ვერ მოიძებნა');
+    if (!confirm(`ნამდვილად გსურთ ID ${ip}-ის ბანი?`)) return;
 
     try {
       const { error } = await (supabase as any)
@@ -167,8 +169,8 @@ export default function AdminSquare() {
                     </div>
                     <div className="flex gap-2">
                       <button onClick={() => setViewingMessage(message)} className="text-xs bg-green-600 px-2 py-1 rounded">ნახვა</button>
-                      <button onClick={() => alert(`IP: ${message.ip_address}`)} className="text-xs bg-blue-600 px-2 py-1 rounded">IP</button>
-                      <button onClick={() => banIP(message.ip_address)} className="text-xs bg-red-600 px-2 py-1 rounded">ბანი</button>
+                      <button onClick={() => alert(`ID: ${message.fingerprint || message.ip_address || '-'}`)} className="text-xs bg-blue-600 px-2 py-1 rounded">ID</button>
+                      <button onClick={() => banIP(message.fingerprint || message.ip_address || '')} className="text-xs bg-red-600 px-2 py-1 rounded">ბანი</button>
                       <button onClick={() => archiveMessage(message.id)} className="text-xs bg-yellow-600 px-2 py-1 rounded">არქივი</button>
                       <button onClick={() => deleteMessage(message.id)} className="text-xs bg-red-600 px-2 py-1 rounded">წაშლა</button>
                     </div>
@@ -193,7 +195,7 @@ export default function AdminSquare() {
                 <div>
                   <h3 className="text-xl font-bold text-amber-400">{viewingMessage.user_name}</h3>
                   <p className="text-white/60 text-sm">{new Date(viewingMessage.created_at).toLocaleString('ka-GE')}</p>
-                  <p className="text-white/40 text-sm">IP: {viewingMessage.ip_address}</p>
+                  <p className="text-white/40 text-sm">ID: {viewingMessage.fingerprint || viewingMessage.ip_address || '-'}</p>
                   {viewingMessage.archived && <p className="text-yellow-400 text-sm">(დაარქივებული)</p>}
                 </div>
                 <button
@@ -207,7 +209,7 @@ export default function AdminSquare() {
                 <p className="text-white whitespace-pre-wrap">{viewingMessage.message}</p>
               </div>
               <div className="flex gap-2 flex-wrap">
-                <button onClick={() => { banIP(viewingMessage.ip_address); setViewingMessage(null); }} className="bg-red-600 px-4 py-2 rounded-xl text-sm font-bold">ბანი IP</button>
+                <button onClick={() => { banIP(viewingMessage.fingerprint || viewingMessage.ip_address || ''); setViewingMessage(null); }} className="bg-red-600 px-4 py-2 rounded-xl text-sm font-bold">ბანი ID</button>
                 <button onClick={() => { archiveMessage(viewingMessage.id); setViewingMessage(null); }} className="bg-yellow-600 px-4 py-2 rounded-xl text-sm font-bold">დაარქივება</button>
                 <button onClick={() => { deleteMessage(viewingMessage.id); setViewingMessage(null); }} className="bg-red-600 px-4 py-2 rounded-xl text-sm font-bold">წაშლა</button>
               </div>

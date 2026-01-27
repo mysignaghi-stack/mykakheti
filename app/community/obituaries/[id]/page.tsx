@@ -6,6 +6,7 @@ import Link from "next/link";
 import { useParams } from "next/navigation";
 import { supabase } from "../../../lib/supabase";
 import type { Database } from "../../../../types/supabase";
+import ShareButtons from "../../../components/community/ShareButtons";
 
 type ObituaryRow = Database["public"]["Tables"]["obituaries"]["Row"];
 
@@ -90,6 +91,8 @@ export default function ObituaryDetailsPage() {
             <p className="text-white/90 text-base leading-relaxed whitespace-pre-wrap">{item.notes}</p>
           )}
         </div>
+
+        <ShareButtons className="pt-2" />
       </div>
     </main>
   );

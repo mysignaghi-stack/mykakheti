@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import type { Database } from '../../../../types/supabase';
 import { supabase } from '../../../lib/supabase';
+import ShareButtons from '../../../components/community/ShareButtons';
 
 type LostFoundRow = Database['public']['Tables']['lost_found']['Row'];
 
@@ -64,12 +65,7 @@ export default function LostFoundDetails() {
         {item.kind==='lost' && item.reward && (
           <div className="text-amber-400 font-black">მპოვნელს დავასაჩუქრებ {item.reward_note ? `— ${item.reward_note}`:''}</div>
         )}
-        <div>
-          <button onClick={() => {
-            const url = window.location.href;
-            window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`, '_blank');
-          }} className="bg-blue-600/20 text-blue-400 px-4 py-2 rounded-xl text-sm hover:bg-blue-600 hover:text-white">გაზიარება Facebook-ზე</button>
-        </div>
+        <ShareButtons className="pt-2" />
       </div>
     </main>
   );

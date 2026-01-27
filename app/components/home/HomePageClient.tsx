@@ -126,6 +126,8 @@ export default function HomePageClient({
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategories, setSelectedCategories] = useState<string[]>(['ყველა']);
   const [selectedLocation, setSelectedLocation] = useState('ყველა კახეთი');
+  const [showAllAnnouncements, setShowAllAnnouncements] = useState(false);
+  const [announcementsPage, setAnnouncementsPage] = useState(0);
   const [bgImage, setBgImage] = useState<string | null>(initialBgImage ?? null);
   // Marquee text state
   const [marqueeText, setMarqueeText] = useState<string>(initialMarqueeText || FALLBACK_MARQUEE);
@@ -428,10 +430,21 @@ export default function HomePageClient({
   const selectCategory = (category: string) => {
     if (category === 'ყველა') {
       setSelectedCategories(['ყველა']);
+      setShowAllAnnouncements(true);
+      setAnnouncementsPage(0);
       return;
     }
     setSelectedCategories([category]);
+    setShowAllAnnouncements(false);
+    setAnnouncementsPage(0);
   };
+
+  const pageSize = 5;
+  const maxPage = Math.max(0, Math.ceil(filteredAds.length / pageSize) - 1);
+  const safePage = Math.min(announcementsPage, maxPage);
+  const visibleAds = showAllAnnouncements
+    ? filteredAds
+    : filteredAds.slice(safePage * pageSize, safePage * pageSize + pageSize);
 
 
   const allNonCommunityCategories = useMemo(() => {
@@ -683,7 +696,18 @@ export default function HomePageClient({
       <div className="w-full max-w-6xl mx-auto px-6 md:px-10 mt-8 mb-10">
         <div className="relative bg-black/50 border border-amber-500/30 rounded-2xl px-5 py-5 min-h-[64px] shadow-[0_8px_30px_rgba(0,0,0,0.35)]">
           <div className="absolute top-3 left-4 right-4 flex flex-wrap items-center gap-x-3 gap-y-2 text-[11px] md:text-xs font-extrabold uppercase tracking-[0.2em] text-white/90">
-            <span>განცხადებები</span>
+            <div className="flex items-center gap-3">
+              <button
+                type="button"
+                onClick={() => {
+                  setSelectedCategories(['ყველა']);
+                  setShowAllAnnouncements(true);
+                }}
+                className="px-3 py-1 rounded-full border border-amber-300/40 bg-amber-500/10 text-[10px] font-black uppercase tracking-[0.2em] text-amber-200 hover:bg-amber-500/20 transition"
+              >
+                ყველა განცხადება
+              </button>
+            </div>
             <span className="text-amber-400 text-base md:text-lg tracking-normal">{ads.length}</span>
             <div className="flex flex-wrap items-center gap-2">
               {visibleCategories.map((category) => (
@@ -694,7 +718,7 @@ export default function HomePageClient({
                     className={`px-2.5 py-1 rounded-full border text-[10px] md:text-[11px] font-black uppercase tracking-[0.2em] transition ${
                       selectedCategories.includes(category)
                         ? 'border-amber-300/50 bg-amber-500/20 text-amber-200'
-                        : 'border-white/10 bg-white/5 text-white/70 hover:border-white/30'
+                        : 'border-white/10 bg-white/5 text-white/70 hover:border-white/30 hover:text-white'
                     }`}
                   >
                     {category}
@@ -712,12 +736,24 @@ export default function HomePageClient({
         </div>
       </div>
 
+
       <div className="w-full max-w-6xl mx-auto px-6 md:px-10 mt-6">
-        {filteredAds.length > 0 ? (
+        {visibleAds.length > 0 ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-            {filteredAds.map((ad) => (
+            {visibleAds.map((ad) => (
               <AnnouncementCard key={ad.id} announcement={ad} />
             ))}
+            {filteredAds.length > 0 && (
+              <div className="relative rounded-2xl border border-transparent min-h-[180px]">
+                <button
+                  type="button"
+                  onClick={() => setAnnouncementsPage((p) => (p >= maxPage ? 0 : p + 1))}
+                  className="absolute bottom-3 left-3 px-4 py-2 rounded-full border border-amber-300/50 bg-amber-500/20 text-amber-200 font-black uppercase tracking-[0.2em] text-xs hover:bg-amber-500/30 transition"
+                >
+                  შემდეგი
+                </button>
+              </div>
+            )}
           </div>
         ) : (
           <div className="text-center py-10 text-white/60 text-sm">
@@ -759,7 +795,7 @@ export default function HomePageClient({
                   className={`px-3 py-3 rounded-2xl border text-[11px] md:text-xs font-black uppercase tracking-[0.2em] transition text-center ${
                     selectedCategories.includes(category)
                       ? 'border-amber-300/50 bg-amber-500/20 text-amber-200'
-                      : 'border-white/10 bg-white/5 text-white/80 hover:border-white/30'
+                      : 'border-white/10 bg-white/5 text-white/80 hover:border-white/30 hover:text-white'
                   }`}
                 >
                   {category}

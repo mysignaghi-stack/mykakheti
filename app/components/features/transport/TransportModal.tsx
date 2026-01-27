@@ -42,7 +42,10 @@ export default function TransportModal({ isAdmin, onClose, staticSchedule }: Tra
         .select('*')
         .order('created_at', { ascending: false });
 
-      if (routesError) throw routesError;
+      if (routesError) {
+        const message = routesError?.message || 'Unknown error';
+        console.warn('Transport routes fetch failed:', message);
+      }
 
       // 2. განრიგის წამოღება
       const { data: schedulesData, error: schedulesError } = await (
@@ -51,7 +54,10 @@ export default function TransportModal({ isAdmin, onClose, staticSchedule }: Tra
         .select('*')
         .order('created_at', { ascending: false });
 
-      if (schedulesError) throw schedulesError;
+      if (schedulesError) {
+        const message = schedulesError?.message || 'Unknown error';
+        console.warn('Transport schedules fetch failed:', message);
+      }
 
       // 3. State-ის განახლება (ბაზის snake_case-ის გადაყვანა ჩვენს camelCase-ზე)
       if (routesData) {
@@ -80,9 +86,11 @@ export default function TransportModal({ isAdmin, onClose, staticSchedule }: Tra
       }
 
     } catch (error: unknown) {
-      const message = error instanceof Error ? error.message : 'Unknown error';
-      console.error('Error fetching transport data:', message);
-      alert('მონაცემების წამოღება ვერ მოხერხდა');
+      const message =
+        error && typeof error === 'object' && 'message' in error
+          ? String((error as { message?: string }).message)
+          : 'Unknown error';
+      console.warn('Error fetching transport data:', message);
     } finally {
       setLoading(false);
     }

@@ -7,6 +7,7 @@ import { useParams } from "next/navigation";
 import { supabase } from "../../../lib/supabase";
 import type { Database } from "../../../../types/supabase";
 import CongratulationsCard from "../../../components/congratulations/CongratulationsCard";
+import ShareButtons from "../../../components/community/ShareButtons";
 
 type CongratsRow = Database["public"]["Tables"]["congratulations"]["Row"];
 
@@ -66,6 +67,8 @@ export default function CongratsDetailsPage() {
         </div>
 
         <CongratulationsCard item={item} />
+
+        <ShareButtons className="pt-2" />
       </div>
     </main>
   );

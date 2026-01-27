@@ -45,6 +45,7 @@ export default function KakhetianSquare({ isAdmin, controlToken }: KakhetianSqua
   const [activeTab, setActiveTab] = useState(0);
   const [showEmojis, setShowEmojis] = useState(false);
   const [isSoundOn, setIsSoundOn] = useState(true);
+  const [audioReady, setAudioReady] = useState(false);
   
   const [isUploading, setIsUploading] = useState(false);
   
@@ -57,10 +58,15 @@ export default function KakhetianSquare({ isAdmin, controlToken }: KakhetianSqua
   // Refs
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  const typingAudioRef = useRef<HTMLAudioElement | null>(null);
+  const sendAudioRef = useRef<HTMLAudioElement | null>(null);
+  const emojiAudioRef = useRef<HTMLAudioElement | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const emojiPickerRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const ownScrollRef = useRef<HTMLDivElement>(null);
+  const audioUnlockedRef = useRef(false);
+  const lastTypingSoundRef = useRef(0);
 
   // უნიკალური ID თითოეული ჩატის ინსტანციისთვის
   const channelId = useRef(`room_${Date.now()}_${Math.random()}`).current;
@@ -68,10 +74,62 @@ export default function KakhetianSquare({ isAdmin, controlToken }: KakhetianSqua
   // --- Helpers ---
   const playSound = useCallback(() => {
     if (isSoundOn && audioRef.current) {
+        if (!audioReady) {
+          try {
+            audioRef.current.load();
+          } catch {
+            // ignore
+          }
+        }
         audioRef.current.currentTime = 0;
         audioRef.current.play().catch(err => console.log("Audio prevented:", err));
     }
+  }, [isSoundOn, audioReady]);
+
+  const playTypingSound = useCallback(() => {
+    if (!isSoundOn || !typingAudioRef.current) return;
+    const now = Date.now();
+    if (now - lastTypingSoundRef.current < 120) return;
+    lastTypingSoundRef.current = now;
+    typingAudioRef.current.currentTime = 0;
+    typingAudioRef.current.play().catch(() => undefined);
   }, [isSoundOn]);
+
+  const playSendSound = useCallback(() => {
+    if (!isSoundOn || !sendAudioRef.current) return;
+    sendAudioRef.current.currentTime = 0;
+    sendAudioRef.current.play().catch(() => undefined);
+  }, [isSoundOn]);
+
+  const playEmojiSound = useCallback(() => {
+    playTypingSound();
+  }, [playTypingSound]);
+
+  const unlockAudio = useCallback(() => {
+    if (audioUnlockedRef.current || !audioRef.current) return;
+    audioRef.current.muted = false;
+    audioRef.current
+      .play()
+      .then(() => {
+        audioRef.current?.pause();
+        if (audioRef.current) audioRef.current.currentTime = 0;
+        typingAudioRef.current?.play().then(() => {
+          typingAudioRef.current?.pause();
+          if (typingAudioRef.current) typingAudioRef.current.currentTime = 0;
+        }).catch(() => undefined);
+        sendAudioRef.current?.play().then(() => {
+          sendAudioRef.current?.pause();
+          if (sendAudioRef.current) sendAudioRef.current.currentTime = 0;
+        }).catch(() => undefined);
+        emojiAudioRef.current?.play().then(() => {
+          emojiAudioRef.current?.pause();
+          if (emojiAudioRef.current) emojiAudioRef.current.currentTime = 0;
+        }).catch(() => undefined);
+        audioUnlockedRef.current = true;
+        setAudioReady(true);
+      })
+      .catch(() => undefined);
+  }, []);
 
   const mergeMessages = useCallback((current: Message[], incoming: Message[]) => {
     const map = new Map<string, Message>();
@@ -102,6 +160,35 @@ export default function KakhetianSquare({ isAdmin, controlToken }: KakhetianSqua
     if (savedName) setMsgName(savedName);
     
     audioRef.current = new Audio('https://assets.mixkit.co/active_storage/sfx/2358/2358-preview.mp3');
+    audioRef.current.preload = 'auto';
+    audioRef.current.volume = 0.6;
+    audioRef.current.muted = false;
+
+    typingAudioRef.current = new Audio('https://assets.mixkit.co/active_storage/sfx/2568/2568-preview.mp3');
+    typingAudioRef.current.preload = 'auto';
+    typingAudioRef.current.volume = 0.25;
+    typingAudioRef.current.muted = false;
+
+    sendAudioRef.current = new Audio('https://assets.mixkit.co/active_storage/sfx/2354/2354-preview.mp3');
+    sendAudioRef.current.preload = 'auto';
+    sendAudioRef.current.volume = 0.45;
+    sendAudioRef.current.muted = false;
+
+    emojiAudioRef.current = new Audio('https://assets.mixkit.co/active_storage/sfx/2218/2218-preview.mp3');
+    emojiAudioRef.current.preload = 'auto';
+    emojiAudioRef.current.volume = 0.3;
+    emojiAudioRef.current.muted = false;
+
+    const handleCanPlay = () => setAudioReady(true);
+    audioRef.current.addEventListener('canplaythrough', handleCanPlay);
+    try {
+      audioRef.current.load();
+    } catch {
+      // ignore
+    }
+
+    const handleUnlock = () => unlockAudio();
+    window.addEventListener('pointerdown', handleUnlock, { once: true });
     
     const checkBan = async () => {
       if (!controlToken) return;
@@ -136,7 +223,11 @@ export default function KakhetianSquare({ isAdmin, controlToken }: KakhetianSqua
     const cleanupInterval = setInterval(cleanupOldMessages, 5 * 60 * 1000);
     cleanupOldMessages(); // დაუყოვნებლივ გაშვება
     
-    return () => clearInterval(cleanupInterval);
+    return () => {
+      window.removeEventListener('pointerdown', handleUnlock);
+      audioRef.current?.removeEventListener('canplaythrough', handleCanPlay);
+      clearInterval(cleanupInterval);
+    };
   }, [controlToken, scrollToBottom]);
 
   // 2. REALTIME Subscription
@@ -148,7 +239,9 @@ export default function KakhetianSquare({ isAdmin, controlToken }: KakhetianSqua
         (payload) => {
           const newMsg = payload.new as Message;
           setMessages((prev) => mergeMessages(prev, [newMsg]));
-          playSound();
+          if (newMsg.fingerprint !== controlToken) {
+            playSound();
+          }
           setTimeout(() => scrollToBottom(true), 60);
         }
       )
@@ -258,8 +351,7 @@ export default function KakhetianSquare({ isAdmin, controlToken }: KakhetianSqua
           message: index === 0 ? trimmedText : '',
           created_at: nowIso,
           parent_id: replyTo?.id || null,
-          ip_address: controlToken,
-          fingerprint: 'web',
+          fingerprint: controlToken,
           pending: true,
           media_url: filePreviews[index],
           media_type: type,
@@ -272,8 +364,7 @@ export default function KakhetianSquare({ isAdmin, controlToken }: KakhetianSqua
         message: trimmedText,
         created_at: nowIso,
         parent_id: replyTo?.id || null,
-        ip_address: controlToken,
-        fingerprint: 'web',
+        fingerprint: controlToken,
         pending: true,
       });
     }
@@ -282,6 +373,8 @@ export default function KakhetianSquare({ isAdmin, controlToken }: KakhetianSqua
       setMessages((prev) => mergeMessages(prev, optimisticMessages));
       requestAnimationFrame(() => scrollToBottom(true));
     }
+
+    playSendSound();
 
     setIsUploading(true);
     try {
@@ -293,8 +386,7 @@ export default function KakhetianSquare({ isAdmin, controlToken }: KakhetianSqua
       const baseData = {
           sender_name: msgName,
           parent_id: replyTo?.id || null,
-          ip_address: controlToken,
-          fingerprint: 'web'
+          fingerprint: controlToken
       };
 
       const inserts = [];
@@ -307,7 +399,14 @@ export default function KakhetianSquare({ isAdmin, controlToken }: KakhetianSqua
           inserts.push({ ...baseData, message: trimmedText });
       }
 
-      const { data, error } = await (supabase as any).from('square_messages').insert(inserts).select();
+      const response = await fetch('/api/square/send', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ inserts })
+      });
+      const payload = await response.json().catch(() => ({}));
+      const error = response.ok ? null : new Error(payload?.error || 'Send failed');
+      const data = payload?.data;
 
         if (!error && data) {
           setMessages((prev) => {
@@ -341,13 +440,15 @@ export default function KakhetianSquare({ isAdmin, controlToken }: KakhetianSqua
   };
 
   const handleBan = async (msg: Message) => {
-      if (!confirm(`დავბლოკოთ მომხმარებელი? IP: ${msg.ip_address}`)) return;
-      await (supabase as any).from('banned_users').insert([{ ip_address: msg.ip_address }]);
+      const token = msg.fingerprint || msg.ip_address;
+      if (!token) return alert('იდენტიფიკატორი ვერ მოიძებნა');
+      if (!confirm(`დავბლოკოთ მომხმარებელი? ID: ${token}`)) return;
+      await (supabase as any).from('banned_users').insert([{ ip_address: token }]);
       alert("მომხმარებელი დაიბლოკა");
   };
 
   return (
-    <div className="flex flex-col h-full w-full bg-slate-950/80 backdrop-blur-3xl rounded-[30px] border border-amber-500/20 shadow-2xl overflow-hidden relative">
+    <div onPointerDown={unlockAudio} className="flex flex-col h-full w-full bg-slate-950/80 backdrop-blur-3xl rounded-[30px] border border-amber-500/20 shadow-2xl overflow-hidden relative">
       
       {/* Header */}
       <div className="px-5 py-4 bg-white/[0.03] border-b border-white/10 flex justify-between items-center z-20 shrink-0">
@@ -361,7 +462,24 @@ export default function KakhetianSquare({ isAdmin, controlToken }: KakhetianSqua
                 </div>
             </div>
         </div>
-        <button onClick={() => setIsSoundOn(!isSoundOn)} className="text-xl opacity-70 hover:opacity-100 transition-opacity">
+        <button
+          onClick={() => {
+            setIsSoundOn((prev) => {
+              const next = !prev;
+              if (next && audioRef.current) {
+                audioRef.current
+                  .play()
+                  .then(() => {
+                    audioRef.current?.pause();
+                    if (audioRef.current) audioRef.current.currentTime = 0;
+                  })
+                  .catch(() => undefined);
+              }
+              return next;
+            });
+          }}
+          className="text-xl opacity-70 hover:opacity-100 transition-opacity"
+        >
             {isSoundOn ? '🔔' : '🔕'}
         </button>
       </div>
@@ -376,8 +494,8 @@ export default function KakhetianSquare({ isAdmin, controlToken }: KakhetianSqua
                         <div className="flex justify-between items-center gap-2 mb-1">
                           <div className="flex flex-col gap-0.5">
                             <span className={`text-[9px] font-black uppercase tracking-widest ${isMe ? 'text-white/70' : 'text-amber-500'}`}>{m.sender_name}</span>
-                            {isAdmin && m.ip_address && (
-                              <span className="text-[7px] text-white/30 font-mono">IP: {m.ip_address}</span>
+                            {isAdmin && (m.fingerprint || m.ip_address) && (
+                              <span className="text-[7px] text-white/30 font-mono">ID: {m.fingerprint || m.ip_address}</span>
                             )}
                           </div>
                           <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity items-center">
@@ -444,7 +562,18 @@ export default function KakhetianSquare({ isAdmin, controlToken }: KakhetianSqua
                     {EMOJI_TABS.map((tab, i) => <button key={i} onClick={() => setActiveTab(i)} className={`p-1 rounded ${activeTab === i ? 'bg-white/10' : ''}`}>{tab.icon}</button>)}
                 </div>
                 <div className="grid grid-cols-6 gap-2 overflow-y-auto flex-1">
-                    {EMOJI_TABS[activeTab].list.map((e, i) => <button key={i} onClick={() => setMsgText(p => p + e)} className="text-xl hover:scale-110">{e}</button>)}
+                    {EMOJI_TABS[activeTab].list.map((e, i) => (
+                      <button
+                        key={i}
+                        onClick={() => {
+                          setMsgText((p) => p + e);
+                          playEmojiSound();
+                        }}
+                        className="text-xl hover:scale-110"
+                      >
+                        {e}
+                      </button>
+                    ))}
                 </div>
             </div>
         )}
@@ -456,7 +585,10 @@ export default function KakhetianSquare({ isAdmin, controlToken }: KakhetianSqua
                     <input
                     ref={inputRef}
                         value={msgText}
-                        onChange={e => setMsgText(e.target.value)}
+                        onChange={e => {
+                          setMsgText(e.target.value);
+                          playTypingSound();
+                        }}
                         placeholder="მიწერე..."
                         className="w-full bg-white/5 border border-white/10 rounded-xl pl-3 pr-8 py-2 text-xs text-white focus:border-amber-500 outline-none"
                         onKeyDown={e => {
