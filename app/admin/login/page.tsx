@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { supabase } from '../../lib/supabase';
 import { isAdminUser } from '../../lib/adminAuth';
 import AdminNav from '../../components/admin/AdminNav';

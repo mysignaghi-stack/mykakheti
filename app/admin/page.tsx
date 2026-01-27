@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import type { ReactNode } from 'react';
 import { adminSignOut, getAdminDashboardStats, refreshAdminDashboard } from './actions';
 
 export const dynamic = 'force-dynamic';
@@ -19,7 +20,7 @@ type StatsCardProps = {
   title: string;
   value: string | number;
   description?: string;
-  icon: JSX.Element;
+  icon: ReactNode;
   href?: string;
 };
 

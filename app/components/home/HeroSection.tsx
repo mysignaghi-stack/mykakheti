@@ -11,7 +11,7 @@ interface HeroSectionProps {
   setSearchTerm: (term: string) => void;
   filteredAds: Ad[];
   selectedLocations: string[];
-  setSelectedLocations: (locs: string[]) => void;
+  setSelectedLocations: React.Dispatch<React.SetStateAction<string[]>>;
   isLocOpen: boolean;
   setIsLocOpen: (v: boolean) => void;
   locRef: React.RefObject<HTMLDivElement>;
