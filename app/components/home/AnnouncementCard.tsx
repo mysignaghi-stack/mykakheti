@@ -25,6 +25,32 @@ export default function AnnouncementCard({ announcement }: AnnouncementCardProps
   const images = Array.isArray(announcement.all_images) ? announcement.all_images : [];
   const mainImage = images[0] || announcement.image_url || null;
   const currencySymbol = announcement.currency === 'USD' ? '$' : '₾';
+  const shareUrl = typeof window !== 'undefined'
+    ? `${window.location.origin}/announcements/${announcement.id}`
+    : '';
+
+  const handleFBShare = (e: React.MouseEvent<HTMLButtonElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    const url = shareUrl || `/announcements/${announcement.id}`;
+    window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`, 'fb-share', 'width=600,height=400');
+  };
+
+  const handleTikTokShare = async (e: React.MouseEvent<HTMLButtonElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    const url = shareUrl || `/announcements/${announcement.id}`;
+    try {
+      await navigator.clipboard.writeText(url);
+    } catch {
+      const textarea = document.createElement('textarea');
+      textarea.value = url;
+      document.body.appendChild(textarea);
+      textarea.select();
+      document.execCommand('copy');
+      document.body.removeChild(textarea);
+    }
+  };
 
   return (
     <Link
@@ -33,6 +59,24 @@ export default function AnnouncementCard({ announcement }: AnnouncementCardProps
     >
       {/* Media */}
       <div className="relative h-44 w-full overflow-hidden">
+        <div className="absolute top-2 left-2 z-10 flex items-center gap-2">
+          <button
+            type="button"
+            onClick={handleFBShare}
+            className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-blue-600/20 text-blue-200 border border-blue-500/30 hover:bg-blue-600 hover:text-white transition"
+            aria-label="Facebook გაზიარება"
+          >
+            f
+          </button>
+          <button
+            type="button"
+            onClick={handleTikTokShare}
+            className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-black/50 text-white/90 border border-white/20 hover:bg-white hover:text-black transition"
+            aria-label="TikTok გაზიარება (ბმულის კოპირება)"
+          >
+            TK
+          </button>
+        </div>
         {mainImage ? (
           <Image
             src={mainImage}
@@ -98,6 +142,7 @@ export default function AnnouncementCard({ announcement }: AnnouncementCardProps
             </span>
           </div>
         )}
+
       </div>
     </Link>
   );

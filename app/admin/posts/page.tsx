@@ -25,6 +25,7 @@ export default function AdminPosts() {
   const [currentPage, setCurrentPage] = useState(0);
   const [hasMore, setHasMore] = useState(true);
   const pageSize = 50;
+  const [expandedPostId, setExpandedPostId] = useState<number | null>(null);
   const [formData, setFormData] = useState({
     title: '',
     content: '',
@@ -421,18 +422,23 @@ export default function AdminPosts() {
     );
   }
 
-  const filteredPosts = posts.filter((post) => {
-    const matchesText = `${post.title ?? ''} ${post.category ?? ''}`
-      .toLowerCase()
-      .includes(searchTerm.trim().toLowerCase());
-    if (!matchesText) return false;
-    if (statusFilter === 'archived') return (post as any).is_archived ?? false;
-    if (statusFilter === 'published') return ((post as any).is_published ?? true) && !((post as any).is_archived ?? false);
-    if (statusFilter === 'hidden') return ((post as any).is_published === false) && !((post as any).is_archived ?? false);
-    return true;
-  });
+  const filteredPosts = React.useMemo(() => (
+    posts.filter((post) => {
+      const matchesText = `${post.title ?? ''} ${post.category ?? ''}`
+        .toLowerCase()
+        .includes(searchTerm.trim().toLowerCase());
+      if (!matchesText) return false;
+      if (statusFilter === 'archived') return (post as any).is_archived ?? false;
+      if (statusFilter === 'published') return ((post as any).is_published ?? true) && !((post as any).is_archived ?? false);
+      if (statusFilter === 'hidden') return ((post as any).is_published === false) && !((post as any).is_archived ?? false);
+      return true;
+    })
+  ), [posts, searchTerm, statusFilter]);
 
-  const visiblePosts = filteredPosts.slice(0, visibleCount);
+  const visiblePosts = React.useMemo(
+    () => filteredPosts.slice(0, visibleCount),
+    [filteredPosts, visibleCount]
+  );
 
   return (
     <main className="min-h-screen bg-[#050510] p-6 md:p-10 text-white font-sans">
@@ -674,6 +680,12 @@ export default function AdminPosts() {
                     <h3 className="font-bold text-white">{post.title}</h3>
                     <div className="flex flex-wrap gap-2">
                       <button onClick={() => startEdit(post)} className="text-xs bg-blue-600 px-2 py-1 rounded">რედაქტირება</button>
+                      <button
+                        onClick={() => setExpandedPostId(prev => (prev === post.id ? null : post.id))}
+                        className="text-xs bg-white/10 px-2 py-1 rounded"
+                      >
+                        {expandedPostId === post.id ? 'დახურვა' : 'დეტალები'}
+                      </button>
                       <button onClick={() => togglePublish(post)} className={`text-xs px-2 py-1 rounded ${((post as any).is_published ?? true) ? 'bg-amber-600' : 'bg-green-600'}`}>
                         {((post as any).is_published ?? true) ? 'დამალვა' : 'გამოჩენა'}
                       </button>
@@ -684,7 +696,7 @@ export default function AdminPosts() {
                     </div>
                   </div>
                   <p className="text-white/60 text-sm mb-2">{post.category}</p>
-                  {showMediaPreview && (() => {
+                  {showMediaPreview && expandedPostId === post.id && (() => {
                     const media = getPostMedia(post);
                     if (media.length === 0) return null;
                     const primary = media[0];
@@ -733,7 +745,7 @@ export default function AdminPosts() {
                       </div>
                     );
                   })()}
-                  <p className="text-white/80 text-sm line-clamp-2">{post.content}</p>
+                  <p className={`text-white/80 text-sm ${expandedPostId === post.id ? '' : 'line-clamp-2'}`}>{post.content}</p>
                   <div className="flex gap-2 mt-2">
                     <span className={`text-xs px-2 py-1 rounded ${(post as any).is_published ? 'bg-green-600' : 'bg-red-600'}`}>
                       {(post as any).is_published ? 'გამოქვეყნებული' : 'დამალული'}

@@ -457,7 +457,7 @@ export default function HomePageClient({
     setAnnouncementsPage(0);
   };
 
-  const pageSize = 5;
+  const pageSize = 8;
   const maxPage = Math.max(0, Math.ceil(filteredAds.length / pageSize) - 1);
   const safePage = Math.min(announcementsPage, maxPage);
   const visibleAds = showAllAnnouncements
@@ -595,6 +595,20 @@ export default function HomePageClient({
                      ))}
                    </div>
                  </div>
+                  {/* 🌾 მარცვლეული */}
+                  <div className="bg-white/[0.03] backdrop-blur-3xl rounded-[30px] border border-white/10 p-5 flex flex-col items-center group relative overflow-hidden transition-all hover:border-yellow-500/30 shadow-xl">
+                    <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-yellow-500 to-transparent opacity-30" />
+                    <h4 className="text-[10px] font-black text-yellow-500 uppercase tracking-[0.4em] mb-4 w-full text-left">🌾 მარცვლეული</h4>
+                    <p className="w-full text-[10px] text-white/40 font-bold uppercase tracking-[0.2em] mb-3 leading-tight">საორიენტაციო ფასები · დააჭირე პროდუქტს რომ ნახო მიმღები ობიექტები</p>
+                    <div className="w-full space-y-2">
+                      {agroData.filter(i => i.category === 'grain').map(item => (
+                        <button key={item.id} onClick={() => isAdmin ? (() => { setEditAgroItem(item); setNewPrice(item.price); setEditDetails(normalizeDetails(item.details, item.price)); })() : setSelectedAgro(item)} className={`w-full flex justify-between items-center bg-black/40 p-3 rounded-xl border border-white/5 transition-all group/item hover:bg-white/5 ${isAdmin ? 'hover:border-amber-500' : ''}`}>
+                          <span className="text-xs font-black uppercase text-yellow-500 flex gap-2">{item.name} {isAdmin && '✏️'}</span>
+                          <span className="text-sm font-black italic">{item.price}</span>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
                  {/* 🏛️ ადმინისტრაციული განცხადება */}
                  <div className="mt-2 bg-gradient-to-br from-amber-900/40 via-black/50 to-amber-700/20 backdrop-blur-sm rounded-[24px] border border-amber-500/30 shadow-[0_0_20px_4px_rgba(255,191,0,0.1)] p-4 ring-1 ring-amber-400/20 relative">
                    <AdminSideFrame 

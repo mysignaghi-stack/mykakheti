@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import Image from 'next/image';
 import imageCompression from 'browser-image-compression';
 import { Navigation, Pagination, EffectFade, Autoplay } from 'swiper/modules';
@@ -195,6 +195,47 @@ export default function AdminSideFrame({ post, position, isAdmin, onRefresh }: A
   const postMediaType = post?.media_type;
   const postVideoBackground = post?.video_background;
 
+  const isVideoUrl = (url?: string | null) => !!url && /\.(mp4|mov|avi|webm|m4v)$/i.test(url);
+
+  const InlineVideo = ({ src, className, onClick }: { src: string; className?: string; onClick?: () => void }) => {
+    const videoRef = useRef<HTMLVideoElement>(null);
+
+    useEffect(() => {
+      const video = videoRef.current;
+      if (!video) return;
+
+      const observer = new IntersectionObserver(
+        (entries) => {
+          entries.forEach((entry) => {
+            if (entry.isIntersecting) {
+              video.play().catch(() => undefined);
+            } else {
+              video.pause();
+            }
+          });
+        },
+        { threshold: 0.4 }
+      );
+
+      observer.observe(video);
+      return () => observer.disconnect();
+    }, [src]);
+
+    return (
+      <video
+        ref={videoRef}
+        src={src}
+        autoPlay
+        muted
+        loop
+        playsInline
+        preload="metadata"
+        onClick={onClick}
+        className={className}
+      />
+    );
+  };
+
   // Fixed height based on position
   const heightClass = position === 'left_top' || position === 'right_top' ? 'h-[400px]' : 'h-auto';
 
@@ -227,15 +268,10 @@ export default function AdminSideFrame({ post, position, isAdmin, onRefresh }: A
           {post.media_type === 'video' ? (
             <div className="relative w-full h-[200px] p-0.5 flex items-center justify-center overflow-hidden rounded-[20px]">
               <div className="absolute inset-0 bg-gradient-to-br from-amber-600/20 via-yellow-400/10 to-amber-600/20 rounded-[20px] backdrop-blur-lg shadow-[inset_0_2px_10px_rgba(0,0,0,0.5)]"></div>
-              <video
+              <InlineVideo
                 src={(post.media_urls?.[0] || (post as any).media_url)!}
-                controls={false}
-                autoPlay={true}
-                muted={true}
-                loop={true}
-                className="relative z-10 w-full h-full object-contain rounded-[20px] shadow-2xl shadow-indigo-900/40 border-2 border-amber-500/40 cursor-pointer hover:border-amber-500/60 transition-all duration-300"
-                style={{ objectPosition: 'center' }}
                 onClick={() => setLightbox({ open: true, media: [(post.media_urls?.[0] || (post as any).media_url)!], currentIndex: 0, isVideo: true })}
+                className="relative z-10 w-full h-full object-contain rounded-[20px] shadow-2xl shadow-indigo-900/40 border-2 border-amber-500/40 cursor-pointer hover:border-amber-500/60 transition-all duration-300"
               />
             </div>
           ) : post.media_type === 'gallery' ? (
@@ -255,15 +291,11 @@ export default function AdminSideFrame({ post, position, isAdmin, onRefresh }: A
                   <SwiperSlide key={idx}>
                     <div className="relative w-full h-full flex items-center justify-center">
                       <div className="absolute inset-0 bg-gradient-to-br from-amber-600/20 via-yellow-400/10 to-amber-600/20 rounded-[20px] backdrop-blur-lg shadow-[inset_0_2px_10px_rgba(0,0,0,0.5)]"></div>
-                      {url.includes('.mp4') || url.includes('.mov') || url.includes('.avi') || url.includes('.webm') ? (
-                        <video
+                      {isVideoUrl(url) ? (
+                        <InlineVideo
                           src={url}
-                          controls={false}
-                          autoPlay={true}
-                          muted={true}
-                          loop={true}
-                          className="relative z-10 w-full h-32 object-contain rounded-[20px] shadow-2xl shadow-indigo-900/50 animate-pulse border-2 border-amber-500/40 hover:border-amber-500/60 hover:shadow-3xl hover:shadow-amber-400/40 transition-all duration-300"
-                          style={{ objectPosition: 'center', transform: 'perspective(1000px) rotateX(5deg)' }}
+                          onClick={() => setLightbox({ open: true, media: [url], currentIndex: 0, isVideo: true })}
+                          className="relative z-10 w-full h-32 object-contain rounded-[20px] shadow-2xl shadow-indigo-900/50 border-2 border-amber-500/40 hover:border-amber-500/60 transition-all duration-300"
                         />
                       ) : (
                         <Image
@@ -281,17 +313,12 @@ export default function AdminSideFrame({ post, position, isAdmin, onRefresh }: A
             </div>
           ) : (
              <div className="relative w-full h-32 cursor-pointer" onClick={() => setLightbox({ open: true, media: [(post.media_urls?.[0] || (post as any).media_url)!], currentIndex: 0, isVideo: (post.media_urls?.[0] || (post as any).media_url)!.includes('.mp4') || (post.media_urls?.[0] || (post as any).media_url)!.includes('.mov') || (post.media_urls?.[0] || (post as any).media_url)!.includes('.avi') || (post.media_urls?.[0] || (post as any).media_url)!.includes('.webm') })}>
-              {(post.media_urls?.[0] || (post as any).media_url)!.includes('.mp4') || (post.media_urls?.[0] || (post as any).media_url)!.includes('.mov') || (post.media_urls?.[0] || (post as any).media_url)!.includes('.avi') || (post.media_urls?.[0] || (post as any).media_url)!.includes('.webm') ? (
+              {isVideoUrl((post.media_urls?.[0] || (post as any).media_url)!) ? (
                 <div className="relative w-full h-full p-0.5 flex items-center justify-center overflow-hidden rounded-[20px]">
                   <div className="absolute inset-0 bg-gradient-to-br from-amber-600/20 via-yellow-400/10 to-amber-600/20 rounded-[20px] backdrop-blur-lg shadow-[inset_0_2px_10px_rgba(0,0,0,0.5)]"></div>
-                  <video
+                  <InlineVideo
                     src={(post.media_urls?.[0] || (post as any).media_url)!}
-                    controls={false}
-                    autoPlay={true}
-                    muted={true}
-                    loop={true}
-                    className="relative z-10 w-full h-full object-contain rounded-[20px] shadow-2xl shadow-indigo-900/40 border-2 border-amber-500/40 hover:border-amber-500/60 transition-all duration-300"
-                    style={{ objectPosition: 'center' }}
+                    className="relative z-10 w-full h-full object-contain rounded-[20px] shadow-2xl shadow-indigo-900/40 border-2 border-amber-500/40"
                   />
                 </div>
               ) : (
@@ -481,7 +508,8 @@ export default function AdminSideFrame({ post, position, isAdmin, onRefresh }: A
               <video
                 src={lightbox.media[lightbox.currentIndex]}
                 controls
-                autoPlay
+                playsInline
+                preload="metadata"
                 className="max-w-full max-h-full object-contain rounded-xl shadow-2xl"
               />
             ) : (

@@ -21,6 +21,13 @@ export default function AnnouncementDetailsClient({ initialAd }: { initialAd: An
   };
   const [activeImg, setActiveImg] = useState<string | null>(getImages(initialAd)[0] ?? null);
   const [shareUrl, setShareUrl] = useState('');
+  const [zoomOpen, setZoomOpen] = useState(false);
+  const [zoomImg, setZoomImg] = useState<string | null>(null);
+  const [zoomIndex, setZoomIndex] = useState(0);
+  const [zoomScale, setZoomScale] = useState(1);
+  const [zoomOffset, setZoomOffset] = useState({ x: 0, y: 0 });
+  const [dragging, setDragging] = useState(false);
+  const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
 
   // Share URL-ის დაყენება კლიენტის მხარეს
   useEffect(() => {
@@ -89,7 +96,16 @@ export default function AnnouncementDetailsClient({ initialAd }: { initialAd: An
                   alt={ad.title}
                   fill
                   sizes="(max-width: 1024px) 100vw, 700px"
-                  className="object-contain transition-all duration-700 group-hover:scale-105 rounded-2xl"
+                  className="object-contain transition-all duration-700 group-hover:scale-105 rounded-2xl cursor-zoom-in"
+                  onClick={() => {
+                    const images = getImages(ad);
+                    const idx = images.findIndex((img) => img === activeImg);
+                    setZoomIndex(idx >= 0 ? idx : 0);
+                    setZoomImg(activeImg);
+                    setZoomScale(1);
+                    setZoomOffset({ x: 0, y: 0 });
+                    setZoomOpen(true);
+                  }}
                 />
             ) : (
                 <div className="w-full h-full flex items-center justify-center bg-slate-900 text-white/20 font-black uppercase italic">ფოტო არ არის</div>
@@ -144,6 +160,119 @@ export default function AnnouncementDetailsClient({ initialAd }: { initialAd: An
           </div>
         </div>
       </div>
+      {zoomOpen && zoomImg && (
+        <div
+          className="fixed inset-0 z-[120] bg-black/95 backdrop-blur-xl flex items-center justify-center p-4"
+          onClick={() => setZoomOpen(false)}
+        >
+          <div className="relative max-w-4xl w-full" onClick={(e) => e.stopPropagation()}>
+            <div className="relative w-full rounded-3xl bg-white/[0.04] border border-amber-400/30 shadow-[0_30px_90px_rgba(0,0,0,0.6)]">
+              <div className="absolute -inset-1 rounded-3xl blur-2xl bg-amber-400/20 animate-pulse" />
+              <div className="relative rounded-3xl p-4 md:p-6 backdrop-blur-2xl">
+                <div
+                  className="relative w-full max-h-[60vh] rounded-2xl overflow-hidden flex items-center justify-center bg-black/30 ring-1 ring-amber-300/30"
+                  onWheel={(e) => {
+                    e.preventDefault();
+                    const delta = e.deltaY > 0 ? -0.1 : 0.1;
+                    setZoomScale((s) => Math.min(3, Math.max(1, Number((s + delta).toFixed(2)))));
+                  }}
+                  onMouseDown={(e) => {
+                    e.preventDefault();
+                    setDragging(true);
+                    setDragStart({ x: e.clientX - zoomOffset.x, y: e.clientY - zoomOffset.y });
+                  }}
+                  onMouseMove={(e) => {
+                    if (!dragging) return;
+                    setZoomOffset({ x: e.clientX - dragStart.x, y: e.clientY - dragStart.y });
+                  }}
+                  onMouseUp={() => setDragging(false)}
+                  onMouseLeave={() => setDragging(false)}
+                >
+                  <Image
+                    src={zoomImg}
+                    alt=""
+                    width={1400}
+                    height={1000}
+                    className="max-w-full max-h-[60vh] object-contain rounded-xl shadow-[0_12px_40px_rgba(0,0,0,0.5)]"
+                    style={{
+                      transform: `translate(${zoomOffset.x}px, ${zoomOffset.y}px) scale(${zoomScale})`,
+                      transformOrigin: 'center center',
+                      transition: dragging ? 'none' : 'transform 0.15s ease',
+                      cursor: zoomScale > 1 ? (dragging ? 'grabbing' : 'grab') : 'default',
+                    }}
+                  />
+                </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    const images = getImages(ad);
+                    const nextIndex = (zoomIndex - 1 + images.length) % images.length;
+                    setZoomIndex(nextIndex);
+                    setZoomImg(images[nextIndex] ?? zoomImg);
+                    setZoomScale(1);
+                    setZoomOffset({ x: 0, y: 0 });
+                  }}
+                  className="absolute left-3 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full bg-black/40 text-amber-200 text-2xl font-black shadow-[0_0_20px_rgba(245,158,11,0.35)] hover:bg-amber-500 hover:text-black transition"
+                >
+                  ‹
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    const images = getImages(ad);
+                    const nextIndex = (zoomIndex + 1) % images.length;
+                    setZoomIndex(nextIndex);
+                    setZoomImg(images[nextIndex] ?? zoomImg);
+                    setZoomScale(1);
+                    setZoomOffset({ x: 0, y: 0 });
+                  }}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full bg-black/40 text-amber-200 text-2xl font-black shadow-[0_0_20px_rgba(245,158,11,0.35)] hover:bg-amber-500 hover:text-black transition"
+                >
+                  ›
+                </button>
+                <div className="mt-4 flex items-center justify-between gap-4 text-xs text-white/70">
+                  <span className="uppercase tracking-[0.2em] text-amber-300 font-black">
+                    ფოტო {zoomIndex + 1} / {getImages(ad).length}
+                  </span>
+                  <span className="truncate text-white/60 font-bold">{ad.title}</span>
+                </div>
+                <div className="mt-4 flex justify-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setZoomOpen(false)}
+                    className="px-4 h-10 rounded-full bg-gradient-to-r from-amber-500/20 via-amber-400/10 to-amber-500/20 text-amber-100 font-black text-xs uppercase tracking-[0.25em] shadow-[0_0_18px_rgba(245,158,11,0.35)] border border-amber-400/30 hover:bg-amber-500 hover:text-black transition inline-flex items-center justify-center"
+                  >
+                    უკან
+                  </button>
+                  <Link
+                    href="/"
+                    className="px-4 h-10 rounded-full bg-gradient-to-r from-amber-500/20 via-amber-400/10 to-amber-500/20 text-amber-100 font-black text-xs uppercase tracking-[0.25em] shadow-[0_0_18px_rgba(245,158,11,0.35)] border border-amber-400/30 hover:bg-amber-500 hover:text-black transition inline-flex items-center justify-center"
+                  >
+                    მთავარი გვერდი
+                  </Link>
+                </div>
+                <div className="absolute right-[-90px] top-1/2 -translate-y-1/2 hidden md:flex flex-col gap-3">
+                  {getImages(ad).map((img, i) => (
+                    <button
+                      key={img}
+                      type="button"
+                      onClick={() => {
+                        setZoomIndex(i);
+                        setZoomImg(img);
+                      }}
+                      className={`w-16 h-16 rounded-2xl overflow-hidden border-2 shrink-0 transition-all ${
+                        zoomImg === img ? 'border-amber-400/80 shadow-[0_0_20px_rgba(245,158,11,0.35)]' : 'border-white/10 opacity-70 hover:opacity-100'
+                      }`}
+                    >
+                      <Image src={img} alt="" width={64} height={64} className="w-full h-full object-contain" />
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </main>
   );
 }

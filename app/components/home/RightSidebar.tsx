@@ -10,15 +10,7 @@ interface RightSidebarProps {
   onShowTransport: () => void;
 }
 
-export default function RightSidebar({ weatherData, seasonal, fact, onShowTransport }: RightSidebarProps) {
-  const getAgroTip = (temp: number) => {
-    if (temp <= 0) return 'ყინვის რისკი — დაფარე ნერგები და მორწყვა შეჩერდეს.';
-    if (temp <= 8) return 'ცივი დილებია — გამაგრილებელი მორწყვა მინიმუმამდე.';
-    if (temp <= 15) return 'საშუალო სიგრილე — მსუბუქი მოვლა და ნიადაგის გაფხვიერება.';
-    if (temp <= 24) return 'სასოფლო სამუშაოებისთვის კარგი დროა — რეგულარული მორწყვა.';
-    if (temp <= 30) return 'ცხელი დღე — მორწყვა საღამოსკენ, ფოთლების დაცვა.';
-    return 'ძლიერი სიცხე — ჩრდილოვანი ბადე და ფრთხილი მორწყვა.';
-  };
+export default function RightSidebar({ weatherData: _weatherData, seasonal, fact, onShowTransport }: RightSidebarProps) {
 
   return (
     <div className="bg-slate-950/60 backdrop-blur-3xl rounded-[40px] border border-amber-500/20 overflow-hidden flex flex-col h-[550px] shadow-2xl relative">
@@ -49,39 +41,6 @@ export default function RightSidebar({ weatherData, seasonal, fact, onShowTransp
           <p className="text-[13px] text-white/90 italic leading-relaxed text-left">{seasonal.text}</p>
         </div>
 
-        <section className="p-6 bg-white/5 rounded-3xl border border-white/5 mt-4">
-          <h4 className="text-amber-500 font-black uppercase italic text-[10px] tracking-widest mb-4 text-left">⛅ ამინდი კახეთში</h4>
-          <div className="grid grid-cols-2 gap-3">
-            {weatherData.map(w => (
-              <div key={w.name} className="flex flex-col items-center bg-black/20 p-3 rounded-2xl border border-white/5 hover:border-amber-500/30 transition-all">
-                <span className="text-[8px] font-black text-white/40 uppercase mb-1">{w.name}</span>
-                <span className="text-2xl mb-1">{w.icon}</span>
-                <span className="text-[11px] font-black text-amber-500 italic">{w.temp}°</span>
-                <span className="mt-2 text-[9px] text-white/60 font-bold text-center leading-snug">
-                  {getAgroTip(w.temp)}
-                </span>
-              </div>
-            ))}
-          </div>
-        </section>
-
-        <section className="p-6 bg-white/5 rounded-3xl border border-white/5 mt-4">
-          <h4 className="text-amber-500 font-black uppercase italic text-[10px] tracking-widest mb-4 text-left">🌾 აგრო პროგნოზი ქალაქებით</h4>
-          <div className="grid grid-cols-1 gap-3">
-            {weatherData.map((w) => (
-              <div key={`${w.name}-agro`} className="bg-black/20 p-3 rounded-2xl border border-white/5 hover:border-amber-500/30 transition-all text-left">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <div className="text-[10px] font-black uppercase text-white/50">{w.name}</div>
-                    <div className="text-[13px] font-bold text-white/90">{w.icon} {w.temp}°</div>
-                  </div>
-                  <span className="text-[9px] px-2 py-1 rounded-full bg-amber-500/10 text-amber-300 font-black uppercase tracking-[0.2em]">ფერმერი</span>
-                </div>
-                <p className="mt-2 text-[11px] text-white/70 font-semibold leading-relaxed">{getAgroTip(w.temp)}</p>
-              </div>
-            ))}
-          </div>
-        </section>
 
         <section className="text-left px-1 mt-4">
           <h4 className="text-amber-500 font-black uppercase italic text-[10px] tracking-widest mb-2 text-left">📊 რეგიონი</h4>
