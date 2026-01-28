@@ -44,7 +44,7 @@ export default function KakhetianSquare({ isAdmin, controlToken }: KakhetianSqua
   
   const [activeTab, setActiveTab] = useState(0);
   const [showEmojis, setShowEmojis] = useState(false);
-  const [isSoundOn, setIsSoundOn] = useState(true);
+  const [isSoundOn, setIsSoundOn] = useState(false);
   const [audioReady, setAudioReady] = useState(false);
   
   const [isUploading, setIsUploading] = useState(false);
@@ -105,8 +105,9 @@ export default function KakhetianSquare({ isAdmin, controlToken }: KakhetianSqua
     playTypingSound();
   }, [playTypingSound]);
 
-  const unlockAudio = useCallback(() => {
+  const unlockAudio = useCallback((force = false) => {
     if (audioUnlockedRef.current || !audioRef.current) return;
+    if (!force && !isSoundOn) return;
     audioRef.current.muted = false;
     audioRef.current
       .play()
@@ -129,7 +130,7 @@ export default function KakhetianSquare({ isAdmin, controlToken }: KakhetianSqua
         setAudioReady(true);
       })
       .catch(() => undefined);
-  }, []);
+  }, [isSoundOn]);
 
   const mergeMessages = useCallback((current: Message[], incoming: Message[]) => {
     const map = new Map<string, Message>();
@@ -187,9 +188,6 @@ export default function KakhetianSquare({ isAdmin, controlToken }: KakhetianSqua
       // ignore
     }
 
-    const handleUnlock = () => unlockAudio();
-    window.addEventListener('pointerdown', handleUnlock, { once: true });
-    
     const checkBan = async () => {
       if (!controlToken) return;
       const { data } = await (supabase as any).from('banned_users').select('*').eq('ip_address', controlToken).single();
@@ -224,7 +222,6 @@ export default function KakhetianSquare({ isAdmin, controlToken }: KakhetianSqua
     cleanupOldMessages(); // დაუყოვნებლივ გაშვება
     
     return () => {
-      window.removeEventListener('pointerdown', handleUnlock);
       audioRef.current?.removeEventListener('canplaythrough', handleCanPlay);
       clearInterval(cleanupInterval);
     };
@@ -239,9 +236,7 @@ export default function KakhetianSquare({ isAdmin, controlToken }: KakhetianSqua
         (payload) => {
           const newMsg = payload.new as Message;
           setMessages((prev) => mergeMessages(prev, [newMsg]));
-          if (newMsg.fingerprint !== controlToken) {
-            playSound();
-          }
+          playSound();
           setTimeout(() => scrollToBottom(true), 60);
         }
       )
@@ -451,7 +446,7 @@ export default function KakhetianSquare({ isAdmin, controlToken }: KakhetianSqua
   };
 
   return (
-    <div onPointerDown={unlockAudio} className="flex flex-col h-full w-full bg-slate-950/80 backdrop-blur-3xl rounded-[30px] border border-amber-500/20 shadow-2xl overflow-hidden relative">
+    <div onPointerDown={() => unlockAudio()} className="flex flex-col h-full w-full bg-slate-950/80 backdrop-blur-3xl rounded-[30px] border border-amber-500/20 shadow-2xl overflow-hidden relative">
       
       {/* Header */}
       <div className="px-5 py-4 bg-white/[0.03] border-b border-white/10 flex justify-between items-center z-20 shrink-0">
@@ -469,14 +464,8 @@ export default function KakhetianSquare({ isAdmin, controlToken }: KakhetianSqua
           onClick={() => {
             setIsSoundOn((prev) => {
               const next = !prev;
-              if (next && audioRef.current) {
-                audioRef.current
-                  .play()
-                  .then(() => {
-                    audioRef.current?.pause();
-                    if (audioRef.current) audioRef.current.currentTime = 0;
-                  })
-                  .catch(() => undefined);
+              if (next) {
+                unlockAudio(true);
               }
               return next;
             });

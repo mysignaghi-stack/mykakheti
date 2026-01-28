@@ -237,6 +237,7 @@ export default function HomePageClient({
   
   // ...moved to useAgroData
   const [controlToken, setControlToken] = useState<string>('');
+  const [isDesktop, setIsDesktop] = useState<boolean | null>(null);
 
   const [adminPosts, setAdminPosts] = useState<AdminPost[]>(initialAdminPosts);
   const [factIndex, setFactIndex] = useState(0);
@@ -278,6 +279,11 @@ export default function HomePageClient({
     setFactIndex(Math.floor(Math.random() * KAKHETI_FACTS.length));
     const factTimer = setInterval(() => setFactIndex((p) => (p + 1) % KAKHETI_FACTS.length), 8000);
 
+    const mediaQuery = window.matchMedia('(min-width: 1024px)');
+    const handleMediaChange = () => setIsDesktop(mediaQuery.matches);
+    handleMediaChange();
+    mediaQuery.addEventListener('change', handleMediaChange);
+
     const initSecurity = () => {
       let storedToken = localStorage.getItem('mykakheti_session_id');
       if (!storedToken) {
@@ -302,6 +308,7 @@ export default function HomePageClient({
     })();
     return () => {
       clearInterval(factTimer);
+      mediaQuery.removeEventListener('change', handleMediaChange);
     };
   }, [fetchAds, fetchAdminPosts]);
 
@@ -540,11 +547,13 @@ export default function HomePageClient({
           {/* --- მარცხენა სვეტი (Desktop Only) --- */}
           <div className="hidden lg:flex flex-col gap-6 sticky top-24 order-1 w-full max-w-full min-w-0">
             {/* კახური მოედანი (სქროლით) */}
-            <div 
-              className="w-full h-[450px] overflow-hidden bg-black/60 backdrop-blur-xl rounded-[30px] border border-white/5 relative"
-            >
-              <KakhetianSquare isAdmin={isAdmin} controlToken={controlToken} />
-            </div>
+            {isDesktop !== false && (
+              <div 
+                className="w-full h-[450px] overflow-hidden bg-black/60 backdrop-blur-xl rounded-[30px] border border-white/5 relative"
+              >
+                <KakhetianSquare isAdmin={isAdmin} controlToken={controlToken} />
+              </div>
+            )}
             {/* 🍇 აგრო-ბირჟა */}
             <div className="bg-white/[0.03] backdrop-blur-3xl rounded-[30px] border border-white/10 p-5 flex flex-col items-center group relative overflow-hidden transition-all hover:border-purple-500/30 shadow-xl">
               <div className="flex justify-between w-full items-center mb-4">
@@ -576,9 +585,11 @@ export default function HomePageClient({
           <div className="flex flex-col items-center text-center space-y-8 animate-in fade-in duration-1000 w-full min-w-0 order-1 lg:order-2">
              {/* მობილური ვერსია - მარცხენა მხარე */}
              <div className="flex flex-col gap-4 w-full lg:hidden">
-                 <div className="h-[450px] bg-black/60 backdrop-blur-xl rounded-[30px] border border-white/5">
-                   <KakhetianSquare isAdmin={isAdmin} controlToken={controlToken} />
-                 </div>
+                 {isDesktop !== true && (
+                   <div className="h-[450px] bg-black/60 backdrop-blur-xl rounded-[30px] border border-white/5">
+                     <KakhetianSquare isAdmin={isAdmin} controlToken={controlToken} />
+                   </div>
+                 )}
                  {/* 🍇 აგრო-ბირჟა */}
                  <div className="bg-white/[0.03] backdrop-blur-3xl rounded-[30px] border border-white/10 p-5 flex flex-col items-center group relative overflow-hidden transition-all hover:border-purple-500/30 shadow-xl">
                    <div className="flex justify-between w-full items-center mb-4">
