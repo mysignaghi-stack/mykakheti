@@ -35,8 +35,16 @@ export async function middleware(request: NextRequest) {
     data: { session },
   } = await supabase.auth.getSession()
 
-  // Check if user is trying to access upload routes without authentication
-  if (!session && request.nextUrl.pathname.startsWith('/upload')) {
+  // Check if user is trying to access protected routes without authentication
+  const protectedRoutes = ['/', '/add', '/upload', '/announcements', '/community', '/contact'];
+  const isProtectedRoute = protectedRoutes.some(route => request.nextUrl.pathname.startsWith(route)) || 
+                          request.nextUrl.pathname === '/';
+
+  // Allow access to public routes
+  const publicRoutes = ['/login', '/auth', '/privacy', '/rules', '/api'];
+  const isPublicRoute = publicRoutes.some(route => request.nextUrl.pathname.startsWith(route));
+
+  if (!session && isProtectedRoute && !isPublicRoute) {
     const redirectUrl = request.nextUrl.clone();
     redirectUrl.pathname = '/login';
     redirectUrl.searchParams.set('redirect', request.nextUrl.pathname);

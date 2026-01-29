@@ -48,7 +48,7 @@ export default function AuthForm() {
         if (error) throw error;
         if (data.user) await upsertProfile(data.user);
       }
-      router.push("/upload");
+      router.push("/add");
     } catch (err) {
       const msg = err instanceof Error ? err.message : "Auth error";
       setError(msg);
