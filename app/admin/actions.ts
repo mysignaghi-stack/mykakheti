@@ -15,42 +15,53 @@ export type AdminDashboardStats = {
 
 export async function getAdminDashboardStats(): Promise<AdminDashboardStats | null> {
   const authClient = await createClient();
-  const { data: { user } } = await authClient.auth.getUser();
+  const { data: { user }, error: userError } = await authClient.auth.getUser();
 
-  if (!user || !isAdminUser(user)) {
-    return null;
+  if (userError) {
+    console.error('Auth error in getAdminDashboardStats:', userError);
+    if (userError.message?.includes('refresh_token_not_found') ||
+        userError.message?.includes('Invalid Refresh Token') ||
+        userError.message?.includes('Refresh Token Not Found')) {
+      console.log('Invalid refresh token detected, returning null');
+      return null;
+    }
+    throw userError;
   }
 
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+    if (!user || !isAdminUser(user)) {
+      return null;
+    }
 
-  if (!supabaseUrl || !serviceRoleKey) {
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+    if (!supabaseUrl || !serviceRoleKey) {
+      return {
+        usersCount: 0,
+        activeAnnouncements: 0,
+        pendingAnnouncements: 0,
+        email: user.email ?? null,
+      };
+    }
+
+    const serviceClient = createServiceClient(supabaseUrl, serviceRoleKey, {
+      auth: { persistSession: false },
+    });
+
+    const [{ count: usersCount }, { count: activeAnnouncements }, { count: pendingAnnouncements }] = await Promise.all([
+      serviceClient.schema('auth').from('users').select('id', { count: 'exact', head: true }),
+      serviceClient
+        .from('announcements')
+        .select('id', { count: 'exact', head: true })
+        .eq('is_approved', true)
+        .or('is_archived.is.null,is_archived.eq.false'),
+      serviceClient
+        .from('announcements')
+        .select('id', { count: 'exact', head: true })
+        .eq('is_approved', false),
+    ]);
+
     return {
-      usersCount: 0,
-      activeAnnouncements: 0,
-      pendingAnnouncements: 0,
-      email: user.email ?? null,
-    };
-  }
-
-  const serviceClient = createServiceClient(supabaseUrl, serviceRoleKey, {
-    auth: { persistSession: false },
-  });
-
-  const [{ count: usersCount }, { count: activeAnnouncements }, { count: pendingAnnouncements }] = await Promise.all([
-    serviceClient.schema('auth').from('users').select('id', { count: 'exact', head: true }),
-    serviceClient
-      .from('announcements')
-      .select('id', { count: 'exact', head: true })
-      .eq('is_approved', true)
-      .or('is_archived.is.null,is_archived.eq.false'),
-    serviceClient
-      .from('announcements')
-      .select('id', { count: 'exact', head: true })
-      .eq('is_approved', false),
-  ]);
-
-  return {
     usersCount: usersCount ?? 0,
     activeAnnouncements: activeAnnouncements ?? 0,
     pendingAnnouncements: pendingAnnouncements ?? 0,

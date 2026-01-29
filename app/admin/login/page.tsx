@@ -32,6 +32,10 @@ export default function AdminLogin() {
 
     try {
       console.log('Attempting login with email:', email);
+
+      // Clear any existing session first
+      await supabase.auth.signOut();
+
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
@@ -39,36 +43,80 @@ export default function AdminLogin() {
 
       console.log('Login response:', data, error);
 
-      // Check authentication
-      const { data: { user }, error: authError } = await supabase.auth.getUser();
-      console.log('User after login:', user, 'authError:', authError);
-      if (authError || !user) {
-        alert('გთხოვთ გაიაროთ ავტორიზაცია');
-        return;
-      }
-
       if (error) {
-        setError('არასწორი მონაცემები');
+        console.error('Login error:', error);
+        if (error.message?.includes('Invalid login credentials')) {
+          setError('არასწორი ელფოსტა ან პაროლი');
+        } else if (error.message?.includes('Email not confirmed')) {
+          setError('ელფოსტა არ არის დადასტურებული');
+        } else if (error.message?.includes('Too many requests')) {
+          setError('ძალიან ბევრი მცდელობა. გთხოვთ მოიცადოთ');
+        } else {
+          setError(`შეცდომა: ${error.message}`);
+        }
         return;
       }
 
-      if (data.user && isAdminUser(data.user)) {
-        console.log('Admin login successful, redirecting...');
-        router.push('/admin');
-      } else {
-        console.log('Not admin user, signing out...');
-        await supabase.auth.signOut();
-        setError('ადმინისტრატორის წვდომა არ არის');
+      // Check authentication with retry
+      let userCheckAttempts = 0;
+      const maxAttempts = 3;
+
+      while (userCheckAttempts < maxAttempts) {
+        try {
+          const { data: { user }, error: authError } = await supabase.auth.getUser();
+          console.log('User after login:', user, 'authError:', authError);
+
+          if (authError) {
+            console.error('Auth check error:', authError);
+            if (authError.message?.includes('refresh_token_not_found') ||
+                authError.message?.includes('Invalid Refresh Token')) {
+              setError('სესიის შეცდომა. გთხოვთ თავიდან შესვლა');
+              await supabase.auth.signOut();
+              return;
+            }
+            userCheckAttempts++;
+            if (userCheckAttempts < maxAttempts) {
+              await new Promise(resolve => setTimeout(resolve, 1000)); // Wait 1 second
+              continue;
+            }
+            setError('ავტორიზაციის შემოწმება ვერ მოხერხდა');
+            return;
+          }
+
+          if (!user) {
+            setError('მომხმარებელი არ მოიძებნა');
+            return;
+          }
+
+          if (isAdminUser(user)) {
+            console.log('Admin login successful, redirecting...');
+            router.push('/admin');
+            return;
+          } else {
+            console.log('Not admin user, signing out...');
+            await supabase.auth.signOut();
+            setError('ადმინისტრატორის წვდომა არ არის');
+            return;
+          }
+        } catch (checkError) {
+          console.error('User check attempt failed:', checkError);
+          userCheckAttempts++;
+          if (userCheckAttempts < maxAttempts) {
+            await new Promise(resolve => setTimeout(resolve, 1000));
+          }
+        }
       }
+
+      setError('ავტორიზაციის შემოწმება ვერ მოხერხდა');
     } catch (error: any) {
-      console.error('Upload error details:', {
+      console.error('Login error details:', {
         message: error?.message,
         name: error?.name,
         stack: error?.stack,
         error
       });
       const errorMessage = error?.message || 'უცნობი შეცდომა';
-      alert(`შეცდომა ატვირთვისას: ${errorMessage}`);
+      setError(`შეცდომა: ${errorMessage}`);
     } finally {
       setLoading(false);
     }

@@ -82,11 +82,22 @@ export default function AdminSideFrame({ post, position, isAdmin, onRefresh }: A
       if (formData.files.length > 0) {
         mediaUrls.length = 0;
         for (const file of formData.files) {
-          const processedFile = file.type.startsWith('image/') ? await imageCompression(file, {
-            maxSizeMB: 1,
-            maxWidthOrHeight: 800,
-            useWebWorker: true,
-          }) : file;
+          let processedFile: File | Blob = file;
+          if (file.type.startsWith('image/')) {
+            try {
+              // Sanitize file name to avoid Unicode issues with browser-image-compression
+              const sanitizedName = file.name.replace(/[^a-zA-Z0-9._-]/g, '_');
+              const sanitizedFile = new File([file], sanitizedName, { type: file.type });
+              processedFile = await imageCompression(sanitizedFile, {
+                maxSizeMB: 1,
+                maxWidthOrHeight: 800,
+                useWebWorker: true,
+              });
+            } catch (compressionError) {
+              console.warn('Image compression failed, using original file:', compressionError);
+              processedFile = file;
+            }
+          }
 
           const fileName = `${position}-${Date.now()}-${Math.random().toString(36).substring(7)}`;
           const { error } = await supabase.storage.from('admin-media').upload(fileName, processedFile);

@@ -122,24 +122,49 @@ export default function SubmitCongratulations() {
       if (files.length > 0) {
         const uploads: string[] = [];
         for (const file of files) {
-          const compressed = await imageCompression(file, { maxSizeMB: 0.5, maxWidthOrHeight: 1200, useWebWorker: true });
-          const fileName = `congrats-${Date.now()}-${Math.random().toString(36).slice(2)}.jpg`;
-          const formData = new FormData();
-          formData.append('file', compressed, fileName);
-          formData.append('fileName', fileName);
-          formData.append('bucket', 'congratulations');
+          try {
+            // Sanitize file name to avoid Unicode issues with browser-image-compression
+            const sanitizedName = file.name.replace(/[^a-zA-Z0-9._-]/g, '_');
+            const sanitizedFile = new File([file], sanitizedName, { type: file.type });
+            const compressed = await imageCompression(sanitizedFile, { maxSizeMB: 0.5, maxWidthOrHeight: 1200, useWebWorker: true });
+            const fileName = `congrats-${Date.now()}-${Math.random().toString(36).slice(2)}.jpg`;
+            const formData = new FormData();
+            formData.append('file', compressed, fileName);
+            formData.append('fileName', fileName);
+            formData.append('bucket', 'congratulations');
 
-          const response = await fetch('/api/upload', {
-            method: 'POST',
-            body: formData,
-          });
+            const response = await fetch('/api/upload', {
+              method: 'POST',
+              body: formData,
+            });
 
-          const result = await response.json();
-          if (!response.ok) {
-            throw new Error(result?.error || 'Storage upload failed');
+            const result = await response.json();
+            if (!response.ok) {
+              throw new Error(result?.error || 'Storage upload failed');
+            }
+
+            uploads.push(result.urls[0] as string);
+          } catch (compressionError) {
+            console.warn('Image compression failed, trying original file:', compressionError);
+            // Fall back to original file if compression fails
+            const fileName = `congrats-${Date.now()}-${Math.random().toString(36).slice(2)}.jpg`;
+            const formData = new FormData();
+            formData.append('file', file, fileName);
+            formData.append('fileName', fileName);
+            formData.append('bucket', 'congratulations');
+
+            const response = await fetch('/api/upload', {
+              method: 'POST',
+              body: formData,
+            });
+
+            const result = await response.json();
+            if (!response.ok) {
+              throw new Error(result?.error || 'Storage upload failed');
+            }
+
+            uploads.push(result.urls[0] as string);
           }
-
-          uploads.push(result.urls[0] as string);
         }
         imageUrls = uploads;
         imageUrl = uploads[0] ?? null;

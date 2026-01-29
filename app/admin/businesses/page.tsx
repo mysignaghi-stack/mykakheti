@@ -60,8 +60,16 @@ export default function AdminBusinesses() {
       const uploadedUrls: string[] = [];
 
       for (const file of images) {
-        const options = { maxSizeMB: 0.5, maxWidthOrHeight: 1400, useWebWorker: true };
-        const compressedFile = await imageCompression(file, options);
+        let compressedFile: File | Blob = file;
+        try {
+          // Sanitize file name to avoid Unicode issues with browser-image-compression
+          const sanitizedName = file.name.replace(/[^a-zA-Z0-9._-]/g, '_');
+          const sanitizedFile = new File([file], sanitizedName, { type: file.type });
+          compressedFile = await imageCompression(sanitizedFile, { maxSizeMB: 0.5, maxWidthOrHeight: 1400, useWebWorker: true });
+        } catch (compressionError) {
+          console.warn('Image compression failed, using original file:', compressionError);
+          compressedFile = file;
+        }
         const fileName = `biz-${Date.now()}-${Math.random().toString(36).substring(7)}.jpg`;
         
         const { error: uploadError } = await supabase.storage

@@ -17,8 +17,14 @@ export function useAdminAuth() {
         if (error) {
           console.error('Auth session error:', error);
           // Handle refresh token errors gracefully
-          if (error.message?.includes('Invalid Refresh Token') || error.message?.includes('Refresh Token Not Found')) {
+          if (error.message?.includes('Invalid Refresh Token') ||
+              error.message?.includes('Refresh Token Not Found') ||
+              error.message?.includes('refresh_token_not_found') ||
+              error.message?.includes('invalid_grant')) {
             console.log('Refresh token invalid, clearing session...');
+            // Clear any stored session data
+            localStorage.removeItem('supabase.auth.token');
+            sessionStorage.clear();
             await supabase.auth.signOut();
             setIsAdmin(false);
             setUser(null);
@@ -38,6 +44,12 @@ export function useAdminAuth() {
         }
       } catch (err) {
         console.error('Error checking admin status:', err);
+        // If there's an unexpected error, also clear session
+        try {
+          await supabase.auth.signOut();
+        } catch (signOutError) {
+          console.error('Error signing out:', signOutError);
+        }
         setIsAdmin(false);
         setUser(null);
       } finally {
@@ -49,9 +61,17 @@ export function useAdminAuth() {
 
     // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (_event, session) => {
-        console.log('Auth state change:', _event, session?.user?.email);
-        if (session?.user) {
+      async (event, session) => {
+        console.log('Auth state change:', event, session?.user?.email);
+
+        // Handle token refresh errors
+        if (event === 'TOKEN_REFRESHED') {
+          console.log('Token refreshed successfully');
+        } else if (event === 'SIGNED_OUT') {
+          console.log('User signed out');
+          setIsAdmin(false);
+          setUser(null);
+        } else if (session?.user) {
           setUser(session.user);
           const adminStatus = isAdminUser(session.user);
           console.log('Admin status:', adminStatus, 'for user:', session.user.email);

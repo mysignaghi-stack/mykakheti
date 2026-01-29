@@ -287,6 +287,10 @@ export default function KakhetianSquare({ isAdmin, controlToken }: KakhetianSqua
     const newPreviews: string[] = [];
     files.forEach(file => {
         if (file.size > 15 * 1024 * 1024) return alert(`ფაილი ${file.name} დიდია (max 15MB)`);
+        // Validate file type
+        if (!file.type.startsWith('image/') && !file.type.startsWith('video/')) {
+          return alert(`ფაილი ${file.name} არ არის მხარდაჭერილი ტიპი. გთხოვთ აირჩიოთ სურათი ან ვიდეო.`);
+        }
         newFiles.push(file);
         newPreviews.push(URL.createObjectURL(file));
     });
@@ -317,7 +321,16 @@ export default function KakhetianSquare({ isAdmin, controlToken }: KakhetianSqua
       let finalFile: File | Blob = file;
       const type = file.type.startsWith('image') ? 'image' : 'video';
       if (type === 'image') {
-        finalFile = await imageCompression(file, { maxSizeMB: 0.5, maxWidthOrHeight: 1200 });
+        try {
+          // Sanitize file name to avoid Unicode issues with browser-image-compression
+          const sanitizedName = file.name.replace(/[^a-zA-Z0-9._-]/g, '_');
+          const sanitizedFile = new File([file], sanitizedName, { type: file.type });
+          finalFile = await imageCompression(sanitizedFile, { maxSizeMB: 0.5, maxWidthOrHeight: 1200 });
+        } catch (compressionError) {
+          console.warn('Image compression failed, using original file:', compressionError);
+          // Fall back to original file if compression fails
+          finalFile = file;
+        }
       }
       const extension = file.name.split('.').pop()?.toLowerCase() || (type === 'image' ? 'jpg' : 'mp4');
       const fileName = `chat-${Date.now()}-${Math.random().toString(36).substring(7)}.${extension}`;
@@ -327,7 +340,10 @@ export default function KakhetianSquare({ isAdmin, controlToken }: KakhetianSqua
       if (error) throw error;
       const { data } = supabase.storage.from('square-media').getPublicUrl(fileName);
       return { url: data.publicUrl, type };
-    } catch { return null; }
+    } catch (error) {
+      console.error('File upload failed:', error);
+      throw new Error(`ატვირთვა ვერ მოხერხდა: ${error instanceof Error ? error.message : 'უცნობი შეცდომა'}`);
+    }
   };
 
   const postMessage = async (e: React.FormEvent) => {
@@ -378,8 +394,14 @@ export default function KakhetianSquare({ isAdmin, controlToken }: KakhetianSqua
     try {
       const uploads = [];
       for (const file of selectedFiles) {
-          const res = await handleFileUpload(file);
-          if (res) uploads.push(res);
+          try {
+            const res = await handleFileUpload(file);
+            if (res) uploads.push(res);
+          } catch (uploadError) {
+            console.error('Upload failed for file:', file.name, uploadError);
+            // Continue with other files, but show error to user
+            alert(`ფაილი ${file.name} ვერ აიტვირთა: ${uploadError instanceof Error ? uploadError.message : 'უცნობი შეცდომა'}`);
+          }
       }
       const baseData = {
           sender_name: msgName,

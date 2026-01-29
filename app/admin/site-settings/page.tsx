@@ -55,15 +55,26 @@ export default function AdminSiteSettings() {
     try {
       // Compress the image
       console.log('Starting image compression...');
-      const compressedFile = selectedFile.type.startsWith('image/') ? await imageCompression(selectedFile, {
-        maxSizeMB: 2,
-        maxWidthOrHeight: 1920,
-        useWebWorker: true,
-      }) : selectedFile;
+      let compressedFile: File | Blob = selectedFile;
+      if (selectedFile.type.startsWith('image/')) {
+        try {
+          // Sanitize file name to avoid Unicode issues with browser-image-compression
+          const sanitizedName = selectedFile.name.replace(/[^a-zA-Z0-9._-]/g, '_');
+          const sanitizedFile = new File([selectedFile], sanitizedName, { type: selectedFile.type });
+          compressedFile = await imageCompression(sanitizedFile, {
+            maxSizeMB: 2,
+            maxWidthOrHeight: 1920,
+            useWebWorker: true,
+          });
+        } catch (compressionError) {
+          console.warn('Image compression failed, using original file:', compressionError);
+          compressedFile = selectedFile;
+        }
+      }
       console.log('Image compression completed');
 
       // Upload to site-assets bucket
-      const fileExtension = compressedFile.name.split('.').pop()?.toLowerCase() || 'jpg';
+      const fileExtension = selectedFile.name.split('.').pop()?.toLowerCase() || 'jpg';
       const fileName = `background-${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExtension}`;
       console.log('Uploading to site-assets bucket:', fileName);
       const { data: uploadData, error: uploadError } = await supabase.storage

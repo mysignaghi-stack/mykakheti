@@ -1,6 +1,8 @@
 import Link from 'next/link';
 import type { ReactNode } from 'react';
 import { getAdminDashboardStats } from './actions';
+import { Suspense } from 'react';
+import AdminAuthGuard from './AdminAuthGuard';
 
 export const dynamic = 'force-dynamic';
 
@@ -50,54 +52,52 @@ function StatsCard({ title, value, description, icon, href }: StatsCardProps) {
 }
 
 export default async function AdminDashboard() {
-  const stats = await getAdminDashboardStats();
+  let stats: any = null;
 
-  if (!stats) {
-    return (
-      <main className="min-h-screen bg-[#050510] flex items-center justify-center text-white">
-        <div className="text-center">
-          <p className="text-white/70 mb-4">წვდომა შეზღუდულია</p>
-          <Link href="/admin/login" className="bg-amber-600 text-white px-6 py-3 rounded-xl font-black uppercase text-xs">შესვლა</Link>
-        </div>
-      </main>
-    );
+  try {
+    stats = await getAdminDashboardStats();
+  } catch (error) {
+    console.error('Error fetching admin stats:', error);
+    // If there's an auth error, stats will be null
   }
 
   return (
-    <main className="min-h-screen bg-[#050510] text-white p-6 md:p-10">
-      <div className="max-w-6xl mx-auto">
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
-          <div>
-            <h1 className="text-3xl font-black uppercase italic text-amber-500">ადმინისტრატორის პანელი</h1>
-            <p className="text-white/50 text-sm">მომხმარებელი: {stats.email ?? '—'}</p>
+    <AdminAuthGuard>
+      <main className="min-h-screen bg-[#050510] text-white p-6 md:p-10">
+        <div className="max-w-6xl mx-auto">
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
+            <div>
+              <h1 className="text-3xl font-black uppercase italic text-amber-500">ადმინისტრატორის პანელი</h1>
+              <p className="text-white/50 text-sm">მომხმარებელი: {stats?.email ?? '—'}</p>
+            </div>
+            <div className="flex gap-3 flex-wrap">
+              <Link href="/" className="bg-white/5 border border-white/10 px-5 py-2 rounded-xl text-xs font-black uppercase">მთავარი</Link>
+              <form action="/api/admin/refresh" method="post">
+                <button type="submit" className="bg-white/5 border border-white/10 px-5 py-2 rounded-xl text-xs font-black uppercase">განახლება</button>
+              </form>
+              <form action="/api/admin/signout" method="post">
+                <button type="submit" className="bg-red-600 px-5 py-2 rounded-xl text-xs font-black uppercase">გამოსვლა</button>
+              </form>
+            </div>
           </div>
-          <div className="flex gap-3 flex-wrap">
-            <Link href="/" className="bg-white/5 border border-white/10 px-5 py-2 rounded-xl text-xs font-black uppercase">მთავარი</Link>
-            <form action="/api/admin/refresh" method="post">
-              <button type="submit" className="bg-white/5 border border-white/10 px-5 py-2 rounded-xl text-xs font-black uppercase">განახლება</button>
-            </form>
-            <form action="/api/admin/signout" method="post">
-              <button type="submit" className="bg-red-600 px-5 py-2 rounded-xl text-xs font-black uppercase">გამოსვლა</button>
-            </form>
-          </div>
-        </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-10">
-          <StatsCard
-            title="მომხმარებლები"
-            value={stats.usersCount}
-            description="რეგისტრირებული მომხმარებლები"
-            icon={(
-              <svg className="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
-                <circle cx="8.5" cy="7" r="4" />
-                <path d="M20 8v6" />
-                <path d="M23 11h-6" />
-              </svg>
-            )}
-          />
-          <StatsCard
-            title="განცხადებები"
+          {stats && (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-10">
+              <StatsCard
+                title="მომხმარებლები"
+                value={stats.usersCount}
+                description="რეგისტრირებული მომხმარებლები"
+                icon={(
+                  <svg className="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+                    <circle cx="8.5" cy="7" r="4" />
+                    <path d="M20 8v6" />
+                    <path d="M23 11h-6" />
+                  </svg>
+                )}
+              />
+              <StatsCard
+                title="განცხადებები"
             value={stats.activeAnnouncements}
             description="აქტიური განცხადებები"
             icon={(
@@ -134,6 +134,7 @@ export default async function AdminDashboard() {
             )}
           />
         </div>
+        )}
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {ADMIN_LINKS.map((link) => (
@@ -145,5 +146,6 @@ export default async function AdminDashboard() {
         </div>
       </div>
     </main>
+    </AdminAuthGuard>
   );
 }
