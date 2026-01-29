@@ -11,6 +11,7 @@ import AdminNav from '../../components/admin/AdminNav';
 type AdminPost = Database['public']['Tables']['admin_posts']['Row'];
 
 export default function AdminPosts() {
+  // All hooks must be called unconditionally and in the same order
   const { isAdmin, loading: authLoading } = useAdminAuth();
   const [posts, setPosts] = useState<AdminPost[]>([]);
   const [loading, setLoading] = useState(true);
@@ -41,6 +42,27 @@ export default function AdminPosts() {
     publish_at: '',
     is_archived: false,
   });
+
+  // All derived hooks (useMemo, useCallback, etc.) must also be before any return
+  const filteredPosts = React.useMemo(() => (
+    posts.filter((post) => {
+      const matchesText = `${post.title ?? ''} ${post.category ?? ''}`
+        .toLowerCase()
+        .includes(searchTerm.trim().toLowerCase());
+      if (!matchesText) return false;
+      if (statusFilter === 'archived') return (post as any).is_archived ?? false;
+      if (statusFilter === 'published') return ((post as any).is_published ?? true) && !((post as any).is_archived ?? false);
+      if (statusFilter === 'hidden') return ((post as any).is_published === false) && !((post as any).is_archived ?? false);
+      return true;
+    })
+  ), [posts, searchTerm, statusFilter]);
+
+  const visiblePosts = React.useMemo(
+    () => filteredPosts.slice(0, visibleCount),
+    [filteredPosts, visibleCount]
+  );
+
+  // Early returns after all hooks
 
   useEffect(() => {
     if (!authLoading && isAdmin) {
@@ -397,13 +419,14 @@ export default function AdminPosts() {
     );
   }
 
+  // Early returns after all hooks
   if (!isAdmin) {
     return (
       <main className="min-h-screen bg-[#050510] flex items-center justify-center text-white">
         <div className="text-center">
           <h1 className="text-2xl font-black text-red-400 mb-4">წვდომა აკრძალულია</h1>
           <p className="text-white/60 mb-6">ამ გვერდზე წვდომისთვის საჭიროა ადმინისტრატორის უფლებები.</p>
-          <Link href="/admin/login" className="bg-amber-600 hover:bg-amber-500 text-white px-6 py-3 rounded-xl font-black uppercase">
+          <Link href="/admin/login" className="bg-amber-600 hover:bg-amber-500 text-white px-6 py-3 rounded-xl ფონტ-black uppercase">
             ადმინისტრატორად შესვლა
           </Link>
         </div>
@@ -422,24 +445,7 @@ export default function AdminPosts() {
     );
   }
 
-  const filteredPosts = React.useMemo(() => (
-    posts.filter((post) => {
-      const matchesText = `${post.title ?? ''} ${post.category ?? ''}`
-        .toLowerCase()
-        .includes(searchTerm.trim().toLowerCase());
-      if (!matchesText) return false;
-      if (statusFilter === 'archived') return (post as any).is_archived ?? false;
-      if (statusFilter === 'published') return ((post as any).is_published ?? true) && !((post as any).is_archived ?? false);
-      if (statusFilter === 'hidden') return ((post as any).is_published === false) && !((post as any).is_archived ?? false);
-      return true;
-    })
-  ), [posts, searchTerm, statusFilter]);
-
-  const visiblePosts = React.useMemo(
-    () => filteredPosts.slice(0, visibleCount),
-    [filteredPosts, visibleCount]
-  );
-
+  // Early returns after all hooks
   return (
     <main className="min-h-screen bg-[#050510] p-6 md:p-10 text-white font-sans">
       <div className="max-w-6xl mx-auto">

@@ -1,10 +1,13 @@
+// NOTE: This file exports API route handlers for Next.js App Router.
+// Do NOT import these handlers directly in client components or use as Server Actions.
+// Always call via HTTP (fetch) from the client or server.
 import { cookies } from 'next/headers';
 import { NextResponse } from 'next/server';
 import { createServerClient } from '@supabase/ssr';
 import { createClient } from '@supabase/supabase-js';
 import type { Database } from '../../../../../types/supabase';
 import { isAdminUser } from '../../../../lib/adminAuth';
-import Link from 'next/link';
+
 
 export async function POST(request: Request) {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -61,6 +64,7 @@ export async function POST(request: Request) {
   return NextResponse.json({ success: true });
 }
 
+
 export const GET = async (request: Request) => {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
@@ -73,6 +77,14 @@ export const GET = async (request: Request) => {
     );
   }
 
+  // Only allow GET with query param ?ip=...
+  const { searchParams } = new URL(request.url);
+  const ip = searchParams.get('ip')?.trim() || '';
+  if (!ip) {
+    return NextResponse.json({ error: 'Missing ip' }, { status: 400 });
+  }
+
+  // Auth check (reuse admin logic)
   const cookieStore = await cookies();
   const authClient = createServerClient<Database>(supabaseUrl, supabaseAnonKey, {
     cookies: {
@@ -87,31 +99,28 @@ export const GET = async (request: Request) => {
       },
     },
   });
-
   const { data: { user } } = await authClient.auth.getUser();
   if (!user || !isAdminUser(user)) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
-  const body = await request.json().catch(() => ({}));
-  const ip = typeof body?.ip === 'string' ? body.ip.trim() : '';
-
-  if (!ip) {
-    return NextResponse.json({ error: 'Missing ip' }, { status: 400 });
-  }
-
+  // Query banned_users for the correct column (id)
   const serviceClient = createClient<Database>(supabaseUrl, serviceRoleKey, {
     auth: { persistSession: false },
   });
-
-  const { data: { user: { id } } } = await serviceClient
+  const { data, error } = await serviceClient
     .from('banned_users')
-    .select('user')
+    .select('id')
     .eq('ip_address', ip);
-
-  if (!user) {
+  if (error) {
+    // If the error is about a missing column, return a clear error
+    if (error.message && error.message.includes("column 'id' does not exist")) {
+      return NextResponse.json({ error: "Column 'id' does not exist in banned_users table." }, { status: 500 });
+    }
+    return NextResponse.json({ error: error.message }, { status: 500 });
+  }
+  if (!data || data.length === 0) {
     return NextResponse.json({ error: 'User not found' }, { status: 404 });
   }
-
-  return NextResponse.json({ user: { id } });
+  return NextResponse.json({ user: { id: data[0].id } });
 };

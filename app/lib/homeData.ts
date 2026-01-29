@@ -162,6 +162,9 @@ export const fetchHomePageData = async (): Promise<HomePageData> => {
       .eq('is_approved', true)
       .order('created_at', { ascending: false })
       .limit(12),
+    supabase
+      .from('agro_prices' as any)
+      .select('*'),
   ]);
 
   const [
@@ -173,6 +176,7 @@ export const fetchHomePageData = async (): Promise<HomePageData> => {
     lostFoundResult,
     mastersResult,
     congratsResult,
+    agroResult,
   ] = results;
 
   const rawAnnouncements: AnnouncementRow[] = extractData<AnnouncementRow>(
@@ -183,7 +187,7 @@ export const fetchHomePageData = async (): Promise<HomePageData> => {
     adminPostsResult as SettledResponse<AdminPostRow>,
     'admin_posts'
   ).filter((post) => post.priority !== -1);
-  const agroRows: AgroRow[] = DEFAULT_AGRO_DATA;
+  const agroRows: AgroRow[] = agroResult.status === 'fulfilled' && agroResult.value ? agroResult.value as unknown as AgroRow[] : [];
   const weatherRows: WeatherRow[] = extractData<WeatherRow>(weatherResult as any, 'weather');
   const siteSettings: SiteSettingRow[] = extractData<SiteSettingRow>(
     siteSettingsResult as SettledResponse<SiteSettingRow>,
