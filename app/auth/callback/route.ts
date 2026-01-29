@@ -6,7 +6,7 @@ import type { Database } from '../../../types/supabase';
 export async function GET(request: Request) {
   const requestUrl = new URL(request.url);
   const code = requestUrl.searchParams.get('code');
-  const redirect = requestUrl.searchParams.get('redirect') || '/add';
+  const redirect = requestUrl.searchParams.get('redirect') || '/';
 
   if (code) {
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;

@@ -132,22 +132,6 @@ export default function HomePageClient({
   // Marquee text state
   const [marqueeText, setMarqueeText] = useState<string>(initialMarqueeText || FALLBACK_MARQUEE);
 
-  // Check authentication and redirect to login if not authenticated
-  useEffect(() => {
-    const checkAuth = async () => {
-      try {
-        const { data: { session } } = await supabase.auth.getSession();
-        if (!session) {
-          window.location.href = '/login';
-        }
-      } catch (error) {
-        console.log('Auth check error:', error);
-        window.location.href = '/login';
-      }
-    };
-    checkAuth();
-  }, []);
-
   // Fetch background image and marquee text from site_settings
   const fetchBG = useCallback(async () => {
     try {

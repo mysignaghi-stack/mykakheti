@@ -67,6 +67,15 @@ export default function AddPage() {
       setSession(data.session ?? null);
     };
     loadSession();
+
+    // Listen for auth state changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      setSession(session ?? null);
+    });
+
+    return () => {
+      subscription.unsubscribe();
+    };
   }, []);
 
   const handleOAuth = async (provider: 'google' | 'facebook') => {
