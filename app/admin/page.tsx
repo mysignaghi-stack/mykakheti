@@ -1,13 +1,29 @@
-'use client';
-
 import Link from 'next/link';
 import type { ReactNode } from 'react';
-import { useEffect, useState } from 'react';
 import { getAdminDashboardStats } from './actions';
 import { Suspense } from 'react';
 import AdminAuthGuard from './AdminAuthGuard';
+import { createClient } from '../lib/supabase-server';
+import { isAdminUser } from '../lib/adminAuth';
+import { redirect } from 'next/navigation';
 
 export const dynamic = 'force-dynamic';
+
+async function checkServerAuth() {
+  try {
+    const authClient = await createClient();
+    const { data: { user }, error } = await authClient.auth.getUser();
+
+    if (error || !user || !isAdminUser(user)) {
+      redirect('/admin/login');
+    }
+
+    return user;
+  } catch (err) {
+    console.error('Server auth check failed:', err);
+    redirect('/admin/login');
+  }
+}
 
 const ADMIN_LINKS = [
   { href: '/admin/messages', title: 'შეტყობინებები', desc: 'კონტაქტის ფორმის მესიჯები' },
@@ -176,12 +192,130 @@ function AdminDashboardContent({ isAuthenticated }: { isAuthenticated: boolean }
   );
 }
 
-export default function AdminDashboard() {
+'use client';
+
+import { useEffect, useState } from 'react';
+
+function AdminDashboardClient() {
+  const [stats, setStats] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchStats = async () => {
+      try {
+        const statsData = await getAdminDashboardStats();
+        setStats(statsData);
+      } catch (error) {
+        console.error('Error fetching admin stats:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchStats();
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-[#050510] text-white p-6 md:p-10 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-amber-500 mx-auto mb-4"></div>
+          <p className="text-white/60">იტვირთება...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <AdminAuthGuard>
-      {(isAuthenticated: boolean) => (
-        <AdminDashboardContent isAuthenticated={isAuthenticated} />
-      )}
-    </AdminAuthGuard>
+    <main className="min-h-screen bg-[#050510] text-white p-6 md:p-10">
+      <div className="max-w-6xl mx-auto">
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
+          <div>
+            <h1 className="text-3xl font-black uppercase italic text-amber-500">ადმინისტრატორის პანელი</h1>
+            <p className="text-white/50 text-sm">მომხმარებელი: {stats?.email ?? '—'}</p>
+          </div>
+          <div className="flex gap-3 flex-wrap">
+            <Link href="/" className="bg-white/5 border border-white/10 px-5 py-2 rounded-xl text-xs font-black uppercase">მთავარი</Link>
+            <form action="/api/admin/refresh" method="post">
+              <button type="submit" className="bg-white/5 border border-white/10 px-5 py-2 rounded-xl text-xs font-black uppercase">განახლება</button>
+            </form>
+            <form action="/api/admin/signout" method="post">
+              <button type="submit" className="bg-red-600 px-5 py-2 rounded-xl text-xs font-black uppercase">გამოსვლა</button>
+            </form>
+          </div>
+        </div>
+
+        {stats && (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-10">
+            <StatsCard
+              title="მომხმარებლები"
+              value={stats.usersCount}
+              description="რეგისტრირებული მომხმარებლები"
+              icon={(
+                <svg className="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+                  <circle cx="8.5" cy="7" r="4" />
+                  <path d="M20 8v6" />
+                  <path d="M23 11h-6" />
+                </svg>
+              )}
+            />
+            <StatsCard
+              title="განცხადებები"
+              value={stats.activeAnnouncements}
+              description="აქტიური განცხადებები"
+              icon={(
+                <svg className="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                  <path d="M14 2v6h6" />
+                  <path d="M8 13h8" />
+                  <path d="M8 17h5" />
+                </svg>
+              )}
+            />
+            <StatsCard
+              title="მოსალოდნელი"
+              value={stats.pendingAnnouncements}
+              description="მოდერაციაზე მყოფი განცხადებები"
+              icon={(
+                <svg className="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <circle cx="12" cy="12" r="10" />
+                  <path d="M12 6v6l4 2" />
+                </svg>
+              )}
+            />
+            <StatsCard
+              title="ვიზიტორების ანალიტიკა"
+              value="Vercel"
+              description="Real User Traffic"
+              href={VERCEL_ANALYTICS_URL}
+              icon={(
+                <svg className="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M12 20V10" />
+                  <path d="M18 20V4" />
+                  <path d="M6 20v-4" />
+                </svg>
+              )}
+            />
+          </div>
+        )}
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {ADMIN_LINKS.map((link) => (
+            <Link key={link.href} href={link.href} className="group bg-white/5 border border-white/10 rounded-2xl p-6 hover:border-amber-500/50 hover:bg-white/10 transition-all">
+              <h3 className="text-lg font-black uppercase italic mb-2 group-hover:text-amber-400">{link.title}</h3>
+              <p className="text-white/50 text-sm">{link.desc}</p>
+            </Link>
+          ))}
+        </div>
+      </div>
+    </main>
   );
+}
+
+export default async function AdminDashboard() {
+  // Check authentication on server side first
+  await checkServerAuth();
+
+  return <AdminDashboardClient />;
 }

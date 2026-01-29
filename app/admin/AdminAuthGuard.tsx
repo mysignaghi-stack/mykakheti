@@ -31,7 +31,7 @@ export default function AdminAuthGuard({ children, fallback }: AdminAuthGuardPro
             // Clear any stored session data
             localStorage.removeItem('supabase.auth.token');
             sessionStorage.clear();
-            setTimeout(() => router.push('/admin/login'), 3000);
+            router.push('/admin/login');
             return;
           }
           setAuthError('ავტორიზაციის შეცდომა');
@@ -42,11 +42,12 @@ export default function AdminAuthGuard({ children, fallback }: AdminAuthGuardPro
           setIsAuthenticated(true);
         } else {
           setAuthError('ადმინისტრატორის წვდომა არ არის');
-          setTimeout(() => router.push('/admin/login'), 3000);
+          router.push('/admin/login');
         }
       } catch (err) {
         console.error('Auth check failed:', err);
         setAuthError('ავტორიზაციის შემოწმება ვერ მოხერხდა');
+        setTimeout(() => router.push('/admin/login'), 2000);
       } finally {
         setIsLoading(false);
       }
