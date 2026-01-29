@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import Image from 'next/image';
 import { supabase } from '../../lib/supabase';
+import { onMessageInsert, onMessageDelete, broadcastInsert, broadcastDelete } from '../../lib/squareRealtime';
 import { formatDistanceToNow } from 'date-fns';
 import { ka } from 'date-fns/locale';
 import imageCompression from 'browser-image-compression';
@@ -68,8 +69,7 @@ export default function KakhetianSquare({ isAdmin, controlToken }: KakhetianSqua
   const audioUnlockedRef = useRef(false);
   const lastTypingSoundRef = useRef(0);
 
-  // უნიკალური ID თითოეული ჩატის ინსტანციისთვის
-  const channelId = useRef(`room_${Date.now()}_${Math.random()}`).current;
+  // (shared realtime subscription used via app/lib/squareRealtime)
 
   // --- Helpers ---
   const playSound = useCallback(() => {
@@ -227,32 +227,23 @@ export default function KakhetianSquare({ isAdmin, controlToken }: KakhetianSqua
     };
   }, [controlToken, scrollToBottom]);
 
-  // 2. REALTIME Subscription
+  // 2. REALTIME Subscription (shared)
   useEffect(() => {
-    const channel = supabase.channel(channelId)
-      .on(
-        'postgres_changes',
-        { event: 'INSERT', schema: 'public', table: 'square_messages' },
-        (payload) => {
-          const newMsg = payload.new as Message;
-          setMessages((prev) => mergeMessages(prev, [newMsg]));
-          playSound();
-          setTimeout(() => scrollToBottom(true), 60);
-        }
-      )
-      .on(
-        'postgres_changes',
-        { event: 'DELETE', schema: 'public', table: 'square_messages' },
-        (payload) => {
-          setMessages((prev) => prev.filter(m => m.id !== payload.old.id));
-        }
-      )
-      .subscribe();
+    const unsubInsert = onMessageInsert((payload) => {
+      const newMsg = payload.new as Message;
+      setMessages((prev) => mergeMessages(prev, [newMsg]));
+      playSound();
+      setTimeout(() => scrollToBottom(true), 60);
+    });
+    const unsubDelete = onMessageDelete((payload) => {
+      setMessages((prev) => prev.filter((m) => m.id !== payload.old.id));
+    });
 
     return () => {
-      supabase.removeChannel(channel);
+      unsubInsert();
+      unsubDelete();
     };
-  }, [channelId, isSoundOn, playSound, scrollToBottom]);
+  }, [isSoundOn, playSound, scrollToBottom, mergeMessages]);
 
   // 3. UI Helpers
   useEffect(() => {
@@ -385,6 +376,9 @@ export default function KakhetianSquare({ isAdmin, controlToken }: KakhetianSqua
 
     if (optimisticMessages.length > 0) {
       setMessages((prev) => mergeMessages(prev, optimisticMessages));
+      try {
+        optimisticMessages.forEach((m) => broadcastInsert({ new: m }));
+      } catch {}
       requestAnimationFrame(() => scrollToBottom(true));
     }
 
@@ -436,6 +430,9 @@ export default function KakhetianSquare({ isAdmin, controlToken }: KakhetianSqua
             const base = prev.filter(m => !tempIds.has(m.id));
             return mergeMessages(base, newMsgs);
           });
+          try {
+            (data as Message[]).forEach((m) => broadcastInsert({ new: m }));
+          } catch {}
           requestAnimationFrame(() => scrollToBottom(true));
 
           // გასუფთავება
@@ -446,6 +443,9 @@ export default function KakhetianSquare({ isAdmin, controlToken }: KakhetianSqua
           if (optimisticMessages.length > 0) {
             const tempIds = new Set(optimisticMessages.map(m => m.id));
             setMessages((prev) => prev.filter(m => !tempIds.has(m.id)));
+            try {
+              optimisticMessages.forEach((m) => broadcastDelete({ old: { id: m.id } }));
+            } catch {}
           }
           alert("შეცდომა გაგზავნისას.");
       }
