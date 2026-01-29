@@ -1,4 +1,6 @@
-"use client";
+// Before: redirectTo: `${window.location.origin}/auth/callback`
+// After: redirectTo: `${window.location.origin}/auth/callback?redirect=/add`// Before: redirectTo: `${window.location.origin}/auth/callback`
+// After: redirectTo: `${window.location.origin}/auth/callback?redirect=/add`"use client";
 
 import { useState } from "react";
 import type { User } from "@supabase/supabase-js";
@@ -48,7 +50,7 @@ export default function AuthForm() {
         if (error) throw error;
         if (data.user) await upsertProfile(data.user);
       }
-      router.push("/upload");
+      router.push("/add");
     } catch (err) {
       const msg = err instanceof Error ? err.message : "Auth error";
       setError(msg);
@@ -61,7 +63,7 @@ export default function AuthForm() {
     setError("");
     const { error } = await supabase.auth.signInWithOAuth({
       provider,
-      options: { redirectTo: `${window.location.origin}/auth/callback` },
+      options: { redirectTo: `${window.location.origin}/auth/callback?redirect=/add` },
     });
     if (error) {
       setError("Social provider არ არის ჩართული Supabase Dashboard-ში.");
