@@ -14,21 +14,24 @@ export type AdminDashboardStats = {
 };
 
 export async function getAdminDashboardStats(): Promise<AdminDashboardStats | null> {
-  const authClient = await createClient();
-  const { data: { user }, error: userError } = await authClient.auth.getUser();
+  try {
+    const authClient = await createClient();
+    const { data: { user }, error: userError } = await authClient.auth.getUser();
 
-  if (userError) {
-    console.error('Auth error in getAdminDashboardStats:', userError);
-    if (userError.message?.includes('refresh_token_not_found') ||
-        userError.message?.includes('Invalid Refresh Token') ||
-        userError.message?.includes('Refresh Token Not Found')) {
-      console.log('Invalid refresh token detected, returning null');
-      return null;
+    if (userError) {
+      console.error('Auth error in getAdminDashboardStats:', userError);
+      if (userError.message?.includes('refresh_token_not_found') ||
+          userError.message?.includes('Invalid Refresh Token') ||
+          userError.message?.includes('Refresh Token Not Found') ||
+          userError.message?.includes('Auth session missing')) {
+        console.log('Invalid or missing auth session detected, returning null');
+        return null;
+      }
+      throw userError;
     }
-    throw userError;
-  }
 
     if (!user || !isAdminUser(user)) {
+      console.log('User not found or not admin, returning null');
       return null;
     }
 
@@ -67,6 +70,10 @@ export async function getAdminDashboardStats(): Promise<AdminDashboardStats | nu
     pendingAnnouncements: pendingAnnouncements ?? 0,
     email: user.email ?? null,
   };
+  } catch (error) {
+    console.error('Unexpected error in getAdminDashboardStats:', error);
+    return null;
+  }
 }
 
 export async function refreshAdminDashboard() {

@@ -7,7 +7,7 @@ import { supabase } from '../lib/supabase';
 import { isAdminUser } from '../lib/adminAuth';
 
 interface AdminAuthGuardProps {
-  children: React.ReactNode;
+  children: React.ReactNode | ((isAuthenticated: boolean) => React.ReactNode);
   fallback?: React.ReactNode;
 }
 
@@ -117,5 +117,5 @@ export default function AdminAuthGuard({ children, fallback }: AdminAuthGuardPro
     );
   }
 
-  return <>{children}</>;
+  return <>{typeof children === 'function' ? children(isAuthenticated) : children}</>;
 }
