@@ -1,29 +1,11 @@
+'use client';
+
 import Link from 'next/link';
 import type { ReactNode } from 'react';
+import { useEffect, useState } from 'react';
 import { getAdminDashboardStats } from './actions';
 import { Suspense } from 'react';
 import AdminAuthGuard from './AdminAuthGuard';
-import { createClient } from '../lib/supabase-server';
-import { isAdminUser } from '../lib/adminAuth';
-import { redirect } from 'next/navigation';
-
-export const dynamic = 'force-dynamic';
-
-async function checkServerAuth() {
-  try {
-    const authClient = await createClient();
-    const { data: { user }, error } = await authClient.auth.getUser();
-
-    if (error || !user || !isAdminUser(user)) {
-      redirect('/admin/login');
-    }
-
-    return user;
-  } catch (err) {
-    console.error('Server auth check failed:', err);
-    redirect('/admin/login');
-  }
-}
 
 const ADMIN_LINKS = [
   { href: '/admin/messages', title: 'შეტყობინებები', desc: 'კონტაქტის ფორმის მესიჯები' },
@@ -192,10 +174,6 @@ function AdminDashboardContent({ isAuthenticated }: { isAuthenticated: boolean }
   );
 }
 
-'use client';
-
-import { useEffect, useState } from 'react';
-
 function AdminDashboardClient() {
   const [stats, setStats] = useState<any>(null);
   const [loading, setLoading] = useState(true);
@@ -313,9 +291,10 @@ function AdminDashboardClient() {
   );
 }
 
-export default async function AdminDashboard() {
-  // Check authentication on server side first
-  await checkServerAuth();
-
-  return <AdminDashboardClient />;
+export default function AdminDashboard() {
+  return (
+    <AdminAuthGuard>
+      <AdminDashboardClient />
+    </AdminAuthGuard>
+  );
 }
