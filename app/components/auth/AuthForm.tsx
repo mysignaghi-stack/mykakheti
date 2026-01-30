@@ -1,6 +1,7 @@
+"use client";
+
 // Before: redirectTo: `${window.location.origin}/auth/callback`
-// After: redirectTo: `${window.location.origin}/auth/callback?redirect=/add`// Before: redirectTo: `${window.location.origin}/auth/callback`
-// After: redirectTo: `${window.location.origin}/auth/callback?redirect=/add`"use client";
+// After: redirectTo: `${window.location.origin}/auth/callback?redirect=/add`
 
 import { useState } from "react";
 import type { User } from "@supabase/supabase-js";

@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useLayoutEffect, useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { supabase } from '../lib/supabase';
@@ -35,6 +35,26 @@ export default function AnnouncementsPage() {
       setLoading(false);
     };
     fetchData();
+  }, []);
+
+  // Prevent browser from performing its own scroll restoration (which can cause a visible jump)
+  useEffect(() => {
+    let prev: any = undefined;
+    try {
+      if ('scrollRestoration' in history) {
+        prev = history.scrollRestoration;
+        history.scrollRestoration = 'manual';
+      }
+    } catch {}
+    return () => {
+      try {
+        if (prev !== undefined && 'scrollRestoration' in history) history.scrollRestoration = prev;
+      } catch {}
+    };
+  }, []);
+
+  // Restore scroll position synchronously before paint to avoid visible jump
+  useLayoutEffect(() => {
     try {
       const pos = sessionStorage.getItem('announcements-scroll');
       if (pos) {
