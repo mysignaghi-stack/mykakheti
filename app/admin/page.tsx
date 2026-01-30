@@ -8,6 +8,7 @@ import { supabase } from '../lib/supabase';
 import { getAdminDashboardStats } from './actions';
 import { Suspense } from 'react';
 import AdminAuthGuard from './AdminAuthGuard';
+import AdminAgroPanel from './AdminAgroPanel';
 
 const ADMIN_LINKS = [
   { href: '/admin/messages', title: 'შეტყობინებები', desc: 'კონტაქტის ფორმის მესიჯები' },
@@ -99,9 +100,17 @@ function AdminDashboardContent({ isAuthenticated }: { isAuthenticated: boolean }
           </div>
           <div className="flex gap-3 flex-wrap">
             <Link href="/" className="bg-white/5 border border-white/10 px-5 py-2 rounded-xl text-xs font-black uppercase">მთავარი</Link>
-            <form action="/api/admin/refresh" method="post">
-              <button type="submit" className="bg-white/5 border border-white/10 px-5 py-2 rounded-xl text-xs font-black uppercase">განახლება</button>
-            </form>
+            <button
+              type="button"
+              onClick={async () => {
+                try {
+                  await fetch('/api/admin/refresh', { method: 'POST' });
+                } catch (err) {
+                  console.error('refresh error', err);
+                }
+              }}
+              className="bg-white/5 border border-white/10 px-5 py-2 rounded-xl text-xs font-black uppercase"
+            >განახლება</button>
             {/* Client-side sign out to avoid 405 from server POST endpoints */}
             <ClientSignOutButton />
           </div>
@@ -170,6 +179,9 @@ function AdminDashboardContent({ isAuthenticated }: { isAuthenticated: boolean }
             </Link>
           ))}
         </div>
+        <div className="mt-8">
+          <AdminAgroPanel />
+        </div>
       </div>
     </main>
   );
@@ -215,9 +227,17 @@ function AdminDashboardClient() {
           </div>
           <div className="flex gap-3 flex-wrap">
             <Link href="/" className="bg-white/5 border border-white/10 px-5 py-2 rounded-xl text-xs font-black uppercase">მთავარი</Link>
-            <form action="/api/admin/refresh" method="post">
-              <button type="submit" className="bg-white/5 border border-white/10 px-5 py-2 rounded-xl text-xs font-black uppercase">განახლება</button>
-            </form>
+            <button
+              type="button"
+              onClick={async () => {
+                try {
+                  await fetch('/api/admin/refresh', { method: 'POST' });
+                } catch (err) {
+                  console.error('refresh error', err);
+                }
+              }}
+              className="bg-white/5 border border-white/10 px-5 py-2 rounded-xl text-xs font-black uppercase"
+            >განახლება</button>
             <ClientSignOutButton />
           </div>
         </div>
