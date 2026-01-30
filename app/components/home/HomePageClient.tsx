@@ -569,13 +569,12 @@ export default function HomePageClient({
             <div className="bg-white/[0.03] backdrop-blur-3xl rounded-[30px] border border-white/10 p-5 flex flex-col items-center group relative overflow-hidden transition-all hover:border-purple-500/30 shadow-xl">
               <div className="flex justify-between w-full items-center mb-4">
                 <h4 className="text-[10px] font-black text-purple-400 uppercase tracking-[0.4em]">🍇 აგრო-ბირჟა</h4>
-                {isAdmin && <span className="text-[9px] bg-red-500/20 text-red-400 px-2 py-1 rounded">Edit</span>}
               </div>
               <p className="w-full text-[10px] text-white/40 font-bold uppercase tracking-[0.2em] mb-3 leading-tight">საორიენტაციო ფასები · დააჭირე პროდუქტს რომ ნახო მიმღები ობიექტები</p>
               <div className="w-full space-y-2">
                 {agroData.filter(i => i.category === 'grape').map(item => (
-                  <button key={item.id} onClick={() => isAdmin ? (() => { setEditAgroItem(item); setNewPrice(item.price); setEditDetails(normalizeDetails(item.details, item.price)); })() : setSelectedAgro(item)} className={`w-full flex justify-between items-center bg-black/40 p-3 rounded-xl border border-white/5 transition-all group/item hover:bg-white/5 ${isAdmin ? 'hover:border-amber-500' : ''}`}>
-                    <span className="text-xs font-black uppercase text-purple-300 flex gap-2">{item.name} {isAdmin && '✏️'}</span>
+                  <button key={item.id} onClick={() => setSelectedAgro(item)} className="w-full flex justify-between items-center bg-black/40 p-3 rounded-xl border border-white/5 transition-all group/item hover:bg-white/5">
+                    <span className="text-xs font-black uppercase text-purple-300 flex gap-2">{item.name}</span>
                     <span className="text-sm font-black italic">{item.price}</span>
                   </button>
                 ))}
@@ -605,13 +604,12 @@ export default function HomePageClient({
                  <div className="bg-white/[0.03] backdrop-blur-3xl rounded-[30px] border border-white/10 p-5 flex flex-col items-center group relative overflow-hidden transition-all hover:border-purple-500/30 shadow-xl">
                    <div className="flex justify-between w-full items-center mb-4">
                      <h4 className="text-[10px] font-black text-purple-400 uppercase tracking-[0.4em]">🍇 აგრო-ბირჟა</h4>
-                     {isAdmin && <span className="text-[9px] bg-red-500/20 text-red-400 px-2 py-1 rounded">Edit</span>}
                    </div>
                    <p className="w-full text-[10px] text-white/40 font-bold uppercase tracking-[0.2em] mb-3 leading-tight">საორიენტაციო ფასები · დააჭირე პროდუქტს რომ ნახო მიმღები ობიექტები</p>
                    <div className="w-full space-y-2">
                      {agroData.filter(i => i.category === 'grape').map(item => (
-                       <button key={item.id} onClick={() => isAdmin ? (() => { setEditAgroItem(item); setNewPrice(item.price); setEditDetails(normalizeDetails(item.details, item.price)); })() : setSelectedAgro(item)} className={`w-full flex justify-between items-center bg-black/40 p-3 rounded-xl border border-white/5 transition-all group/item hover:bg-white/5 ${isAdmin ? 'hover:border-amber-500' : ''}`}>
-                         <span className="text-xs font-black uppercase text-purple-300 flex gap-2">{item.name} {isAdmin && '✏️'}</span>
+                       <button key={item.id} onClick={() => setSelectedAgro(item)} className="w-full flex justify-between items-center bg-black/40 p-3 rounded-xl border border-white/5 transition-all group/item hover:bg-white/5">
+                         <span className="text-xs font-black uppercase text-purple-300 flex gap-2">{item.name}</span>
                          <span className="text-sm font-black italic">{item.price}</span>
                        </button>
                      ))}
@@ -624,8 +622,8 @@ export default function HomePageClient({
                     <p className="w-full text-[10px] text-white/40 font-bold uppercase tracking-[0.2em] mb-3 leading-tight">საორიენტაციო ფასები · დააჭირე პროდუქტს რომ ნახო მიმღები ობიექტები</p>
                     <div className="w-full space-y-2">
                       {agroData.filter(i => i.category === 'grain').map(item => (
-                        <button key={item.id} onClick={() => isAdmin ? (() => { setEditAgroItem(item); setNewPrice(item.price); setEditDetails(normalizeDetails(item.details, item.price)); })() : setSelectedAgro(item)} className={`w-full flex justify-between items-center bg-black/40 p-3 rounded-xl border border-white/5 transition-all group/item hover:bg-white/5 ${isAdmin ? 'hover:border-amber-500' : ''}`}>
-                          <span className="text-xs font-black uppercase text-yellow-500 flex gap-2">{item.name} {isAdmin && '✏️'}</span>
+                        <button key={item.id} onClick={() => setSelectedAgro(item)} className="w-full flex justify-between items-center bg-black/40 p-3 rounded-xl border border-white/5 transition-all group/item hover:bg-white/5">
+                          <span className="text-xs font-black uppercase text-yellow-500 flex gap-2">{item.name}</span>
                           <span className="text-sm font-black italic">{item.price}</span>
                         </button>
                       ))}
@@ -694,8 +692,8 @@ export default function HomePageClient({
               <p className="w-full text-[10px] text-white/40 font-bold uppercase tracking-[0.2em] mb-3 leading-tight">საორიენტაციო ფასები · დააჭირე პროდუქტს რომ ნახო მიმღები ობიექტები</p>
               <div className="w-full space-y-2">
                 {agroData.filter(i => i.category === 'grain').map(item => (
-                  <button key={item.id} onClick={() => isAdmin ? (() => { setEditAgroItem(item); setNewPrice(item.price); setEditDetails(normalizeDetails(item.details, item.price)); })() : setSelectedAgro(item)} className={`w-full flex justify-between items-center bg-black/40 p-3 rounded-xl border border-white/5 transition-all group/item hover:bg-white/5 ${isAdmin ? 'hover:border-amber-500' : ''}`}>
-                    <span className="text-xs font-black uppercase text-yellow-500 flex gap-2">{item.name} {isAdmin && '✏️'}</span>
+                  <button key={item.id} onClick={() => setSelectedAgro(item)} className="w-full flex justify-between items-center bg-black/40 p-3 rounded-xl border border-white/5 transition-all group/item hover:bg-white/5">
+                    <span className="text-xs font-black uppercase text-yellow-500 flex gap-2">{item.name}</span>
                     <span className="text-sm font-black italic">{item.price}</span>
                   </button>
                 ))}

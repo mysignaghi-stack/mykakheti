@@ -3,7 +3,9 @@ import React from 'react';
 interface EditAgroModalProps {
   open: boolean;
   item: { name: string } | null;
+  newName: string;
   newPrice: string;
+  onChangeName: (v: string) => void;
   onChange: (v: string) => void;
   details: { place: string; rate: string | number; phone?: string }[];
   onChangeDetails: (v: { place: string; rate: string | number; phone?: string }[]) => void;
@@ -12,20 +14,25 @@ interface EditAgroModalProps {
   loading?: boolean;
 }
 
-const EditAgroModal: React.FC<EditAgroModalProps> = ({ open, item, newPrice, onChange, details, onChangeDetails, onClose, onSubmit, loading }) => {
+const EditAgroModal: React.FC<EditAgroModalProps> = ({ open, item, newName, newPrice, onChangeName, onChange, details, onChangeDetails, onClose, onSubmit, loading }) => {
   const modalRef = React.useRef<HTMLDivElement>(null);
+  const onCloseRef = React.useRef(onClose);
+  React.useEffect(() => {
+    onCloseRef.current = onClose;
+  }, [onClose]);
+
   React.useEffect(() => {
     if (open && modalRef.current) {
       modalRef.current.focus();
     }
     const handleEsc = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onClose();
+      if (e.key === 'Escape') onCloseRef.current();
     };
     if (open) {
       window.addEventListener('keydown', handleEsc);
       return () => window.removeEventListener('keydown', handleEsc);
     }
-  }, [open, onClose]);
+  }, [open]);
   if (!open || !item) return null;
 
   const updateDetail = (idx: number, key: 'place' | 'rate' | 'phone', value: string) => {
@@ -46,8 +53,9 @@ const EditAgroModal: React.FC<EditAgroModalProps> = ({ open, item, newPrice, onC
   return (
     <div className="fixed inset-0 z-[2000] bg-black/90 backdrop-blur-xl flex items-center justify-center p-4" role="dialog" aria-modal="true" tabIndex={-1} ref={modalRef}>
       <div className="bg-slate-900 p-8 rounded-3xl border border-amber-500/30 w-full max-w-sm text-center shadow-2xl">
-        <h3 className="text-xl font-bold mb-4 text-white">ფასის შეცვლა: <span className="text-amber-500">{item.name}</span></h3>
+        <h3 className="text-xl font-bold mb-4 text-white">ფასის ცვლილება / ახალი: <span className="text-amber-500">{item.name}</span></h3>
         <form onSubmit={onSubmit}>
+          <input type="text" value={newName} onChange={e => onChangeName(e.target.value)} className="w-full p-3 bg-black/30 border border-white/10 rounded-xl text-white font-bold mb-3 outline-none focus:border-amber-500 transition-all" placeholder=" ნივთის სახელი (მაგ: ყურძენი)" />
           <input type="text" value={newPrice} onChange={e => onChange(e.target.value)} className="w-full p-4 bg-black/30 border border-white/10 rounded-xl text-white font-bold mb-4 outline-none focus:border-amber-500 transition-all text-center text-lg" placeholder="მაგ: 1.50 - 2.00 ₾" autoFocus />
 
           <div className="space-y-3 max-h-72 overflow-y-auto pr-1 text-left">
