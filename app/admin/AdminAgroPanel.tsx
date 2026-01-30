@@ -75,7 +75,14 @@ export default function AdminAgroPanel({ showCategory }: { showCategory?: 'grape
       alert('შენახვა წარმატებულია');
     } catch (err) {
       console.error('Failed to save agro item', err);
-      const msg = (err && (err.message || err.msg)) ? (err.message || err.msg) : JSON.stringify(err);
+      const getErrorMessage = (e: unknown) => {
+        if (!e) return 'Unknown error';
+        if (typeof e === 'string') return e;
+        if (e instanceof Error) return e.message;
+        const anyErr = e as any;
+        return anyErr?.message || anyErr?.msg || JSON.stringify(anyErr);
+      };
+      const msg = getErrorMessage(err);
       alert('შენახვა ვერ მოხერხდა: ' + msg);
     } finally {
       setSaving(false);

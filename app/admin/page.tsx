@@ -180,7 +180,7 @@ function AdminDashboardContent({ isAuthenticated }: { isAuthenticated: boolean }
           ))}
         </div>
         <div className="mt-8">
-          <AdminAgroPanel />
+          <AdminAgroPanel showCategory="grape" />
         </div>
       </div>
     </main>

@@ -3,9 +3,9 @@ import React from 'react';
 interface EditAgroModalProps {
   open: boolean;
   item: { name: string } | null;
-  newName: string;
+  newName?: string;
   newPrice: string;
-  onChangeName: (v: string) => void;
+  onChangeName?: (v: string) => void;
   onChange: (v: string) => void;
   details: { place: string; rate: string | number; phone?: string }[];
   onChangeDetails: (v: { place: string; rate: string | number; phone?: string }[]) => void;
@@ -55,7 +55,9 @@ const EditAgroModal: React.FC<EditAgroModalProps> = ({ open, item, newName, newP
       <div className="bg-slate-900 p-8 rounded-3xl border border-amber-500/30 w-full max-w-sm text-center shadow-2xl">
         <h3 className="text-xl font-bold mb-4 text-white">ფასის ცვლილება / ახალი: <span className="text-amber-500">{item.name}</span></h3>
         <form onSubmit={onSubmit}>
-          <input type="text" value={newName} onChange={e => onChangeName(e.target.value)} className="w-full p-3 bg-black/30 border border-white/10 rounded-xl text-white font-bold mb-3 outline-none focus:border-amber-500 transition-all" placeholder=" ნივთის სახელი (მაგ: ყურძენი)" />
+          {typeof onChangeName === 'function' ? (
+            <input type="text" value={newName ?? ''} onChange={e => onChangeName(e.target.value)} className="w-full p-3 bg-black/30 border border-white/10 rounded-xl text-white font-bold mb-3 outline-none focus:border-amber-500 transition-all" placeholder=" ნივთის სახელი (მაგ: ყურძენი)" />
+          ) : null}
           <input type="text" value={newPrice} onChange={e => onChange(e.target.value)} className="w-full p-4 bg-black/30 border border-white/10 rounded-xl text-white font-bold mb-4 outline-none focus:border-amber-500 transition-all text-center text-lg" placeholder="მაგ: 1.50 - 2.00 ₾" autoFocus />
 
           <div className="space-y-3 max-h-72 overflow-y-auto pr-1 text-left">

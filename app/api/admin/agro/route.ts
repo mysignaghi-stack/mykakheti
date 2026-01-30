@@ -40,7 +40,7 @@ export async function POST(request: Request) {
 
   let serviceClient;
   try {
-    serviceClient = createClient<Database>(supabaseUrl, serviceRoleKey, { auth: { persistSession: false } });
+    serviceClient = createClient(supabaseUrl, serviceRoleKey, { auth: { persistSession: false } });
   } catch (err) {
     return NextResponse.json({ error: 'Failed to create Supabase client' }, { status: 500 });
   }
