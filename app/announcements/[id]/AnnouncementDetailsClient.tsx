@@ -1,5 +1,7 @@
-'use client';
+"use client";
 import { useEffect, useState } from 'react';
+import { useRef } from 'react';
+import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
@@ -20,6 +22,7 @@ export default function AnnouncementDetailsClient({ initialAd }: { initialAd: An
     return Array.from(new Set(combined));
   };
   const [activeImg, setActiveImg] = useState<string | null>(getImages(initialAd)[0] ?? null);
+  const [touchStartX, setTouchStartX] = useState<number | null>(null);
   const [shareUrl, setShareUrl] = useState('');
   const [zoomOpen, setZoomOpen] = useState(false);
   const [zoomImg, setZoomImg] = useState<string | null>(null);
@@ -28,6 +31,8 @@ export default function AnnouncementDetailsClient({ initialAd }: { initialAd: An
   const [zoomOffset, setZoomOffset] = useState({ x: 0, y: 0 });
   const [dragging, setDragging] = useState(false);
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
+  const contentRef = useRef<HTMLDivElement | null>(null);
+  const router = useRouter();
 
   // Share URL-ის დაყენება კლიენტის მხარეს
   useEffect(() => {
@@ -48,6 +53,28 @@ export default function AnnouncementDetailsClient({ initialAd }: { initialAd: An
       fetchAd();
     }
   }, [id, initialAd]);
+
+  // Click outside the content area should navigate back to previous page
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (zoomOpen) return; // don't navigate while zoom modal open
+      const node = contentRef.current;
+      if (!node) return;
+      if (node.contains(e.target as Node)) return; // clicked inside
+      // clicked outside -> attempt native history.back() so browser restores previous scroll/state
+      try {
+        if (window.history.length > 1) {
+          window.history.back();
+        } else {
+          router.push('/announcements');
+        }
+      } catch {
+        router.push('/announcements');
+      }
+    };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, [router, zoomOpen]);
 
   if (!ad) return (
     <div className="min-h-screen bg-[#050510] flex items-center justify-center text-white font-black italic uppercase tracking-widest">
@@ -85,11 +112,11 @@ export default function AnnouncementDetailsClient({ initialAd }: { initialAd: An
          <p className="text-red-500 font-black uppercase italic text-[9px] tracking-[0.2em] animate-pulse">საიტი მუშაობს სატესტო რეჟიმში</p>
       </div>
 
-      <div className="max-w-7xl mx-auto mt-8 md:mt-12 px-4 md:px-6 grid grid-cols-1 lg:grid-cols-2 gap-8 md:gap-16 relative z-10">
+      <div ref={contentRef} className="max-w-7xl mx-auto mt-6 md:mt-10 px-3 md:px-6 grid grid-cols-1 lg:grid-cols-[1.1fr_0.9fr] gap-1 md:gap-2 relative z-10">
         
         {/* 📸 Gallery Section */}
         <div className="space-y-6">
-          <div className="aspect-[4/3] rounded-[30px] md:rounded-[50px] overflow-hidden border border-white/10 shadow-2xl bg-black/40 group relative">
+          <div className="aspect-[3/2] rounded-[12px] md:rounded-[16px] overflow-hidden border border-white/10 shadow-2xl bg-black/40 group relative max-h-[420px] md:max-h-[400px]">
             {activeImg ? (
                 <Image
                   src={activeImg}
@@ -106,9 +133,57 @@ export default function AnnouncementDetailsClient({ initialAd }: { initialAd: An
                     setZoomOffset({ x: 0, y: 0 });
                     setZoomOpen(true);
                   }}
+                  onTouchStart={(e) => {
+                    setTouchStartX(e.touches?.[0]?.clientX ?? null);
+                  }}
+                  onTouchEnd={(e) => {
+                    const endX = e.changedTouches?.[0]?.clientX ?? null;
+                    if (touchStartX == null || endX == null) { setTouchStartX(null); return; }
+                    const delta = endX - touchStartX;
+                    const images = getImages(ad);
+                    if (delta < -50 && images.length > 1) {
+                      const idx = images.findIndex((img) => img === activeImg);
+                      const next = (idx + 1) % images.length;
+                      setActiveImg(images[next]);
+                    } else if (delta > 50 && images.length > 1) {
+                      const idx = images.findIndex((img) => img === activeImg);
+                      const prev = (idx - 1 + images.length) % images.length;
+                      setActiveImg(images[prev]);
+                    }
+                    setTouchStartX(null);
+                  }}
                 />
             ) : (
                 <div className="w-full h-full flex items-center justify-center bg-slate-900 text-white/20 font-black uppercase italic">ფოტო არ არის</div>
+            )}
+
+            {getImages(ad).length > 1 && (
+              <>
+                <button
+                  type="button"
+                  onClick={() => {
+                    const images = getImages(ad);
+                    const idx = images.findIndex((img) => img === activeImg);
+                    const prev = (idx - 1 + images.length) % images.length;
+                    setActiveImg(images[prev]);
+                  }}
+                  className="hidden md:flex absolute left-3 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full bg-black/40 text-amber-200 text-2xl font-black shadow-[0_0_20px_rgba(245,158,11,0.35)] hover:bg-amber-500 hover:text-black transition items-center justify-center"
+                >
+                  ‹
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    const images = getImages(ad);
+                    const idx = images.findIndex((img) => img === activeImg);
+                    const next = (idx + 1) % images.length;
+                    setActiveImg(images[next]);
+                  }}
+                  className="hidden md:flex absolute right-3 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full bg-black/40 text-amber-200 text-2xl font-black shadow-[0_0_20px_rgba(245,158,11,0.35)] hover:bg-amber-500 hover:text-black transition items-center justify-center"
+                >
+                  ›
+                </button>
+              </>
             )}
           </div>
           
@@ -130,10 +205,10 @@ export default function AnnouncementDetailsClient({ initialAd }: { initialAd: An
         </div>
 
         {/* 📝 Content Block */}
-        <div className="flex flex-col h-full">
-          <div className="bg-gradient-to-br from-blue-900/40 via-slate-950/50 to-blue-950/40 backdrop-blur-3xl p-6 md:p-14 rounded-[40px] md:rounded-[50px] border border-white/10 shadow-2xl flex-grow relative overflow-hidden">
+        <div className="flex flex-col h-full md:-ml-8 lg:-ml-16">
+            <div className="bg-gradient-to-br from-blue-900/40 via-slate-950/50 to-blue-950/40 backdrop-blur-3xl p-2 md:p-4 rounded-[20px] md:rounded-[28px] border border-white/10 shadow-2xl flex-grow relative overflow-hidden">
             
-            <div className="flex justify-between items-start mb-8 md:mb-10 relative z-10">
+            <div className="flex justify-between items-start mb-4 md:mb-6 relative z-10">
               <span className="bg-amber-600 text-white px-4 md:px-6 py-2 rounded-full text-[9px] md:text-[10px] font-black uppercase italic tracking-widest shadow-xl">
                 {ad.category}
               </span>
@@ -142,15 +217,15 @@ export default function AnnouncementDetailsClient({ initialAd }: { initialAd: An
               </span>
             </div>
 
-            <h1 className="text-3xl md:text-5xl font-black uppercase italic leading-tight mb-4 md:mb-6 relative z-10 drop-shadow-2xl">
+            <h1 className="text-3xl md:text-4xl font-black uppercase italic leading-tight mb-3 md:mb-4 relative z-10 drop-shadow-2xl">
               {ad.title}
             </h1>
             
-            <div className="text-4xl md:text-5xl font-black text-amber-500 italic mb-8 md:mb-12 relative z-10 tracking-tighter drop-shadow-xl">
+            <div className="text-3xl md:text-4xl font-black text-amber-500 italic mb-6 md:mb-8 relative z-10 tracking-tighter drop-shadow-xl">
               {ad.price} {ad.currency === 'USD' ? '$' : '₾'}
             </div>
             
-            <p className="text-white/80 leading-relaxed italic text-sm md:text-lg mb-10 md:mb-14 whitespace-pre-wrap relative z-10 font-medium">
+            <p className="text-white/80 leading-relaxed italic text-sm md:text-lg mb-6 md:mb-8 whitespace-pre-wrap relative z-10 font-medium">
               {ad.description}
             </p>
             

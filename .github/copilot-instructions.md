@@ -1,59 +1,35 @@
-# MyKakheti AI Agent Coding Guide
+# MyKakheti — AI Agent Coding Guide (concise)
+## Quick start
+- `npm install`
+- `npm run dev` (if you see `.next/dev/lock` errors, kill existing `next dev` processes or remove the lock after verifying no dev server is active)
 
-## Project Overview
-- **Framework:** Next.js 16.1.2 (App Router, Turbopack)
-- **Database/Auth:** Supabase (via `@supabase/ssr`)
-- **Styling:** Tailwind CSS
-- **Language:** TypeScript (strict mode)
+## Architecture & important files
+- App Router only: `app/` contains server and client routes.
+- Supabase client: `app/lib/supabase.ts` (uses `createBrowserClient` for client-side code).
+- Realtime helpers: `app/lib/squareRealtime.ts` (centralize `supabase.channel(...)` subscriptions and optional BroadcastChannel bridging).
+- Chat UI: `app/components/features/KakhetianSquare.tsx` (optimistic UI, temp IDs, file uploads, reconciliation logic).
+- Popup wrapper: `app/components/features/ChatPopup.tsx` (mounts `KakhetianSquare` in a floating container).
+- Server API example using service role: `app/api/square/send/route.ts` (inserts messages server-side).
 
-## Architecture & Structure
-- **App Router only:** All routing and pages use the App Router paradigm.
-- **UI Components:** Place in `app/components/`. No JSX/HTML in `.ts` files—UI must be `.tsx` only.
-- **Business Logic:** All Supabase clients, hooks, and logic in `app/lib/`.
-- **Types:** Use `types/supabase.ts` for DB types. If a table is missing, use `as any` to avoid build errors.
-- **Admin:** Admin-only pages in `app/admin/`. Use `useAdminAuth` for protection. Test password: `AILajaxak1986.`
+## Project-specific conventions
+- UI strings are Georgian; keep code/variables in English.
+- Place UI in `.tsx` under `app/components/` and logic/hooks in `app/lib/` or `app/hooks/`.
+- Use `types/supabase.ts` for DB typing where available; when schema is missing, `as any` is used to avoid build failures.
 
-## Key Conventions
-- **Naming:**
-	- DB tables: `snake_case` (e.g., `admin_posts`)
-	- Frontend types: `PascalCase` (e.g., `AdminRoute`)
-	- UI: Georgian for user-facing text, English for code/variables
-- **Supabase:**
-	- Use `createBrowserClient` for client-side calls
-	- Always type queries with `types/supabase.ts` when possible
-- **File Placement:**
-	- UI: `app/components/`
-	- Logic: `app/lib/`
-	- Admin: `app/admin/`
+## Realtime & sync patterns
+- Prefer a single shared realtime subscription helper (see `squareRealtime.ts`) rather than per-component random channel names.
+- Optimistic UI pattern: create temporary ids (`temp-...`) and replace them when the server responds (see `KakhetianSquare.tsx`).
+- Cross-window sync: BroadcastChannel is used to mirror events between popup and main window when necessary.
 
-## Developer Workflows
-- **Install dependencies:** `npm install`
-- **Run dev server:** `npm run dev`
-- **Supabase CLI:**
-	- Install: `npm i supabase --save-dev` (see README for OS-specific options)
-	- Bootstrap project: `npx supabase bootstrap`
-- **Type generation:** Use Supabase CLI to generate types from DB schema
-- **Admin setup:** See `ADMIN_SETUP_README.md` for one-click admin role setup and troubleshooting
-- **Music assets:** Add MP3s to `public/music/` and update `MUSIC_OPTIONS` in `/app/community/congratulations/submit/page.tsx` (see `public/music/README.md`)
+## Debugging tips
+- Watch DevTools console for `[squareRealtime]` logs to trace incoming payloads.
+- Search for `temp-` to find optimistic-message logic.
+- If `next dev` won't start because of a lock: run `ps aux | grep next`, kill stale processes, then restart.
 
-## Patterns & Examples
-- **Community features:** See `app/components/community/CommunityWidgets.tsx` and `CommunityEngagement.tsx` for sector logic
-- **Agro data:** Managed via `app/hooks/useAgroData.ts` and Supabase table `agro_prices`
-- **Admin diagnostics:** See `app/admin/moderation/page.tsx` for API and row count checks
-- **Health checks:** `app/admin/health/page.tsx` for system status UI
+## Useful files to inspect for common tasks
+- Chat & realtime: `app/components/features/KakhetianSquare.tsx`, `app/components/features/ChatPopup.tsx`, `app/lib/squareRealtime.ts`, `app/api/square/send/route.ts`.
+- Supabase client and envs: `app/lib/supabase.ts` (requires `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`).
+- Announcements / admin examples: `app/admin/moderate/page.tsx` (image arrays, moderation flows).
 
-## Integration & Data Flow
-- **Supabase:** All data access via Supabase client in `app/lib/`. Use RLS and policies as defined in SQL files for security.
-- **External assets:** Music and images in `public/`, referenced in UI components
-
-## Special Notes
-- **Do not:**
-	- Place business logic in UI files
-	- Mix JSX/HTML in `.ts` files
-	- Use English for UI text
-- **Do:**
-	- Reference `README.md` and `ADMIN_SETUP_README.md` for setup and troubleshooting
-	- Follow file/folder structure strictly for maintainability
-
----
+If you'd like, I can expand the announcements UI section with implementation notes (arrows + mobile swipe). 
 For unclear or missing conventions, review `README.md`, `ADMIN_SETUP_README.md`, and example files in `app/components/` and `app/lib/`.

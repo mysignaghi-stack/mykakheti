@@ -35,6 +35,13 @@ export default function AnnouncementsPage() {
       setLoading(false);
     };
     fetchData();
+    try {
+      const pos = sessionStorage.getItem('announcements-scroll');
+      if (pos) {
+        window.scrollTo({ top: Number(pos || 0), behavior: 'auto' });
+        sessionStorage.removeItem('announcements-scroll');
+      }
+    } catch {}
   }, []);
 
   return (
@@ -49,7 +56,18 @@ export default function AnnouncementsPage() {
         ) : (
           <div className="space-y-4">
             {items.map(item => (
-              <Link key={item.id} href={`/announcements/${item.id}`} className="block">
+              <Link
+                key={item.id}
+                href={`/announcements/${item.id}`}
+                className="block"
+                onClick={() => {
+                  try {
+                    sessionStorage.setItem('announcements-scroll', String(window.scrollY || 0));
+                  } catch (e) {
+                    // ignore
+                  }
+                }}
+              >
                 <div className="p-5 bg-white/5 rounded-2xl border border-white/10 hover:bg-white/10 transition">
                   <div className="flex gap-4 items-start">
                     {(item.image_url || item.all_images?.[0]) && (
