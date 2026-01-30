@@ -3,7 +3,7 @@
 // Before: redirectTo: `${window.location.origin}/auth/callback`
 // After: redirectTo: `${window.location.origin}/auth/callback?redirect=/add`
 
-import { useState } from "react";
+import { useState, type FormEvent } from "react";
 import type { User } from "@supabase/supabase-js";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -34,7 +34,8 @@ export default function AuthForm() {
     });
   };
 
-  const handleEmailAuth = async () => {
+  const handleEmailAuth = async (e?: FormEvent) => {
+    try { e?.preventDefault(); } catch {}
     setLoading(true);
     setError("");
     try {
@@ -101,9 +102,10 @@ export default function AuthForm() {
         Continue with Facebook
       </button>
 
-      <div className="text-center text-xs text-white/40">ან Email</div>
+      <form onSubmit={handleEmailAuth} className="w-full">
+        <div className="text-center text-xs text-white/40">ან Email</div>
 
-      {mode === "signup" && (
+        {mode === "signup" && (
         <input
           className="w-full p-4 rounded-2xl bg-white/5 border border-white/10 focus:border-amber-500 outline-none"
           placeholder="სახელი და გვარი"
@@ -128,14 +130,17 @@ export default function AuthForm() {
 
       {error && <p className="text-red-400 text-sm font-bold">{error}</p>}
 
-      <button
-        onClick={handleEmailAuth}
-        disabled={loading}
-        className="w-full bg-amber-600 hover:bg-amber-500 text-white font-black uppercase italic py-3 rounded-2xl transition disabled:opacity-50"
-      >
-        {loading ? "იტვირთება..." : mode === "login" ? "შესვლა" : "რეგისტრაცია"}
-      </button>
+        {error && <p className="text-red-400 text-sm font-bold">{error}</p>}
 
+        <button
+          type="submit"
+          disabled={loading}
+          className="w-full bg-amber-600 hover:bg-amber-500 text-white font-black uppercase italic py-3 rounded-2xl transition disabled:opacity-50"
+        >
+          {loading ? "იტვირთება..." : mode === "login" ? "შესვლა" : "რეგისტრაცია"}
+        </button>
+
+      </form>
       <div className="text-center text-[11px] text-white/40">
         <Link href="/" className="hover:text-amber-400">
           მთავარი

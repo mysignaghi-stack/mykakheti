@@ -41,13 +41,19 @@ export default function AdminAuthGuard({ children, fallback }: AdminAuthGuardPro
         if (session?.user && isAdminUser(session.user)) {
           setIsAuthenticated(true);
         } else {
-          setAuthError('ადმინისტრატორის წვდომა არ არის');
-          router.push('/admin/login');
+          // No valid admin session — redirect immediately without flashing an error UI
+          try {
+            router.replace('/admin/login');
+          } catch {}
+          return;
         }
       } catch (err) {
         console.error('Auth check failed:', err);
-        setAuthError('ავტორიზაციის შემოწმება ვერ მოხერხდა');
-        setTimeout(() => router.push('/admin/login'), 2000);
+        // Redirect immediately on unexpected errors to avoid a visible error flash
+        try {
+          router.replace('/admin/login');
+        } catch {}
+        return;
       } finally {
         setIsLoading(false);
       }
@@ -62,8 +68,10 @@ export default function AdminAuthGuard({ children, fallback }: AdminAuthGuardPro
 
         if (event === 'SIGNED_OUT') {
           setIsAuthenticated(false);
-          setAuthError('სესია დასრულდა');
-          router.push('/admin/login');
+          // Redirect silently to login
+          try {
+            router.replace('/admin/login');
+          } catch {}
         } else if (event === 'TOKEN_REFRESHED') {
           console.log('Token refreshed successfully');
           setAuthError(null);

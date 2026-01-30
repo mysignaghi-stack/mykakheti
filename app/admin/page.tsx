@@ -1,8 +1,10 @@
-'use client';
+"use client";
 
 import Link from 'next/link';
 import type { ReactNode } from 'react';
 import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { supabase } from '../lib/supabase';
 import { getAdminDashboardStats } from './actions';
 import { Suspense } from 'react';
 import AdminAuthGuard from './AdminAuthGuard';
@@ -100,9 +102,8 @@ function AdminDashboardContent({ isAuthenticated }: { isAuthenticated: boolean }
             <form action="/api/admin/refresh" method="post">
               <button type="submit" className="bg-white/5 border border-white/10 px-5 py-2 rounded-xl text-xs font-black uppercase">განახლება</button>
             </form>
-            <form action="/api/admin/signout" method="post">
-              <button type="submit" className="bg-red-600 px-5 py-2 rounded-xl text-xs font-black uppercase">გამოსვლა</button>
-            </form>
+            {/* Client-side sign out to avoid 405 from server POST endpoints */}
+            <ClientSignOutButton />
           </div>
         </div>
 
@@ -217,9 +218,7 @@ function AdminDashboardClient() {
             <form action="/api/admin/refresh" method="post">
               <button type="submit" className="bg-white/5 border border-white/10 px-5 py-2 rounded-xl text-xs font-black uppercase">განახლება</button>
             </form>
-            <form action="/api/admin/signout" method="post">
-              <button type="submit" className="bg-red-600 px-5 py-2 rounded-xl text-xs font-black uppercase">გამოსვლა</button>
-            </form>
+            <ClientSignOutButton />
           </div>
         </div>
 
@@ -296,5 +295,29 @@ export default function AdminDashboard() {
     <AdminAuthGuard>
       <AdminDashboardClient />
     </AdminAuthGuard>
+  );
+}
+
+function ClientSignOutButton() {
+  const router = useRouter();
+
+  const handleSignOut = async () => {
+    try {
+      await supabase.auth.signOut();
+    } catch (err) {
+      console.error('Sign out error:', err);
+    } finally {
+      router.push('/admin/login');
+    }
+  };
+
+  return (
+    <button
+      type="button"
+      onClick={handleSignOut}
+      className="bg-red-600 px-5 py-2 rounded-xl text-xs font-black uppercase"
+    >
+      გამოსვლა
+    </button>
   );
 }
