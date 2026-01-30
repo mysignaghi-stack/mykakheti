@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { supabase } from '../lib/supabase';
 import { isAdminUser } from '../lib/adminAuth';
+import AdminLogin from './login/page';
 
 interface AdminAuthGuardProps {
   children: React.ReactNode | ((isAuthenticated: boolean) => React.ReactNode);
@@ -15,6 +16,7 @@ export default function AdminAuthGuard({ children, fallback }: AdminAuthGuardPro
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [authError, setAuthError] = useState<string | null>(null);
+  const [showLoginInline, setShowLoginInline] = useState(false);
   const router = useRouter();
 
   useEffect(() => {
@@ -31,7 +33,7 @@ export default function AdminAuthGuard({ children, fallback }: AdminAuthGuardPro
             // Clear any stored session data
             localStorage.removeItem('supabase.auth.token');
             sessionStorage.clear();
-            router.push('/admin/login');
+            setShowLoginInline(true);
             return;
           }
           setAuthError('ავტორიზაციის შეცდომა');
@@ -41,18 +43,14 @@ export default function AdminAuthGuard({ children, fallback }: AdminAuthGuardPro
         if (session?.user && isAdminUser(session.user)) {
           setIsAuthenticated(true);
         } else {
-          // No valid admin session — redirect immediately without flashing an error UI
-          try {
-            router.replace('/admin/login');
-          } catch {}
+          // No valid admin session — show inline login UI inside /admin to avoid navigation flash
+          setShowLoginInline(true);
           return;
         }
       } catch (err) {
         console.error('Auth check failed:', err);
-        // Redirect immediately on unexpected errors to avoid a visible error flash
-        try {
-          router.replace('/admin/login');
-        } catch {}
+        // Show inline login UI on error to avoid navigation flash
+        setShowLoginInline(true);
         return;
       } finally {
         setIsLoading(false);
@@ -68,19 +66,19 @@ export default function AdminAuthGuard({ children, fallback }: AdminAuthGuardPro
 
         if (event === 'SIGNED_OUT') {
           setIsAuthenticated(false);
-          // Redirect silently to login
-          try {
-            router.replace('/admin/login');
-          } catch {}
+          // Show inline login UI
+          setShowLoginInline(true);
         } else if (event === 'TOKEN_REFRESHED') {
           console.log('Token refreshed successfully');
           setAuthError(null);
           if (session?.user && isAdminUser(session.user)) {
             setIsAuthenticated(true);
+            setShowLoginInline(false);
           }
         } else if (session?.user && isAdminUser(session.user)) {
           setIsAuthenticated(true);
           setAuthError(null);
+          setShowLoginInline(false);
         }
       }
     );
@@ -97,6 +95,10 @@ export default function AdminAuthGuard({ children, fallback }: AdminAuthGuardPro
         </div>
       </main>
     );
+  }
+  // If we flagged to show inline login UI, render the Admin login component here
+  if (showLoginInline && !isAuthenticated) {
+    return <AdminLogin />;
   }
 
   if (authError) {

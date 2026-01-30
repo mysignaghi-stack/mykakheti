@@ -175,6 +175,7 @@ export default function HomePageClient({
   const {
     agroData,
     setAgroData,
+    fetchAgroData,
     editAgroItem,
     setEditAgroItem,
     selectedAgro,
@@ -215,12 +216,22 @@ export default function HomePageClient({
         details: editDetails,
       };
 
+      // Ensure id type matches DB (numeric ids) when possible
+      const targetId = !isNaN(Number((editAgroItem as any).id)) ? Number((editAgroItem as any).id) : (editAgroItem as any).id;
+
       const { error } = await (supabase
         .from('agro_prices') as any)
         .update(payload)
-        .eq('id', editAgroItem.id);
+        .eq('id', targetId);
 
       if (error) throw error;
+
+      // Refresh authoritative data from DB to avoid client-only drift
+      try {
+        if (typeof fetchAgroData === 'function') await fetchAgroData();
+      } catch (e) {
+        console.warn('fetchAgroData failed after update', e);
+      }
 
       setAgroData(prev => prev.map(item => item.id === editAgroItem.id ? { ...item, price: newPrice, details: editDetails } : item));
       showSnackbar('ფასი განახლდა', 'success');
