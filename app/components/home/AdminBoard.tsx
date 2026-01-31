@@ -76,14 +76,19 @@ export default function AdminBoard({ isAdmin, user: _user, children }: AdminBoar
         mediaType = mediaFile.type.startsWith('video') ? 'video' : 'image';
       }
 
-      const { error } = await (supabase as any).from('admin_posts').insert({
-        title: newTitle,
-        content: newContent,
-        media_url: mediaUrl,
-        media_type: mediaType
+      const res = await fetch('/api/admin/posts/create', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          title: newTitle,
+          content: newContent,
+          media_url: mediaUrl,
+          media_type: mediaType
+        }),
+        credentials: 'same-origin'
       });
-
-      if (error) throw error;
+      const json = await res.json();
+      if (!res.ok) throw new Error(json?.error || 'Insert failed');
 
       // ფორმის გასუფთავება
       setNewTitle('');

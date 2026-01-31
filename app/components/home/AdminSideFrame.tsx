@@ -134,10 +134,14 @@ export default function AdminSideFrame({ post, position, isAdmin, onRefresh }: A
           .eq('id', editingPost.id);
         if (error) throw error;
       } else {
-        const { error } = await (supabase
-          .from('admin_posts') as any)
-          .insert([postData]);
-        if (error) throw error;
+        const res = await fetch('/api/admin/posts/create', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(postData),
+          credentials: 'same-origin'
+        });
+        const json = await res.json();
+        if (!res.ok) throw new Error(json?.error || 'Insert failed');
       }
 
       resetForm();

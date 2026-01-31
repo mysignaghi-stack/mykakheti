@@ -145,14 +145,17 @@ export default function AdminPosts() {
         }
         setEditingPost(null);
       } else {
-        console.log('Inserting new post');
-        const { error } = await (supabase as any)
-          .from('admin_posts')
-          .insert(data);
-
-        if (error) {
-          console.error('Insert error details:', JSON.stringify(error));
-          throw error;
+        console.log('Inserting new post via server route');
+        const res = await fetch('/api/admin/posts/create', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(data),
+          credentials: 'same-origin'
+        });
+        const json = await res.json();
+        if (!res.ok) {
+          console.error('Insert error details:', json);
+          throw new Error(json?.error || 'Insert failed');
         }
       }
 
@@ -270,44 +273,26 @@ export default function AdminPosts() {
         const safeName = buildSafeFileName(file.name);
         const fileName = `admin-posts/${Date.now()}-${safeName}`;
 
-        const uploadData = new FormData();
-        uploadData.append('file', file, file.name);
-        uploadData.append('fileName', fileName);
-        uploadData.append('bucket', 'admin-media');
+        // Upload directly from client to Supabase storage to avoid server proxy size limits
+        try {
+          const { error: uploadError } = await supabase.storage
+            .from('admin-media')
+            .upload(fileName, file, { cacheControl: '3600', upsert: false });
 
-        const response = await fetch('/api/upload', {
-          method: 'POST',
-          body: uploadData,
-        });
-
-        console.log('Response status:', response.status);
-        console.log('Response headers:', Object.fromEntries(response.headers.entries()));
-
-        if (!response.ok) {
-          let errorMessage = 'Upload failed';
-          try {
-            const contentType = response.headers.get('content-type');
-            console.log('Response content-type:', contentType);
-            if (contentType && contentType.includes('application/json')) {
-              const errorData = await response.json();
-              console.log('Error data:', errorData);
-              errorMessage = errorData.error || errorMessage;
-            } else {
-              const textResponse = await response.text();
-              console.log('Non-JSON response:', textResponse.substring(0, 500));
-              errorMessage = `HTTP ${response.status}: ${response.statusText}`;
-            }
-          } catch (e) {
-            console.error('Error parsing response:', e);
-            errorMessage = `HTTP ${response.status}: ${response.statusText}`;
+          if (uploadError) {
+            console.error('Supabase upload error:', uploadError);
+            throw uploadError;
           }
-          throw new Error(errorMessage);
+
+          const { data: publicData } = await supabase.storage
+            .from('admin-media')
+            .getPublicUrl(fileName);
+
+          uploadedUrls.push(publicData.publicUrl);
+        } catch (err) {
+          console.error('Direct upload failed:', err);
+          throw err;
         }
-
-        const result = await response.json();
-        console.log('Success result:', result);
-
-        uploadedUrls.push(result.url);
       }
 
       setFormData(prev => ({

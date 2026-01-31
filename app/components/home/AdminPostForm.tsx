@@ -46,8 +46,9 @@ export default function AdminPostForm({ onPostAdded }: AdminPostFormProps) {
         }
       }
 
-      const { error } = await (supabase as any).from('admin_posts').insert({
-        title, 
+      // Insert via secure server route to avoid RLS/service-role issues
+      const payload = {
+        title,
         content,
         category: category || null,
         priority,
@@ -55,9 +56,17 @@ export default function AdminPostForm({ onPostAdded }: AdminPostFormProps) {
         media_urls: mediaUrls.length > 0 ? mediaUrls : null,
         media_type: mediaType,
         video_background: videoAsBackground && mediaType === 'video'
+      };
+
+      const res = await fetch('/api/admin/posts/create', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+        credentials: 'same-origin'
       });
 
-      if (error) throw error;
+      const json = await res.json();
+      if (!res.ok) throw new Error(json?.error || 'Insert failed');
 
       // გასუფთავება
       setTitle(''); 
