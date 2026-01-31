@@ -37,7 +37,7 @@ export default function SubmissionAuthGate({ redirectPath, children, heading }: 
     };
   }, []);
 
-  const handleOAuth = async (provider: "google" | "facebook") => {
+  const handleOAuth = async (provider: "google") => {
     setAuthError("");
     const { error } = await supabase.auth.signInWithOAuth({
       provider,
@@ -116,13 +116,7 @@ export default function SubmissionAuthGate({ redirectPath, children, heading }: 
               >
                 Google ავტორიზაცია
               </button>
-              <button
-                type="button"
-                onClick={() => handleOAuth("facebook")}
-                className="rounded-xl bg-[#1877f2] text-white font-black py-3 uppercase text-[11px] hover:bg-[#0f5ccc] transition"
-              >
-                Facebook ავტორიზაცია
-              </button>
+              {/* Facebook ავტორიზაცია დროებით შეჩერებულია */}
             </div>
             {authError && <p className="text-red-300 text-xs font-semibold">{authError}</p>}
           </div>

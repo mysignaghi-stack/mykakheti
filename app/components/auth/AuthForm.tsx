@@ -61,7 +61,7 @@ export default function AuthForm() {
     }
   };
 
-  const handleOAuth = async (provider: "google" | "facebook") => {
+  const handleOAuth = async (provider: "google") => {
     setError("");
     const { error } = await supabase.auth.signInWithOAuth({
       provider,
@@ -95,12 +95,7 @@ export default function AuthForm() {
       >
         Continue with Google
       </button>
-      <button
-        onClick={() => handleOAuth("facebook")}
-        className="w-full bg-[#1877f2] text-white font-black uppercase italic py-3 rounded-2xl hover:bg-[#145fcc] transition"
-      >
-        Continue with Facebook
-      </button>
+      {/* Facebook sign-in temporarily disabled */}
 
       <form onSubmit={handleEmailAuth} className="w-full">
         <div className="text-center text-xs text-white/40">ან Email</div>
