@@ -23,6 +23,8 @@ export default function AdminPosts() {
   const [statusFilter, setStatusFilter] = useState<'all' | 'published' | 'hidden' | 'archived'>('all');
   const [visibleCount, setVisibleCount] = useState(30);
   const [showMediaPreview, setShowMediaPreview] = useState(false);
+  const [availableAdminMedia, setAvailableAdminMedia] = useState<Set<string> | null>(null);
+  const [mediaLookupError, setMediaLookupError] = useState<string>('');
   const [currentPage, setCurrentPage] = useState(0);
   const [hasMore, setHasMore] = useState(true);
   const pageSize = 50;
@@ -69,6 +71,53 @@ export default function AdminPosts() {
       fetchPosts(true, showMediaPreview);
     }
   }, [authLoading, isAdmin, showMediaPreview]);
+
+  useEffect(() => {
+    if (!showMediaPreview) {
+      setAvailableAdminMedia(null);
+      setMediaLookupError('');
+      return;
+    }
+
+    let isActive = true;
+    const loadAdminMedia = async () => {
+      try {
+        const allPaths = new Set<string>();
+        let offset = 0;
+        const limit = 1000;
+
+        while (true) {
+          const { data, error } = await supabase.storage
+            .from('admin-media')
+            .list('admin-posts', { limit, offset });
+
+          if (error) throw error;
+          const items = data ?? [];
+          items.forEach((item) => {
+            if (item?.name) {
+              allPaths.add(`admin-posts/${item.name}`);
+            }
+          });
+
+          if (items.length < limit) break;
+          offset += limit;
+        }
+
+        if (isActive) setAvailableAdminMedia(allPaths);
+      } catch (error) {
+        console.error('Failed to load admin media list:', error);
+        if (isActive) {
+          setMediaLookupError('მედიის სია ვერ ჩაიტვირთა');
+          setAvailableAdminMedia(null);
+        }
+      }
+    };
+
+    loadAdminMedia();
+    return () => {
+      isActive = false;
+    };
+  }, [showMediaPreview]);
 
   const fetchPosts = async (reset = true, includeMedia = false) => {
     setLoading(true);
@@ -179,7 +228,7 @@ export default function AdminPosts() {
 
       fetchPosts(true);
     } catch (error) {
-      console.error('Submit error:', JSON.stringify(error));
+      console.error('Submit error:', error);
       alert('შეცდომა შენახვისას');
     }
   };
@@ -292,26 +341,26 @@ export default function AdminPosts() {
         }
 
         const safeName = buildSafeFileName(file.name);
-        const fileName = `admin-posts/${Date.now()}-${safeName}`;
 
-        // Upload directly from client to Supabase storage to avoid server proxy size limits
         try {
-          const { error: uploadError } = await supabase.storage
-            .from('admin-media')
-            .upload(fileName, file, { cacheControl: '3600', upsert: false });
+          const uploadBody = new FormData();
+          uploadBody.append('file', file, safeName);
+          uploadBody.append('bucket', 'admin-media');
 
-          if (uploadError) {
-            console.error('Supabase upload error:', uploadError);
-            throw uploadError;
+          const resp = await fetch('/api/admin/upload', {
+            method: 'POST',
+            body: uploadBody,
+            credentials: 'same-origin',
+          });
+
+          const json = await resp.json().catch(() => ({}));
+          if (!resp.ok || !json?.publicUrl) {
+            throw new Error(json?.error || 'Upload failed');
           }
 
-          const { data: publicData } = await supabase.storage
-            .from('admin-media')
-            .getPublicUrl(fileName);
-
-          uploadedUrls.push(publicData.publicUrl);
+          uploadedUrls.push(json.publicUrl);
         } catch (err) {
-          console.error('Direct upload failed:', err);
+          console.error('Upload failed:', err);
           throw err;
         }
       }
@@ -411,7 +460,22 @@ export default function AdminPosts() {
     const allImages = Array.isArray(post.media_urls) ? post.media_urls.filter(Boolean) : [];
     const primary = post.media_url ?? null;
     const combined = primary ? [primary, ...allImages] : allImages;
-    return Array.from(new Set(combined));
+    const unique = Array.from(new Set(combined));
+
+    if (!availableAdminMedia || availableAdminMedia.size === 0) return unique;
+
+    const extractStoragePath = (url: string) => {
+      const marker = '/storage/v1/object/public/admin-media/';
+      const index = url.indexOf(marker);
+      if (index === -1) return null;
+      return url.slice(index + marker.length);
+    };
+
+    return unique.filter((url) => {
+      const path = extractStoragePath(url);
+      if (!path) return true;
+      return availableAdminMedia.has(path);
+    });
   };
 
   if (authLoading) {
@@ -640,6 +704,11 @@ export default function AdminPosts() {
             {fetchError && (
               <div className="mb-4 rounded-xl border border-red-500/40 bg-red-500/10 p-3 text-sm text-red-200">
                 {fetchError}
+              </div>
+            )}
+            {showMediaPreview && mediaLookupError && (
+              <div className="mb-4 rounded-xl border border-amber-500/40 bg-amber-500/10 p-3 text-sm text-amber-200">
+                {mediaLookupError}
               </div>
             )}
 

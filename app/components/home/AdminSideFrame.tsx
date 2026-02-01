@@ -99,12 +99,27 @@ export default function AdminSideFrame({ post, position, isAdmin, onRefresh }: A
             }
           }
 
-          const fileName = `${position}-${Date.now()}-${Math.random().toString(36).substring(7)}`;
-          const { error } = await supabase.storage.from('admin-media').upload(fileName, processedFile);
-          if (error) throw error;
+          const uploadBody = new FormData();
+          const uploadName = processedFile instanceof File ? processedFile.name : file.name;
+          const uploadFile = processedFile instanceof File
+            ? processedFile
+            : new File([processedFile], uploadName, { type: file.type });
 
-          const { data } = supabase.storage.from('admin-media').getPublicUrl(fileName);
-          mediaUrls.push(data.publicUrl);
+          uploadBody.append('file', uploadFile, uploadName);
+          uploadBody.append('bucket', 'admin-media');
+
+          const resp = await fetch('/api/admin/upload', {
+            method: 'POST',
+            body: uploadBody,
+            credentials: 'same-origin',
+          });
+
+          const json = await resp.json().catch(() => ({}));
+          if (!resp.ok || !json?.publicUrl) {
+            throw new Error(json?.error || 'Upload failed');
+          }
+
+          mediaUrls.push(json.publicUrl);
         }
 
         if (formData.files.length === 1) {

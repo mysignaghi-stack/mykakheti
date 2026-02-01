@@ -3,6 +3,7 @@ import { NextResponse } from 'next/server';
 import { createServerClient } from '@supabase/ssr';
 import { createClient } from '@supabase/supabase-js';
 import type { Database } from '@/types/supabase';
+import { isAdminUser } from '@/app/lib/adminAuth';
 
 export async function POST(request: Request) {
   try {
@@ -67,29 +68,50 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    // Check if user is admin
-    const { data: profile, error: profileError } = await authClient
-      .from('profiles')
-      .select('role')
-      .eq('id', user.id)
-      .single();
-
-    if (profileError || !profile || (profile as any).role !== 'admin') {
-      console.log('Admin check failed:', profileError?.message, 'Profile:', profile);
-      return NextResponse.json({ error: 'Admin access required' }, { status: 403 });
-    }
-    const extension = file.name.split('.').pop() || 'bin';
-    const randomId = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
-    const fileName = `admin-posts/${Date.now()}-${randomId}.${extension}`;
-
-    console.log('Attempting upload with filename:', fileName);
-
     const serviceClient = createClient<Database>(supabaseUrl, serviceRoleKey, {
       auth: { persistSession: false },
     });
 
+    let isAdmin = isAdminUser(user);
+    if (!isAdmin) {
+      const { data: profile } = await (serviceClient as any)
+        .from('profiles')
+        .select('role,is_admin,roles')
+        .eq('id', user.id)
+        .single();
+      const roles = Array.isArray((profile as any)?.roles) ? (profile as any).roles : [];
+      isAdmin = profile?.role === 'admin' || profile?.is_admin === true || roles.includes('admin');
+    }
+
+    if (!isAdmin) {
+      const email = (user.email ?? '').toLowerCase();
+      const adminEmails = (process.env.NEXT_PUBLIC_ADMIN_EMAILS ?? '')
+        .split(',')
+        .map((e) => e.trim().toLowerCase())
+        .filter(Boolean);
+      if (email && adminEmails.includes(email)) {
+        isAdmin = true;
+      }
+    }
+
+    if (!isAdmin) {
+      console.log('Admin check failed for user:', user.email);
+      return NextResponse.json({ error: 'Admin access required' }, { status: 403 });
+    }
+    const extension = file.name.split('.').pop() || 'bin';
+    const randomId = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+    const bucketName = (formData.get('bucket') as string) || 'admin-media';
+    const allowedBuckets = new Set(['admin-media']);
+    if (!allowedBuckets.has(bucketName)) {
+      return NextResponse.json({ error: 'Invalid bucket' }, { status: 400 });
+    }
+
+    const fileName = `admin-posts/${Date.now()}-${randomId}.${extension}`;
+
+    console.log('Attempting upload with filename:', fileName);
+
     const { error: uploadError } = await serviceClient.storage
-      .from('announcements')
+      .from(bucketName)
       .upload(fileName, file, {
         cacheControl: '3600',
         upsert: false
@@ -104,7 +126,7 @@ export async function POST(request: Request) {
     }
 
     const { data: { publicUrl } } = serviceClient.storage
-      .from('announcements')
+      .from(bucketName)
       .getPublicUrl(fileName);
 
     console.log('Upload successful, publicUrl:', publicUrl);

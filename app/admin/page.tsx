@@ -5,7 +5,6 @@ import type { ReactNode } from 'react';
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { supabase } from '../lib/supabase';
-import { getAdminDashboardStats } from './actions';
 import { Suspense } from 'react';
 import AdminAuthGuard from './AdminAuthGuard';
 import AdminAgroPanel from './AdminAgroPanel';
@@ -67,8 +66,10 @@ function AdminDashboardContent({ isAuthenticated }: { isAuthenticated: boolean }
       }
 
       try {
-        const statsData = await getAdminDashboardStats();
-        setStats(statsData);
+        const resp = await fetch('/api/admin/dashboard-stats', { credentials: 'same-origin' });
+        const json = await resp.json().catch(() => ({}));
+        if (!resp.ok) throw new Error(json?.error || 'Failed to fetch stats');
+        setStats(json);
       } catch (error) {
         console.error('Error fetching admin stats:', error);
       } finally {
@@ -194,8 +195,10 @@ function AdminDashboardClient() {
   useEffect(() => {
     const fetchStats = async () => {
       try {
-        const statsData = await getAdminDashboardStats();
-        setStats(statsData);
+        const resp = await fetch('/api/admin/dashboard-stats', { credentials: 'same-origin' });
+        const json = await resp.json().catch(() => ({}));
+        if (!resp.ok) throw new Error(json?.error || 'Failed to fetch stats');
+        setStats(json);
       } catch (error) {
         console.error('Error fetching admin stats:', error);
       } finally {

@@ -2,6 +2,7 @@ import { cookies } from 'next/headers';
 import { NextResponse } from 'next/server';
 import { createServerClient } from '@supabase/ssr';
 import { getSupabaseAdmin } from '@/app/lib/supabaseAdmin';
+import { isAdminUser } from '@/app/lib/adminAuth';
 import type { Database } from '@/types/supabase';
 
 export async function POST(request: Request) {
@@ -31,14 +32,33 @@ export async function POST(request: Request) {
     const { data: { user }, error: userError } = await authClient.auth.getUser();
     if (userError || !user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
-    // Verify admin role
-    const { data: profile, error: profileError } = await authClient
-      .from('profiles')
-      .select('role')
-      .eq('id', user.id)
-      .single();
+    let isAdmin = isAdminUser(user);
+    if (!isAdmin) {
+      const admin = getSupabaseAdmin();
+      if (!admin) {
+        return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+      }
+      const { data: profile } = await (admin as any)
+        .from('profiles')
+        .select('role,is_admin,roles')
+        .eq('id', user.id)
+        .single();
+      const roles = Array.isArray((profile as any)?.roles) ? (profile as any).roles : [];
+      isAdmin = profile?.role === 'admin' || profile?.is_admin === true || roles.includes('admin');
+    }
 
-    if (profileError || !profile || (profile as any).role !== 'admin') {
+    if (!isAdmin) {
+      const email = (user.email ?? '').toLowerCase();
+      const adminEmails = (process.env.NEXT_PUBLIC_ADMIN_EMAILS ?? '')
+        .split(',')
+        .map((e) => e.trim().toLowerCase())
+        .filter(Boolean);
+      if (email && adminEmails.includes(email)) {
+        isAdmin = true;
+      }
+    }
+
+    if (!isAdmin) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 
