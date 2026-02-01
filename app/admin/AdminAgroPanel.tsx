@@ -26,9 +26,16 @@ export default function AdminAgroPanel({ showCategory }: { showCategory?: 'grape
   const fetchItems = async () => {
     setLoading(true);
     try {
-      const { data, error } = await (supabase as any).from('agro_prices').select('*').order('id', { ascending: true });
-      if (error) throw error;
-      setItems((data || []) as AgroRow[]);
+      const resp = await fetch('/api/admin/agro', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'list' }),
+      });
+      const json = await resp.json().catch(() => ({}));
+      if (!resp.ok || json?.error) {
+        throw new Error(json?.error || 'Load failed');
+      }
+      setItems((json?.data || []) as AgroRow[]);
     } catch (err) {
       console.error('Failed to load agro items', err);
     } finally {
@@ -75,7 +82,13 @@ export default function AdminAgroPanel({ showCategory }: { showCategory?: 'grape
     try { e?.preventDefault?.(); } catch {}
     if (!editItem) return;
     setSaving(true);
-    const payload = { name: newName, price: newPrice, details: editDetails, category: editItem.category };
+    const payload = {
+      id: editItem.id,
+      name: newName,
+      price: newPrice,
+      details: editDetails,
+      category: editItem.category,
+    };
     try {
       // Use server API route to perform writes with service role key (bypasses RLS for admin actions)
       const resp = await fetch('/api/admin/agro', {
@@ -132,6 +145,27 @@ export default function AdminAgroPanel({ showCategory }: { showCategory?: 'grape
     }
   };
 
+  const handleResetDefaults = async () => {
+    if (!confirm('ნამდვილად გსურთ ძველი ჩანაწერების წაშლა და სტანდარტული მონაცემების ჩასმა?')) return;
+    setLoading(true);
+    try {
+      const resp = await fetch('/api/admin/agro', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'reset' }),
+      });
+      const json = await resp.json().catch(() => ({}));
+      if (!resp.ok || json?.error) throw new Error(json?.error || 'Reset failed');
+      await fetchItems();
+      alert('სტანდარტული მონაცემები ჩაიტვირთა');
+    } catch (err) {
+      console.error('Reset defaults failed', err);
+      alert('სტანდარტული მონაცემების ჩატვირთვა ვერ მოხერხდა');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="bg-gradient-to-br from-black/70 via-black/50 to-amber-950/30 border border-amber-500/20 rounded-[28px] p-5 md:p-6 mb-6 shadow-2xl">
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-4">
@@ -146,6 +180,13 @@ export default function AdminAgroPanel({ showCategory }: { showCategory?: 'grape
             type="button"
           >
             განახლება
+          </button>
+          <button
+            onClick={handleResetDefaults}
+            className="px-3 py-1 rounded-xl text-xs font-black bg-white/10 text-white/80 hover:bg-white/20"
+            type="button"
+          >
+            სტანდარტული ჩასმა
           </button>
           <button
             onClick={() => openCreate('grape')}

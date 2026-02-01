@@ -5,6 +5,7 @@ import { createServerClient } from '@supabase/ssr';
 import { createClient } from '@supabase/supabase-js';
 import type { Database } from '../../../../types/supabase';
 import { isAdminUser } from '../../../lib/adminAuth';
+import { DEFAULT_AGRO_DATA } from '../../../lib/constants';
 
 export async function POST(request: Request) {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -31,13 +32,11 @@ export async function POST(request: Request) {
   });
 
   const { data: { user } } = await authClient.auth.getUser();
-  if (!user || !isAdminUser(user)) {
+  if (!user) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
-  const body = await request.json().catch(() => ({}));
-  const action = body?.action || 'upsert';
-
+  let isAdmin = isAdminUser(user);
   let serviceClient;
   try {
     serviceClient = createClient(supabaseUrl, serviceRoleKey, { auth: { persistSession: false } });
@@ -45,7 +44,78 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'Failed to create Supabase client' }, { status: 500 });
   }
 
+  if (!isAdmin) {
+    const { data: profile } = await (serviceClient as any)
+      .from('profiles')
+      .select('role,is_admin,roles')
+      .eq('id', user.id)
+      .single();
+    const roles = Array.isArray((profile as any)?.roles) ? (profile as any).roles : [];
+    isAdmin = profile?.role === 'admin' || profile?.is_admin === true || roles.includes('admin');
+  }
+
+  if (!isAdmin) {
+    const email = (user.email ?? '').toLowerCase();
+    const adminEmails = (process.env.NEXT_PUBLIC_ADMIN_EMAILS ?? '')
+      .split(',')
+      .map((e) => e.trim().toLowerCase())
+      .filter(Boolean);
+    if (email && adminEmails.includes(email)) {
+      isAdmin = true;
+    }
+  }
+
+  if (!isAdmin) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
+  const body = await request.json().catch(() => ({}));
+  const action = body?.action || 'upsert';
+
+  // serviceClient already created above
+
   try {
+    if (action === 'list') {
+      const { data, error } = await serviceClient.from('agro_prices').select('*').order('id', { ascending: true });
+      if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+      return NextResponse.json({ data });
+    }
+
+    if (action === 'reset') {
+      const { error: deleteError } = await serviceClient
+        .from('agro_prices')
+        .delete()
+        .in('category', ['grape', 'grain']);
+
+      if (deleteError) return NextResponse.json({ error: deleteError.message }, { status: 500 });
+
+      const { data: maxRow } = await serviceClient
+        .from('agro_prices')
+        .select('id')
+        .order('id', { ascending: false })
+        .limit(1)
+        .single();
+
+      const startId = typeof (maxRow as any)?.id === 'number' ? (maxRow as any).id + 1 : 1;
+
+      const defaults = DEFAULT_AGRO_DATA.map((item, index) => ({
+        id: startId + index,
+        name: item.name,
+        unit: item.unit ?? null,
+        price: item.price ?? null,
+        color: item.color ?? null,
+        icon: item.icon ?? null,
+        category: item.category ?? null,
+        details: Array.isArray(item.details) ? item.details : null,
+      }));
+
+      const { data, error } = await serviceClient.from('agro_prices').insert(defaults).select('*');
+      if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+      revalidatePath('/');
+      revalidatePath('/admin/agro');
+      return NextResponse.json({ data });
+    }
+
     if (action === 'delete') {
       const id = body?.id;
       if (!id) return NextResponse.json({ error: 'Missing id for delete' }, { status: 400 });
@@ -61,7 +131,17 @@ export async function POST(request: Request) {
     if (!payload) return NextResponse.json({ error: 'Missing payload' }, { status: 400 });
 
     if (String(payload.id || '').startsWith('new-')) {
-      const { data, error } = await serviceClient.from('agro_prices').insert({ ...payload }).select('*');
+      const { data: maxRow } = await serviceClient
+        .from('agro_prices')
+        .select('id')
+        .order('id', { ascending: false })
+        .limit(1)
+        .single();
+      const nextId = typeof (maxRow as any)?.id === 'number' ? (maxRow as any).id + 1 : 1;
+      const { data, error } = await serviceClient
+        .from('agro_prices')
+        .insert({ ...payload, id: nextId })
+        .select('*');
       if (error) return NextResponse.json({ error: error.message }, { status: 500 });
       revalidatePath('/');
       revalidatePath('/admin/agro');

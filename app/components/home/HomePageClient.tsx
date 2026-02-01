@@ -80,6 +80,11 @@ const ANNOUNCEMENT_CATEGORIES = [
   'სხვა'
 ];
 
+const formatAgroPrice = (value?: string | null) => {
+  if (!value) return '';
+  return value.includes('₾') ? value : `${value} ₾`;
+};
+
 const COMMUNITY_CATEGORIES = ['სამძიმარი', 'დაკარგული/ნაპოვნი', 'ოსტატი', 'მილოცვა'] as const;
 
 interface HomePageClientProps {
@@ -252,6 +257,11 @@ export default function HomePageClient({
 
   const [adminPosts, setAdminPosts] = useState<AdminPost[]>(initialAdminPosts);
   const [factIndex, setFactIndex] = useState(0);
+
+  const formatAgroPrice = useCallback((price?: string | null) => {
+    if (!price) return '';
+    return price.includes('₾') ? price : `${price} ₾`;
+  }, []);
 
   useEffect(() => {
     setBgImage(initialBgImage ?? null);
@@ -575,10 +585,11 @@ export default function HomePageClient({
                 {agroData.filter(i => i.category === 'grape').map(item => (
                   <button key={item.id} onClick={() => setSelectedAgro(item)} className="w-full flex justify-between items-center bg-black/40 p-3 rounded-xl border border-white/5 transition-all group/item hover:bg-white/5">
                     <span className="text-xs font-black uppercase text-purple-300 flex gap-2">{item.name}</span>
-                    <span className="text-sm font-black italic">{item.price}</span>
+                    <span className="text-sm font-black italic">{formatAgroPrice(item.price)}</span>
                   </button>
                 ))}
               </div>
+              <p className="mt-3 text-[11px] text-white/60 font-semibold text-center">თქვენი ფასი და საკონტაქტო ნომერი გამოჩნდება აქ</p>
             </div>
             {/* 🏛️ ადმინისტრაციული განცხადება */}
             <div className="w-full min-w-[260px] xl:min-w-[300px] bg-gradient-to-br from-amber-900/40 via-black/50 to-amber-700/20 backdrop-blur-sm rounded-[24px] border border-amber-500/30 shadow-[0_0_20px_4px_rgba(255,191,0,0.1)] p-4 ring-1 ring-amber-400/20 relative">
@@ -610,10 +621,11 @@ export default function HomePageClient({
                      {agroData.filter(i => i.category === 'grape').map(item => (
                        <button key={item.id} onClick={() => setSelectedAgro(item)} className="w-full flex justify-between items-center bg-black/40 p-3 rounded-xl border border-white/5 transition-all group/item hover:bg-white/5">
                          <span className="text-xs font-black uppercase text-purple-300 flex gap-2">{item.name}</span>
-                         <span className="text-sm font-black italic">{item.price}</span>
+                         <span className="text-sm font-black italic">{formatAgroPrice(item.price)}</span>
                        </button>
                      ))}
                    </div>
+                   <p className="mt-3 text-[11px] text-white/60 font-semibold text-center">თქვენი ფასი და საკონტაქტო ნომერი გამოჩნდება აქ</p>
                  </div>
                   {/* 🌾 მარცვლეული */}
                   <div className="bg-white/[0.03] backdrop-blur-3xl rounded-[30px] border border-white/10 p-5 flex flex-col items-center group relative overflow-hidden transition-all hover:border-yellow-500/30 shadow-xl h-[360px]">
@@ -624,10 +636,11 @@ export default function HomePageClient({
                       {agroData.filter(i => i.category === 'grain').map(item => (
                         <button key={item.id} onClick={() => setSelectedAgro(item)} className="w-full flex justify-between items-center bg-black/40 p-3 rounded-xl border border-white/5 transition-all group/item hover:bg-white/5">
                           <span className="text-xs font-black uppercase text-yellow-500 flex gap-2">{item.name}</span>
-                          <span className="text-sm font-black italic">{item.price}</span>
+                          <span className="text-sm font-black italic">{formatAgroPrice(item.price)}</span>
                         </button>
                       ))}
                     </div>
+                    <p className="mt-4 text-[12px] text-yellow-200 font-black text-center tracking-wide">თქვენი ფასი და საკონტაქტო ნომერი გამოჩნდება აქ</p>
                   </div>
                  {/* 🏛️ ადმინისტრაციული განცხადება */}
                  <div className="mt-2 bg-gradient-to-br from-amber-900/40 via-black/50 to-amber-700/20 backdrop-blur-sm rounded-[24px] border border-amber-500/30 shadow-[0_0_20px_4px_rgba(255,191,0,0.1)] p-4 ring-1 ring-amber-400/20 relative">
@@ -694,10 +707,11 @@ export default function HomePageClient({
                 {agroData.filter(i => i.category === 'grain').map(item => (
                   <button key={item.id} onClick={() => setSelectedAgro(item)} className="w-full flex justify-between items-center bg-black/40 p-3 rounded-xl border border-white/5 transition-all group/item hover:bg-white/5">
                     <span className="text-xs font-black uppercase text-yellow-500 flex gap-2">{item.name}</span>
-                    <span className="text-sm font-black italic">{item.price}</span>
+                    <span className="text-sm font-black italic">{formatAgroPrice(item.price)}</span>
                   </button>
                 ))}
               </div>
+              <p className="mt-4 text-[12px] text-yellow-200 font-black text-center tracking-wide">თქვენი ფასი და საკონტაქტო ნომერი გამოჩნდება აქ</p>
             </div>
             {/* 🏛️ ადმინისტრაციული განცხადებები */}
             <div className="flex flex-col gap-4 w-full">
