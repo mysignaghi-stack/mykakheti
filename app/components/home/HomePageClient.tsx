@@ -566,12 +566,12 @@ export default function HomePageClient({
               </div>
             )}
             {/* 🍇 აგრო-ბირჟა */}
-            <div className="bg-white/[0.03] backdrop-blur-3xl rounded-[30px] border border-white/10 p-5 flex flex-col items-center group relative overflow-hidden transition-all hover:border-purple-500/30 shadow-xl">
+            <div className="bg-white/[0.03] backdrop-blur-3xl rounded-[30px] border border-white/10 p-5 flex flex-col items-center group relative overflow-hidden transition-all hover:border-purple-500/30 shadow-xl h-[360px]">
               <div className="flex justify-between w-full items-center mb-4">
                 <h4 className="text-[10px] font-black text-purple-400 uppercase tracking-[0.4em]">🍇 აგრო-ბირჟა</h4>
               </div>
               <p className="w-full text-[10px] text-white/40 font-bold uppercase tracking-[0.2em] mb-3 leading-tight">საორიენტაციო ფასები · დააჭირე პროდუქტს რომ ნახო მიმღები ობიექტები</p>
-              <div className="w-full space-y-2">
+              <div className="w-full space-y-2 overflow-y-auto custom-scrollbar pr-1">
                 {agroData.filter(i => i.category === 'grape').map(item => (
                   <button key={item.id} onClick={() => setSelectedAgro(item)} className="w-full flex justify-between items-center bg-black/40 p-3 rounded-xl border border-white/5 transition-all group/item hover:bg-white/5">
                     <span className="text-xs font-black uppercase text-purple-300 flex gap-2">{item.name}</span>
@@ -601,12 +601,12 @@ export default function HomePageClient({
                    </div>
                  )}
                  {/* 🍇 აგრო-ბირჟა */}
-                 <div className="bg-white/[0.03] backdrop-blur-3xl rounded-[30px] border border-white/10 p-5 flex flex-col items-center group relative overflow-hidden transition-all hover:border-purple-500/30 shadow-xl">
+                 <div className="bg-white/[0.03] backdrop-blur-3xl rounded-[30px] border border-white/10 p-5 flex flex-col items-center group relative overflow-hidden transition-all hover:border-purple-500/30 shadow-xl h-[360px]">
                    <div className="flex justify-between w-full items-center mb-4">
                      <h4 className="text-[10px] font-black text-purple-400 uppercase tracking-[0.4em]">🍇 აგრო-ბირჟა</h4>
                    </div>
                    <p className="w-full text-[10px] text-white/40 font-bold uppercase tracking-[0.2em] mb-3 leading-tight">საორიენტაციო ფასები · დააჭირე პროდუქტს რომ ნახო მიმღები ობიექტები</p>
-                   <div className="w-full space-y-2">
+                   <div className="w-full space-y-2 overflow-y-auto custom-scrollbar pr-1">
                      {agroData.filter(i => i.category === 'grape').map(item => (
                        <button key={item.id} onClick={() => setSelectedAgro(item)} className="w-full flex justify-between items-center bg-black/40 p-3 rounded-xl border border-white/5 transition-all group/item hover:bg-white/5">
                          <span className="text-xs font-black uppercase text-purple-300 flex gap-2">{item.name}</span>
@@ -616,11 +616,11 @@ export default function HomePageClient({
                    </div>
                  </div>
                   {/* 🌾 მარცვლეული */}
-                  <div className="bg-white/[0.03] backdrop-blur-3xl rounded-[30px] border border-white/10 p-5 flex flex-col items-center group relative overflow-hidden transition-all hover:border-yellow-500/30 shadow-xl">
+                  <div className="bg-white/[0.03] backdrop-blur-3xl rounded-[30px] border border-white/10 p-5 flex flex-col items-center group relative overflow-hidden transition-all hover:border-yellow-500/30 shadow-xl h-[360px]">
                     <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-yellow-500 to-transparent opacity-30" />
                     <h4 className="text-[10px] font-black text-yellow-500 uppercase tracking-[0.4em] mb-4 w-full text-left">🌾 მარცვლეული</h4>
                     <p className="w-full text-[10px] text-white/40 font-bold uppercase tracking-[0.2em] mb-3 leading-tight">საორიენტაციო ფასები · დააჭირე პროდუქტს რომ ნახო მიმღები ობიექტები</p>
-                    <div className="w-full space-y-2">
+                    <div className="w-full space-y-2 overflow-y-auto custom-scrollbar pr-1">
                       {agroData.filter(i => i.category === 'grain').map(item => (
                         <button key={item.id} onClick={() => setSelectedAgro(item)} className="w-full flex justify-between items-center bg-black/40 p-3 rounded-xl border border-white/5 transition-all group/item hover:bg-white/5">
                           <span className="text-xs font-black uppercase text-yellow-500 flex gap-2">{item.name}</span>
@@ -686,11 +686,11 @@ export default function HomePageClient({
               </div>
             </div>
             {/* 🌾 მარცვლეული */}
-            <div className="w-full bg-white/[0.03] backdrop-blur-3xl rounded-[30px] border border-white/10 p-5 flex flex-col items-center group relative overflow-hidden transition-all hover:border-yellow-500/30 shadow-xl">
+            <div className="w-full bg-white/[0.03] backdrop-blur-3xl rounded-[30px] border border-white/10 p-5 flex flex-col items-center group relative overflow-hidden transition-all hover:border-yellow-500/30 shadow-xl h-[360px]">
               <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-yellow-500 to-transparent opacity-30" />
               <h4 className="text-[10px] font-black text-yellow-500 uppercase tracking-[0.4em] mb-4 w-full text-left">🌾 მარცვლეული</h4>
               <p className="w-full text-[10px] text-white/40 font-bold uppercase tracking-[0.2em] mb-3 leading-tight">საორიენტაციო ფასები · დააჭირე პროდუქტს რომ ნახო მიმღები ობიექტები</p>
-              <div className="w-full space-y-2">
+              <div className="w-full space-y-2 overflow-y-auto custom-scrollbar pr-1">
                 {agroData.filter(i => i.category === 'grain').map(item => (
                   <button key={item.id} onClick={() => setSelectedAgro(item)} className="w-full flex justify-between items-center bg-black/40 p-3 rounded-xl border border-white/5 transition-all group/item hover:bg-white/5">
                     <span className="text-xs font-black uppercase text-yellow-500 flex gap-2">{item.name}</span>

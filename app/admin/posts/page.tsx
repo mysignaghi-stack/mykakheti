@@ -7,6 +7,7 @@ import { supabase } from '../../lib/supabase';
 import { useAdminAuth } from '../../hooks/useAdminAuth';
 import type { Database } from '@/types/supabase';
 import AdminNav from '../../components/admin/AdminNav';
+import AdminAgroPanel from '../AdminAgroPanel';
 
 type AdminPost = Database['public']['Tables']['admin_posts']['Row'];
 
@@ -522,6 +523,10 @@ export default function AdminPosts() {
         <div className="flex items-center justify-between mb-6">
           <h1 className="text-2xl font-black italic uppercase border-l-4 border-amber-600 pl-4">ადმინისტრატორის განცხადებები</h1>
           <AdminNav />
+        </div>
+
+        <div className="mb-6">
+          <AdminAgroPanel />
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">

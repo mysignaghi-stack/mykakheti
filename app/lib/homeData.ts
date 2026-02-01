@@ -204,7 +204,10 @@ export const fetchHomePageData = async (): Promise<HomePageData> => {
     adminPostsResult as SettledResponse<AdminPostRow>,
     'admin_posts'
   ).filter((post) => post.priority !== -1);
-  const agroRows: AgroRow[] = agroResult.status === 'fulfilled' && agroResult.value ? agroResult.value as unknown as AgroRow[] : [];
+  const agroRows: AgroRow[] = extractData<AgroRow>(
+    agroResult as SettledResponse<AgroRow>,
+    'agro_prices'
+  );
   const weatherRows: WeatherRow[] = extractData<WeatherRow>(weatherResult as any, 'weather');
   const siteSettings: SiteSettingRow[] = extractData<SiteSettingRow>(
     siteSettingsResult as SettledResponse<SiteSettingRow>,

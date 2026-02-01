@@ -20,6 +20,8 @@ export default function AdminAgroPanel({ showCategory }: { showCategory?: 'grape
   const [newPrice, setNewPrice] = useState('');
   const [editDetails, setEditDetails] = useState<any[]>([]);
   const [saving, setSaving] = useState(false);
+  const [activeCategory, setActiveCategory] = useState<'all' | 'grape' | 'grain'>(showCategory ?? 'all');
+  const [searchTerm, setSearchTerm] = useState('');
 
   const fetchItems = async () => {
     setLoading(true);
@@ -38,6 +40,10 @@ export default function AdminAgroPanel({ showCategory }: { showCategory?: 'grape
     fetchItems();
   }, []);
 
+  useEffect(() => {
+    setActiveCategory(showCategory ?? 'all');
+  }, [showCategory]);
+
   const openEdit = (it: AgroRow) => {
     setEditItem(it);
     setNewName(it.name ?? '');
@@ -51,6 +57,18 @@ export default function AdminAgroPanel({ showCategory }: { showCategory?: 'grape
     setNewName('');
     setNewPrice('');
     setEditDetails([]);
+  };
+
+  const filteredItems = items.filter((item) => {
+    if (activeCategory !== 'all' && item.category !== activeCategory) return false;
+    const term = searchTerm.trim().toLowerCase();
+    if (!term) return true;
+    return `${item.name ?? ''} ${item.price ?? ''}`.toLowerCase().includes(term);
+  });
+
+  const counts = {
+    grape: items.filter(i => i.category === 'grape').length,
+    grain: items.filter(i => i.category === 'grain').length,
   };
 
   const handleSubmit = async (e?: React.FormEvent) => {
@@ -115,21 +133,83 @@ export default function AdminAgroPanel({ showCategory }: { showCategory?: 'grape
   };
 
   return (
-    <div className="bg-white/5 border border-white/10 rounded-2xl p-4 mb-6">
-      <div className="flex items-center justify-between mb-3">
-        <h3 className="text-sm font-black uppercase text-amber-400">აგრო კონტროლი</h3>
-        <div className="text-xs text-white/60">{loading ? 'იტვირთება...' : `${items.length} რიგი`}</div>
+    <div className="bg-gradient-to-br from-black/70 via-black/50 to-amber-950/30 border border-amber-500/20 rounded-[28px] p-5 md:p-6 mb-6 shadow-2xl">
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-4">
+        <div>
+          <h3 className="text-lg md:text-xl font-black uppercase text-amber-300 tracking-[0.2em]">აგრო კონტროლი</h3>
+          <p className="text-xs text-white/50 mt-1">აგრო-ბირჟა და მარცვლეული — დამატება, რედაქტირება, წაშლა</p>
+        </div>
+        <div className="flex flex-wrap items-center gap-2">
+          <button
+            onClick={() => fetchItems()}
+            className="px-3 py-1 rounded-xl text-xs font-black bg-white/10 text-white/80 hover:bg-white/20"
+            type="button"
+          >
+            განახლება
+          </button>
+          <button
+            onClick={() => openCreate('grape')}
+            className="px-3 py-1 rounded-xl text-xs font-black bg-purple-600 text-white"
+            type="button"
+          >
+            + აგრო-ბირჟა
+          </button>
+          <button
+            onClick={() => openCreate('grain')}
+            className="px-3 py-1 rounded-xl text-xs font-black bg-yellow-600 text-white"
+            type="button"
+          >
+            + მარცვლეული
+          </button>
+        </div>
       </div>
 
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 mb-4">
+        <div className="flex flex-wrap gap-2">
+          {([
+            { key: 'all', label: 'ყველა', count: items.length },
+            { key: 'grape', label: `🍇 აგრო-ბირჟა (${counts.grape})` },
+            { key: 'grain', label: `🌾 მარცვლეული (${counts.grain})` },
+          ] as const).map((tab) => (
+            <button
+              key={tab.key}
+              type="button"
+              onClick={() => setActiveCategory(tab.key)}
+              className={`px-3 py-1 rounded-xl text-xs font-black ${activeCategory === tab.key ? 'bg-amber-600 text-white' : 'bg-white/10 text-white/70 hover:bg-white/20'}`}
+            >
+              {tab.label}
+            </button>
+          ))}
+        </div>
+        <div className="flex items-center gap-2">
+          <input
+            type="text"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            placeholder="ძებნა სახელით/ფასით"
+            className="bg-white/10 border border-white/10 rounded-xl px-3 py-2 text-xs text-white w-full md:w-64"
+          />
+          <div className="text-xs text-white/50 min-w-[90px] text-right">
+            {loading ? 'იტვირთება...' : `${filteredItems.length} ჩანაწერი`}
+          </div>
+        </div>
+      </div>
+
+      {filteredItems.length === 0 && !loading && (
+        <div className="mb-4 rounded-xl border border-white/10 bg-white/5 p-3 text-xs text-white/50">
+          ჩანაწერები ვერ მოიძებნა. სცადე ძიების შეცვლა ან დაამატე ახალი.
+        </div>
+      )}
+
       <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-        {(showCategory === undefined || showCategory === 'grape') && (
+        {(activeCategory === 'all' || activeCategory === 'grape') && (
           <div>
             <div className="flex items-center justify-between">
               <div className="text-[11px] text-white/70 mb-2">🍇 აგრო-ბირჟა (გონდაწკიცი)</div>
               <button onClick={() => openCreate('grape')} className="text-[11px] px-2 py-1 rounded-lg bg-amber-600 text-white font-black">ახალი</button>
             </div>
             <div className="space-y-2">
-              {items.filter(i => i.category === 'grape').map(it => (
+              {filteredItems.filter(i => i.category === 'grape').map(it => (
                 <div key={String(it.id)} className="flex justify-between items-center bg-black/40 p-2 rounded-lg border border-white/5">
                   <div className="text-sm font-bold text-purple-300">{it.name}</div>
                   <div className="flex items-center gap-2">
@@ -143,14 +223,14 @@ export default function AdminAgroPanel({ showCategory }: { showCategory?: 'grape
           </div>
         )}
 
-        {(showCategory === undefined || showCategory === 'grain') && (
+        {(activeCategory === 'all' || activeCategory === 'grain') && (
           <div>
             <div className="flex items-center justify-between">
               <div className="text-[11px] text-white/70 mb-2">🌾 მარცვლეული</div>
               <button onClick={() => openCreate('grain')} className="text-[11px] px-2 py-1 rounded-lg bg-amber-600 text-white font-black">ახალი</button>
             </div>
             <div className="space-y-2">
-              {items.filter(i => i.category === 'grain').map(it => (
+              {filteredItems.filter(i => i.category === 'grain').map(it => (
                 <div key={String(it.id)} className="flex justify-between items-center bg-black/40 p-2 rounded-lg border border-white/5">
                   <div className="text-sm font-bold text-yellow-400">{it.name}</div>
                   <div className="flex items-center gap-2">
