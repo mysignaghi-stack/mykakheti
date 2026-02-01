@@ -133,15 +133,17 @@ export default function AdminPosts() {
       console.log('Data to insert/update:', data);
 
       if (editingPost) {
-        console.log('Updating post with id:', editingPost.id);
-        const { error } = await (supabase as any)
-          .from('admin_posts')
-          .update(data)
-          .eq('id', editingPost.id);
-
-        if (error) {
-          console.error('Update error details:', JSON.stringify(error));
-          throw error;
+        console.log('Updating post with id via server route:', editingPost.id);
+        const res = await fetch('/api/admin/posts/update', {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ id: editingPost.id, payload: data }),
+          credentials: 'same-origin'
+        });
+        const json = await res.json();
+        if (!res.ok) {
+          console.error('Update error details:', json);
+          throw new Error(json?.error || 'Update failed');
         }
         setEditingPost(null);
       } else {
@@ -186,12 +188,17 @@ export default function AdminPosts() {
     if (!confirm('ნამდვილად გსურთ პოსტის წაშლა?')) return;
 
     try {
-      const { error } = await (supabase as any)
-        .from('admin_posts')
-        .delete()
-        .eq('id', id);
-
-      if (error) throw error;
+      const res = await fetch('/api/admin/posts/delete', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id }),
+        credentials: 'same-origin'
+      });
+      const json = await res.json();
+      if (!res.ok) {
+        console.error('Delete error details:', json);
+        throw new Error(json?.error || 'Delete failed');
+      }
       setPosts(prev => prev.filter(p => p.id !== id));
     } catch (error) {
       console.error('Delete error:', error);
@@ -202,13 +209,20 @@ export default function AdminPosts() {
   const togglePublish = async (post: AdminPost) => {
     try {
       const nextValue = !((post as any).is_published ?? true);
-      const { error } = await (supabase as any)
-        .from('admin_posts')
-        .update({ is_published: nextValue })
-        .eq('id', post.id);
-
-      if (error) throw error;
-      setPosts(prev => prev.map(p => p.id === post.id ? { ...p, is_published: nextValue } : p));
+      try {
+        const res = await fetch('/api/admin/posts/update', {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ id: post.id, payload: { is_published: nextValue } }),
+          credentials: 'same-origin'
+        });
+        const json = await res.json();
+        if (!res.ok) throw new Error(json?.error || 'Update failed');
+        setPosts(prev => prev.map(p => p.id === post.id ? { ...p, is_published: nextValue } : p));
+      } catch (error) {
+        console.error('Toggle publish error:', error);
+        alert('სტატუსის შეცვლა ვერ მოხერხდა');
+      }
     } catch (error) {
       console.error('Toggle publish error:', error);
       alert('სტატუსის შეცვლა ვერ მოხერხდა');
@@ -218,13 +232,20 @@ export default function AdminPosts() {
   const toggleArchive = async (post: AdminPost) => {
     try {
       const nextValue = !((post as any).is_archived ?? false);
-      const { error } = await (supabase as any)
-        .from('admin_posts')
-        .update({ is_archived: nextValue })
-        .eq('id', post.id);
-
-      if (error) throw error;
-      setPosts(prev => prev.map(p => p.id === post.id ? { ...p, is_archived: nextValue } : p));
+      try {
+        const res = await fetch('/api/admin/posts/update', {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ id: post.id, payload: { is_archived: nextValue } }),
+          credentials: 'same-origin'
+        });
+        const json = await res.json();
+        if (!res.ok) throw new Error(json?.error || 'Update failed');
+        setPosts(prev => prev.map(p => p.id === post.id ? { ...p, is_archived: nextValue } : p));
+      } catch (error) {
+        console.error('Toggle archive error:', error);
+        alert('არქივაციის შეცვლა ვერ მოხერხდა');
+      }
     } catch (error) {
       console.error('Toggle archive error:', error);
       alert('არქივაციის შეცვლა ვერ მოხერხდა');

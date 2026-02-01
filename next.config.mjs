@@ -1,4 +1,6 @@
 /** @type {import('next').NextConfig} */
+const isDev = process.env.NODE_ENV !== 'production';
+
 const nextConfig = {
   images: {
     remotePatterns: [
@@ -21,6 +23,23 @@ const nextConfig = {
   },
   // Configure server external packages for better compatibility
   serverExternalPackages: [],
+  async headers() {
+    if (!isDev) return [];
+    return [
+      {
+        source: '/_next/static/:path*',
+        headers: [{ key: 'Cache-Control', value: 'no-store' }],
+      },
+      {
+        source: '/_next/data/:path*',
+        headers: [{ key: 'Cache-Control', value: 'no-store' }],
+      },
+      {
+        source: '/:path*',
+        headers: [{ key: 'Cache-Control', value: 'no-store' }],
+      },
+    ];
+  },
 };
 
 export default nextConfig;

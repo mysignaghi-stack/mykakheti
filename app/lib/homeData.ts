@@ -118,6 +118,23 @@ export interface HomePageData {
 export const fetchHomePageData = async (): Promise<HomePageData> => {
   const supabase = getSupabaseAdmin();
 
+  if (!supabase) {
+    return {
+      ads: [],
+      agroData: DEFAULT_AGRO_DATA,
+      weatherData: buildFallbackWeather(),
+      adminPosts: [],
+      backgroundUrl: null,
+      marqueeText: FALLBACK_MARQUEE,
+      community: {
+        obituaries: [],
+        lostFound: [],
+        masters: [],
+        congratulations: [],
+      },
+    };
+  }
+
   const results = await Promise.allSettled([
     supabase
       .from('announcements')

@@ -128,11 +128,14 @@ export default function AdminSideFrame({ post, position, isAdmin, onRefresh }: A
       };
 
       if (editingPost) {
-        const { error } = await (supabase
-          .from('admin_posts') as any)
-          .update(postData)
-          .eq('id', editingPost.id);
-        if (error) throw error;
+        const res = await fetch('/api/admin/posts/update', {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ id: editingPost.id, payload: postData }),
+          credentials: 'same-origin'
+        });
+        const json = await res.json();
+        if (!res.ok) throw new Error(json?.error || 'Update failed');
       } else {
         const res = await fetch('/api/admin/posts/create', {
           method: 'POST',
@@ -172,12 +175,14 @@ export default function AdminSideFrame({ post, position, isAdmin, onRefresh }: A
         }
       }
 
-      const { error } = await supabase
-        .from('admin_posts')
-        .delete()
-        .eq('id', postId);
-
-      if (error) throw error;
+      const res = await fetch('/api/admin/posts/delete', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: postId }),
+        credentials: 'same-origin'
+      });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json?.error || 'Delete failed');
 
       resetForm();
       onRefresh();
@@ -191,12 +196,14 @@ export default function AdminSideFrame({ post, position, isAdmin, onRefresh }: A
 
   const handleHide = async (postId: number) => {
     try {
-      const { error } = await (supabase
-        .from('admin_posts') as any)
-        .update({ priority: -1 })
-        .eq('id', postId);
-
-      if (error) throw error;
+      const res = await fetch('/api/admin/posts/update', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: postId, payload: { priority: -1 } }),
+        credentials: 'same-origin'
+      });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json?.error || 'Update failed');
       onRefresh();
     } catch (error) {
       console.error('Failed to hide post:', error);

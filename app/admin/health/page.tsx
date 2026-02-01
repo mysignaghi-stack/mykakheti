@@ -257,7 +257,12 @@ export default function HealthPage() {
       }));
 
       const updatePromises = updates.map((update: any) =>
-        (supabase as any).from('admin_posts').update(update).eq('id', update.id)
+        fetch('/api/admin/posts/update', {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ id: update.id, payload: { media_url: update.media_url, publish_at: update.publish_at } }),
+          credentials: 'same-origin'
+        })
       );
 
       const results = await Promise.allSettled(updatePromises);

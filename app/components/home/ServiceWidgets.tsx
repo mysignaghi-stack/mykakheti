@@ -1,28 +1,44 @@
+"use client";
+
 import React, { useState, useEffect } from 'react';
-import { supabase } from '../../lib/supabase';
-import type { Database } from '../../../types/supabase';
+import { KAKHETI_FACTS } from '../../lib/constants';
+import { debugError, debugLog, debugWarn } from '../../lib/debug';
 
 type KakhetiHeritageRow = any;
 
-const fetchKakhetiHeritage = async (): Promise<KakhetiHeritageRow[]> => {
+type HeritageResponse = {
+  places?: KakhetiHeritageRow[];
+  categories?: string[];
+};
+
+const fetchKakhetiHeritage = async (signal?: AbortSignal): Promise<HeritageResponse> => {
   try {
-    const { data, error } = await (supabase as any)
-      .from('kakheti_heritage' as any)
-      .select('*')
-      .order('created_at', { ascending: false });
-
-    if (error) {
-      console.error('Error fetching heritage data:', JSON.stringify(error));
-      return [];
+    debugLog('kakheti-places fetch start');
+    const res = await fetch('/api/kakheti-places', { cache: 'no-store', signal });
+    if (!res.ok) {
+      debugWarn('kakheti-places fetch non-200', res.status);
+      return { places: [], categories: [] };
     }
-
-    console.log('Heritage data fetched successfully:', data?.length || 0, 'items');
-    return data || [];
+    const data = (await res.json()) as HeritageResponse;
+    debugLog('kakheti-places fetch ok', {
+      places: data?.places?.length ?? 0,
+      categories: data?.categories?.length ?? 0,
+    });
+    return { places: data.places ?? [], categories: data.categories ?? [] };
   } catch (err) {
-    console.error('Exception in fetchKakhetiHeritage:', err);
-    return [];
+    if ((err as { name?: string }).name !== 'AbortError') {
+      debugError('kakheti-places fetch error', err);
+    }
+    return { places: [], categories: [] };
   }
 };
+
+const buildFallbackPlaces = (): KakhetiHeritageRow[] =>
+  KAKHETI_FACTS.map((fact, index) => ({
+    id: `fact-${index}`,
+    fun_fact: fact,
+    category: 'ისტორია',
+  }));
 
 interface ServiceWidgetsProps {
   onMapSearch: (service: string) => void;
@@ -30,6 +46,7 @@ interface ServiceWidgetsProps {
 
 export default function ServiceWidgets({ onMapSearch }: ServiceWidgetsProps) {
   const [kakhetiPlaces, setKakhetiPlaces] = useState<KakhetiHeritageRow[]>([]);
+  const [categories, setCategories] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
   const [currentPlaceIndex, setCurrentPlaceIndex] = useState(0);
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
@@ -38,20 +55,28 @@ export default function ServiceWidgets({ onMapSearch }: ServiceWidgetsProps) {
   useEffect(() => {
     const fetchPlaces = async () => {
       setLoading(true);
-      const data = await fetchKakhetiHeritage();
-      console.log('Fetched heritage data:', data?.length || 0, 'items');
-      setKakhetiPlaces(data);
-      setLoading(false);
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 6000);
+      try {
+        const data = await fetchKakhetiHeritage(controller.signal);
+        console.log('Fetched heritage data:', data?.places?.length || 0, 'items');
+        const places = data?.places ?? [];
+        if (places.length === 0) {
+          setKakhetiPlaces(buildFallbackPlaces());
+          setCategories(['ისტორია']);
+        } else {
+          setKakhetiPlaces(places);
+          setCategories(data?.categories ?? []);
+        }
+      } finally {
+        clearTimeout(timeout);
+        setLoading(false);
+      }
     };
 
     fetchPlaces();
 
-    // Fallback: set loading to false after 10 seconds
-    const timeout = setTimeout(() => {
-      setLoading(false);
-    }, 10000);
-
-    return () => clearTimeout(timeout);
+    return () => undefined;
   }, []);
 
   // Filter places by selected category
@@ -123,7 +148,7 @@ export default function ServiceWidgets({ onMapSearch }: ServiceWidgetsProps) {
             >
               ყველა
             </button>
-            {['ისტორია', 'ბუნება', 'ღვინო', 'პერსონაჟი', 'ლეგენდა'].map((category) => (
+            {(categories.length > 0 ? categories : ['ისტორია', 'ბუნება', 'ღვინო', 'პერსონაჟი', 'ლეგენდა']).map((category) => (
               <button
                 key={category}
                 onClick={() => setSelectedCategory(category)}
@@ -157,7 +182,7 @@ export default function ServiceWidgets({ onMapSearch }: ServiceWidgetsProps) {
                   </div>
                 ) : (
                   <div className="text-sm text-white/60 text-center">
-                    ინფორმაცია არ არის ხელმისაწვდომი
+                    {filteredPlaces[currentPlaceIndex]?.title ?? 'ინფორმაცია არ არის ხელმისაწვდომი'}
                   </div>
                 )}
               </div>

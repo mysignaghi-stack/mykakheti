@@ -109,8 +109,20 @@ export default function AdminBoard({ isAdmin, user: _user, children }: AdminBoar
   // პოსტის წაშლა
   const handleDelete = async (id: number) => {
     if (!confirm('ნამდვილად გსურთ ამ განცხადების წაშლა?')) return;
-    const { error } = await (supabase as any).from('admin_posts').delete().eq('id', id);
-    if (error) alert('წაშლა ვერ მოხერხდა');
+    try {
+      const res = await fetch('/api/admin/posts/delete', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id }),
+        credentials: 'same-origin'
+      });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json?.error || 'Delete failed');
+      alert('წაშლა წარმატებული იყო');
+    } catch (err) {
+      console.error(err);
+      alert('წაშლა ვერ მოხერხდა');
+    }
   };
 
   // პოსტის რენდერის დამხმარე ფუნქცია

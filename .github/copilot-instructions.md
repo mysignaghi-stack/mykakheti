@@ -1,35 +1,45 @@
-# MyKakheti — AI Agent Coding Guide (concise)
-## Quick start
-- `npm install`
-- `npm run dev` (if you see `.next/dev/lock` errors, kill existing `next dev` processes or remove the lock after verifying no dev server is active)
+# MyKakheti — AI Agent Coding Guide
 
-## Architecture & important files
-- App Router only: `app/` contains server and client routes.
-- Supabase client: `app/lib/supabase.ts` (uses `createBrowserClient` for client-side code).
-- Realtime helpers: `app/lib/squareRealtime.ts` (centralize `supabase.channel(...)` subscriptions and optional BroadcastChannel bridging).
-- Chat UI: `app/components/features/KakhetianSquare.tsx` (optimistic UI, temp IDs, file uploads, reconciliation logic).
-- Popup wrapper: `app/components/features/ChatPopup.tsx` (mounts `KakhetianSquare` in a floating container).
-- Server API example using service role: `app/api/square/send/route.ts` (inserts messages server-side).
+## Quick start (local)
+- `npm install`
+- `npm run dev` (dev server; uses `TURBOPACK=0`)
+- `npm run build` / `npm run lint` for CI parity
+- If `.next/dev/lock` blocks dev: kill stale `next dev` processes, then retry
+
+## Architecture & data flow
+- Next.js App Router only: routes and UI live under `app/` with API handlers in `app/api/**/route.ts`.
+- Supabase browser client: `app/lib/supabase.ts` (requires `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`).
+- Supabase admin/service role client: `app/lib/supabaseAdmin.ts` (requires `SUPABASE_SERVICE_ROLE_KEY`); used in admin APIs to bypass RLS.
+- Middleware auth plumbing: `middleware.ts` uses `createServerClient` and must return the provided response with cookies intact.
+
+## Admin auth + moderation patterns
+- Admin detection: `app/lib/adminAuth.ts` (`role` / `is_admin` flags and optional `roles` array). Supports allowlist via `NEXT_PUBLIC_ADMIN_EMAILS` (Google provider only).
+- UI auth state: `app/hooks/useAdminAuth.ts` handles refresh-token errors and cleans local/session storage.
+- Admin moderation flow: `app/admin/moderate/page.tsx` pulls pending announcements and listens to realtime inserts/updates.
+- Approval API mirrors data into community tables based on category: `app/api/admin/announcements/approve/route.ts`.
+- Pending announcements API uses service role reads in `app/api/admin/announcements/pending/route.ts`.
+- Admin post creation uses session auth + service role insert: `app/api/admin/posts/create/route.ts`.
+
+## Realtime + chat conventions
+- Use the shared subscription helper in `app/lib/squareRealtime.ts` (single channel + BroadcastChannel mirroring).
+- Chat UI: `app/components/features/KakhetianSquare.tsx` uses optimistic IDs (`temp-...`) and reconciles server inserts; keep message limit at `MESSAGE_LIMIT`.
+- Popup wrapper: `app/components/features/ChatPopup.tsx` mounts the chat in a floating container.
 
 ## Project-specific conventions
 - UI strings are Georgian; keep code/variables in English.
-- Place UI in `.tsx` under `app/components/` and logic/hooks in `app/lib/` or `app/hooks/`.
-- Use `types/supabase.ts` for DB typing where available; when schema is missing, `as any` is used to avoid build failures.
+- UI components live in `app/components/**`, hooks in `app/hooks/**`, shared logic in `app/lib/**`.
+- Prefer `types/supabase.ts` for DB types; when schema is missing, `as any` is used to avoid build failures.
 
-## Realtime & sync patterns
-- Prefer a single shared realtime subscription helper (see `squareRealtime.ts`) rather than per-component random channel names.
-- Optimistic UI pattern: create temporary ids (`temp-...`) and replace them when the server responds (see `KakhetianSquare.tsx`).
-- Cross-window sync: BroadcastChannel is used to mirror events between popup and main window when necessary.
+## External assets + integrations
+- Congrats music files live in `public/music` and are referenced from `app/community/congratulations/submit/page.tsx`.
+- Client-side image uploads often use `browser-image-compression` (see `KakhetianSquare.tsx`).
 
-## Debugging tips
-- Watch DevTools console for `[squareRealtime]` logs to trace incoming payloads.
-- Search for `temp-` to find optimistic-message logic.
-- If `next dev` won't start because of a lock: run `ps aux | grep next`, kill stale processes, then restart.
+## Debugging hints
+- Watch DevTools for `[squareRealtime]` logs when troubleshooting realtime.
+- Admin setup scripts live at repo root (see `ADMIN_SETUP_README.md`, `one_click_admin_fix.sql`).
 
-## Useful files to inspect for common tasks
-- Chat & realtime: `app/components/features/KakhetianSquare.tsx`, `app/components/features/ChatPopup.tsx`, `app/lib/squareRealtime.ts`, `app/api/square/send/route.ts`.
-- Supabase client and envs: `app/lib/supabase.ts` (requires `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`).
-- Announcements / admin examples: `app/admin/moderate/page.tsx` (image arrays, moderation flows).
-
-If you'd like, I can expand the announcements UI section with implementation notes (arrows + mobile swipe). 
-For unclear or missing conventions, review `README.md`, `ADMIN_SETUP_README.md`, and example files in `app/components/` and `app/lib/`.
+## Key files to check when changing behavior
+- Supabase clients/envs: `app/lib/supabase.ts`, `app/lib/supabaseAdmin.ts`
+- Auth + middleware: `app/lib/adminAuth.ts`, `app/hooks/useAdminAuth.ts`, `middleware.ts`
+- Chat/realtime: `app/components/features/KakhetianSquare.tsx`, `app/lib/squareRealtime.ts`
+- Admin moderation: `app/admin/moderate/page.tsx`, `app/api/admin/announcements/*/route.ts`
