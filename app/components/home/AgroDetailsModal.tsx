@@ -15,6 +15,12 @@ const AgroDetailsModal = ({ selectedAgro, onClose }: AgroDetailsModalProps) => {
       : { phone: '', ...detail }
   );
 
+  const formatRate = (value?: string | number | null) => {
+    if (value === null || value === undefined || value === '') return '';
+    const text = String(value);
+    return text.includes('₾') ? text : `${text} ₾`;
+  };
+
   return (
     <div
       className="fixed inset-0 z-[1000] flex items-center justify-center bg-black/95 backdrop-blur-md p-4 sm:p-6 animate-in fade-in duration-300 text-left"
@@ -59,13 +65,13 @@ const AgroDetailsModal = ({ selectedAgro, onClose }: AgroDetailsModalProps) => {
                     <span className="block text-[11px] sm:text-[12px] text-white/60 font-bold">📞 {detail.phone}</span>
                   )}
                 </div>
-                <span className="text-xl sm:text-2xl font-black text-amber-500 italic text-right">{detail.rate}</span>
+                <span className="text-xl sm:text-2xl font-black text-amber-500 italic text-right">{formatRate(detail.rate)}</span>
               </div>
             ))
           ) : (
             <div className="flex justify-between items-center bg-white/[0.04] p-5 sm:p-6 rounded-2xl sm:rounded-3xl border border-white/10 hover:bg-white/[0.08] transition-all shadow-xl text-left">
               <span className="text-[13px] sm:text-[15px] font-black italic tracking-tight drop-shadow-sm text-left">საშუალო საბაზრო ფასი</span>
-              <span className="text-xl sm:text-2xl font-black text-amber-500 italic text-right">{selectedAgro.price}</span>
+              <span className="text-xl sm:text-2xl font-black text-amber-500 italic text-right">{formatRate(selectedAgro.price)}</span>
             </div>
           )}
         </div>

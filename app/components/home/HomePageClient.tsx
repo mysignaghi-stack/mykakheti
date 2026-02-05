@@ -581,7 +581,7 @@ export default function HomePageClient({
                 <h4 className="text-[10px] font-black text-purple-400 uppercase tracking-[0.4em]">🍇 აგრო-ბირჟა</h4>
               </div>
               <p className="w-full text-[10px] text-white/40 font-bold uppercase tracking-[0.2em] mb-3 leading-tight">საორიენტაციო ფასები · დააჭირე პროდუქტს რომ ნახო მიმღები ობიექტები</p>
-              <div className="w-full space-y-2 overflow-y-auto custom-scrollbar pr-1">
+              <div className="w-full flex-1 space-y-2 overflow-y-auto custom-scrollbar pr-1">
                 {agroData.filter(i => i.category === 'grape').map(item => (
                   <button key={item.id} onClick={() => setSelectedAgro(item)} className="w-full flex justify-between items-center bg-black/40 p-3 rounded-xl border border-white/5 transition-all group/item hover:bg-white/5">
                     <span className="text-xs font-black uppercase text-purple-300 flex gap-2">{item.name}</span>
@@ -589,7 +589,7 @@ export default function HomePageClient({
                   </button>
                 ))}
               </div>
-              <p className="mt-3 text-[11px] text-white/60 font-semibold text-center">თქვენი ფასი და საკონტაქტო ნომერი გამოჩნდება აქ</p>
+              <p className="mt-auto pt-3 text-[12px] text-white/90 font-black text-center tracking-wide">თქვენი ფასი და საკონტაქტო ნომერი გამოჩნდება ამ ფანჯარაში</p>
             </div>
             {/* 🏛️ ადმინისტრაციული განცხადება */}
             <div className="w-full min-w-[260px] xl:min-w-[300px] bg-gradient-to-br from-amber-900/40 via-black/50 to-amber-700/20 backdrop-blur-sm rounded-[24px] border border-amber-500/30 shadow-[0_0_20px_4px_rgba(255,191,0,0.1)] p-4 ring-1 ring-amber-400/20 relative">
@@ -617,7 +617,7 @@ export default function HomePageClient({
                      <h4 className="text-[10px] font-black text-purple-400 uppercase tracking-[0.4em]">🍇 აგრო-ბირჟა</h4>
                    </div>
                    <p className="w-full text-[10px] text-white/40 font-bold uppercase tracking-[0.2em] mb-3 leading-tight">საორიენტაციო ფასები · დააჭირე პროდუქტს რომ ნახო მიმღები ობიექტები</p>
-                   <div className="w-full space-y-2 overflow-y-auto custom-scrollbar pr-1">
+                   <div className="w-full flex-1 space-y-2 overflow-y-auto custom-scrollbar pr-1">
                      {agroData.filter(i => i.category === 'grape').map(item => (
                        <button key={item.id} onClick={() => setSelectedAgro(item)} className="w-full flex justify-between items-center bg-black/40 p-3 rounded-xl border border-white/5 transition-all group/item hover:bg-white/5">
                          <span className="text-xs font-black uppercase text-purple-300 flex gap-2">{item.name}</span>
@@ -625,14 +625,14 @@ export default function HomePageClient({
                        </button>
                      ))}
                    </div>
-                   <p className="mt-3 text-[11px] text-white/60 font-semibold text-center">თქვენი ფასი და საკონტაქტო ნომერი გამოჩნდება აქ</p>
+                   <p className="mt-auto pt-3 text-[12px] text-white/90 font-black text-center tracking-wide">თქვენი ფასი და საკონტაქტო ნომერი გამოჩნდება ამ ფანჯარაში</p>
                  </div>
                   {/* 🌾 მარცვლეული */}
                   <div className="bg-white/[0.03] backdrop-blur-3xl rounded-[30px] border border-white/10 p-5 flex flex-col items-center group relative overflow-hidden transition-all hover:border-yellow-500/30 shadow-xl h-[360px]">
                     <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-yellow-500 to-transparent opacity-30" />
                     <h4 className="text-[10px] font-black text-yellow-500 uppercase tracking-[0.4em] mb-4 w-full text-left">🌾 მარცვლეული</h4>
                     <p className="w-full text-[10px] text-white/40 font-bold uppercase tracking-[0.2em] mb-3 leading-tight">საორიენტაციო ფასები · დააჭირე პროდუქტს რომ ნახო მიმღები ობიექტები</p>
-                    <div className="w-full space-y-2 overflow-y-auto custom-scrollbar pr-1">
+                    <div className="w-full flex-1 space-y-2 overflow-y-auto custom-scrollbar pr-1">
                       {agroData.filter(i => i.category === 'grain').map(item => (
                         <button key={item.id} onClick={() => setSelectedAgro(item)} className="w-full flex justify-between items-center bg-black/40 p-3 rounded-xl border border-white/5 transition-all group/item hover:bg-white/5">
                           <span className="text-xs font-black uppercase text-yellow-500 flex gap-2">{item.name}</span>
@@ -640,7 +640,7 @@ export default function HomePageClient({
                         </button>
                       ))}
                     </div>
-                    <p className="mt-4 text-[12px] text-yellow-200 font-black text-center tracking-wide">თქვენი ფასი და საკონტაქტო ნომერი გამოჩნდება აქ</p>
+                    <p className="mt-auto pt-3 text-[12px] text-yellow-200 font-black text-center tracking-wide">თქვენი ფასი და საკონტაქტო ნომერი გამოჩნდება ამ ფანჯარაში</p>
                   </div>
                  {/* 🏛️ ადმინისტრაციული განცხადება */}
                  <div className="mt-2 bg-gradient-to-br from-amber-900/40 via-black/50 to-amber-700/20 backdrop-blur-sm rounded-[24px] border border-amber-500/30 shadow-[0_0_20px_4px_rgba(255,191,0,0.1)] p-4 ring-1 ring-amber-400/20 relative">
@@ -703,7 +703,7 @@ export default function HomePageClient({
               <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-yellow-500 to-transparent opacity-30" />
               <h4 className="text-[10px] font-black text-yellow-500 uppercase tracking-[0.4em] mb-4 w-full text-left">🌾 მარცვლეული</h4>
               <p className="w-full text-[10px] text-white/40 font-bold uppercase tracking-[0.2em] mb-3 leading-tight">საორიენტაციო ფასები · დააჭირე პროდუქტს რომ ნახო მიმღები ობიექტები</p>
-              <div className="w-full space-y-2 overflow-y-auto custom-scrollbar pr-1">
+              <div className="w-full flex-1 space-y-2 overflow-y-auto custom-scrollbar pr-1">
                 {agroData.filter(i => i.category === 'grain').map(item => (
                   <button key={item.id} onClick={() => setSelectedAgro(item)} className="w-full flex justify-between items-center bg-black/40 p-3 rounded-xl border border-white/5 transition-all group/item hover:bg-white/5">
                     <span className="text-xs font-black uppercase text-yellow-500 flex gap-2">{item.name}</span>
@@ -711,7 +711,7 @@ export default function HomePageClient({
                   </button>
                 ))}
               </div>
-              <p className="mt-4 text-[12px] text-yellow-200 font-black text-center tracking-wide">თქვენი ფასი და საკონტაქტო ნომერი გამოჩნდება აქ</p>
+              <p className="mt-auto pt-3 text-[12px] text-yellow-200 font-black text-center tracking-wide">თქვენი ფასი და საკონტაქტო ნომერი გამოჩნდება ამ ფანჯარაში</p>
             </div>
             {/* 🏛️ ადმინისტრაციული განცხადებები */}
             <div className="flex flex-col gap-4 w-full">
