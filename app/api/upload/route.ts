@@ -25,14 +25,21 @@ export async function POST(request: NextRequest) {
     const userId = formData.get('userId') as string;
     const bucketName = (formData.get('bucket') as string) || 'announcements';
 
+    // Validate required env vars early to return clear errors
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+    if (!supabaseUrl || !supabaseServiceKey) {
+      console.error('Missing Supabase env vars', { supabaseUrl: !!supabaseUrl, supabaseServiceKey: !!supabaseServiceKey });
+      return NextResponse.json({ error: 'Server configuration error: Supabase env vars missing' }, { status: 500 });
+    }
+
     let supabaseAdmin;
     try {
-      supabaseAdmin = createClient(
-        process.env.NEXT_PUBLIC_SUPABASE_URL!,
-        process.env.SUPABASE_SERVICE_ROLE_KEY! // გვერდს ავლის RLS-ს
-      );
-    } catch (err) {
-      return NextResponse.json({ error: 'Failed to create Supabase client' }, { status: 500 });
+      supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey);
+    } catch (err: any) {
+      console.error('Failed to create Supabase client', err);
+      const message = err?.message || String(err);
+      return NextResponse.json({ error: `Failed to create Supabase client: ${message}` }, { status: 500 });
     }
 
     // Normalize category to expected Georgian labels used in admin panels
@@ -52,19 +59,33 @@ export async function POST(request: NextRequest) {
     // 1. ფოტოების ატვირთვა (თითოეულ ფაილს უნიკალური სახელი აქვს)
     const publicUrls: string[] = [];
     for (const file of files) {
-      const extension = file.name.split('.').pop() || 'jpg';
-      const uniqueName = `${Date.now()}-${Math.random().toString(36).slice(2)}.${extension}`;
+      try {
+        const extension = (file.name || '').split('.').pop() || 'jpg';
+        const safeNamePart = `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+        const uniqueName = `${safeNamePart}.${extension}`;
 
-      const { error: uploadError } = await supabaseAdmin.storage
-        .from(bucketName)
-        .upload(uniqueName, file, { upsert: true });
+        // Log filename/type for diagnostics
+        console.info('Uploading file', { name: file.name, type: file.type, size: file.size, bucket: bucketName, key: uniqueName });
 
-      if (uploadError) throw uploadError;
+        const { error: uploadError } = await supabaseAdmin.storage
+          .from(bucketName)
+          .upload(uniqueName, file as any, { upsert: true });
 
-      const { data: { publicUrl } } = supabaseAdmin.storage
-        .from(bucketName)
-        .getPublicUrl(uniqueName);
-      publicUrls.push(publicUrl);
+        if (uploadError) {
+          console.error('Upload error for file', { file: file.name, error: uploadError });
+          // Surface a clearer message to client
+          throw new Error(`Failed to upload file ${file.name}: ${uploadError.message || String(uploadError)}`);
+        }
+
+        const getResp = supabaseAdmin.storage
+          .from(bucketName)
+          .getPublicUrl(uniqueName);
+        const publicUrl = (getResp as any).data?.publicUrl;
+        publicUrls.push(publicUrl);
+      } catch (fileErr: any) {
+        console.error('File processing error', { error: fileErr?.message || String(fileErr) });
+        throw fileErr;
+      }
     }
 
     // თუ ეს არის მხოლოდ ფაილების ატვირთვა (title და category არ არის), დავაბრუნოთ URL-ები
@@ -107,7 +128,8 @@ export async function POST(request: NextRequest) {
     revalidatePath('/admin/moderation');
     return NextResponse.json({ success: true, data: dbData });
   } catch (error: any) {
-    console.error('Server Error:', error.message);
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    console.error('Server Error:', error?.stack || error?.message || String(error));
+    const message = error?.message || String(error) || 'უცნობი სერვერის შეცდომა';
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }
