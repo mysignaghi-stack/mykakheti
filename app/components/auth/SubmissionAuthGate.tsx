@@ -74,6 +74,32 @@ export default function SubmissionAuthGate({ redirectPath, children, heading }: 
     };
   }, [session]);
 
+  useEffect(() => {
+    let channel: BroadcastChannel | null = null;
+    const onMessage = (payload: MessageEvent) => {
+      if (!payload?.data || payload.data.type !== 'auth-complete') return;
+      refreshSession();
+    };
+
+    try {
+      channel = new BroadcastChannel('mykakheti-auth');
+      channel.onmessage = (event) => {
+        if (event?.data?.type === 'auth-complete') {
+          refreshSession();
+        }
+      };
+    } catch {
+      // BroadcastChannel may be unavailable in older browsers.
+    }
+
+    window.addEventListener('message', onMessage);
+
+    return () => {
+      window.removeEventListener('message', onMessage);
+      if (channel) channel.close();
+    };
+  }, [refreshSession]);
+
   const handleOAuth = async (provider: "google") => {
     setAuthError("");
     const { error } = await supabase.auth.signInWithOAuth({

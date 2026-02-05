@@ -33,5 +33,6 @@ export async function GET(request: Request) {
     await supabase.auth.exchangeCodeForSession(code);
   }
 
-  return NextResponse.redirect(new URL(redirect, requestUrl));
+  const target = new URL(`/auth/complete?redirect=${encodeURIComponent(redirect)}`, requestUrl);
+  return NextResponse.redirect(target);
 }
