@@ -1,9 +1,9 @@
 'use client';
 
-import { useEffect } from 'react';
+import { Suspense, useEffect } from 'react';
 import { useSearchParams } from 'next/navigation';
 
-export default function AuthCompletePage() {
+function AuthCompleteClient() {
   const params = useSearchParams();
   const redirect = params?.get('redirect') || '/';
 
@@ -49,5 +49,22 @@ export default function AuthCompletePage() {
         <div className="text-sm text-white/60">გადამისამართება მიმდინარეობს...</div>
       </div>
     </main>
+  );
+}
+
+export default function AuthCompletePage() {
+  return (
+    <Suspense
+      fallback={
+        <main className="min-h-screen bg-[#050510] flex items-center justify-center p-6 text-white">
+          <div className="text-center space-y-3">
+            <div className="text-2xl font-black uppercase italic text-amber-500">ავტორიზაცია მიმდინარეობს</div>
+            <div className="text-sm text-white/60">გთხოვთ დაელოდოთ...</div>
+          </div>
+        </main>
+      }
+    >
+      <AuthCompleteClient />
+    </Suspense>
   );
 }
