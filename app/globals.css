@@ -118,6 +118,26 @@ body {
   z-index: 5;
 }
 
+/* Fix for iOS / small screens: background-attachment: fixed causes layout/paint issues and overlaps */
+@media (max-width: 480px) {
+  .vineyard-section-wrapper {
+    background-attachment: scroll;
+    background-position: center top;
+  }
+
+  /* Reduce large horizontal paddings that can cause overlap on narrow devices */
+  .layout-shell {
+    padding-left: 0.75rem;
+    padding-right: 0.75rem;
+  }
+
+  /* Ensure fixed backgrounds and overlays don't create stacking issues */
+  .hero-main-overlay {
+    position: absolute;
+    z-index: 10;
+  }
+}
+
 /* ⚠️ Animations (თქვენი ძველი ანიმაციები) */
 @keyframes shake {
   0%, 100% { transform: translateX(0); }
