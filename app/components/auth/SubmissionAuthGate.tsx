@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, type ChangeEvent, type FormEvent, type ReactNode } from "react";
+import { useCallback, useEffect, useState, type ChangeEvent, type FormEvent, type ReactNode } from "react";
 import type { Session } from "@supabase/supabase-js";
 import { supabase } from "../../lib/supabase";
 
@@ -19,23 +19,60 @@ export default function SubmissionAuthGate({ redirectPath, children, heading }: 
   const [registerLoading, setRegisterLoading] = useState(false);
   const [registerData, setRegisterData] = useState({ firstName: "", lastName: "", email: "", phone: "" });
 
+  const refreshSession = useCallback(async () => {
+    const { data } = await supabase.auth.getSession();
+    setSession(data.session ?? null);
+    setLoadingSession(false);
+  }, []);
+
   useEffect(() => {
-    const loadSession = async () => {
-      const { data } = await supabase.auth.getSession();
-      setSession(data.session ?? null);
-      setLoadingSession(false);
-    };
+    refreshSession();
 
     const { data: listener } = supabase.auth.onAuthStateChange((_event, newSession) => {
-      setSession(newSession);
+      setSession(newSession ?? null);
+      setLoadingSession(false);
     });
 
-    loadSession();
+    const handleVisibility = () => {
+      if (document.visibilityState === 'visible') {
+        refreshSession();
+      }
+    };
+
+    window.addEventListener('focus', refreshSession);
+    document.addEventListener('visibilitychange', handleVisibility);
 
     return () => {
       listener?.subscription.unsubscribe();
+      window.removeEventListener('focus', refreshSession);
+      document.removeEventListener('visibilitychange', handleVisibility);
     };
-  }, []);
+  }, [refreshSession]);
+
+  useEffect(() => {
+    if (session) return;
+    let active = true;
+    let attempts = 0;
+    const maxAttempts = 20;
+    const interval = setInterval(async () => {
+      if (!active) return;
+      attempts += 1;
+      const { data } = await supabase.auth.getSession();
+      if (data.session) {
+        setSession(data.session);
+        setLoadingSession(false);
+        clearInterval(interval);
+      } else if (attempts >= maxAttempts) {
+        setLoadingSession(false);
+        clearInterval(interval);
+      }
+    }, 1000);
+
+    return () => {
+      active = false;
+      clearInterval(interval);
+    };
+  }, [session]);
 
   const handleOAuth = async (provider: "google") => {
     setAuthError("");

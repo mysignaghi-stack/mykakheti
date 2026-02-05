@@ -45,7 +45,7 @@ export default function KakhetianSquare({ isAdmin, controlToken }: KakhetianSqua
   
   const [activeTab, setActiveTab] = useState(0);
   const [showEmojis, setShowEmojis] = useState(false);
-  const [isSoundOn, setIsSoundOn] = useState(false);
+  const [isSoundOn, setIsSoundOn] = useState(true);
   const [audioReady, setAudioReady] = useState(false);
   
   const [isUploading, setIsUploading] = useState(false);

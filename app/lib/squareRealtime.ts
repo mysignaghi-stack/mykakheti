@@ -81,9 +81,15 @@ export function onMessageDelete(fn: (payload: Payload) => void) {
 }
 
 export function broadcastInsert(payload: Payload) {
+  for (const l of Array.from(listenersInsert)) {
+    try { l(payload); } catch (err) { console.error('listener insert error', err); }
+  }
   try { bc?.postMessage({ type: 'INSERT', payload }); } catch (e) { /* ignore */ }
 }
 
 export function broadcastDelete(payload: Payload) {
+  for (const l of Array.from(listenersDelete)) {
+    try { l(payload); } catch (err) { console.error('listener delete error', err); }
+  }
   try { bc?.postMessage({ type: 'DELETE', payload }); } catch (e) { /* ignore */ }
 }

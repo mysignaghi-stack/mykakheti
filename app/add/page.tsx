@@ -1,5 +1,5 @@
 'use client';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import type { ChangeEvent, FormEvent } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -40,6 +40,11 @@ export default function AddPage() {
   });
   const isAuthenticated = Boolean(session);
 
+  const refreshSession = useCallback(async () => {
+    const { data } = await supabase.auth.getSession();
+    setSession(data.session ?? null);
+  }, []);
+
   const getErrorMessage = (err: unknown) => {
     if (err instanceof Error) return err.message;
     if (typeof err === 'string') return err;
@@ -62,21 +67,50 @@ export default function AddPage() {
   }, []);
 
   useEffect(() => {
-    const loadSession = async () => {
-      const { data } = await supabase.auth.getSession();
-      setSession(data.session ?? null);
-    };
-    loadSession();
+    refreshSession();
 
-    // Listen for auth state changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-      setSession(session ?? null);
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, nextSession) => {
+      setSession(nextSession ?? null);
     });
+
+    const handleVisibility = () => {
+      if (document.visibilityState === 'visible') {
+        refreshSession();
+      }
+    };
+
+    window.addEventListener('focus', refreshSession);
+    document.addEventListener('visibilitychange', handleVisibility);
 
     return () => {
       subscription.unsubscribe();
+      window.removeEventListener('focus', refreshSession);
+      document.removeEventListener('visibilitychange', handleVisibility);
     };
-  }, []);
+  }, [refreshSession]);
+
+  useEffect(() => {
+    if (session) return;
+    let active = true;
+    let attempts = 0;
+    const maxAttempts = 20;
+    const interval = setInterval(async () => {
+      if (!active) return;
+      attempts += 1;
+      const { data } = await supabase.auth.getSession();
+      if (data.session) {
+        setSession(data.session);
+        clearInterval(interval);
+      } else if (attempts >= maxAttempts) {
+        clearInterval(interval);
+      }
+    }, 1000);
+
+    return () => {
+      active = false;
+      clearInterval(interval);
+    };
+  }, [session]);
 
   const handleOAuth = async (provider: 'google') => {
     setAuthError('');
