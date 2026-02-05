@@ -138,6 +138,43 @@ body {
   }
 }
 
+/* Chat popup safe-area and responsive positioning */
+.chat-popup {
+  position: fixed;
+  bottom: calc(env(safe-area-inset-bottom, 16px) + 16px);
+  right: calc(env(safe-area-inset-right, 16px) + 16px);
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 1rem;
+  z-index: 9999;
+}
+
+.chat-popup .popup-window {
+  /* ensure popup fits in viewport */
+  width: 340px;
+  max-width: calc(100vw - 2rem);
+  height: 500px;
+  max-height: calc(100vh - 4rem);
+}
+
+@media (max-width: 420px) {
+  .chat-popup {
+    /* center the popup horizontally on narrow viewports */
+    left: 50%;
+    right: auto;
+    transform: translateX(-50%);
+    align-items: center;
+    bottom: calc(env(safe-area-inset-bottom, 8px) + 8px);
+  }
+  .chat-popup .popup-window {
+    width: calc(100vw - 2rem);
+    height: calc(100vh - 3.5rem);
+    max-height: calc(100vh - 3.5rem);
+    border-radius: 18px;
+  }
+}
+
 /* Chat popup responsive fixes (iPhone safe-area + centering on narrow screens) */
 .chat-popup {
   position: fixed;
