@@ -205,3 +205,50 @@ html, body, #__next {
   padding-right: 1rem;
   overflow-x: hidden;
 }
+
+/* Prevent text overlaps and force safe wrapping on very small screens */
+.no-overlap, p, li, span, a, h1, h2, h3, h4, h5, h6 {
+  word-break: break-word;
+  overflow-wrap: anywhere;
+  hyphens: auto;
+}
+
+/* Global responsive font scaling to improve fit on smaller devices */
+html { font-size: 16px; }
+@media (max-width: 640px) {
+  html { font-size: 15px; }
+}
+@media (max-width: 420px) {
+  html { font-size: 14px; }
+}
+
+/* Z-index layering guidance: keep standard ranges to avoid accidental overlaps */
+:root {
+  --z-nav: 100;
+  --z-overlay: 50;
+  --z-modal: 200;
+}
+
+nav {
+  z-index: var(--z-nav) !important;
+}
+.hero-main-overlay {
+  z-index: var(--z-overlay) !important;
+}
+.modal, .modal-backdrop {
+  z-index: var(--z-modal) !important;
+}
+
+/* Ensure any sticky/top fixed elements reserve content space to avoid overlap */
+/* Apply to the main layout container if a fixed/sticky nav is present */
+@media (max-width: 640px) {
+  .layout-shell, main {
+    padding-top: 0.5rem; /* reduce default top padding on small screens */
+  }
+}
+
+@media (min-width: 641px) {
+  .layout-shell, main {
+    padding-top: 1rem;
+  }
+}
