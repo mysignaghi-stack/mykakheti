@@ -60,7 +60,9 @@ export async function POST(request: NextRequest) {
     const publicUrls: string[] = [];
     for (const file of files) {
       try {
-        const extension = (file.name || '').split('.').pop() || 'jpg';
+        // Sanitize extension and filename to avoid strange characters from iOS
+        const rawExt = (file.name || '').split('.').pop() || '';
+        const extension = (rawExt || file.type.split('/').pop() || 'jpg').toLowerCase().replace(/[^a-z0-9]/g, '') || 'jpg';
         const safeNamePart = `${Date.now()}-${Math.random().toString(36).slice(2)}`;
         const uniqueName = `${safeNamePart}.${extension}`;
 
@@ -69,7 +71,7 @@ export async function POST(request: NextRequest) {
 
         const { error: uploadError } = await supabaseAdmin.storage
           .from(bucketName)
-          .upload(uniqueName, file as any, { upsert: true });
+          .upload(uniqueName, file as any, { upsert: true, contentType: file.type || undefined });
 
         if (uploadError) {
           console.error('Upload error for file', { file: file.name, error: uploadError });
