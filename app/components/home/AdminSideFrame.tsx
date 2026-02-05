@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import Image from 'next/image';
 import imageCompression from 'browser-image-compression';
 import { Navigation, Pagination, EffectFade, Autoplay } from 'swiper/modules';
@@ -41,12 +42,17 @@ export default function AdminSideFrame({ post, position, isAdmin, onRefresh }: A
   const [loading, setLoading] = useState(false);
   const [showFullContent, setShowFullContent] = useState(false);
   const [lightbox, setLightbox] = useState<{ open: boolean; media: string[]; currentIndex: number; isVideo: boolean } | null>(null);
+  const [isMounted, setIsMounted] = useState(false);
 
   // Reset states when the displayed admin post changes
   useEffect(() => {
     setLightbox(null);
     setShowFullContent(false);
   }, [post]);
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
 
   const resetForm = () => {
     setFormData({ title: '', content: '', category: '', priority: 0, link: '', files: [], mediaType: null, videoBackground: false });
@@ -75,7 +81,6 @@ export default function AdminSideFrame({ post, position, isAdmin, onRefresh }: A
 
     setLoading(true);
     try {
-      // @ts-ignore: Supabase types might be slightly out of sync regarding arrays vs nulls
       const mediaUrls: string[] = editingPost?.media_urls ? [...editingPost.media_urls] : [];
       let mediaType = editingPost?.media_type || null;
 
@@ -244,36 +249,44 @@ export default function AdminSideFrame({ post, position, isAdmin, onRefresh }: A
     }, [src]);
 
     return (
-      <video
-        ref={videoRef}
-        src={src}
-        autoPlay
-        muted
-        loop
-        playsInline
-        preload="auto"
+      <div
+        className={`relative rounded-[20px] overflow-hidden ${className || ''} ${onClick ? 'cursor-pointer' : ''}`}
         onClick={onClick}
-        className={className}
-        style={{ transform: 'translateZ(0)' }}
-      />
+      >
+        <video
+          ref={videoRef}
+          src={src}
+          autoPlay
+          muted
+          loop
+          playsInline
+          preload="auto"
+          className="w-full h-full object-contain pointer-events-none"
+          style={{ transform: 'translateZ(0)' }}
+        />
+      </div>
     );
   };
 
   const videoWrapperClassName = postVideoBackground
-    ? 'relative w-full h-[200px] flex items-center justify-center overflow-hidden rounded-[20px]'
-    : 'relative w-full h-[200px] p-0.5 flex items-center justify-center overflow-hidden rounded-[20px]';
+    ? 'relative w-full h-[180px] md:h-[200px] flex items-center justify-center overflow-hidden rounded-[20px]'
+    : 'relative w-full h-[180px] md:h-[200px] p-0.5 flex items-center justify-center overflow-hidden rounded-[20px]';
   const videoOverlayClassName = postVideoBackground
-    ? 'absolute inset-0 bg-black/20 rounded-[20px]'
-    : 'absolute inset-0 bg-gradient-to-br from-amber-600/20 via-yellow-400/10 to-amber-600/20 rounded-[20px] backdrop-blur-lg shadow-[inset_0_2px_10px_rgba(0,0,0,0.5)]';
+    ? 'absolute inset-0 bg-black/20 rounded-[20px] pointer-events-none'
+    : 'absolute inset-0 bg-gradient-to-br from-amber-600/20 via-yellow-400/10 to-amber-600/20 rounded-[20px] backdrop-blur-lg shadow-[inset_0_2px_10px_rgba(0,0,0,0.5)] pointer-events-none';
   const videoFrameClassName = postVideoBackground
-    ? 'relative z-10 w-full h-full object-cover rounded-[20px]'
+    ? 'relative z-10 w-full h-full object-contain rounded-[20px]'
     : 'relative z-10 w-full h-full object-contain rounded-[20px] shadow-2xl shadow-indigo-900/40 border-2 border-amber-500/40 cursor-pointer hover:border-amber-500/60 transition-all duration-300';
   const galleryVideoFrameClassName = postVideoBackground
-    ? 'relative z-10 w-full h-32 object-cover rounded-[20px]'
+    ? 'relative z-10 w-full h-32 object-contain rounded-[20px]'
     : 'relative z-10 w-full h-32 object-contain rounded-[20px] shadow-2xl shadow-indigo-900/50 border-2 border-amber-500/40 hover:border-amber-500/60 transition-all duration-300';
 
   // Fixed height based on position
-  const heightClass = position === 'left_top' || position === 'right_top' ? 'h-[400px]' : 'h-auto';
+  const heightClass = position === 'left_top' || position === 'right_top' ? 'min-h-[320px]' : 'h-auto';
+
+  const openLightbox = (url: string, isVideo: boolean) => {
+    setLightbox({ open: true, media: [url], currentIndex: 0, isVideo });
+  };
 
   return (
     <div className={`w-full ${heightClass} bg-gradient-to-br from-slate-900/80 via-black/60 to-slate-800/80 backdrop-blur-xl rounded-[32px] border-2 border-amber-500/30 shadow-[inset_0_0_30px_rgba(245,158,11,0.15),0_20px_40px_-10px_rgba(0,0,0,0.5)] p-5 ring-1 ring-white/10 relative animate-in fade-in duration-700`}>
@@ -300,13 +313,24 @@ export default function AdminSideFrame({ post, position, isAdmin, onRefresh }: A
 
       {/* Media Display - Moved to top */}
       {post && ((post.media_urls && post.media_urls.length > 0) || (post as any).media_url) ? (
-        <div className="mb-1 mt-4">
+        <div className="mb-1 mt-4 rounded-[20px] overflow-hidden">
           {post.media_type === 'video' ? (
-            <div className={videoWrapperClassName}>
+            <div
+              className={`${videoWrapperClassName} rounded-[20px] overflow-hidden cursor-pointer`}
+              onClick={() => openLightbox((post.media_urls?.[0] || (post as any).media_url)!, true)}
+              onClickCapture={() => openLightbox((post.media_urls?.[0] || (post as any).media_url)!, true)}
+              role="button"
+              tabIndex={0}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault();
+                  openLightbox((post.media_urls?.[0] || (post as any).media_url)!, true);
+                }
+              }}
+            >
               <div className={videoOverlayClassName}></div>
               <InlineVideo
                 src={(post.media_urls?.[0] || (post as any).media_url)!}
-                onClick={() => setLightbox({ open: true, media: [(post.media_urls?.[0] || (post as any).media_url)!], currentIndex: 0, isVideo: true })}
                 className={videoFrameClassName}
               />
             </div>
@@ -321,16 +345,27 @@ export default function AdminSideFrame({ post, position, isAdmin, onRefresh }: A
                 effect="fade"
                 fadeEffect={{ crossFade: true }}
                 autoplay={{ delay: 3000, disableOnInteraction: false }}
-                className="w-full h-32 rounded-[20px] shadow-xl backdrop-blur-lg"
+                className="w-full h-32 rounded-[20px] shadow-xl backdrop-blur-lg overflow-hidden"
               >
                 {(post.media_urls || [(post as any).media_url]).filter(Boolean).map((url: string, idx: number) => (
-                  <SwiperSlide key={idx}>
-                    <div className="relative w-full h-full flex items-center justify-center">
+                  <SwiperSlide key={idx} className="rounded-[20px] overflow-hidden">
+                    <div
+                      className="relative w-full h-full flex items-center justify-center rounded-[20px] overflow-hidden cursor-pointer"
+                      onClick={() => openLightbox(url, isVideoUrl(url))}
+                      onClickCapture={() => openLightbox(url, isVideoUrl(url))}
+                      role="button"
+                      tabIndex={0}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' || e.key === ' ') {
+                          e.preventDefault();
+                          openLightbox(url, isVideoUrl(url));
+                        }
+                      }}
+                    >
                       <div className={videoOverlayClassName}></div>
                       {isVideoUrl(url) ? (
                         <InlineVideo
                           src={url}
-                          onClick={() => setLightbox({ open: true, media: [url], currentIndex: 0, isVideo: true })}
                           className={galleryVideoFrameClassName}
                         />
                       ) : (
@@ -348,9 +383,13 @@ export default function AdminSideFrame({ post, position, isAdmin, onRefresh }: A
               </Swiper>
             </div>
           ) : (
-             <div className="relative w-full h-32 cursor-pointer" onClick={() => setLightbox({ open: true, media: [(post.media_urls?.[0] || (post as any).media_url)!], currentIndex: 0, isVideo: (post.media_urls?.[0] || (post as any).media_url)!.includes('.mp4') || (post.media_urls?.[0] || (post as any).media_url)!.includes('.mov') || (post.media_urls?.[0] || (post as any).media_url)!.includes('.avi') || (post.media_urls?.[0] || (post as any).media_url)!.includes('.webm') })}>
+             <div
+               className="relative w-full h-32 cursor-pointer rounded-[20px] overflow-hidden"
+               onClick={() => openLightbox((post.media_urls?.[0] || (post as any).media_url)!, isVideoUrl((post.media_urls?.[0] || (post as any).media_url)!))}
+               onClickCapture={() => openLightbox((post.media_urls?.[0] || (post as any).media_url)!, isVideoUrl((post.media_urls?.[0] || (post as any).media_url)!))}
+             >
               {isVideoUrl((post.media_urls?.[0] || (post as any).media_url)!) ? (
-                <div className={videoWrapperClassName.replace('h-[200px]', 'h-full')}>
+                <div className={`${videoWrapperClassName.replace('h-[200px]', 'h-full')} rounded-[20px] overflow-hidden`}>
                   <div className={videoOverlayClassName}></div>
                   <InlineVideo
                     src={(post.media_urls?.[0] || (post as any).media_url)!}
@@ -537,35 +576,51 @@ export default function AdminSideFrame({ post, position, isAdmin, onRefresh }: A
       )}
       
       {/* Lightbox Modal */}
-      {lightbox?.open && (
-        <div className="fixed inset-0 bg-black/90 z-50 flex items-center justify-center p-4" onClick={() => setLightbox(null)}>
-          <div className="relative max-w-4xl max-h-full" onClick={(e) => e.stopPropagation()}>
-            {lightbox.isVideo ? (
-              <video
-                src={lightbox.media[lightbox.currentIndex]}
-                controls
-                playsInline
-                preload="metadata"
-                className="max-w-full max-h-full object-contain rounded-xl shadow-2xl"
-              />
-            ) : (
-              <Image
-                src={lightbox.media[lightbox.currentIndex]}
-                alt=""
-                width={800}
-                height={600}
-                className="max-w-full max-h-full object-contain rounded-xl shadow-2xl"
-              />
-            )}
-            <button
+      {isMounted && lightbox?.open
+        ? createPortal(
+            <div
+              className="fixed inset-0 z-[2000] flex items-center justify-center bg-black/95 backdrop-blur-md p-4 sm:p-6 animate-in fade-in duration-300 text-left"
               onClick={() => setLightbox(null)}
-              className="absolute top-4 right-4 text-white text-2xl font-bold bg-black/50 rounded-full w-10 h-10 flex items-center justify-center hover:bg-black/70"
+              role="dialog"
+              aria-modal="true"
+              aria-label="მედია ნახვა"
             >
-              ✕
-            </button>
-          </div>
-        </div>
-      )}
+              <div
+                className="bg-[#0a0a1f] p-8 sm:p-10 rounded-[40px] sm:rounded-[50px] border border-white/10 w-full max-w-4xl shadow-2xl relative text-center"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <button
+                  onClick={() => setLightbox(null)}
+                  className="absolute top-6 right-6 sm:top-8 sm:right-8 text-white/30 hover:text-white transition-colors text-xl sm:text-2xl font-black"
+                  aria-label="დახურვა"
+                >
+                  ✕
+                </button>
+                <div className="rounded-[24px] overflow-hidden border border-white/10 bg-black/40 flex items-center justify-center">
+                  {lightbox.isVideo ? (
+                    <video
+                        src={lightbox.media[lightbox.currentIndex]}
+                        controls
+                        playsInline
+                        preload="auto"
+                        autoPlay
+                        className="w-full max-h-[70vh] object-contain"
+                      />
+                  ) : (
+                    <Image
+                      src={lightbox.media[lightbox.currentIndex]}
+                      alt=""
+                      width={1200}
+                      height={900}
+                      className="w-full max-h-[70vh] object-contain"
+                    />
+                  )}
+                </div>
+              </div>
+            </div>,
+            document.body
+          )
+        : null}
     </div>
   );
 }

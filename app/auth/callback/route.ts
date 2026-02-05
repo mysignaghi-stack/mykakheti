@@ -6,7 +6,9 @@ import type { Database } from '../../../types/supabase';
 export async function GET(request: Request) {
   const requestUrl = new URL(request.url);
   const code = requestUrl.searchParams.get('code');
-  const redirect = requestUrl.searchParams.get('redirect') || '/';
+  const cookieStore = await cookies();
+  const cookieRedirect = cookieStore.get('auth_redirect')?.value;
+  const redirect = requestUrl.searchParams.get('redirect') || (cookieRedirect ? decodeURIComponent(cookieRedirect) : '/') ;
 
   if (code) {
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -15,7 +17,6 @@ export async function GET(request: Request) {
       throw new Error('Supabase URL and Key are missing in .env.local file!');
     }
 
-    const cookieStore = await cookies();
     const supabase = createServerClient<Database>(supabaseUrl, supabaseKey, {
       cookies: {
         get(name: string) {
@@ -31,6 +32,10 @@ export async function GET(request: Request) {
     });
 
     await supabase.auth.exchangeCodeForSession(code);
+  }
+
+  if (cookieRedirect) {
+    cookieStore.set({ name: 'auth_redirect', value: '', path: '/', maxAge: 0 });
   }
 
   const target = new URL(`/auth/complete?redirect=${encodeURIComponent(redirect)}`, requestUrl);

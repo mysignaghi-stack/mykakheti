@@ -40,6 +40,14 @@ export default function AddPage() {
   });
   const isAuthenticated = Boolean(session);
 
+  const setAuthRedirectCookie = useCallback((target: string) => {
+    try {
+      document.cookie = `auth_redirect=${encodeURIComponent(target)}; path=/; max-age=600`;
+    } catch {
+      // ignore
+    }
+  }, []);
+
   const refreshSession = useCallback(async () => {
     const { data } = await supabase.auth.getSession();
     setSession(data.session ?? null);
@@ -140,6 +148,7 @@ export default function AddPage() {
 
   const handleOAuth = async (provider: 'google') => {
     setAuthError('');
+    setAuthRedirectCookie('/add');
     const { error } = await supabase.auth.signInWithOAuth({
       provider,
       options: { redirectTo: `${window.location.origin}/auth/callback?redirect=/add` },
@@ -164,6 +173,7 @@ export default function AddPage() {
     }
 
     setRegisterLoading(true);
+    setAuthRedirectCookie('/add');
     try {
       const { error } = await supabase.auth.signInWithOtp({
         email: registerData.email,

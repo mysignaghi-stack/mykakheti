@@ -25,6 +25,14 @@ export default function SubmissionAuthGate({ redirectPath, children, heading }: 
     setLoadingSession(false);
   }, []);
 
+  const setAuthRedirectCookie = useCallback((target: string) => {
+    try {
+      document.cookie = `auth_redirect=${encodeURIComponent(target)}; path=/; max-age=600`;
+    } catch {
+      // ignore
+    }
+  }, []);
+
   useEffect(() => {
     refreshSession();
 
@@ -102,6 +110,7 @@ export default function SubmissionAuthGate({ redirectPath, children, heading }: 
 
   const handleOAuth = async (provider: "google") => {
     setAuthError("");
+    setAuthRedirectCookie(redirectPath);
     const { error } = await supabase.auth.signInWithOAuth({
       provider,
       options: { redirectTo: `${window.location.origin}/auth/callback?redirect=${redirectPath}` },
@@ -120,6 +129,7 @@ export default function SubmissionAuthGate({ redirectPath, children, heading }: 
     }
 
     setRegisterLoading(true);
+    setAuthRedirectCookie(redirectPath);
     try {
       const { error } = await supabase.auth.signInWithOtp({
         email: registerData.email,
