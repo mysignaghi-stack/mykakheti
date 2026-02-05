@@ -261,8 +261,8 @@ export default function AdminSideFrame({ post, position, isAdmin, onRefresh }: A
           loop
           playsInline
           preload="auto"
-          className="w-full h-full object-contain pointer-events-none"
-          style={{ transform: 'translateZ(0)' }}
+          className="w-full h-full object-cover pointer-events-none rounded-[20px] block"
+          style={{ transform: 'translateZ(0)', borderRadius: '20px' }}
         />
       </div>
     );
@@ -270,16 +270,16 @@ export default function AdminSideFrame({ post, position, isAdmin, onRefresh }: A
 
   const videoWrapperClassName = postVideoBackground
     ? 'relative w-full h-[180px] md:h-[200px] flex items-center justify-center overflow-hidden rounded-[20px]'
-    : 'relative w-full h-[180px] md:h-[200px] p-0.5 flex items-center justify-center overflow-hidden rounded-[20px]';
+    : 'relative w-full h-[180px] md:h-[200px] flex items-center justify-center overflow-hidden rounded-[20px]';
   const videoOverlayClassName = postVideoBackground
     ? 'absolute inset-0 bg-black/20 rounded-[20px] pointer-events-none'
     : 'absolute inset-0 bg-gradient-to-br from-amber-600/20 via-yellow-400/10 to-amber-600/20 rounded-[20px] backdrop-blur-lg shadow-[inset_0_2px_10px_rgba(0,0,0,0.5)] pointer-events-none';
   const videoFrameClassName = postVideoBackground
-    ? 'relative z-10 w-full h-full object-contain rounded-[20px]'
-    : 'relative z-10 w-full h-full object-contain rounded-[20px] shadow-2xl shadow-indigo-900/40 border-2 border-amber-500/40 cursor-pointer hover:border-amber-500/60 transition-all duration-300';
+    ? 'relative z-10 w-full h-full object-cover rounded-[20px]'
+    : 'relative z-10 w-full h-full object-cover rounded-[20px] shadow-2xl shadow-indigo-900/40 border-2 border-amber-500/40 cursor-pointer hover:border-amber-500/60 transition-all duration-300';
   const galleryVideoFrameClassName = postVideoBackground
-    ? 'relative z-10 w-full h-32 object-contain rounded-[20px]'
-    : 'relative z-10 w-full h-32 object-contain rounded-[20px] shadow-2xl shadow-indigo-900/50 border-2 border-amber-500/40 hover:border-amber-500/60 transition-all duration-300';
+    ? 'relative z-10 w-full h-32 object-cover rounded-[20px]'
+    : 'relative z-10 w-full h-32 object-cover rounded-[20px] shadow-2xl shadow-indigo-900/50 border-2 border-amber-500/40 hover:border-amber-500/60 transition-all duration-300';
 
   // Fixed height based on position
   const heightClass = position === 'left_top' || position === 'right_top' ? 'min-h-[320px]' : 'h-auto';
@@ -290,12 +290,7 @@ export default function AdminSideFrame({ post, position, isAdmin, onRefresh }: A
 
   return (
     <div className={`w-full ${heightClass} bg-gradient-to-br from-slate-900/80 via-black/60 to-slate-800/80 backdrop-blur-xl rounded-[32px] border-2 border-amber-500/30 shadow-[inset_0_0_30px_rgba(245,158,11,0.15),0_20px_40px_-10px_rgba(0,0,0,0.5)] p-5 ring-1 ring-white/10 relative animate-in fade-in duration-700`}>
-      {/* Badge */}
-      <div className="absolute top-1 left-4 z-10">
-        <div className="bg-gradient-to-r from-amber-500 to-yellow-500 text-black font-black text-sm px-4 py-1 rounded-full shadow-lg border-2 border-amber-300 animate-pulse">
-          🏛️ {post?.badge_text || 'ოფიციალური განცხადება'}
-        </div>
-      </div>
+      {/* Badge removed per request */}
       {/* Header with controls */}
       <div className="flex justify-end items-center mb-2 pt-2">
         <div className="flex gap-2">
@@ -313,100 +308,58 @@ export default function AdminSideFrame({ post, position, isAdmin, onRefresh }: A
 
       {/* Media Display - Moved to top */}
       {post && ((post.media_urls && post.media_urls.length > 0) || (post as any).media_url) ? (
-        <div className="mb-1 mt-4 rounded-[20px] overflow-hidden">
-          {post.media_type === 'video' ? (
-            <div
-              className={`${videoWrapperClassName} rounded-[20px] overflow-hidden cursor-pointer`}
-              onClick={() => openLightbox((post.media_urls?.[0] || (post as any).media_url)!, true)}
-              onClickCapture={() => openLightbox((post.media_urls?.[0] || (post as any).media_url)!, true)}
-              role="button"
-              tabIndex={0}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter' || e.key === ' ') {
-                  e.preventDefault();
-                  openLightbox((post.media_urls?.[0] || (post as any).media_url)!, true);
-                }
-              }}
-            >
-              <div className={videoOverlayClassName}></div>
-              <InlineVideo
-                src={(post.media_urls?.[0] || (post as any).media_url)!}
-                className={videoFrameClassName}
-              />
-            </div>
-          ) : post.media_type === 'gallery' ? (
-             <div className="mt-1">
-              <Swiper
-                modules={[Navigation, Pagination, EffectFade, Autoplay]}
-                spaceBetween={10}
-                slidesPerView={1}
-                navigation
-                pagination={{ clickable: true }}
-                effect="fade"
-                fadeEffect={{ crossFade: true }}
-                autoplay={{ delay: 3000, disableOnInteraction: false }}
-                className="w-full h-32 rounded-[20px] shadow-xl backdrop-blur-lg overflow-hidden"
-              >
-                {(post.media_urls || [(post as any).media_url]).filter(Boolean).map((url: string, idx: number) => (
-                  <SwiperSlide key={idx} className="rounded-[20px] overflow-hidden">
-                    <div
-                      className="relative w-full h-full flex items-center justify-center rounded-[20px] overflow-hidden cursor-pointer"
-                      onClick={() => openLightbox(url, isVideoUrl(url))}
-                      onClickCapture={() => openLightbox(url, isVideoUrl(url))}
-                      role="button"
-                      tabIndex={0}
-                      onKeyDown={(e) => {
-                        if (e.key === 'Enter' || e.key === ' ') {
-                          e.preventDefault();
-                          openLightbox(url, isVideoUrl(url));
-                        }
-                      }}
-                    >
-                      <div className={videoOverlayClassName}></div>
-                      {isVideoUrl(url) ? (
-                        <InlineVideo
-                          src={url}
-                          className={galleryVideoFrameClassName}
-                        />
-                      ) : (
-                        <Image
-                          src={url!}
-                          alt=""
-                          fill
-                          sizes="(max-width: 768px) 100vw, 800px"
-                          className="object-contain rounded-[20px] shadow-xl border-2 border-amber-500/40"
-                        />
-                      )}
-                    </div>
-                  </SwiperSlide>
-                ))}
-              </Swiper>
-            </div>
-          ) : (
-             <div
-               className="relative w-full h-32 cursor-pointer rounded-[20px] overflow-hidden"
-               onClick={() => openLightbox((post.media_urls?.[0] || (post as any).media_url)!, isVideoUrl((post.media_urls?.[0] || (post as any).media_url)!))}
-               onClickCapture={() => openLightbox((post.media_urls?.[0] || (post as any).media_url)!, isVideoUrl((post.media_urls?.[0] || (post as any).media_url)!))}
-             >
-              {isVideoUrl((post.media_urls?.[0] || (post as any).media_url)!) ? (
-                <div className={`${videoWrapperClassName.replace('h-[200px]', 'h-full')} rounded-[20px] overflow-hidden`}>
-                  <div className={videoOverlayClassName}></div>
-                  <InlineVideo
-                    src={(post.media_urls?.[0] || (post as any).media_url)!}
-                    className={videoFrameClassName.replace('cursor-pointer hover:border-amber-500/60 ', '')}
-                  />
+        <div className="mb-4 mt-4">
+          {/* Decorative rounded frame with gradient border and inner dark panel */}
+          <div className="relative w-full aspect-[16/9] rounded-[26px] p-[2px] bg-gradient-to-br from-amber-500/20 via-pink-400/10 to-violet-500/10 overflow-hidden">
+            <div className="absolute inset-0 bg-[#06060b] rounded-[22px] overflow-hidden flex items-center justify-center">
+              {/* media area */}
+              {post.media_type === 'video' ? (
+                <div
+                  role="button"
+                  tabIndex={0}
+                  onClick={() => openLightbox((post.media_urls?.[0] || (post as any).media_url)!, true)}
+                  onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openLightbox((post.media_urls?.[0] || (post as any).media_url)!, true); } }}
+                  className="w-full h-full rounded-[20px] overflow-hidden relative"
+                >
+                  <video src={(post.media_urls?.[0] || (post as any).media_url)!} className="w-full h-full object-cover" playsInline autoPlay muted loop />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent pointer-events-none" />
+                </div>
+              ) : post.media_type === 'gallery' ? (
+                <div className="w-full h-full">
+                  <Swiper
+                    modules={[Navigation, Pagination, EffectFade, Autoplay]}
+                    spaceBetween={10}
+                    slidesPerView={1}
+                    navigation
+                    pagination={{ clickable: true }}
+                    effect="fade"
+                    fadeEffect={{ crossFade: true }}
+                    autoplay={{ delay: 3000, disableOnInteraction: false }}
+                    className="w-full h-full rounded-[20px] overflow-hidden"
+                  >
+                    {(post.media_urls || [(post as any).media_url]).filter(Boolean).map((url: string, idx: number) => (
+                      <SwiperSlide key={idx} className="w-full h-full rounded-[20px] overflow-hidden">
+                        {isVideoUrl(url) ? (
+                          <video src={url} className="w-full h-full object-cover" playsInline autoPlay muted loop />
+                        ) : (
+                          <Image src={url!} alt="" fill sizes="(max-width: 768px) 100vw, 800px" className="object-cover" />
+                        )}
+                      </SwiperSlide>
+                    ))}
+                  </Swiper>
                 </div>
               ) : (
-                <Image
-                  src={(post.media_urls?.[0] || (post as any).media_url)!}
-                  alt=""
-                  fill
-                  sizes="(max-width: 768px) 100vw, 800px"
-                  className="object-contain rounded-[20px] shadow-xl border-2 border-amber-500/40"
-                />
+                <div className="w-full h-full rounded-[20px] overflow-hidden relative" onClick={() => openLightbox((post.media_urls?.[0] || (post as any).media_url)!, isVideoUrl((post.media_urls?.[0] || (post as any).media_url)!))}>
+                  {isVideoUrl((post.media_urls?.[0] || (post as any).media_url)!) ? (
+                    <video src={(post.media_urls?.[0] || (post as any).media_url)!} className="w-full h-full object-cover" playsInline autoPlay muted loop />
+                  ) : (
+                    <Image src={(post.media_urls?.[0] || (post as any).media_url)!} alt="" fill sizes="(max-width: 768px) 100vw, 800px" className="object-cover" />
+                  )}
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent pointer-events-none" />
+                </div>
               )}
             </div>
-          )}
+          </div>
         </div>
       ) : null}
 
@@ -604,7 +557,7 @@ export default function AdminSideFrame({ post, position, isAdmin, onRefresh }: A
                         playsInline
                         preload="auto"
                         autoPlay
-                        className="w-full max-h-[70vh] object-contain"
+                        className="w-full max-h-[70vh] object-contain rounded-[24px]"
                       />
                   ) : (
                     <Image

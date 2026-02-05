@@ -138,19 +138,16 @@ export default function AdminBoard({ isAdmin, user: _user, children }: AdminBoar
     return (
       <div className="bg-slate-900/40 backdrop-blur-md border border-white/10 rounded-[30px] overflow-hidden relative flex flex-col h-full shadow-2xl group transition-all hover:border-red-500/30">
          {post.media_url && (
-            <div className="h-40 w-full bg-black/50 overflow-hidden relative border-b border-white/5 shrink-0 backdrop-blur-lg">
-               {post.media_type === 'video' ? (
-                 <div className="w-full h-40 p-2 flex items-center justify-center overflow-hidden rounded-2xl">
-                   <video
-                     src={post.media_url}
-                     controls
-                     className="w-full h-full object-contain rounded-2xl shadow-2xl shadow-indigo-900/40 ring-2 ring-amber-400/70 ring-inset"
-                   />
+            <div className="w-full shrink-0">
+               <div className="relative w-full aspect-[16/9] rounded-2xl overflow-hidden p-[2px] bg-gradient-to-br from-red-600/15 to-amber-600/10">
+                 <div className="absolute inset-0 bg-[#06060b] rounded-[14px] overflow-hidden flex items-center justify-center">
+                   {post.media_type === 'video' ? (
+                     <video src={post.media_url} controls className="w-full h-full object-cover" />
+                   ) : (
+                     <Image src={post.media_url} alt="" fill sizes="280px" className="object-cover group-hover:scale-105 transition-transform duration-700" />
+                   )}
                  </div>
-               ) : (
-                 <Image src={post.media_url} alt="" fill sizes="280px" className="object-cover group-hover:scale-105 transition-transform duration-700" />
-               )}
-               <div className="absolute top-2 left-2 bg-red-600 text-white text-[8px] font-black px-2 py-0.5 rounded shadow">INFO</div>
+               </div>
             </div>
          )}
          <div className="p-5 flex-grow flex flex-col">

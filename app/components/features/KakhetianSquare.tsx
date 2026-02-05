@@ -530,7 +530,12 @@ export default function KakhetianSquare({ isAdmin, controlToken }: KakhetianSqua
                                     <Image src={m.media_url} alt="" fill sizes="(max-width: 768px) 100vw, 480px" className="object-cover" onLoad={() => scrollToBottom(true)} />
                                   </div>
                                 ) : (
-                                  <video src={m.media_url} className="w-full max-h-48" onLoadedData={() => scrollToBottom(true)} />
+                                  <video
+                                    src={m.media_url}
+                                    className="w-full max-h-48 object-cover rounded-xl block"
+                                    onLoadedData={() => scrollToBottom(true)}
+                                    playsInline
+                                  />
                                 )}
                             </div>
                         )}
