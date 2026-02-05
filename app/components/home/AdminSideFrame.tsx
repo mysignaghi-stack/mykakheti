@@ -99,27 +99,12 @@ export default function AdminSideFrame({ post, position, isAdmin, onRefresh }: A
             }
           }
 
-          const uploadBody = new FormData();
-          const uploadName = processedFile instanceof File ? processedFile.name : file.name;
-          const uploadFile = processedFile instanceof File
-            ? processedFile
-            : new File([processedFile], uploadName, { type: file.type });
+          const fileName = `${position}-${Date.now()}-${Math.random().toString(36).substring(7)}`;
+          const { error } = await supabase.storage.from('admin-media').upload(fileName, processedFile);
+          if (error) throw error;
 
-          uploadBody.append('file', uploadFile, uploadName);
-          uploadBody.append('bucket', 'admin-media');
-
-          const resp = await fetch('/api/admin/upload', {
-            method: 'POST',
-            body: uploadBody,
-            credentials: 'same-origin',
-          });
-
-          const json = await resp.json().catch(() => ({}));
-          if (!resp.ok || !json?.publicUrl) {
-            throw new Error(json?.error || 'Upload failed');
-          }
-
-          mediaUrls.push(json.publicUrl);
+          const { data } = supabase.storage.from('admin-media').getPublicUrl(fileName);
+          mediaUrls.push(data.publicUrl);
         }
 
         if (formData.files.length === 1) {
@@ -266,12 +251,26 @@ export default function AdminSideFrame({ post, position, isAdmin, onRefresh }: A
         muted
         loop
         playsInline
-        preload="metadata"
+        preload="auto"
         onClick={onClick}
         className={className}
+        style={{ transform: 'translateZ(0)' }}
       />
     );
   };
+
+  const videoWrapperClassName = postVideoBackground
+    ? 'relative w-full h-[200px] flex items-center justify-center overflow-hidden rounded-[20px]'
+    : 'relative w-full h-[200px] p-0.5 flex items-center justify-center overflow-hidden rounded-[20px]';
+  const videoOverlayClassName = postVideoBackground
+    ? 'absolute inset-0 bg-black/20 rounded-[20px]'
+    : 'absolute inset-0 bg-gradient-to-br from-amber-600/20 via-yellow-400/10 to-amber-600/20 rounded-[20px] backdrop-blur-lg shadow-[inset_0_2px_10px_rgba(0,0,0,0.5)]';
+  const videoFrameClassName = postVideoBackground
+    ? 'relative z-10 w-full h-full object-cover rounded-[20px]'
+    : 'relative z-10 w-full h-full object-contain rounded-[20px] shadow-2xl shadow-indigo-900/40 border-2 border-amber-500/40 cursor-pointer hover:border-amber-500/60 transition-all duration-300';
+  const galleryVideoFrameClassName = postVideoBackground
+    ? 'relative z-10 w-full h-32 object-cover rounded-[20px]'
+    : 'relative z-10 w-full h-32 object-contain rounded-[20px] shadow-2xl shadow-indigo-900/50 border-2 border-amber-500/40 hover:border-amber-500/60 transition-all duration-300';
 
   // Fixed height based on position
   const heightClass = position === 'left_top' || position === 'right_top' ? 'h-[400px]' : 'h-auto';
@@ -303,12 +302,12 @@ export default function AdminSideFrame({ post, position, isAdmin, onRefresh }: A
       {post && ((post.media_urls && post.media_urls.length > 0) || (post as any).media_url) ? (
         <div className="mb-1 mt-4">
           {post.media_type === 'video' ? (
-            <div className="relative w-full h-[200px] p-0.5 flex items-center justify-center overflow-hidden rounded-[20px]">
-              <div className="absolute inset-0 bg-gradient-to-br from-amber-600/20 via-yellow-400/10 to-amber-600/20 rounded-[20px] backdrop-blur-lg shadow-[inset_0_2px_10px_rgba(0,0,0,0.5)]"></div>
+            <div className={videoWrapperClassName}>
+              <div className={videoOverlayClassName}></div>
               <InlineVideo
                 src={(post.media_urls?.[0] || (post as any).media_url)!}
                 onClick={() => setLightbox({ open: true, media: [(post.media_urls?.[0] || (post as any).media_url)!], currentIndex: 0, isVideo: true })}
-                className="relative z-10 w-full h-full object-contain rounded-[20px] shadow-2xl shadow-indigo-900/40 border-2 border-amber-500/40 cursor-pointer hover:border-amber-500/60 transition-all duration-300"
+                className={videoFrameClassName}
               />
             </div>
           ) : post.media_type === 'gallery' ? (
@@ -327,12 +326,12 @@ export default function AdminSideFrame({ post, position, isAdmin, onRefresh }: A
                 {(post.media_urls || [(post as any).media_url]).filter(Boolean).map((url: string, idx: number) => (
                   <SwiperSlide key={idx}>
                     <div className="relative w-full h-full flex items-center justify-center">
-                      <div className="absolute inset-0 bg-gradient-to-br from-amber-600/20 via-yellow-400/10 to-amber-600/20 rounded-[20px] backdrop-blur-lg shadow-[inset_0_2px_10px_rgba(0,0,0,0.5)]"></div>
+                      <div className={videoOverlayClassName}></div>
                       {isVideoUrl(url) ? (
                         <InlineVideo
                           src={url}
                           onClick={() => setLightbox({ open: true, media: [url], currentIndex: 0, isVideo: true })}
-                          className="relative z-10 w-full h-32 object-contain rounded-[20px] shadow-2xl shadow-indigo-900/50 border-2 border-amber-500/40 hover:border-amber-500/60 transition-all duration-300"
+                          className={galleryVideoFrameClassName}
                         />
                       ) : (
                         <Image
@@ -351,11 +350,11 @@ export default function AdminSideFrame({ post, position, isAdmin, onRefresh }: A
           ) : (
              <div className="relative w-full h-32 cursor-pointer" onClick={() => setLightbox({ open: true, media: [(post.media_urls?.[0] || (post as any).media_url)!], currentIndex: 0, isVideo: (post.media_urls?.[0] || (post as any).media_url)!.includes('.mp4') || (post.media_urls?.[0] || (post as any).media_url)!.includes('.mov') || (post.media_urls?.[0] || (post as any).media_url)!.includes('.avi') || (post.media_urls?.[0] || (post as any).media_url)!.includes('.webm') })}>
               {isVideoUrl((post.media_urls?.[0] || (post as any).media_url)!) ? (
-                <div className="relative w-full h-full p-0.5 flex items-center justify-center overflow-hidden rounded-[20px]">
-                  <div className="absolute inset-0 bg-gradient-to-br from-amber-600/20 via-yellow-400/10 to-amber-600/20 rounded-[20px] backdrop-blur-lg shadow-[inset_0_2px_10px_rgba(0,0,0,0.5)]"></div>
+                <div className={videoWrapperClassName.replace('h-[200px]', 'h-full')}>
+                  <div className={videoOverlayClassName}></div>
                   <InlineVideo
                     src={(post.media_urls?.[0] || (post as any).media_url)!}
-                    className="relative z-10 w-full h-full object-contain rounded-[20px] shadow-2xl shadow-indigo-900/40 border-2 border-amber-500/40"
+                    className={videoFrameClassName.replace('cursor-pointer hover:border-amber-500/60 ', '')}
                   />
                 </div>
               ) : (
