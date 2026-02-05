@@ -515,7 +515,8 @@ export default function HomePageClient({
   }, [ads]);
 
   const visibleCategories = useMemo(
-    () => allNonCommunityCategories.slice(0, 6),
+    // show one fewer category to avoid asymmetrical wrapping on some viewports
+    () => allNonCommunityCategories.slice(0, 5),
     [allNonCommunityCategories]
   );
 
@@ -770,8 +771,8 @@ export default function HomePageClient({
 
       <div className="w-full max-w-6xl mx-auto px-6 md:px-10 mt-8 mb-10">
         <div className="relative bg-black/50 border border-amber-500/30 rounded-2xl px-5 py-5 min-h-[64px] shadow-[0_8px_30px_rgba(0,0,0,0.35)]">
-          <div className="absolute top-3 left-4 right-4 flex flex-wrap items-center gap-x-3 gap-y-2 text-[11px] md:text-xs font-extrabold uppercase tracking-[0.2em] text-white/90">
-            <div className="flex items-center gap-3">
+          <div className="absolute top-3 left-4 right-4 flex items-center">
+            <div className="flex items-center gap-3 shrink-0">
               <button
                 type="button"
                 onClick={() => {
@@ -782,32 +783,36 @@ export default function HomePageClient({
               >
                 ყველა განცხადება
               </button>
+              <span className="text-amber-400 text-base md:text-lg tracking-normal">{ads.length}</span>
             </div>
-            <span className="text-amber-400 text-base md:text-lg tracking-normal">{ads.length}</span>
-            <div className="hidden md:flex flex-wrap items-center gap-2">
+
+            <div className="flex-1 flex flex-wrap items-center gap-x-3 gap-y-2 justify-center md:justify-start px-3">
               {visibleCategories.map((category) => (
-                  <button
-                    key={category}
-                    type="button"
-                    onClick={() => selectCategory(category)}
-                    className={`px-2.5 py-1 rounded-full border text-[10px] md:text-[11px] font-black uppercase tracking-[0.2em] transition ${
-                      selectedCategories.includes(category)
-                        ? 'border-amber-300/50 bg-amber-500/20 text-amber-200'
-                        : 'border-white/10 bg-white/5 text-white/70 hover:border-white/30 hover:text-white'
-                    }`}
-                  >
-                    {category}
-                  </button>
+                <button
+                  key={category}
+                  type="button"
+                  onClick={() => selectCategory(category)}
+                  className={`px-2.5 py-1 rounded-full border text-[10px] md:text-[11px] font-black uppercase tracking-[0.2em] transition ${
+                    selectedCategories.includes(category)
+                      ? 'border-amber-300/50 bg-amber-500/20 text-amber-200'
+                      : 'border-white/10 bg-white/5 text-white/70 hover:border-white/30 hover:text-white'
+                  }`}
+                >
+                  {category}
+                </button>
               ))}
             </div>
+
+            <div className="shrink-0 ml-2">
+              <button
+                type="button"
+                onClick={() => setShowAllCategories(true)}
+                className="text-[10px] md:text-[11px] font-black uppercase tracking-[0.2em] text-amber-300 hover:text-amber-200 transition"
+              >
+                ყველა კატეგორია
+              </button>
+            </div>
           </div>
-          <button
-            type="button"
-            onClick={() => setShowAllCategories(true)}
-            className="absolute top-3 right-4 text-[10px] md:text-[11px] font-black uppercase tracking-[0.2em] text-amber-300 hover:text-amber-200 transition"
-          >
-            ყველა კატეგორია
-          </button>
         </div>
       </div>
 

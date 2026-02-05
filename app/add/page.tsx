@@ -448,8 +448,26 @@ export default function AddPage() {
           )}
 
           {isSubmitted && (
-            <div className="text-center py-8">
+            <div className="text-center py-8 space-y-4">
               <p className="text-emerald-300 text-lg font-semibold">თქვენი განცხადება წარმატებით გაიგზავნა მოდერაციაზე! 🚀</p>
+
+              <div className="flex justify-center gap-4 mt-4">
+                <button
+                  type="button"
+                  onClick={() => router.back()}
+                  className="px-5 py-3 rounded-xl bg-white/5 border border-white/10 text-white font-black uppercase text-[12px] hover:bg-white/10 transition"
+                >
+                  ← უკან
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => router.push('/')}
+                  className="px-5 py-3 rounded-xl bg-amber-600 text-white font-black uppercase text-[12px] hover:bg-amber-500 transition"
+                >
+                  მთავარი გვერდი
+                </button>
+              </div>
             </div>
           )}
         </div>
