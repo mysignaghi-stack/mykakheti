@@ -138,6 +138,43 @@ body {
   }
 }
 
+/* Chat popup responsive fixes (iPhone safe-area + centering on narrow screens) */
+.chat-popup {
+  position: fixed;
+  bottom: calc(env(safe-area-inset-bottom, 1.5rem) + 1.5rem);
+  right: calc(env(safe-area-inset-right, 1.5rem) + 1.5rem);
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 1rem;
+  transform: none;
+}
+
+.chat-popup .chat-window {
+  width: 340px;
+  height: 500px;
+  max-width: calc(100vw - 2rem);
+  max-height: calc(100vh - 6rem);
+  border-radius: 28px;
+  overflow: hidden;
+}
+
+@media (max-width: 420px) {
+  .chat-popup {
+    left: 50% !important;
+    right: auto !important;
+    transform: translateX(-50%);
+    bottom: calc(env(safe-area-inset-bottom, 0.75rem) + 0.75rem);
+    align-items: center;
+  }
+  .chat-popup .chat-window {
+    width: calc(100vw - 1.5rem);
+    height: calc(75vh);
+    border-radius: 18px;
+  }
+}
+
 /* ⚠️ Animations (თქვენი ძველი ანიმაციები) */
 @keyframes shake {
   0%, 100% { transform: translateX(0); }
