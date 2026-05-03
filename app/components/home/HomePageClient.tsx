@@ -795,8 +795,8 @@ export default function HomePageClient({
   <SnackbarWrapper open={snackbar.open} message={snackbar.message} type={snackbar.type} onClose={closeSnackbar} />
 
       <div className="w-full max-w-6xl mx-auto px-6 md:px-10 mt-8 mb-10">
-        <div className="relative bg-black/50 border border-amber-500/30 rounded-2xl px-5 py-5 min-h-[64px] shadow-[0_8px_30px_rgba(0,0,0,0.35)]">
-          <div className="absolute top-3 left-4 right-4 flex items-center">
+        <div className="relative bg-black/50 border border-amber-500/30 rounded-2xl px-5 py-4 shadow-[0_8px_30px_rgba(0,0,0,0.35)]">
+          <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
             <div className="flex items-center gap-3 shrink-0">
               <button
                 type="button"
@@ -811,7 +811,7 @@ export default function HomePageClient({
               <span className="text-amber-400 text-base md:text-lg tracking-normal">{ads.length}</span>
             </div>
 
-            <div className="flex-1 flex flex-wrap items-center gap-x-3 gap-y-2 justify-center md:justify-start px-3">
+            <div className="flex flex-wrap items-center gap-x-3 gap-y-2 flex-1 min-w-[200px] justify-start">
               {visibleCategories.map((category) => (
                 <button
                   key={category}
@@ -828,7 +828,7 @@ export default function HomePageClient({
               ))}
             </div>
 
-            <div className="shrink-0 ml-2">
+            <div className="w-full sm:w-auto sm:ml-auto">
               <button
                 type="button"
                 onClick={() => setShowAllCategories(true)}
