@@ -68,6 +68,7 @@ export default function KakhetianSquare({ isAdmin, controlToken }: KakhetianSqua
   const ownScrollRef = useRef<HTMLDivElement>(null);
   const audioUnlockedRef = useRef(false);
   const lastTypingSoundRef = useRef(0);
+  const latestCreatedAtRef = useRef<string | null>(null);
 
   // (shared realtime subscription used via app/lib/squareRealtime)
 
@@ -265,6 +266,42 @@ export default function KakhetianSquare({ isAdmin, controlToken }: KakhetianSqua
     const t = setTimeout(() => scrollToBottom(false), 30);
     return () => clearTimeout(t);
   }, [messages, scrollToBottom]);
+
+  useEffect(() => {
+    if (messages.length === 0) return;
+    latestCreatedAtRef.current = messages[messages.length - 1].created_at;
+  }, [messages]);
+
+  // Fallback polling for environments where realtime does not fire reliably.
+  useEffect(() => {
+    let isMounted = true;
+
+    const pollNewMessages = async () => {
+      try {
+        const latest = latestCreatedAtRef.current;
+        let query = (supabase as any)
+          .from('square_messages')
+          .select('*')
+          .order('created_at', { ascending: true })
+          .limit(MESSAGE_LIMIT);
+        if (latest) {
+          query = query.gte('created_at', latest);
+        }
+        const { data } = await query;
+        if (!isMounted || !data || data.length === 0) return;
+        setMessages((prev) => mergeMessages(prev, data as Message[]));
+        setTimeout(() => scrollToBottom(false), 60);
+      } catch {
+        // ignore
+      }
+    };
+
+    const interval = setInterval(pollNewMessages, 6000);
+    return () => {
+      isMounted = false;
+      clearInterval(interval);
+    };
+  }, [mergeMessages, scrollToBottom]);
 
   // --- Logic Functions ---
 
