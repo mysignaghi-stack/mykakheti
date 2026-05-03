@@ -8,7 +8,9 @@ export async function GET(request: Request) {
   const code = requestUrl.searchParams.get('code');
   const cookieStore = await cookies();
   const cookieRedirect = cookieStore.get('auth_redirect')?.value;
-  const redirect = requestUrl.searchParams.get('redirect') || (cookieRedirect ? decodeURIComponent(cookieRedirect) : '/') ;
+  const redirect = requestUrl.searchParams.get('redirect') || (cookieRedirect ? decodeURIComponent(cookieRedirect) : '/');
+  const target = new URL(`/auth/complete?redirect=${encodeURIComponent(redirect)}`, requestUrl);
+  const response = NextResponse.redirect(target);
 
   if (code) {
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -19,14 +21,13 @@ export async function GET(request: Request) {
 
     const supabase = createServerClient<Database>(supabaseUrl, supabaseKey, {
       cookies: {
-        get(name: string) {
-          return cookieStore.get(name)?.value;
+        getAll() {
+          return cookieStore.getAll();
         },
-        set(name: string, value: string, options: Record<string, unknown>) {
-          cookieStore.set({ name, value, ...options });
-        },
-        remove(name: string, options: Record<string, unknown>) {
-          cookieStore.set({ name, value: '', ...options });
+        setAll(cookiesToSet: Array<{ name: string; value: string; options: Record<string, unknown> }>) {
+          cookiesToSet.forEach(({ name, value, options }) => {
+            response.cookies.set(name, value, options);
+          });
         },
       },
     });
@@ -35,9 +36,8 @@ export async function GET(request: Request) {
   }
 
   if (cookieRedirect) {
-    cookieStore.set({ name: 'auth_redirect', value: '', path: '/', maxAge: 0 });
+    response.cookies.set('auth_redirect', '', { path: '/', maxAge: 0 });
   }
 
-  const target = new URL(`/auth/complete?redirect=${encodeURIComponent(redirect)}`, requestUrl);
-  return NextResponse.redirect(target);
+  return response;
 }
