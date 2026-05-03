@@ -5,6 +5,7 @@ interface EditAgroModalProps {
   item: { name: string } | null;
   newName?: string;
   newPrice: string;
+  showPriceInput?: boolean;
   onChangeName?: (v: string) => void;
   onChange: (v: string) => void;
   details: { place: string; rate: string | number; phone?: string }[];
@@ -14,7 +15,7 @@ interface EditAgroModalProps {
   loading?: boolean;
 }
 
-const EditAgroModal: React.FC<EditAgroModalProps> = ({ open, item, newName, newPrice, onChangeName, onChange, details, onChangeDetails, onClose, onSubmit, loading }) => {
+const EditAgroModal: React.FC<EditAgroModalProps> = ({ open, item, newName, newPrice, showPriceInput = true, onChangeName, onChange, details, onChangeDetails, onClose, onSubmit, loading }) => {
   const modalRef = React.useRef<HTMLDivElement>(null);
   const onCloseRef = React.useRef(onClose);
   React.useEffect(() => {
@@ -58,7 +59,9 @@ const EditAgroModal: React.FC<EditAgroModalProps> = ({ open, item, newName, newP
           {typeof onChangeName === 'function' ? (
             <input type="text" value={newName ?? ''} onChange={e => onChangeName(e.target.value)} className="w-full p-3 bg-black/30 border border-white/10 rounded-xl text-white font-bold mb-3 outline-none focus:border-amber-500 transition-all" placeholder=" ნივთის სახელი (მაგ: ყურძენი)" />
           ) : null}
-          <input type="text" value={newPrice} onChange={e => onChange(e.target.value)} className="w-full p-4 bg-black/30 border border-white/10 rounded-xl text-white font-bold mb-4 outline-none focus:border-amber-500 transition-all text-center text-lg" placeholder="მაგ: 1.50 - 2.00 ₾" autoFocus />
+          {showPriceInput ? (
+            <input type="text" value={newPrice} onChange={e => onChange(e.target.value)} className="w-full p-4 bg-black/30 border border-white/10 rounded-xl text-white font-bold mb-4 outline-none focus:border-amber-500 transition-all text-center text-lg" placeholder="მაგ: 1.50 - 2.00 ₾" autoFocus />
+          ) : null}
 
           <div className="space-y-3 max-h-72 overflow-y-auto pr-1 text-left">
             <div className="flex items-center justify-between">

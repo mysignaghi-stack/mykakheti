@@ -88,7 +88,9 @@ export async function POST(request: Request) {
         .order('id', { ascending: false })
         .limit(1)
         .single();
-      return typeof (maxRow as any)?.id === 'number' ? (maxRow as any).id + 1 : 1;
+      const rawId = (maxRow as any)?.id;
+      const parsed = typeof rawId === 'number' ? rawId : Number.parseInt(String(rawId), 10);
+      return Number.isFinite(parsed) ? parsed + 1 : 1;
     };
 
     if (action === 'reset') {

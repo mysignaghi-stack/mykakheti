@@ -292,6 +292,7 @@ export default function AdminAgroPanel({ showCategory }: { showCategory?: 'grape
           item={{ name: editItem.name }}
           newName={newName}
           newPrice={newPrice}
+          showPriceInput={false}
           onChangeName={setNewName}
           onChange={setNewPrice}
           details={editDetails}
