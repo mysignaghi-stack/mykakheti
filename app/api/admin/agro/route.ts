@@ -89,17 +89,7 @@ export async function POST(request: Request) {
 
       if (deleteError) return NextResponse.json({ error: deleteError.message }, { status: 500 });
 
-      const { data: maxRow } = await serviceClient
-        .from('agro_prices')
-        .select('id')
-        .order('id', { ascending: false })
-        .limit(1)
-        .single();
-
-      const startId = typeof (maxRow as any)?.id === 'number' ? (maxRow as any).id + 1 : 1;
-
       const defaults = DEFAULT_AGRO_DATA.map((item, index) => ({
-        id: startId + index,
         name: item.name,
         unit: item.unit ?? null,
         price: item.price ?? null,
@@ -131,16 +121,10 @@ export async function POST(request: Request) {
     if (!payload) return NextResponse.json({ error: 'Missing payload' }, { status: 400 });
 
     if (String(payload.id || '').startsWith('new-')) {
-      const { data: maxRow } = await serviceClient
-        .from('agro_prices')
-        .select('id')
-        .order('id', { ascending: false })
-        .limit(1)
-        .single();
-      const nextId = typeof (maxRow as any)?.id === 'number' ? (maxRow as any).id + 1 : 1;
+      const { id, ...insertPayload } = payload;
       const { data, error } = await serviceClient
         .from('agro_prices')
-        .insert({ ...payload, id: nextId })
+        .insert(insertPayload)
         .select('*');
       if (error) return NextResponse.json({ error: error.message }, { status: 500 });
       revalidatePath('/');
