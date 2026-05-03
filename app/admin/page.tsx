@@ -7,7 +7,6 @@ import { useRouter } from 'next/navigation';
 import { supabase } from '../lib/supabase';
 import { Suspense } from 'react';
 import AdminAuthGuard from './AdminAuthGuard';
-import AdminAgroPanel from './AdminAgroPanel';
 
 const ADMIN_LINKS = [
   { href: '/admin/messages', title: 'შეტყობინებები', desc: 'კონტაქტის ფორმის მესიჯები' },
@@ -179,9 +178,6 @@ function AdminDashboardContent({ isAuthenticated }: { isAuthenticated: boolean }
               <p className="text-white/50 text-sm">{link.desc}</p>
             </Link>
           ))}
-        </div>
-        <div className="mt-8">
-          <AdminAgroPanel showCategory="grape" />
         </div>
       </div>
     </main>

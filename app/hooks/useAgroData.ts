@@ -16,21 +16,21 @@ export function useAgroData(initialData: AgroItem[] = DEFAULT_AGRO_DATA) {
   const fetchAgroData = useCallback(async () => {
     setLoading(true);
     try {
-      const { data, error } = await (supabase.from('agro_prices' as any) as any).select('*');
-      if (error) throw error;
-      if (data) {
-        const normalized: AgroItem[] = (data as AgroRow[]).map((row) => ({
-          id: row.id,
-          name: row.name,
-          unit: row.unit,
-          price: row.price,
-          color: row.color,
-          icon: row.icon,
-          category: row.category,
-          details: Array.isArray(row.details) ? (row.details as AgroItem['details']) : null,
-        }));
-        setAgroData(normalized);
-      }
+      const resp = await fetch('/api/agro');
+      const json = await resp.json().catch(() => ({}));
+      if (!resp.ok || json?.error) throw new Error(json?.error || 'Failed to fetch');
+      const rows = (json?.data || []) as AgroRow[];
+      const normalized: AgroItem[] = rows.map((row) => ({
+        id: row.id,
+        name: row.name,
+        unit: row.unit,
+        price: row.price,
+        color: row.color,
+        icon: row.icon,
+        category: row.category,
+        details: Array.isArray(row.details) ? (row.details as AgroItem['details']) : null,
+      }));
+      setAgroData(normalized);
     } catch (error) {
       console.error('Failed to fetch agro data', error);
     } finally {

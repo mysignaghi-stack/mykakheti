@@ -7,7 +7,6 @@ import { supabase } from '../../lib/supabase';
 import { useAdminAuth } from '../../hooks/useAdminAuth';
 import type { Database } from '@/types/supabase';
 import AdminNav from '../../components/admin/AdminNav';
-import AdminAgroPanel from '../AdminAgroPanel';
 
 type AdminPost = Database['public']['Tables']['admin_posts']['Row'];
 
@@ -525,9 +524,6 @@ export default function AdminPosts() {
           <AdminNav />
         </div>
 
-        <div className="mb-6">
-          <AdminAgroPanel />
-        </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           {/* Form */}
