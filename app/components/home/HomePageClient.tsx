@@ -80,9 +80,34 @@ const ANNOUNCEMENT_CATEGORIES = [
   'სხვა'
 ];
 
-const formatAgroPrice = (value?: string | null) => {
-  if (!value) return '';
-  return value.includes('₾') ? value : `${value} ₾`;
+const normalizeAgroText = (value: string | number | null | undefined) => {
+  if (value === null || value === undefined) return '';
+  return String(value).trim();
+};
+
+const formatAgroPrice = (value?: string | number | null) => {
+  const text = normalizeAgroText(value ?? '');
+  if (!text) return '';
+  return text.includes('₾') ? text : `${text} ₾`;
+};
+
+const pickDetailRate = (details: AgroItem['details']) => {
+  if (!Array.isArray(details)) return '';
+  for (const detail of details) {
+    if (detail && typeof detail === 'object' && 'rate' in detail) {
+      const rateText = normalizeAgroText((detail as { rate?: string | number }).rate);
+      if (rateText) return rateText;
+    }
+  }
+  return '';
+};
+
+const getAgroDisplayPrice = (item: AgroItem) => {
+  const priceText = normalizeAgroText(item.price);
+  const idText = normalizeAgroText(item.id);
+  if (priceText && priceText !== idText) return formatAgroPrice(priceText);
+  const detailRate = pickDetailRate(item.details);
+  return detailRate ? formatAgroPrice(detailRate) : formatAgroPrice(priceText);
 };
 
 const COMMUNITY_CATEGORIES = ['სამძიმარი', 'დაკარგული/ნაპოვნი', 'ოსტატი', 'მილოცვა'] as const;
@@ -586,7 +611,7 @@ export default function HomePageClient({
                 {agroData.filter(i => i.category === 'grape').map(item => (
                   <button key={item.id} onClick={() => setSelectedAgro(item)} className="w-full flex justify-between items-center bg-black/40 p-3 rounded-xl border border-white/5 transition-all group/item hover:bg-white/5">
                     <span className="text-xs font-black uppercase text-purple-300 flex gap-2">{item.name}</span>
-                    <span className="text-sm font-black italic">{formatAgroPrice(item.price)}</span>
+                    <span className="text-sm font-black italic">{getAgroDisplayPrice(item)}</span>
                   </button>
                 ))}
               </div>
@@ -622,7 +647,7 @@ export default function HomePageClient({
                      {agroData.filter(i => i.category === 'grape').map(item => (
                        <button key={item.id} onClick={() => setSelectedAgro(item)} className="w-full flex justify-between items-center bg-black/40 p-3 rounded-xl border border-white/5 transition-all group/item hover:bg-white/5">
                          <span className="text-xs font-black uppercase text-purple-300 flex gap-2">{item.name}</span>
-                         <span className="text-sm font-black italic">{formatAgroPrice(item.price)}</span>
+                         <span className="text-sm font-black italic">{getAgroDisplayPrice(item)}</span>
                        </button>
                      ))}
                    </div>
@@ -637,7 +662,7 @@ export default function HomePageClient({
                       {agroData.filter(i => i.category === 'grain').map(item => (
                         <button key={item.id} onClick={() => setSelectedAgro(item)} className="w-full flex justify-between items-center bg-black/40 p-3 rounded-xl border border-white/5 transition-all group/item hover:bg-white/5">
                           <span className="text-xs font-black uppercase text-yellow-500 flex gap-2">{item.name}</span>
-                          <span className="text-sm font-black italic">{formatAgroPrice(item.price)}</span>
+                          <span className="text-sm font-black italic">{getAgroDisplayPrice(item)}</span>
                         </button>
                       ))}
                     </div>
@@ -708,7 +733,7 @@ export default function HomePageClient({
                 {agroData.filter(i => i.category === 'grain').map(item => (
                   <button key={item.id} onClick={() => setSelectedAgro(item)} className="w-full flex justify-between items-center bg-black/40 p-3 rounded-xl border border-white/5 transition-all group/item hover:bg-white/5">
                     <span className="text-xs font-black uppercase text-yellow-500 flex gap-2">{item.name}</span>
-                    <span className="text-sm font-black italic">{formatAgroPrice(item.price)}</span>
+                    <span className="text-sm font-black italic">{getAgroDisplayPrice(item)}</span>
                   </button>
                 ))}
               </div>
