@@ -7,8 +7,8 @@ export async function GET() {
     return NextResponse.json({ error: 'Server misconfiguration' }, { status: 500 });
   }
 
-  const { data, error } = await admin
-    .from('agro_prices')
+  const { data, error } = await (admin as any)
+    .from('agro_prices' as any)
     .select('*')
     .order('id', { ascending: true });
 
