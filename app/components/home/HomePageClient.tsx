@@ -811,13 +811,13 @@ export default function HomePageClient({
               <span className="text-amber-400 text-base md:text-lg tracking-normal">{ads.length}</span>
             </div>
 
-            <div className="flex flex-wrap items-center gap-x-3 gap-y-2 flex-1 min-w-[200px] justify-start">
+            <div className="grid grid-cols-2 gap-2 flex-1 min-w-[200px] sm:flex sm:flex-wrap sm:items-center sm:gap-x-3 sm:gap-y-2 sm:justify-start">
               {visibleCategories.map((category) => (
                 <button
                   key={category}
                   type="button"
                   onClick={() => selectCategory(category)}
-                  className={`px-2.5 py-1 rounded-full border text-[10px] md:text-[11px] font-black uppercase tracking-[0.2em] transition ${
+                  className={`w-full sm:w-auto px-2.5 py-1 rounded-full border text-[10px] md:text-[11px] font-black uppercase tracking-[0.2em] transition ${
                     selectedCategories.includes(category)
                       ? 'border-amber-300/50 bg-amber-500/20 text-amber-200'
                       : 'border-white/10 bg-white/5 text-white/70 hover:border-white/30 hover:text-white'
