@@ -15,7 +15,8 @@ export default function ClientButtons({ ad, shareUrl }: ClientButtonsProps) {
 
   const isMobileDevice = () => {
     if (typeof navigator === 'undefined') return false;
-    return Boolean(navigator.userAgentData?.mobile) || /Android|iPhone|iPad|iPod|Mobi/i.test(navigator.userAgent);
+    const uaData = (navigator as Navigator & { userAgentData?: { mobile?: boolean } }).userAgentData;
+    return Boolean(uaData?.mobile) || /Android|iPhone|iPad|iPod|Mobi/i.test(navigator.userAgent);
   };
 
   // 📋 ბმულის გაზიარება/კოპირება
