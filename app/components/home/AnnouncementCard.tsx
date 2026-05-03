@@ -88,9 +88,9 @@ export default function AnnouncementCard({ announcement }: AnnouncementCardProps
             type="button"
             onClick={handleTikTokShare}
             className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-black/50 text-white/90 border border-white/20 hover:bg-white hover:text-black transition"
-            aria-label="TikTok-ზე გაზიარება"
+            aria-label="ბმულის გაზიარება"
           >
-            TK
+            🔗
           </button>
         </div>
         {mainImage ? (

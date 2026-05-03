@@ -95,10 +95,10 @@ export default function ClientButtons({ ad, shareUrl }: ClientButtonsProps) {
            className="flex items-center justify-center gap-3 bg-white/5 border border-white/10 py-5 rounded-[25px] hover:bg-white hover:text-black transition-all group"
          >
            <span className="bg-black text-white w-8 h-8 rounded-lg flex items-center justify-center font-black text-[10px] group-hover:bg-black group-hover:text-white transition-colors">
-             {copied ? 'OK' : 'TK'}
+             {copied ? 'OK' : '🔗'}
            </span>
            <span className="text-[10px] font-black uppercase italic">
-             {copied ? 'კოპირებულია' : 'TikTok-ზე გაზიარება'}
+             {copied ? 'კოპირებულია' : 'ბმულის გაზიარება'}
            </span>
          </button>
       </div>
