@@ -10,7 +10,7 @@
 - Next.js App Router only: routes and UI live under `app/` with API handlers in `app/api/**/route.ts`.
 - Supabase browser client: `app/lib/supabase.ts` (requires `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`).
 - Supabase admin/service role client: `app/lib/supabaseAdmin.ts` (requires `SUPABASE_SERVICE_ROLE_KEY`); used in admin APIs to bypass RLS.
-- Middleware auth plumbing: `middleware.ts` uses `createServerClient` and must return the provided response with cookies intact.
+- Proxy auth plumbing: `proxy.ts` uses `createServerClient` and must return the provided response with cookies intact.
 
 ## Admin auth + moderation patterns
 - Admin detection: `app/lib/adminAuth.ts` (`role` / `is_admin` flags and optional `roles` array). Supports allowlist via `NEXT_PUBLIC_ADMIN_EMAILS` (Google provider only).

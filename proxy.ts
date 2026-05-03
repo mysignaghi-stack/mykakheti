@@ -1,7 +1,7 @@
 import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   let supabaseResponse = NextResponse.next({
     request,
   })
@@ -37,15 +37,15 @@ export async function middleware(request: NextRequest) {
 
   // Check if user is trying to access upload routes without authentication
   if (!session && request.nextUrl.pathname.startsWith('/upload')) {
-    const redirectUrl = request.nextUrl.clone();
-    redirectUrl.pathname = '/login';
-    redirectUrl.searchParams.set('redirect', request.nextUrl.pathname);
-    const redirectResponse = NextResponse.redirect(redirectUrl);
+    const redirectUrl = request.nextUrl.clone()
+    redirectUrl.pathname = '/login'
+    redirectUrl.searchParams.set('redirect', request.nextUrl.pathname)
+    const redirectResponse = NextResponse.redirect(redirectUrl)
     supabaseResponse.cookies.getAll().forEach((cookie) => {
-      const { name, value, ...options } = cookie;
-      redirectResponse.cookies.set(name, value, options);
-    });
-    return redirectResponse;
+      const { name, value, ...options } = cookie
+      redirectResponse.cookies.set(name, value, options)
+    })
+    return redirectResponse
   }
 
   // IMPORTANT: You *must* return the supabaseResponse object as it is. If you're
