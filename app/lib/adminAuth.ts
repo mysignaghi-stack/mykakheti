@@ -29,8 +29,8 @@ export function isAdminUser(user: User | null | undefined): boolean {
 
   const rolesA = getRoles(am);
 
-  if (email && adminEmails.length > 0 && isGoogleUser() && adminEmails.includes(email)) {
-    console.log('Admin via email and Google:', email);
+  if (email && adminEmails.length > 0 && adminEmails.includes(email)) {
+    console.log('Admin via email allowlist:', email, 'google:', isGoogleUser());
     return true;
   }
 
