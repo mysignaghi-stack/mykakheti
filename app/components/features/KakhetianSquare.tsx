@@ -209,23 +209,22 @@ export default function KakhetianSquare({ isAdmin, controlToken }: KakhetianSqua
     };
     fetchMessages();
     
-    // ავტომატური წაშლა: ძველი მესიჯების წაშლა თუ რაოდენობა აჭარბებს ლიმიტს
     const cleanupOldMessages = async () => {
-      const { data: allMessages } = await (supabase as any).from('square_messages').select('id, created_at').order('created_at', { ascending: false });
-      if (allMessages && allMessages.length > MESSAGE_LIMIT) {
-        const toDelete = allMessages.slice(MESSAGE_LIMIT).map((m: any) => m.id);
-        await (supabase as any).from('square_messages').delete().in('id', toDelete);
+      if (!isAdmin) return;
+      try {
+        await fetch('/api/admin/square/cleanup', { method: 'POST' });
+      } catch {
+        // ignore
       }
     };
-    // გაშვება ყოველ 5 წუთში
     const cleanupInterval = setInterval(cleanupOldMessages, 5 * 60 * 1000);
-    cleanupOldMessages(); // დაუყოვნებლივ გაშვება
+    cleanupOldMessages();
     
     return () => {
       audioRef.current?.removeEventListener('canplaythrough', handleCanPlay);
       clearInterval(cleanupInterval);
     };
-  }, [controlToken, scrollToBottom]);
+  }, [controlToken, scrollToBottom, isAdmin]);
 
   // 2. REALTIME Subscription (shared)
   useEffect(() => {

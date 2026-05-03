@@ -33,7 +33,7 @@ export async function POST(request: Request) {
   });
 
   const { data: { user } } = await authClient.auth.getUser();
-  if (!user || !isAdminUser(user)) {
+  if (!user) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
@@ -47,6 +47,32 @@ export async function POST(request: Request) {
   const serviceClient = createClient<Database>(supabaseUrl, serviceRoleKey, {
     auth: { persistSession: false },
   });
+
+  let isAdmin = isAdminUser(user);
+  if (!isAdmin) {
+    const { data: profile } = await (serviceClient as any)
+      .from('profiles')
+      .select('role,is_admin,roles')
+      .eq('id', user.id)
+      .single();
+    const roles = Array.isArray((profile as any)?.roles) ? (profile as any).roles : [];
+    isAdmin = profile?.role === 'admin' || profile?.is_admin === true || roles.includes('admin');
+  }
+
+  if (!isAdmin) {
+    const email = (user.email ?? '').toLowerCase();
+    const adminEmails = (process.env.NEXT_PUBLIC_ADMIN_EMAILS ?? '')
+      .split(',')
+      .map((e) => e.trim().toLowerCase())
+      .filter(Boolean);
+    if (email && adminEmails.includes(email)) {
+      isAdmin = true;
+    }
+  }
+
+  if (!isAdmin) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
 
   const { error } = await serviceClient
     .from('square_messages')
