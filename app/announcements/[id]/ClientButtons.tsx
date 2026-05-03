@@ -13,8 +13,21 @@ interface ClientButtonsProps {
 export default function ClientButtons({ ad, shareUrl }: ClientButtonsProps) {
   const [copied, setCopied] = useState(false);
 
-  // 📋 ბმულის კოპირება
+  const isMobileDevice = () => {
+    if (typeof navigator === 'undefined') return false;
+    return Boolean(navigator.userAgentData?.mobile) || /Android|iPhone|iPad|iPod|Mobi/i.test(navigator.userAgent);
+  };
+
+  // 📋 ბმულის გაზიარება/კოპირება
   const copyLink = async () => {
+    if (isMobileDevice() && navigator.share) {
+      try {
+        await navigator.share({ url: shareUrl, title: ad.title || undefined });
+        return;
+      } catch {
+        // Fall back to copy on share failure or cancel.
+      }
+    }
     try {
       await navigator.clipboard.writeText(shareUrl);
       setCopied(true);
@@ -84,7 +97,7 @@ export default function ClientButtons({ ad, shareUrl }: ClientButtonsProps) {
              {copied ? 'OK' : 'TK'}
            </span>
            <span className="text-[10px] font-black uppercase italic">
-             {copied ? 'კოპირებულია' : 'ბმულის კოპირება'}
+             {copied ? 'კოპირებულია' : 'TikTok-ზე გაზიარება'}
            </span>
          </button>
       </div>

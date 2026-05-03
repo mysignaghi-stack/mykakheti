@@ -36,12 +36,26 @@ export default function AnnouncementCard({ announcement }: AnnouncementCardProps
     window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`, 'fb-share', 'width=600,height=400');
   };
 
+  const isMobileDevice = () => {
+    if (typeof navigator === 'undefined') return false;
+    return Boolean(navigator.userAgentData?.mobile) || /Android|iPhone|iPad|iPod|Mobi/i.test(navigator.userAgent);
+  };
+
   const handleTikTokShare = async (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
     e.stopPropagation();
     const url = shareUrl || `/announcements/${announcement.id}`;
+    if (isMobileDevice() && navigator.share) {
+      try {
+        await navigator.share({ url, title: announcement.title || undefined });
+        return;
+      } catch {
+        // Fall back to copy on share failure or cancel.
+      }
+    }
     try {
       await navigator.clipboard.writeText(url);
+      window.alert('ბმული კოპირებულია! ✅');
     } catch {
       const textarea = document.createElement('textarea');
       textarea.value = url;
@@ -49,6 +63,7 @@ export default function AnnouncementCard({ announcement }: AnnouncementCardProps
       textarea.select();
       document.execCommand('copy');
       document.body.removeChild(textarea);
+      window.alert('ბმული კოპირებულია! ✅');
     }
   };
 
@@ -72,7 +87,7 @@ export default function AnnouncementCard({ announcement }: AnnouncementCardProps
             type="button"
             onClick={handleTikTokShare}
             className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-black/50 text-white/90 border border-white/20 hover:bg-white hover:text-black transition"
-            aria-label="TikTok გაზიარება (ბმულის კოპირება)"
+            aria-label="TikTok-ზე გაზიარება"
           >
             TK
           </button>
