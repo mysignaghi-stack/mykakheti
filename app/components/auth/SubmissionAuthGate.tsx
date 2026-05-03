@@ -21,7 +21,14 @@ export default function SubmissionAuthGate({ redirectPath, children, heading }: 
 
   const refreshSession = useCallback(async () => {
     const { data } = await supabase.auth.getSession();
-    setSession(data.session ?? null);
+    if (data.session) {
+      setSession(data.session);
+      setLoadingSession(false);
+      return;
+    }
+
+    const { data: refreshed } = await supabase.auth.refreshSession();
+    setSession(refreshed.session ?? null);
     setLoadingSession(false);
   }, []);
 
@@ -70,7 +77,18 @@ export default function SubmissionAuthGate({ redirectPath, children, heading }: 
         setSession(data.session);
         setLoadingSession(false);
         clearInterval(interval);
-      } else if (attempts >= maxAttempts) {
+        return;
+      }
+
+      const { data: refreshed } = await supabase.auth.refreshSession();
+      if (refreshed.session) {
+        setSession(refreshed.session);
+        setLoadingSession(false);
+        clearInterval(interval);
+        return;
+      }
+
+      if (attempts >= maxAttempts) {
         setLoadingSession(false);
         clearInterval(interval);
       }
