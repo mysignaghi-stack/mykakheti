@@ -25,6 +25,7 @@ export default function AddPage() {
   const [loading, setLoading] = useState(false);
   const [bgImage, setBgImage] = useState('');
   const [session, setSession] = useState<Session | null>(null);
+  const [loadingSession, setLoadingSession] = useState(true);
   const [authError, setAuthError] = useState('');
   const [registerError, setRegisterError] = useState('');
   const [registerMessage, setRegisterMessage] = useState('');
@@ -49,8 +50,20 @@ export default function AddPage() {
   }, []);
 
   const refreshSession = useCallback(async () => {
-    const { data } = await supabase.auth.getSession();
-    setSession(data.session ?? null);
+    try {
+      const { data } = await supabase.auth.getSession();
+      if (data.session) {
+        setSession(data.session);
+        return;
+      }
+
+      const { data: refreshed } = await supabase.auth.refreshSession();
+      setSession(refreshed.session ?? null);
+    } catch {
+      setSession(null);
+    } finally {
+      setLoadingSession(false);
+    }
   }, []);
 
   const getErrorMessage = (err: unknown) => {
@@ -105,11 +118,28 @@ export default function AddPage() {
     const interval = setInterval(async () => {
       if (!active) return;
       attempts += 1;
-      const { data } = await supabase.auth.getSession();
-      if (data.session) {
-        setSession(data.session);
-        clearInterval(interval);
-      } else if (attempts >= maxAttempts) {
+      try {
+        const { data } = await supabase.auth.getSession();
+        if (data.session) {
+          setSession(data.session);
+          setLoadingSession(false);
+          clearInterval(interval);
+          return;
+        }
+
+        const { data: refreshed } = await supabase.auth.refreshSession();
+        if (refreshed.session) {
+          setSession(refreshed.session);
+          setLoadingSession(false);
+          clearInterval(interval);
+          return;
+        }
+      } catch {
+        setSession(null);
+      }
+
+      if (attempts >= maxAttempts) {
+        setLoadingSession(false);
         clearInterval(interval);
       }
     }, 1000);
@@ -306,7 +336,13 @@ export default function AddPage() {
             <h1 className="text-3xl font-black uppercase italic tracking-widest text-amber-500 drop-shadow-lg">განცხადების დამატება</h1>
           </div>
 
-          {!isAuthenticated && (
+          {loadingSession && (
+            <div className="mb-8 rounded-2xl border border-white/10 bg-white/5 p-5 text-sm text-white/60">
+              იტვირთება ავტორიზაცია...
+            </div>
+          )}
+
+          {!isAuthenticated && !loadingSession && (
             <div className="mb-8 space-y-4 rounded-2xl border border-amber-500/30 bg-amber-500/10 p-5 text-sm text-amber-50">
               <div className="text-center space-y-2">
                 <p className="font-black uppercase tracking-wide text-[11px]">საწყის ეტაპზე საჭიროა ავტორიზაცია ან რეგისტრაცია.</p>

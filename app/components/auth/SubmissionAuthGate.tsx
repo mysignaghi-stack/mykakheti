@@ -20,16 +20,20 @@ export default function SubmissionAuthGate({ redirectPath, children, heading }: 
   const [registerData, setRegisterData] = useState({ firstName: "", lastName: "", email: "", phone: "" });
 
   const refreshSession = useCallback(async () => {
-    const { data } = await supabase.auth.getSession();
-    if (data.session) {
-      setSession(data.session);
-      setLoadingSession(false);
-      return;
-    }
+    try {
+      const { data } = await supabase.auth.getSession();
+      if (data.session) {
+        setSession(data.session);
+        return;
+      }
 
-    const { data: refreshed } = await supabase.auth.refreshSession();
-    setSession(refreshed.session ?? null);
-    setLoadingSession(false);
+      const { data: refreshed } = await supabase.auth.refreshSession();
+      setSession(refreshed.session ?? null);
+    } catch {
+      setSession(null);
+    } finally {
+      setLoadingSession(false);
+    }
   }, []);
 
   const setAuthRedirectCookie = useCallback((target: string) => {
@@ -72,20 +76,24 @@ export default function SubmissionAuthGate({ redirectPath, children, heading }: 
     const interval = setInterval(async () => {
       if (!active) return;
       attempts += 1;
-      const { data } = await supabase.auth.getSession();
-      if (data.session) {
-        setSession(data.session);
-        setLoadingSession(false);
-        clearInterval(interval);
-        return;
-      }
+      try {
+        const { data } = await supabase.auth.getSession();
+        if (data.session) {
+          setSession(data.session);
+          setLoadingSession(false);
+          clearInterval(interval);
+          return;
+        }
 
-      const { data: refreshed } = await supabase.auth.refreshSession();
-      if (refreshed.session) {
-        setSession(refreshed.session);
-        setLoadingSession(false);
-        clearInterval(interval);
-        return;
+        const { data: refreshed } = await supabase.auth.refreshSession();
+        if (refreshed.session) {
+          setSession(refreshed.session);
+          setLoadingSession(false);
+          clearInterval(interval);
+          return;
+        }
+      } catch {
+        setSession(null);
       }
 
       if (attempts >= maxAttempts) {
