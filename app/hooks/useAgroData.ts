@@ -43,10 +43,8 @@ export function useAgroData(initialData: AgroItem[] = DEFAULT_AGRO_DATA) {
   }, [initialData]);
 
   useEffect(() => {
-    if (initialData.length === 0) {
-      fetchAgroData();
-    }
-  }, [fetchAgroData, initialData.length]);
+    fetchAgroData();
+  }, [fetchAgroData]);
 
 
 
