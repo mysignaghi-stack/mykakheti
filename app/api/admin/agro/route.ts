@@ -81,6 +81,16 @@ export async function POST(request: Request) {
       return NextResponse.json({ data });
     }
 
+    const getNextId = async () => {
+      const { data: maxRow } = await serviceClient
+        .from('agro_prices')
+        .select('id')
+        .order('id', { ascending: false })
+        .limit(1)
+        .single();
+      return typeof (maxRow as any)?.id === 'number' ? (maxRow as any).id + 1 : 1;
+    };
+
     if (action === 'reset') {
       const { error: deleteError } = await serviceClient
         .from('agro_prices')
@@ -89,7 +99,9 @@ export async function POST(request: Request) {
 
       if (deleteError) return NextResponse.json({ error: deleteError.message }, { status: 500 });
 
+      const startId = await getNextId();
       const defaults = DEFAULT_AGRO_DATA.map((item, index) => ({
+        id: startId + index,
         name: item.name,
         unit: item.unit ?? null,
         price: item.price ?? null,
@@ -122,14 +134,25 @@ export async function POST(request: Request) {
 
     if (String(payload.id || '').startsWith('new-')) {
       const { id, ...insertPayload } = payload;
-      const { data, error } = await serviceClient
-        .from('agro_prices')
-        .insert(insertPayload)
-        .select('*');
-      if (error) return NextResponse.json({ error: error.message }, { status: 500 });
-      revalidatePath('/');
-      revalidatePath('/admin/agro');
-      return NextResponse.json({ data });
+      let attempt = 0;
+      let lastError: string | null = null;
+
+      while (attempt < 3) {
+        const nextId = await getNextId();
+        const { data, error } = await serviceClient
+          .from('agro_prices')
+          .insert({ ...insertPayload, id: nextId })
+          .select('*');
+        if (!error) {
+          revalidatePath('/');
+          revalidatePath('/admin/agro');
+          return NextResponse.json({ data });
+        }
+        lastError = error.message;
+        attempt += 1;
+      }
+
+      return NextResponse.json({ error: lastError || 'Insert failed' }, { status: 500 });
     } else {
       const id = payload.id;
       const { data, error } = await serviceClient.from('agro_prices').update({ ...payload }).eq('id', id).select('*');
