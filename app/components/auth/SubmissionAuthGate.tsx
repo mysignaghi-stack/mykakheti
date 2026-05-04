@@ -17,7 +17,13 @@ export default function SubmissionAuthGate({ redirectPath, children, heading }: 
   const [registerError, setRegisterError] = useState("");
   const [registerMessage, setRegisterMessage] = useState("");
   const [registerLoading, setRegisterLoading] = useState(false);
-  const [registerData, setRegisterData] = useState({ firstName: "", lastName: "", email: "", phone: "" });
+  const [registerData, setRegisterData] = useState({ firstName: "", lastName: "", email: "", phone: "", password: "" });
+  const [showLoginPassword, setShowLoginPassword] = useState(false);
+  const [showRegisterPassword, setShowRegisterPassword] = useState(false);
+  const [loginEmail, setLoginEmail] = useState("");
+  const [loginPassword, setLoginPassword] = useState("");
+  const [loginError, setLoginError] = useState("");
+  const [loginLoading, setLoginLoading] = useState(false);
 
   const refreshSession = useCallback(async () => {
     try {
@@ -149,7 +155,7 @@ export default function SubmissionAuthGate({ redirectPath, children, heading }: 
     setRegisterError("");
     setRegisterMessage("");
 
-    if (!registerData.firstName || !registerData.lastName || !registerData.email || !registerData.phone) {
+    if (!registerData.firstName || !registerData.lastName || !registerData.email || !registerData.phone || !registerData.password) {
       setRegisterError("გთხოვთ შეავსოთ ყველა ველი.");
       return;
     }
@@ -157,8 +163,9 @@ export default function SubmissionAuthGate({ redirectPath, children, heading }: 
     setRegisterLoading(true);
     setAuthRedirectCookie(redirectPath);
     try {
-      const { error } = await supabase.auth.signInWithOtp({
+      const { error } = await supabase.auth.signUp({
         email: registerData.email,
+        password: registerData.password,
         options: {
           data: {
             first_name: registerData.firstName,
@@ -171,12 +178,39 @@ export default function SubmissionAuthGate({ redirectPath, children, heading }: 
 
       if (error) throw error;
       setRegisterMessage("აქტივაციის ბმული გაიგზავნა თქვენს მითითებულ ელფოსტაზე. გთხოვთ შეამოწმოთ საფოსტო ყუთი.");
-      setRegisterData({ firstName: "", lastName: "", email: "", phone: "" });
+      setRegisterData({ firstName: "", lastName: "", email: "", phone: "", password: "" });
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : "Unknown error";
       setRegisterError(`ვერ გაიგზავნა ბმული: ${message}`);
     } finally {
       setRegisterLoading(false);
+    }
+  };
+
+  const handleInlineLogin = async (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setLoginError("");
+
+    if (!loginEmail || !loginPassword) {
+      setLoginError("გთხოვთ შეავსოთ ელფოსტა და პაროლი.");
+      return;
+    }
+
+    setLoginLoading(true);
+    setAuthRedirectCookie(redirectPath);
+    try {
+      const { error } = await supabase.auth.signInWithPassword({
+        email: loginEmail,
+        password: loginPassword,
+      });
+      if (error) throw error;
+      setLoginEmail("");
+      setLoginPassword("");
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : "Unknown error";
+      setLoginError(message);
+    } finally {
+      setLoginLoading(false);
     }
   };
 
@@ -217,6 +251,40 @@ export default function SubmissionAuthGate({ redirectPath, children, heading }: 
               </button>
               {/* Facebook ავტორიზაცია დროებით შეჩერებულია */}
             </div>
+            <form onSubmit={handleInlineLogin} className="space-y-2 pt-2">
+                <input
+                  className="w-full p-3 rounded-xl bg-white/10 border border-white/10 focus:border-amber-500 outline-none text-white placeholder:text-white/40 text-[12px]"
+                  placeholder="ელფოსტა"
+                  type="email"
+                  value={loginEmail}
+                  onChange={(e: ChangeEvent<HTMLInputElement>) => setLoginEmail(e.target.value)}
+                />
+              <div className="relative">
+                <input
+                  className="w-full p-3 pr-16 rounded-xl bg-white/10 border border-white/10 focus:border-amber-500 outline-none text-white placeholder:text-white/40 text-[12px]"
+                  placeholder="პაროლი"
+                  type={showLoginPassword ? "text" : "password"}
+                  value={loginPassword}
+                  onChange={(e: ChangeEvent<HTMLInputElement>) => setLoginPassword(e.target.value)}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowLoginPassword((prev) => !prev)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] font-black uppercase text-white/60 hover:text-white transition"
+                >
+                  {showLoginPassword ? "დამალვა" : "ჩვენება"}
+                </button>
+              </div>
+              <p className="text-[10px] text-white/60">პაროლი: მინ. 6 სიმბოლო</p>
+                <button
+                  type="submit"
+                  disabled={loginLoading}
+                  className="w-full rounded-xl bg-white/90 text-slate-900 font-black py-3 uppercase text-[11px] hover:bg-white transition disabled:opacity-60"
+                >
+                  {loginLoading ? "იტვირთება..." : "შესვლა"}
+                </button>
+                {loginError && <p className="text-red-300 text-xs font-semibold">{loginError}</p>}
+              </form>
             {authError && <p className="text-red-300 text-xs font-semibold">{authError}</p>}
           </div>
 
@@ -249,6 +317,23 @@ export default function SubmissionAuthGate({ redirectPath, children, heading }: 
               value={registerData.phone}
               onChange={(e: ChangeEvent<HTMLInputElement>) => setRegisterData({ ...registerData, phone: e.target.value })}
             />
+            <div className="relative">
+              <input
+                className="w-full p-3 pr-16 rounded-xl bg-white/10 border border-white/10 focus:border-amber-500 outline-none text-white placeholder:text-white/40 text-[12px]"
+                placeholder="პაროლი"
+                type={showRegisterPassword ? "text" : "password"}
+                value={registerData.password}
+                onChange={(e: ChangeEvent<HTMLInputElement>) => setRegisterData({ ...registerData, password: e.target.value })}
+              />
+              <button
+                type="button"
+                onClick={() => setShowRegisterPassword((prev) => !prev)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] font-black uppercase text-white/60 hover:text-white transition"
+              >
+                {showRegisterPassword ? "დამალვა" : "ჩვენება"}
+              </button>
+            </div>
+            <p className="text-[10px] text-white/60">პაროლი: მინ. 6 სიმბოლო</p>
             <button
               type="submit"
               disabled={registerLoading}
