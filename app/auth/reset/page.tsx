@@ -1,10 +1,10 @@
 'use client';
 
-import { useEffect, useState, type FormEvent } from 'react';
+import { Suspense, useEffect, useState, type FormEvent } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { supabase } from '../../lib/supabase';
 
-export default function ResetPasswordPage() {
+function ResetPasswordClient() {
   const router = useRouter();
   const params = useSearchParams();
   const redirect = params?.get('redirect') || '/';
@@ -157,5 +157,22 @@ export default function ResetPasswordPage() {
         {message && <p className="text-emerald-300 text-xs font-semibold">{message}</p>}
       </div>
     </main>
+  );
+}
+
+export default function ResetPasswordPage() {
+  return (
+    <Suspense
+      fallback={
+        <main className="min-h-screen bg-[#050510] flex items-center justify-center p-6 text-white">
+          <div className="w-full max-w-md bg-white/5 border border-white/10 rounded-3xl p-8 space-y-4 backdrop-blur-xl">
+            <h1 className="text-xl font-black uppercase italic text-amber-500">პაროლის აღდგენა</h1>
+            <p className="text-[11px] text-white/60">იტვირთება...</p>
+          </div>
+        </main>
+      }
+    >
+      <ResetPasswordClient />
+    </Suspense>
   );
 }
