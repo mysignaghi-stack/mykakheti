@@ -549,7 +549,7 @@ export default function HomePageClient({
 
 
   return (
-    <main className="min-h-screen relative flex flex-col bg-[#050510] overflow-x-hidden text-left selection:bg-amber-500 selection:text-white text-white w-full max-w-full">
+    <main className="min-h-screen relative flex flex-col bg-[#050510] overflow-x-hidden text-left selection:bg-amber-500 selection:text-white text-white w-full max-w-full pt-0">
       {/* Background */}
       <div className="fixed inset-0 z-0 pointer-events-none">
         {bgImage && (
