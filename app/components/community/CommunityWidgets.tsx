@@ -6,19 +6,10 @@ import Image from "next/image";
 import { supabase } from "../../lib/supabase";
 import type { Database } from "../../../types/supabase";
 
-const formatGeorgianDate = (date: Date): string => {
-  const day = date.getDate();
-  const month = date.getMonth() + 1;
-  const year = date.getFullYear();
-  return `${day}.${month}.${year}`;
-};
-
 const ROTATE_MS = 3000;
 
-type ObituaryRow = Pick<Database["public"]["Tables"]["obituaries"]["Row"], "id" | "full_name" | "funeral_at" | "funeral_place" | "image_url" | "is_approved" | "created_at">;
 type LostFoundRow = Pick<Database["public"]["Tables"]["lost_found"]["Row"], "id" | "title" | "location" | "image_url" | "kind" | "is_approved" | "created_at">;
 type MasterRow = Pick<Database["public"]["Tables"]["masters"]["Row"], "id" | "full_name" | "profession" | "location" | "description" | "rating_avg" | "is_approved" | "created_at">;
-type CongratsRow = Pick<Database["public"]["Tables"]["congratulations"]["Row"], "id" | "sender_name" | "recipient_name" | "message" | "image_url" | "occasion" | "created_at">;
 
 type CardConfig = {
   title: string;
@@ -28,31 +19,19 @@ type CardConfig = {
   placeholder: string;
 };
 interface CommunityWidgetsProps {
-  initialObituaries?: ObituaryRow[];
   initialLostFound?: LostFoundRow[];
   initialMasters?: MasterRow[];
-  initialCongrats?: CongratsRow[];
 }
 
 export default function CommunityWidgets({
-  initialObituaries = [],
   initialLostFound = [],
   initialMasters = [],
-  initialCongrats = [],
 }: CommunityWidgetsProps) {
-  const [obituaries, setObituaries] = useState<ObituaryRow[]>(initialObituaries);
   const [lostFound, setLostFound] = useState<LostFoundRow[]>(initialLostFound);
   const [masters, setMasters] = useState<MasterRow[]>(initialMasters);
-  const [congrats, setCongrats] = useState<CongratsRow[]>(initialCongrats);
 
-  const [obIndex, setObIndex] = useState(0);
   const [lfIndex, setLfIndex] = useState(0);
   const [masterIndex, setMasterIndex] = useState(0);
-  const [congratsIndex, setCongratsIndex] = useState(0);
-
-  useEffect(() => {
-    setObituaries(initialObituaries);
-  }, [initialObituaries]);
 
   useEffect(() => {
     setLostFound(initialLostFound);
@@ -63,21 +42,12 @@ export default function CommunityWidgets({
   }, [initialMasters]);
 
   useEffect(() => {
-    setCongrats(initialCongrats);
-  }, [initialCongrats]);
-
-  useEffect(() => {
-    const shouldFetch = [initialObituaries.length, initialLostFound.length, initialMasters.length, initialCongrats.length].some((len) => len === 0);
+    const shouldFetch = [initialLostFound.length, initialMasters.length].some((len) => len === 0);
     if (!shouldFetch) return;
 
     const fetchData = async () => {
       try {
-        const [obRes, lfRes, masterRes, congratsRes] = await Promise.all([
-          supabase
-            .from("obituaries")
-            .select("id, full_name, funeral_at, funeral_place, image_url, is_approved, created_at")
-            .eq("is_approved", true)
-            .order("created_at", { ascending: false }),
+        const [lfRes, masterRes] = await Promise.all([
           supabase
             .from("lost_found")
             .select("id, title, location, image_url, kind, is_approved, created_at")
@@ -88,49 +58,31 @@ export default function CommunityWidgets({
             .select("id, full_name, profession, location, description, rating_avg, is_approved, created_at")
             .eq("is_approved", true)
             .order("created_at", { ascending: false }),
-          supabase
-            .from("congratulations")
-            .select("id, sender_name, recipient_name, message, image_url, occasion, created_at")
-            .eq("is_approved", true)
-            .order("created_at", { ascending: false }),
         ]);
 
-        setObituaries(obRes.data ?? []);
         setLostFound(lfRes.data ?? []);
         setMasters(masterRes.data ?? []);
-        setCongrats(congratsRes.data ?? []);
       } catch (error) {
         console.error('Failed to load community widgets', error);
       }
     };
 
     fetchData();
-  }, [initialObituaries.length, initialLostFound.length, initialMasters.length, initialCongrats.length]);
+  }, [initialLostFound.length, initialMasters.length]);
 
   useEffect(() => {
     const timer = setInterval(() => {
-      setObIndex((prev) => (obituaries.length ? (prev + 1) % obituaries.length : 0));
       setLfIndex((prev) => (lostFound.length ? (prev + 1) % lostFound.length : 0));
       setMasterIndex((prev) => (masters.length ? (prev + 1) % masters.length : 0));
-      setCongratsIndex((prev) => (congrats.length ? (prev + 1) % congrats.length : 0));
     }, ROTATE_MS);
 
     return () => clearInterval(timer);
-  }, [obituaries.length, lostFound.length, masters.length, congrats.length]);
+  }, [lostFound.length, masters.length]);
 
-  useEffect(() => setObIndex(0), [obituaries.length]);
   useEffect(() => setLfIndex(0), [lostFound.length]);
   useEffect(() => setMasterIndex(0), [masters.length]);
-  useEffect(() => setCongratsIndex(0), [congrats.length]);
 
   const cards: CardConfig[] = useMemo(() => ([
-    {
-      title: "სამძიმარი",
-      accentClass: "from-gray-400/30 via-slate-900/60 to-white/10",
-      link: "/community/obituaries",
-      hrefBuilder: (id: string) => `/community/obituaries/${id}`,
-      placeholder: "ახალი განცხადებები მალე დაემატება",
-    },
     {
       title: "დაკარგული/ნაპოვნი",
       accentClass: "from-amber-700/50 via-black/50 to-amber-900/60",
@@ -145,65 +97,33 @@ export default function CommunityWidgets({
       hrefBuilder: (id: string) => `/community/masters/${id}`,
       placeholder: "ახალი განცხადებები მალე დაემატება",
     },
-    {
-      title: "მისალოცები",
-      accentClass: "from-rose-600/40 via-black/60 to-amber-500/40",
-      link: "/community/congratulations",
-      hrefBuilder: (id: string) => `/community/congratulations/${id}`,
-      placeholder: "ახალი განცხადებები მალე დაემატება",
-    },
   ]), []);
 
-  const currentObituary = obituaries[obIndex] ?? null;
   const currentLostFound = lostFound[lfIndex] ?? null;
   const currentMaster = masters[masterIndex] ?? null;
-  const currentCongrats = congrats[congratsIndex] ?? null;
-  const congratsImage = currentCongrats?.image_url || undefined;
 
   return (
-    <div className="w-full grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+    <div className="w-full grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-8">
       <WidgetCard
         config={cards[0]}
-        highlight={currentObituary}
-        badge="სამძიმარი"
-        description={currentObituary ? currentObituary.funeral_place || "" : ""}
-        title={currentObituary?.full_name || cards[0].placeholder}
-        meta={currentObituary?.funeral_at ? formatGeorgianDate(new Date(currentObituary.funeral_at)) : undefined}
-        href={`/community/obituaries?selectedId=${currentObituary?.id}`}
-        image={currentObituary?.image_url || undefined}
-      />
-
-      <WidgetCard
-        config={cards[1]}
         highlight={currentLostFound}
         badge={currentLostFound ? (currentLostFound.kind === "found" ? "ნაპოვნი" : "დაკარგული") : "დაკარგული/ნაპოვნი"}
         description={currentLostFound?.location || ""}
-        title={currentLostFound?.title || cards[1].placeholder}
+        title={currentLostFound?.title || cards[0].placeholder}
         meta={currentLostFound?.kind ? (currentLostFound.kind === "found" ? "ნაპოვნი" : "დაკარგული") : undefined}
         href={`/community/lost-found?selectedId=${currentLostFound?.id}`}
         image={currentLostFound?.image_url || undefined}
       />
 
       <WidgetCard
-        config={cards[2]}
+        config={cards[1]}
         highlight={currentMaster}
         badge={currentMaster ? "ოსტატი/სპეციალისტი" : "ოსტატები/სპეციალისტები"}
         description={currentMaster?.location || ""}
-        title={currentMaster?.full_name || cards[2].placeholder}
+        title={currentMaster?.full_name || cards[1].placeholder}
         meta={currentMaster?.profession}
         href={`/community/masters?selectedId=${currentMaster?.id}`}
         image={undefined}
-      />
-
-      <WidgetCard
-        config={cards[3]}
-        highlight={currentCongrats}
-        badge="მისალოცი"
-        description={currentCongrats ? `${currentCongrats.sender_name || ""} → ${currentCongrats.recipient_name || ""}` : ""}
-        title={currentCongrats?.message || cards[3].placeholder}
-        meta={currentCongrats?.occasion}
-        href={`/community/congratulations?selectedId=${currentCongrats?.id}`}
-        image={congratsImage}
       />
     </div>
   );

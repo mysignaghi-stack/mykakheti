@@ -581,10 +581,8 @@ export default function HomePageClient({
 
       <div className="layout-shell relative z-10 w-full max-w-full xl:max-w-[1800px] px-4 sm:px-6 md:px-10 mx-auto mt-6 mb-3 overflow-hidden">
         <CommunityWidgets
-          initialObituaries={initialCommunity.obituaries}
           initialLostFound={initialCommunity.lostFound}
           initialMasters={initialCommunity.masters}
-          initialCongrats={initialCommunity.congratulations}
         />
       </div>
 

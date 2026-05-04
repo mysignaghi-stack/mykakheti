@@ -4,13 +4,6 @@ import Link from 'next/link';
 
 const sections = [
   {
-    icon: '🕊️',
-    title: 'სამძიმარი',
-    description: 'იხილეთ სამძიმრის განცხადებები და გააზიარეთ ინფორმაცია.',
-    viewHref: '/community/obituaries',
-    addHref: '/community/obituaries/submit',
-  },
-  {
     icon: '🔎',
     title: 'დაკარგული/ნაპოვნი',
     description: 'მოძებნეთ განცხადება ან დაეხმარეთ პოვნის პროცესში.',
@@ -36,7 +29,7 @@ export default function CommunityIndex() {
         <h1 className="text-2xl font-black text-amber-500 uppercase italic mb-3">სათემო ჩართულობა</h1>
         <p className="text-white/60 text-sm mb-6">გამოქვეყნეთ, გააზიარეთ და მიულოცეთ — აირჩიეთ განყოფილება განცხადებების სანახავად ან დასამატებლად.</p>
 
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           {sections.map(section => (
             <div key={section.title} className="p-4 rounded-2xl bg-white/5 border border-white/10 hover:bg-white/10 transition flex flex-col gap-4">
               <div className="flex items-start gap-3">

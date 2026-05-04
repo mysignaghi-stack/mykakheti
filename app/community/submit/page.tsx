@@ -4,12 +4,6 @@ import Link from 'next/link';
 
 const sections = [
   {
-    icon: '🕊️',
-    title: 'სამძიმარი',
-    description: 'სამძიმრის განცხადების დამატება.',
-    addHref: '/community/obituaries/submit',
-  },
-  {
     icon: '🔎',
     title: 'დაკარგული/ნაპოვნი',
     description: 'დაკარგული/ნაპოვნი განცხადების დამატება.',
@@ -20,12 +14,6 @@ const sections = [
     title: 'ოსტატები/სპეციალისტები',
     description: 'ოსტატის ან სპეციალისტის დამატება.',
     addHref: '/community/masters/submit',
-  },
-  {
-    icon: '🎉',
-    title: 'მისალოცი',
-    description: 'მისალოცი ბარათის დამატება.',
-    addHref: '/community/congratulations/submit',
   },
 ];
 
@@ -40,7 +28,7 @@ export default function CommunitySubmitIndex() {
         <h1 className="text-2xl font-black text-amber-500 uppercase italic mb-3">სათემო ჩართულობის განცხადების დამატება</h1>
         <p className="text-white/60 text-sm mb-6">აირჩიეთ განყოფილება განცხადების დასამატებლად.</p>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-3">
           {sections.map((section) => (
             <Link
               key={section.title}

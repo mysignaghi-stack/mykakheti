@@ -13,14 +13,6 @@ interface CommunityCard {
 
 const COMMUNITY_CARDS: CommunityCard[] = [
   {
-    id: 'obituaries',
-    title: 'სამძიმარი',
-    icon: '🕯️',
-    value: 'სამძიმრის დამატება',
-    table: 'obituaries',
-    fields: ['full_name', 'date_of_death', 'funeral_at', 'funeral_place', 'contacts', 'notes']
-  },
-  {
     id: 'lost-found',
     title: 'დაკარგული/ნაპოვნი',
     icon: '🔍',
@@ -36,14 +28,6 @@ const COMMUNITY_CARDS: CommunityCard[] = [
     table: 'masters',
     fields: ['full_name', 'profession', 'category', 'phone', 'location', 'description', 'photo_url', 'service_area', 'price_note']
   },
-  {
-    id: 'congratulations',
-    title: 'მისალოცი ბარათები',
-    icon: '🎁',
-    value: 'მისალოცი დამატება',
-    table: 'congratulations',
-    fields: ['sender_name', 'recipient_name', 'message', 'category', 'template', 'toast', 'music_url', 'animation_enabled']
-  }
 ];
 
 export default function CommunityEngagement() {
@@ -67,11 +51,11 @@ export default function CommunityEngagement() {
               სათემო ჩართულობა
             </h3>
             <p className="text-white/60 text-[9px] leading-snug max-w-2xl mx-auto">
-              გააზიარეთ თქვენი სიახლეები, მოძებნეთ საჭირო სპეციალისტები ან გამოხატეთ თანაგრძნობა. თქვენი განცხადება ადმინისტრაციის მიერ გადამოწმების შემდეგ გამოჩნდება საიტის მთავარი გვერდის ზედა სათემო ბარათებში.
+              გააზიარეთ თქვენი სიახლეები და მოძებნეთ საჭირო სპეციალისტები. თქვენი განცხადება ადმინისტრაციის მიერ გადამოწმების შემდეგ გამოჩნდება საიტის მთავარი გვერდის ზედა სათემო ბარათებში.
             </p>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-2">
             {COMMUNITY_CARDS.map(card => (
               <button
                 key={card.id}

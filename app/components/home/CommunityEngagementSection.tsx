@@ -8,8 +8,9 @@ interface CommunityEngagementSectionProps {
 }
 
 type CommunityCardConfig = {
-  key: 'obituaries' | 'lost-found' | 'masters' | 'congratulations';
+  key: 'lost-found' | 'masters';
   icon: string;
+  label: string;
   submitHref: string;
   submitLabel: string;
   viewHref: string;
@@ -18,16 +19,9 @@ type CommunityCardConfig = {
 
 const COMMUNITY_CARDS: CommunityCardConfig[] = [
   {
-    key: 'obituaries',
-    icon: '🕊️',
-    submitHref: '/community/obituaries/submit',
-    submitLabel: 'სამძიმრის დამატება',
-    viewHref: '/community/obituaries',
-    viewLabel: 'ნახვა',
-  },
-  {
     key: 'lost-found',
     icon: '🔎',
+    label: 'დაკარგული/ნაპოვნი',
     submitHref: '/community/lost-found/submit',
     submitLabel: 'დაკარგული/ნაპოვნის დამატება',
     viewHref: '/community/lost-found',
@@ -36,17 +30,10 @@ const COMMUNITY_CARDS: CommunityCardConfig[] = [
   {
     key: 'masters',
     icon: '🛠️',
+    label: 'ოსტატები/სპეციალისტები',
     submitHref: '/community/masters/submit',
     submitLabel: 'ოსტატის/სპეციალისტის დამატება',
     viewHref: '/community/masters',
-    viewLabel: 'ნახვა',
-  },
-  {
-    key: 'congratulations',
-    icon: '🎉',
-    submitHref: '/community/congratulations/submit',
-    submitLabel: 'მისალოცის დამატება',
-    viewHref: '/community/congratulations',
     viewLabel: 'ნახვა',
   },
 ];
@@ -66,7 +53,7 @@ export default function CommunityEngagementSection({ className }: CommunityEngag
       <p className="w-full text-white font-bold uppercase tracking-[0.2em] mb-2 leading-tight text-center">
         გამოქვეყნეთ, გააზიარეთ და მიულოცეთ
       </p>
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 w-full">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-3 w-full">
         {COMMUNITY_CARDS.map((card) => (
           <Link
             key={card.key}
@@ -75,7 +62,7 @@ export default function CommunityEngagementSection({ className }: CommunityEngag
           >
             <span className="text-2xl mb-1">{card.icon}</span>
             <span className="text-[10px] font-black uppercase tracking-widest text-white block">
-              {card.key === 'obituaries' ? 'სამძიმარი' : card.key === 'lost-found' ? 'დაკარგული/ნაპოვნი' : card.key === 'masters' ? 'ოსტატები/სპეციალისტები' : 'მისალოცი'}
+              {card.label}
             </span>
             <span className="mt-1 text-[9px] text-white/50">დამატება</span>
           </Link>
