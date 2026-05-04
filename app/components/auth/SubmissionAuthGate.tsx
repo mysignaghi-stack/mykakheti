@@ -24,6 +24,11 @@ export default function SubmissionAuthGate({ redirectPath, children, heading }: 
   const [loginPassword, setLoginPassword] = useState("");
   const [loginError, setLoginError] = useState("");
   const [loginLoading, setLoginLoading] = useState(false);
+  const [resetLoading, setResetLoading] = useState(false);
+  const [resetError, setResetError] = useState("");
+  const [resetMessage, setResetMessage] = useState("");
+  const [showResetModal, setShowResetModal] = useState(false);
+  const [resetEmail, setResetEmail] = useState("");
 
   const refreshSession = useCallback(async () => {
     try {
@@ -214,6 +219,31 @@ export default function SubmissionAuthGate({ redirectPath, children, heading }: 
     }
   };
 
+  const handlePasswordReset = async (email: string) => {
+    setResetError("");
+    setResetMessage("");
+
+    if (!email) {
+      setResetError("გთხოვთ შეიყვანოთ ელფოსტა პაროლის აღსადგენად.");
+      return;
+    }
+
+    setResetLoading(true);
+    setAuthRedirectCookie(redirectPath);
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${window.location.origin}/auth/reset?redirect=${encodeURIComponent(redirectPath)}`,
+      });
+      if (error) throw error;
+      setResetMessage("პაროლის აღდგენის ბმული გაიგზავნა ელფოსტაზე.");
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : "Unknown error";
+      setResetError(message);
+    } finally {
+      setResetLoading(false);
+    }
+  };
+
   const handleSignOut = async () => {
     await supabase.auth.signOut();
     setSession(null);
@@ -283,7 +313,21 @@ export default function SubmissionAuthGate({ redirectPath, children, heading }: 
                 >
                   {loginLoading ? "იტვირთება..." : "შესვლა"}
                 </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowResetModal(true);
+                    setResetError("");
+                    setResetMessage("");
+                    setResetEmail("");
+                  }}
+                  className="w-full rounded-xl border border-white/20 text-white/80 font-black py-2 uppercase text-[10px] hover:text-white hover:border-white/40 transition"
+                >
+                  პაროლის აღდგენა
+                </button>
                 {loginError && <p className="text-red-300 text-xs font-semibold">{loginError}</p>}
+                {resetError && <p className="text-red-300 text-xs font-semibold">{resetError}</p>}
+                {resetMessage && <p className="text-emerald-300 text-xs font-semibold">{resetMessage}</p>}
               </form>
             {authError && <p className="text-red-300 text-xs font-semibold">{authError}</p>}
           </div>
@@ -345,6 +389,43 @@ export default function SubmissionAuthGate({ redirectPath, children, heading }: 
             {registerMessage && <p className="text-emerald-300 text-xs font-semibold">{registerMessage}</p>}
           </form>
         </div>
+
+        {showResetModal && (
+          <div className="fixed inset-0 z-[130] flex items-center justify-center bg-black/70 backdrop-blur-sm px-4">
+            <div className="w-full max-w-sm rounded-2xl border border-white/10 bg-[#0b0b15]/95 p-5 shadow-2xl">
+              <div className="text-center mb-3">
+                <h4 className="text-sm font-black uppercase tracking-wide text-white">პაროლის აღდგენა</h4>
+                <p className="text-[11px] text-white/60">შეიყვანეთ ელფოსტა ბმულის მისაღებად</p>
+              </div>
+              <input
+                className="w-full p-3 rounded-xl bg-white/10 border border-white/10 focus:border-amber-500 outline-none text-white placeholder:text-white/40 text-[12px]"
+                placeholder="ელფოსტა"
+                type="email"
+                value={resetEmail}
+                onChange={(e: ChangeEvent<HTMLInputElement>) => setResetEmail(e.target.value)}
+              />
+              <div className="mt-3 space-y-2">
+                <button
+                  type="button"
+                  onClick={() => handlePasswordReset(resetEmail)}
+                  disabled={resetLoading}
+                  className="w-full rounded-xl bg-amber-600 text-white font-black py-2.5 uppercase text-[11px] hover:bg-amber-500 transition disabled:opacity-60"
+                >
+                  {resetLoading ? "იგზავნება..." : "ბმულის გაგზავნა"}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setShowResetModal(false)}
+                  className="w-full rounded-xl border border-white/20 text-white/70 font-black py-2 uppercase text-[10px] hover:text-white hover:border-white/40 transition"
+                >
+                  დახურვა
+                </button>
+                {resetError && <p className="text-red-300 text-xs font-semibold">{resetError}</p>}
+                {resetMessage && <p className="text-emerald-300 text-xs font-semibold">{resetMessage}</p>}
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     );
   }
