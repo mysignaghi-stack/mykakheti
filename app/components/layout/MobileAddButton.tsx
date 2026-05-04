@@ -15,8 +15,13 @@ export default function MobileAddButton() {
       <div className="w-full px-4 pb-[calc(env(safe-area-inset-bottom,0px)+16px)] flex justify-center pointer-events-none">
         <Link
           href="/add"
-          className="pointer-events-auto w-full max-w-[300px] rounded-full border border-white/70 bg-gradient-to-b from-white/45 via-white/28 to-white/20 text-black shadow-[0_12px_30px_rgba(0,0,0,0.24)] backdrop-blur-3xl px-3 py-1.5 flex items-center justify-center font-black text-xs tracking-wide text-center transition-transform active:scale-95"
-          style={{ boxShadow: '0 12px 30px rgba(0,0,0,0.24), 0 0 26px rgba(255,255,255,0.45), inset 0 1px 1px rgba(255,255,255,0.85), inset 0 -1px 1px rgba(255,255,255,0.25)' }}
+          className="pointer-events-auto w-full max-w-[300px] rounded-[18px] bg-white/15 text-white px-3 py-1.5 flex items-center justify-center font-black text-xs tracking-wide text-center transition-transform active:scale-95"
+          style={{
+            WebkitBackdropFilter: 'blur(18px) saturate(180%)',
+            backdropFilter: 'blur(18px) saturate(180%)',
+            border: '1px solid rgba(255, 255, 255, 0.35)',
+            boxShadow: '0 8px 24px rgba(0, 0, 0, 0.18), inset 0 1px 0 rgba(255, 255, 255, 0.45)'
+          }}
           aria-label="განცხადება+დამატება"
         >
           <span className="flex items-center gap-2">
