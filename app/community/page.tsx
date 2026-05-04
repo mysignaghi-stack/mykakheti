@@ -12,7 +12,7 @@ const sections = [
   },
   {
     icon: '🛠️',
-    title: 'ოსტატები/სპეციალისტები',
+    title: 'ხელოსნები/ტექნიკოსები',
     description: 'იპოვეთ და დაამატეთ სანდო სპეციალისტები.',
     viewHref: '/community/masters',
     addHref: '/community/masters/submit',

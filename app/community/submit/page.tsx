@@ -11,7 +11,7 @@ const sections = [
   },
   {
     icon: '🛠️',
-    title: 'ოსტატები/სპეციალისტები',
+    title: 'ხელოსნები/ტექნიკოსები',
     description: 'ოსტატის ან სპეციალისტის დამატება.',
     addHref: '/community/masters/submit',
   },

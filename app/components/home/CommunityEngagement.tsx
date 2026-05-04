@@ -22,7 +22,7 @@ const COMMUNITY_CARDS: CommunityCard[] = [
   },
   {
     id: 'masters',
-    title: 'ოსტატები/სპეციალისტები',
+    title: 'ხელოსნები/ტექნიკოსები',
     icon: '🔧',
     value: 'სპეციალისტი/ოსტატი დამატება',
     table: 'masters',

@@ -53,7 +53,7 @@ export default function AdminCommunityPage() {
               { key: 'congratulations', label: 'მისალოცი' },
               { key: 'obituaries', label: 'სამძიმარი' },
               { key: 'lost_found', label: 'დაკარგული/პოვნილი' },
-              { key: 'masters', label: 'ოსტატები/სპეციალისტები' },
+              { key: 'masters', label: 'ხელოსნები/ტექნიკოსები' },
             ].map(c => (
               <button
                 key={c.key}
@@ -91,7 +91,7 @@ export default function AdminCommunityPage() {
             </>
           )} />
 
-          <ModerationPanel table="masters" title="ოსტატები/სპეციალისტები" highlight={selectedCategory === 'masters'} renderItem={(item: any) => (
+          <ModerationPanel table="masters" title="ხელოსნები/ტექნიკოსები" highlight={selectedCategory === 'masters'} renderItem={(item: any) => (
             <>
               <div className="font-black text-white text-lg italic">{item.full_name} — {item.category || 'ოსტატი'} - {item.profession}</div>
               <p className="text-white/80 italic leading-relaxed">{item.location ?? ''}</p>

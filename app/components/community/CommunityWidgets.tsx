@@ -91,7 +91,7 @@ export default function CommunityWidgets({
       placeholder: "ახალი განცხადებები მალე დაემატება",
     },
     {
-      title: "ოსტატები/სპეციალისტები",
+      title: "ხელოსნები/ტექნიკოსები",
       accentClass: "from-blue-700/45 via-black/50 to-blue-900/60",
       link: "/community/masters",
       hrefBuilder: (id: string) => `/community/masters/${id}`,
@@ -118,7 +118,7 @@ export default function CommunityWidgets({
       <WidgetCard
         config={cards[1]}
         highlight={currentMaster}
-        badge={currentMaster ? "ოსტატი/სპეციალისტი" : "ოსტატები/სპეციალისტები"}
+        badge={currentMaster ? "ოსტატი/სპეციალისტი" : "ხელოსნები/ტექნიკოსები"}
         description={currentMaster?.location || ""}
         title={currentMaster?.full_name || cards[1].placeholder}
         meta={currentMaster?.profession}
