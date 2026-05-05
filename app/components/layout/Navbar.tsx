@@ -143,8 +143,16 @@ export default function Navbar() {
           რეგისტრაცია
         </button>
         {showRegister && (
-          <div className="absolute left-0 top-full mt-3 w-[320px] max-w-[90vw] z-[120]">
-            <AuthForm initialMode="signup" compact onClose={() => setShowRegister(false)} />
+          <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/70 backdrop-blur-sm px-4">
+            <div className="relative w-full max-w-sm">
+              <AuthForm initialMode="signup" compact onClose={() => setShowRegister(false)} />
+            </div>
+            <button
+              type="button"
+              onClick={() => setShowRegister(false)}
+              className="absolute inset-0"
+              aria-label="დახურვა"
+            />
           </div>
         )}
       </div>
@@ -196,8 +204,16 @@ export default function Navbar() {
           ავტორიზაცია
         </button>
         {showLogin && (
-          <div className="absolute right-0 top-full mt-3 w-[320px] max-w-[90vw] z-[120]">
-            <AuthForm initialMode="login" compact onClose={() => setShowLogin(false)} />
+          <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/70 backdrop-blur-sm px-4">
+            <div className="relative w-full max-w-sm">
+              <AuthForm initialMode="login" compact onClose={() => setShowLogin(false)} />
+            </div>
+            <button
+              type="button"
+              onClick={() => setShowLogin(false)}
+              className="absolute inset-0"
+              aria-label="დახურვა"
+            />
           </div>
         )}
       </div>
