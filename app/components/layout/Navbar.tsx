@@ -133,9 +133,9 @@ export default function Navbar() {
     : undefined;
 
   return (
-    <nav className="relative z-[100] px-4 sm:px-6 md:px-10 py-5 sm:py-6 flex items-center bg-black/40 backdrop-blur-3xl border-b border-white/5 shadow-2xl">
+    <nav className="fixed top-0 left-0 right-0 z-[100] px-3 sm:px-4 md:px-8 py-2 sm:py-3 flex items-center bg-black/40 backdrop-blur-3xl border-b border-white/5 shadow-2xl">
       <div className="relative flex flex-col items-start shrink-0">
-        <Link href="/" className="text-2xl md:text-3xl font-black italic tracking-tighter">
+        <Link href="/" className="text-xl md:text-2xl font-black italic tracking-tighter">
           mykakheti<span className="text-amber-500">.ge</span>
         </Link>
         <button
@@ -144,7 +144,7 @@ export default function Navbar() {
             setShowRegister((prev) => !prev);
             setShowLogin(false);
           }}
-          className="mt-1 inline-flex items-center justify-center rounded-full border border-amber-300/40 bg-white/5 px-3 py-1 text-[11px] md:text-[12px] font-black uppercase tracking-widest text-amber-300 shadow-[0_6px_16px_rgba(0,0,0,0.2)] backdrop-blur hover:border-amber-200/60 hover:text-amber-200 transition"
+          className="mt-1 inline-flex items-center justify-center rounded-full border border-amber-300/40 bg-white/5 px-2.5 py-0.5 text-[10px] md:text-[11px] font-black uppercase tracking-widest text-amber-300 shadow-[0_6px_16px_rgba(0,0,0,0.2)] backdrop-blur hover:border-amber-200/60 hover:text-amber-200 transition"
         >
           რეგისტრაცია
         </button>
@@ -198,7 +198,7 @@ export default function Navbar() {
       </div>
       
       <div className="relative flex flex-col items-start gap-1 shrink-0">
-        <Link href="/add" className="bg-amber-600 text-white px-5 sm:px-10 py-3 rounded-xl font-black uppercase text-[10px] md:text-[11px] italic shadow-2xl hover:scale-105 transition-all">
+        <Link href="/add" className="bg-amber-600 text-white px-4 sm:px-6 py-2 rounded-xl font-black uppercase text-[10px] md:text-[11px] italic shadow-2xl hover:scale-105 transition-all">
           განცხადება +
         </Link>
         <button
@@ -207,7 +207,7 @@ export default function Navbar() {
             setShowLogin((prev) => !prev);
             setShowRegister(false);
           }}
-          className="mx-auto inline-flex items-center justify-center rounded-full border border-amber-300/40 bg-white/5 px-3 py-1 text-[10px] md:text-[11px] font-black uppercase tracking-widest text-amber-300 shadow-[0_6px_16px_rgba(0,0,0,0.2)] backdrop-blur hover:border-amber-200/60 hover:text-amber-200 transition"
+          className="mx-auto inline-flex items-center justify-center rounded-full border border-amber-300/40 bg-white/5 px-2.5 py-0.5 text-[10px] md:text-[11px] font-black uppercase tracking-widest text-amber-300 shadow-[0_6px_16px_rgba(0,0,0,0.2)] backdrop-blur hover:border-amber-200/60 hover:text-amber-200 transition"
         >
           ავტორიზაცია
         </button>

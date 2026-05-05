@@ -317,12 +317,30 @@ nav {
 /* Apply to the main layout container if a fixed/sticky nav is present */
 @media (max-width: 640px) {
   .layout-shell, main {
-    padding-top: 0.5rem; /* reduce default top padding on small screens */
+    padding-top: 4.75rem;
+  }
+}
+
+@media (max-width: 1023px) {
+  .mobile-agro-raise {
+    margin-top: -4rem;
+  }
+}
+
+@media (max-width: 360px) {
+  .mobile-announcements-spacing {
+    margin-bottom: -3.5rem;
+  }
+  .mobile-agro-raise {
+    margin-top: -2rem;
+  }
+  .mobile-agro-raise-strong {
+    transform: translateY(-3.5rem);
   }
 }
 
 @media (min-width: 641px) {
   .layout-shell, main {
-    padding-top: 1rem;
+    padding-top: 5.75rem;
   }
 }

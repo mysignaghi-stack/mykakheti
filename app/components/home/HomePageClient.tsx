@@ -661,7 +661,7 @@ export default function HomePageClient({
 
 
       {/* Informational grid section, now outside header for independent styling */}
-      <section className="layout-shell relative z-10 w-full max-w-full xl:max-w-[1800px] px-4 sm:px-6 md:px-10 mx-auto mt-4 overflow-hidden">
+      <section className="layout-shell relative z-10 w-full max-w-full xl:max-w-[1800px] px-4 sm:px-6 md:px-10 mx-auto mt-3 overflow-hidden">
         <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,260px)_minmax(0,1fr)_minmax(0,260px)] xl:grid-cols-[minmax(0,300px)_minmax(0,1fr)_minmax(0,300px)] gap-4 md:gap-6 xl:gap-8 items-start text-white bg-black/70 backdrop-blur-2xl rounded-[30px] border border-white/10 p-4 sm:p-6 md:p-8 shadow-xl w-full max-w-full overflow-hidden">
           {/* --- მარცხენა სვეტი (Desktop Only) --- */}
           <div className="hidden lg:flex flex-col gap-6 sticky top-0 order-1 w-full max-w-full min-w-0">
@@ -773,7 +773,7 @@ export default function HomePageClient({
               </div>
             </div>
 
-            <div className="w-full max-w-6xl mx-auto px-6 md:px-10 mt-6">
+            <div className="w-full max-w-6xl mx-auto px-6 md:px-10 mt-6 mobile-announcements-spacing">
               {visibleAds.length > 0 ? (
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                   {visibleAds.map((ad) => (
@@ -799,7 +799,7 @@ export default function HomePageClient({
             </div>
 
             {/* მობილური ვერსია - მარცხენა მხარე */}
-            <div className="flex flex-col gap-4 w-full lg:hidden -mt-24 sm:-mt-32">
+            <div className="flex flex-col gap-4 w-full lg:hidden mobile-agro-raise mobile-agro-raise-strong">
                 {/* 🍇 აგრო-ბირჟა */}
                 <div className="bg-white/[0.03] backdrop-blur-3xl rounded-[30px] border border-white/10 p-5 flex flex-col items-center group relative overflow-hidden transition-all hover:border-purple-500/30 shadow-xl h-[360px]">
                   <div className="flex justify-between w-full items-center mb-4">
