@@ -2,6 +2,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { supabase } from '@/app/lib/supabase';
+import AuthForm from '@/app/components/auth/AuthForm';
 
 type SiteSettingRow = { key: string; value: string | null };
 
@@ -16,6 +17,8 @@ const DEFAULT_BANNER_BG = '';
 const DEFAULT_BANNER_BG_OPACITY = 0.2;
 
 export default function Navbar() {
+  const [showRegister, setShowRegister] = useState(false);
+  const [showLogin, setShowLogin] = useState(false);
   const [bannerText, setBannerText] = useState(DEFAULT_BANNER_TEXT);
   const [bannerMode, setBannerMode] = useState(DEFAULT_BANNER_MODE);
   const [bannerColor, setBannerColor] = useState(DEFAULT_BANNER_COLOR);
@@ -125,9 +128,26 @@ export default function Navbar() {
 
   return (
     <nav className="relative z-[100] px-4 sm:px-6 md:px-10 py-5 sm:py-6 flex items-center bg-black/40 backdrop-blur-3xl border-b border-white/5 shadow-2xl">
-      <Link href="/" className="text-2xl md:text-3xl font-black italic tracking-tighter shrink-0">
-        mykakheti<span className="text-amber-500">.ge</span>
-      </Link>
+      <div className="relative flex flex-col items-start shrink-0">
+        <Link href="/" className="text-2xl md:text-3xl font-black italic tracking-tighter">
+          mykakheti<span className="text-amber-500">.ge</span>
+        </Link>
+        <button
+          type="button"
+          onClick={() => {
+            setShowRegister((prev) => !prev);
+            setShowLogin(false);
+          }}
+          className="mt-1 text-[10px] md:text-[11px] font-black uppercase tracking-widest text-amber-300 hover:text-amber-200"
+        >
+          რეგისტრაცია
+        </button>
+        {showRegister && (
+          <div className="absolute left-0 top-full mt-3 w-[320px] max-w-[90vw] z-[120]">
+            <AuthForm initialMode="signup" compact onClose={() => setShowRegister(false)} />
+          </div>
+        )}
+      </div>
       
       {/* Test Mode Message */}
       <div className="flex-1 flex justify-center items-center px-4">
@@ -161,10 +181,25 @@ export default function Navbar() {
         </div>
       </div>
       
-      <div className="flex gap-2 md:gap-4 items-center shrink-0 relative">
+      <div className="relative flex flex-col items-end gap-1 shrink-0">
         <Link href="/add" className="bg-amber-600 text-white px-5 sm:px-10 py-3 rounded-xl font-black uppercase text-[10px] md:text-[11px] italic shadow-2xl hover:scale-105 transition-all">
           განცხადება +
         </Link>
+        <button
+          type="button"
+          onClick={() => {
+            setShowLogin((prev) => !prev);
+            setShowRegister(false);
+          }}
+          className="text-[10px] md:text-[11px] font-black uppercase tracking-widest text-white/70 hover:text-white"
+        >
+          ავტორიზაცია
+        </button>
+        {showLogin && (
+          <div className="absolute right-0 top-full mt-3 w-[320px] max-w-[90vw] z-[120]">
+            <AuthForm initialMode="login" compact onClose={() => setShowLogin(false)} />
+          </div>
+        )}
       </div>
     </nav>
   );

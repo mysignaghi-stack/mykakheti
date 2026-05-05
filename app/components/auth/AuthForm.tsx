@@ -11,8 +11,14 @@ import { supabase } from "../../lib/supabase";
 
 type Mode = "login" | "signup";
 
-export default function AuthForm() {
-  const [mode, setMode] = useState<Mode>("login");
+interface AuthFormProps {
+  initialMode?: Mode;
+  onClose?: () => void;
+  compact?: boolean;
+}
+
+export default function AuthForm({ initialMode = "login", onClose, compact = false }: AuthFormProps) {
+  const [mode, setMode] = useState<Mode>(initialMode);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
@@ -73,20 +79,33 @@ export default function AuthForm() {
   };
 
   return (
-    <div className="w-full max-w-md mx-auto bg-white/5 border border-white/10 rounded-3xl p-8 space-y-6 backdrop-blur-xl text-white">
+    <div
+      className={`w-full ${compact ? "max-w-sm" : "max-w-md"} mx-auto bg-white/5 border border-white/10 rounded-3xl ${compact ? "p-5" : "p-8"} space-y-6 backdrop-blur-xl text-white`}
+    >
       <div className="flex justify-between items-center">
         <h1 className="text-2xl font-black uppercase italic">
           {mode === "login" ? "შესვლა" : "რეგისტრაცია"}
         </h1>
-        <button
-          onClick={() => {
-            setMode(mode === "login" ? "signup" : "login");
-            setError("");
-          }}
-          className="text-xs font-bold uppercase text-amber-400 hover:text-amber-300"
-        >
-          {mode === "login" ? "რეგისტრაცია" : "შესვლა"}
-        </button>
+        <div className="flex items-center gap-3">
+          <button
+            onClick={() => {
+              setMode(mode === "login" ? "signup" : "login");
+              setError("");
+            }}
+            className="text-xs font-bold uppercase text-amber-400 hover:text-amber-300"
+          >
+            {mode === "login" ? "რეგისტრაცია" : "შესვლა"}
+          </button>
+          {onClose && (
+            <button
+              type="button"
+              onClick={onClose}
+              className="text-xs font-bold uppercase text-white/60 hover:text-white"
+            >
+              ✕
+            </button>
+          )}
+        </div>
       </div>
 
       <button
