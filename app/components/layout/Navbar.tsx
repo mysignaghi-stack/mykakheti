@@ -1,5 +1,6 @@
 'use client';
 import { useEffect, useMemo, useState } from 'react';
+import { createPortal } from 'react-dom';
 import Link from 'next/link';
 import { supabase } from '@/app/lib/supabase';
 import AuthForm from '@/app/components/auth/AuthForm';
@@ -19,6 +20,7 @@ const DEFAULT_BANNER_BG_OPACITY = 0.2;
 export default function Navbar() {
   const [showRegister, setShowRegister] = useState(false);
   const [showLogin, setShowLogin] = useState(false);
+  const [isMounted, setIsMounted] = useState(false);
   const [bannerText, setBannerText] = useState(DEFAULT_BANNER_TEXT);
   const [bannerMode, setBannerMode] = useState(DEFAULT_BANNER_MODE);
   const [bannerColor, setBannerColor] = useState(DEFAULT_BANNER_COLOR);
@@ -43,6 +45,7 @@ export default function Navbar() {
   }, [bannerSize]);
 
   useEffect(() => {
+    setIsMounted(true);
     const fetchBanner = async () => {
       try {
         const { data, error } = await supabase
@@ -142,18 +145,21 @@ export default function Navbar() {
         >
           რეგისტრაცია
         </button>
-        {showRegister && (
-          <div className="fixed inset-0 z-[9999] flex items-center justify-center px-4" role="dialog" aria-modal="true">
-            <div
-              className="absolute inset-0 bg-black/85 backdrop-blur-sm"
-              onClick={() => setShowRegister(false)}
-              role="presentation"
-            />
-            <div className="relative w-full max-w-sm">
-              <AuthForm initialMode="signup" compact onClose={() => setShowRegister(false)} />
-            </div>
-          </div>
-        )}
+        {isMounted && showRegister
+          ? createPortal(
+              <div className="fixed inset-0 z-[9999] flex items-center justify-center px-4" role="dialog" aria-modal="true">
+                <div
+                  className="absolute inset-0 bg-black/85 backdrop-blur-sm"
+                  onClick={() => setShowRegister(false)}
+                  role="presentation"
+                />
+                <div className="relative w-full max-w-sm">
+                  <AuthForm initialMode="signup" compact onClose={() => setShowRegister(false)} />
+                </div>
+              </div>,
+              document.body
+            )
+          : null}
       </div>
       
       {/* Test Mode Message */}
@@ -202,18 +208,21 @@ export default function Navbar() {
         >
           ავტორიზაცია
         </button>
-        {showLogin && (
-          <div className="fixed inset-0 z-[9999] flex items-center justify-center px-4" role="dialog" aria-modal="true">
-            <div
-              className="absolute inset-0 bg-black/85 backdrop-blur-sm"
-              onClick={() => setShowLogin(false)}
-              role="presentation"
-            />
-            <div className="relative w-full max-w-sm">
-              <AuthForm initialMode="login" compact onClose={() => setShowLogin(false)} />
-            </div>
-          </div>
-        )}
+        {isMounted && showLogin
+          ? createPortal(
+              <div className="fixed inset-0 z-[9999] flex items-center justify-center px-4" role="dialog" aria-modal="true">
+                <div
+                  className="absolute inset-0 bg-black/85 backdrop-blur-sm"
+                  onClick={() => setShowLogin(false)}
+                  role="presentation"
+                />
+                <div className="relative w-full max-w-sm">
+                  <AuthForm initialMode="login" compact onClose={() => setShowLogin(false)} />
+                </div>
+              </div>,
+              document.body
+            )
+          : null}
       </div>
     </nav>
   );
