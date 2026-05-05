@@ -24,6 +24,9 @@ export default function AuthForm({ initialMode = "login", onClose, compact = fal
   const [name, setName] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [resetLoading, setResetLoading] = useState(false);
+  const [resetError, setResetError] = useState("");
+  const [resetMessage, setResetMessage] = useState("");
   const router = useRouter();
 
   const upsertProfile = async (user: User) => {
@@ -78,6 +81,28 @@ export default function AuthForm({ initialMode = "login", onClose, compact = fal
     }
   };
 
+  const handlePasswordReset = async () => {
+    setResetError("");
+    setResetMessage("");
+    if (!email) {
+      setResetError("გთხოვთ შეიყვანოთ ელ.ფოსტა პაროლის აღსადგენად.");
+      return;
+    }
+    setResetLoading(true);
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${window.location.origin}/auth/reset?redirect=/add`,
+      });
+      if (error) throw error;
+      setResetMessage("პაროლის აღდგენის ბმული გაიგზავნა ელფოსტაზე.");
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : "Unknown error";
+      setResetError(msg);
+    } finally {
+      setResetLoading(false);
+    }
+  };
+
   return (
     <div
       className={`w-full ${compact ? "max-w-sm" : "max-w-md"} mx-auto bg-white/5 border border-white/10 rounded-3xl ${compact ? "p-5" : "p-8"} space-y-6 backdrop-blur-xl text-white`}
@@ -116,33 +141,31 @@ export default function AuthForm({ initialMode = "login", onClose, compact = fal
       </button>
       {/* Facebook sign-in temporarily disabled */}
 
-      <form onSubmit={handleEmailAuth} className="w-full">
+      <form onSubmit={handleEmailAuth} className="w-full space-y-3">
         <div className="text-center text-xs text-white/40">ან Email</div>
 
         {mode === "signup" && (
+          <input
+            className="w-full p-4 rounded-2xl bg-white/5 border border-white/10 focus:border-amber-500 outline-none"
+            placeholder="სახელი და გვარი"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+          />
+        )}
         <input
           className="w-full p-4 rounded-2xl bg-white/5 border border-white/10 focus:border-amber-500 outline-none"
-          placeholder="სახელი და გვარი"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
+          placeholder="ელ.ფოსტა"
+          type="email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
         />
-      )}
-      <input
-        className="w-full p-4 rounded-2xl bg-white/5 border border-white/10 focus:border-amber-500 outline-none"
-        placeholder="ელ.ფოსტა"
-        type="email"
-        value={email}
-        onChange={(e) => setEmail(e.target.value)}
-      />
-      <input
-        className="w-full p-4 rounded-2xl bg-white/5 border border-white/10 focus:border-amber-500 outline-none"
-        placeholder="პაროლი"
-        type="password"
-        value={password}
-        onChange={(e) => setPassword(e.target.value)}
-      />
-
-      {error && <p className="text-red-400 text-sm font-bold">{error}</p>}
+        <input
+          className="w-full p-4 rounded-2xl bg-white/5 border border-white/10 focus:border-amber-500 outline-none"
+          placeholder="პაროლი"
+          type="password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+        />
 
         {error && <p className="text-red-400 text-sm font-bold">{error}</p>}
 
@@ -153,6 +176,21 @@ export default function AuthForm({ initialMode = "login", onClose, compact = fal
         >
           {loading ? "იტვირთება..." : mode === "login" ? "შესვლა" : "რეგისტრაცია"}
         </button>
+
+        {mode === "login" && (
+          <div className="space-y-2 pt-2">
+            <button
+              type="button"
+              onClick={handlePasswordReset}
+              disabled={resetLoading}
+              className="w-full rounded-2xl border border-white/20 text-white/80 font-black uppercase italic py-2 text-[11px] hover:text-white hover:border-white/40 transition disabled:opacity-60"
+            >
+              {resetLoading ? "იტვირთება..." : "პაროლის აღდგენა"}
+            </button>
+            {resetError && <p className="text-red-400 text-xs font-bold">{resetError}</p>}
+            {resetMessage && <p className="text-emerald-300 text-xs font-bold">{resetMessage}</p>}
+          </div>
+        )}
 
       </form>
       <div className="text-center text-[11px] text-white/40">
