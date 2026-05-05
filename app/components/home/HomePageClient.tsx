@@ -10,7 +10,7 @@ import { useWeatherData } from '@/app/hooks/useWeatherData';
 import { supabase } from '@/app/lib/supabase';
 import { Ad, AgroItem, WeatherItem } from '@/app/lib/types';
 import type { Tables } from '@/types/helpers';
-import { KAKHETI_FACTS, TRANSPORT_SCHEDULE } from '@/app/lib/constants';
+import { KAKHETI_FACTS, LOCATIONS, TRANSPORT_SCHEDULE } from '@/app/lib/constants';
 import Navbar from '@/app/components/layout/Navbar';
 import Footer from '@/app/components/layout/Footer';
 import SnackbarWrapper from '@/app/components/layout/SnackbarWrapper';
@@ -156,6 +156,7 @@ export default function HomePageClient({
   const [selectedLocations, setSelectedLocations] = useState<string[]>(['ყველა კახეთი']);
   const [showAllAnnouncements, setShowAllAnnouncements] = useState(false);
   const [announcementsPage, setAnnouncementsPage] = useState(0);
+  const [showAllFilters, setShowAllFilters] = useState(false);
   const [bgImage, setBgImage] = useState<string | null>(initialBgImage ?? null);
   // Marquee text state
   const [marqueeText, setMarqueeText] = useState<string>(initialMarqueeText || FALLBACK_MARQUEE);
@@ -462,6 +463,15 @@ export default function HomePageClient({
     };
   }, [showAllCategories]);
 
+  useEffect(() => {
+    if (!showAllFilters) return;
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.body.style.overflow = previousOverflow;
+    };
+  }, [showAllFilters]);
+
   // Remove inline ConfirmModal, use component below
 
   // ...admin auth logic now comes from useAdminAuth
@@ -493,7 +503,7 @@ export default function HomePageClient({
   const selectCategory = (category: string) => {
     if (category === 'ყველა') {
       setSelectedCategories(['ყველა']);
-      setShowAllAnnouncements(true);
+      setShowAllAnnouncements(false);
       setAnnouncementsPage(0);
       return;
     }
@@ -508,7 +518,20 @@ export default function HomePageClient({
     setAnnouncementsPage(0);
   };
 
-  const pageSize = 8;
+  const pageSize = 6;
+    const handleToggleLocation = (loc: string) => {
+      if (loc === 'ყველა კახეთი') {
+        setSelectedLocations(['ყველა კახეთი']);
+        return;
+      }
+
+      setSelectedLocations((prev) => {
+        const withoutAll = prev.filter((item) => item !== 'ყველა კახეთი');
+        const exists = withoutAll.includes(loc);
+        const next = exists ? withoutAll.filter((item) => item !== loc) : [...withoutAll, loc];
+        return next.length === 0 ? ['ყველა კახეთი'] : next;
+      });
+    };
   const maxPage = Math.max(0, Math.ceil(filteredAds.length / pageSize) - 1);
   const safePage = Math.min(announcementsPage, maxPage);
   const visibleAds = showAllAnnouncements
@@ -703,7 +726,8 @@ export default function HomePageClient({
                       type="button"
                       onClick={() => {
                         setSelectedCategories(['ყველა']);
-                        setShowAllAnnouncements(true);
+                        setShowAllAnnouncements(false);
+                        setAnnouncementsPage(0);
                       }}
                       className="px-3 py-1 rounded-full border border-amber-300/40 bg-amber-500/10 text-[10px] font-black uppercase tracking-[0.2em] text-amber-200 hover:bg-amber-500/20 transition"
                     >
@@ -752,10 +776,10 @@ export default function HomePageClient({
                     <div className="relative rounded-2xl border border-transparent min-h-[180px]">
                       <button
                         type="button"
-                        onClick={() => setAnnouncementsPage((p) => (p >= maxPage ? 0 : p + 1))}
+                        onClick={() => setShowAllFilters(true)}
                         className="absolute top-3 left-3 px-4 py-2 rounded-full border border-amber-300/50 bg-amber-500/20 text-amber-200 font-black uppercase tracking-[0.2em] text-xs hover:bg-amber-500/30 transition"
                       >
-                        შემდეგი
+                        ყველა განცხადება
                       </button>
                     </div>
                   )}
@@ -894,6 +918,155 @@ export default function HomePageClient({
                   {category}
                 </button>
               ))}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showAllFilters && (
+        <div className="fixed inset-0 z-[120]" onClick={() => setShowAllFilters(false)}>
+          <div className="absolute inset-0 bg-black/95 backdrop-blur-[20px] animate-in fade-in duration-300" />
+          <div
+            className="relative max-w-5xl mx-auto mt-24 bg-[#0b0b15]/90 border border-white/10 rounded-[28px] p-6 md:p-10 shadow-[0_20px_80px_rgba(0,0,0,0.6)] animate-in zoom-in-95 fade-in duration-300 max-h-[75vh] overflow-y-auto"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between mb-6">
+              <div>
+                <h3 className="text-2xl font-black text-white uppercase tracking-widest">ყველა განცხადება</h3>
+                <p className="text-white/50 text-sm mt-1">კატეგორიები და ლოკაციები</p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowAllFilters(false)}
+                className="text-white/40 hover:text-white transition text-sm font-black uppercase"
+              >
+                დახურვა ✕
+              </button>
+            </div>
+
+            <div className="grid grid-cols-1 gap-6">
+              <div className="bg-white/5 border border-white/10 rounded-2xl p-4">
+                <div className="text-[10px] font-black uppercase tracking-[0.3em] text-white/40 mb-3">
+                  კატეგორიები
+                </div>
+                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+                  {allNonCommunityCategories.map((category) => (
+                    <button
+                      key={category}
+                      type="button"
+                      onClick={() => selectCategory(category)}
+                      className={`px-3 py-3 rounded-2xl border text-[11px] md:text-xs font-black uppercase tracking-[0.2em] transition text-center ${
+                        selectedCategories.includes(category)
+                          ? 'border-amber-300/50 bg-amber-500/20 text-amber-200'
+                          : 'border-white/10 bg-white/5 text-white/80 hover:border-white/30 hover:text-white'
+                      }`}
+                    >
+                      {category}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div className="bg-white/5 border border-white/10 rounded-2xl p-4">
+                <div className="text-[10px] font-black uppercase tracking-[0.3em] text-white/40 mb-3">
+                  ქალაქები და სოფლები
+                </div>
+                <button
+                  type="button"
+                  onClick={() => handleToggleLocation('ყველა კახეთი')}
+                  className={`mb-4 w-full text-left px-4 py-2 rounded-xl text-xs font-black uppercase tracking-[0.2em] transition ${
+                    selectedLocations.includes('ყველა კახეთი')
+                      ? 'border border-amber-300/50 bg-amber-500/20 text-amber-200'
+                      : 'border border-white/10 bg-white/5 text-white/80 hover:border-white/30 hover:text-white'
+                  }`}
+                >
+                  ყველა კახეთი
+                </button>
+
+                <div className="grid grid-cols-1 gap-4">
+                  {LOCATIONS.map((municipality, idx) => {
+                    if (typeof municipality === 'string') {
+                      return (
+                        <div key={`filter-loc-${idx}`} className="bg-white/5 border border-white/10 rounded-2xl p-4">
+                          <button
+                            type="button"
+                            onClick={() => handleToggleLocation(municipality)}
+                            className={`w-full text-left px-4 py-2 rounded-xl text-xs font-black uppercase tracking-[0.2em] transition ${
+                              selectedLocations.includes(municipality)
+                                ? 'border border-amber-300/50 bg-amber-500/20 text-amber-200'
+                                : 'border border-white/10 bg-white/5 text-white/80 hover:border-white/30 hover:text-white'
+                            }`}
+                          >
+                            {municipality}
+                          </button>
+                        </div>
+                      );
+                    }
+
+                    return (
+                      <div key={municipality.municipality ?? idx} className="bg-white/5 border border-white/10 rounded-2xl p-4">
+                        <div className="text-[10px] font-black uppercase tracking-[0.3em] text-white/40 mb-3">
+                          {municipality.municipality}
+                        </div>
+                        <div className="space-y-4">
+                          {(municipality.cities ?? []).map((city, cIdx) => {
+                            if (typeof city === 'string') {
+                              return (
+                                <button
+                                  key={`${municipality.municipality}-${city}-${cIdx}`}
+                                  type="button"
+                                  onClick={() => handleToggleLocation(city)}
+                                  className={`w-full text-left px-4 py-2 rounded-xl text-xs font-black uppercase tracking-[0.2em] transition ${
+                                    selectedLocations.includes(city)
+                                      ? 'border border-amber-300/50 bg-amber-500/20 text-amber-200'
+                                      : 'border border-white/10 bg-white/5 text-white/80 hover:border-white/30 hover:text-white'
+                                  }`}
+                                >
+                                  {city}
+                                </button>
+                              );
+                            }
+
+                            return (
+                              <div key={`${municipality.municipality}-${city.name}-${cIdx}`} className="space-y-2">
+                                <button
+                                  type="button"
+                                  onClick={() => handleToggleLocation(city.name)}
+                                  className={`w-full text-left px-4 py-2 rounded-xl text-xs font-black uppercase tracking-[0.2em] transition ${
+                                    selectedLocations.includes(city.name)
+                                      ? 'border border-amber-300/50 bg-amber-500/20 text-amber-200'
+                                      : 'border border-white/10 bg-white/5 text-white/80 hover:border-white/30 hover:text-white'
+                                  }`}
+                                >
+                                  {city.name}
+                                </button>
+                                {Array.isArray(city.villages) && city.villages.length > 0 && (
+                                  <div className="flex flex-wrap gap-2">
+                                    {city.villages.map((village) => (
+                                      <button
+                                        key={`${city.name}-${village}`}
+                                        type="button"
+                                        onClick={() => handleToggleLocation(village)}
+                                        className={`px-3 py-2 rounded-xl text-[10px] font-black uppercase tracking-[0.2em] transition ${
+                                          selectedLocations.includes(village)
+                                            ? 'border border-amber-300/50 bg-amber-500/20 text-amber-200'
+                                            : 'border border-white/10 bg-white/5 text-white/70 hover:border-white/30 hover:text-white'
+                                        }`}
+                                      >
+                                        {village}
+                                      </button>
+                                    ))}
+                                  </div>
+                                )}
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
             </div>
           </div>
         </div>
