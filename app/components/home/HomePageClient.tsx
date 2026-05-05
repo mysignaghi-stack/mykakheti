@@ -630,11 +630,6 @@ export default function HomePageClient({
           <div className="flex flex-col items-center text-center space-y-8 animate-in fade-in duration-1000 w-full min-w-0 order-1 lg:order-2">
              {/* მობილური ვერსია - მარცხენა მხარე */}
              <div className="flex flex-col gap-4 w-full lg:hidden">
-                 {isDesktop !== true && (
-                   <div className="h-[450px] bg-black/60 backdrop-blur-xl rounded-[30px] border border-white/5">
-                     <KakhetianSquare isAdmin={isAdmin} controlToken={controlToken} />
-                   </div>
-                 )}
                  {/* 🍇 აგრო-ბირჟა */}
                  <div className="bg-white/[0.03] backdrop-blur-3xl rounded-[30px] border border-white/10 p-5 flex flex-col items-center group relative overflow-hidden transition-all hover:border-purple-500/30 shadow-xl h-[360px]">
                    <div className="flex justify-between w-full items-center mb-4">
