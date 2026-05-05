@@ -194,7 +194,7 @@ export default function Navbar() {
         </div>
       </div>
       
-      <div className="relative flex flex-col items-end gap-1 shrink-0">
+      <div className="relative flex flex-col items-start gap-1 shrink-0">
         <Link href="/add" className="bg-amber-600 text-white px-5 sm:px-10 py-3 rounded-xl font-black uppercase text-[10px] md:text-[11px] italic shadow-2xl hover:scale-105 transition-all">
           განცხადება +
         </Link>
