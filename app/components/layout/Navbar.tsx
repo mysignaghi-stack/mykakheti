@@ -7,7 +7,7 @@ import AuthForm from '@/app/components/auth/AuthForm';
 
 type SiteSettingRow = { key: string; value: string | null };
 
-const DEFAULT_BANNER_TEXT = 'საიტი მუშაობს სატესტო რეჟიმში';
+const DEFAULT_BANNER_TEXT = '';
 const DEFAULT_BANNER_MODE = 'blink';
 const DEFAULT_BANNER_COLOR = '#ef4444';
 const DEFAULT_BANNER_SIZE = 'md';
@@ -21,6 +21,7 @@ export default function Navbar() {
   const [showRegister, setShowRegister] = useState(false);
   const [showLogin, setShowLogin] = useState(false);
   const [isMounted, setIsMounted] = useState(false);
+  const [isBannerReady, setIsBannerReady] = useState(false);
   const [bannerText, setBannerText] = useState(DEFAULT_BANNER_TEXT);
   const [bannerMode, setBannerMode] = useState(DEFAULT_BANNER_MODE);
   const [bannerColor, setBannerColor] = useState(DEFAULT_BANNER_COLOR);
@@ -88,8 +89,10 @@ export default function Navbar() {
         setBannerBg((bg ?? DEFAULT_BANNER_BG).trim());
         const parsedOpacity = Number.parseFloat((bgOpacity ?? '').toString());
         setBannerBgOpacity(Number.isFinite(parsedOpacity) ? parsedOpacity : DEFAULT_BANNER_BG_OPACITY);
+        setIsBannerReady(true);
       } catch (error) {
         console.log('Error fetching header banner settings:', error);
+        setIsBannerReady(true);
       }
     };
 
@@ -108,7 +111,7 @@ export default function Navbar() {
   }, []);
 
   const bannerStyle = { color: bannerColor };
-  const showBanner = Boolean(bannerText) && bannerEnabled;
+  const showBanner = isBannerReady && Boolean(bannerText) && bannerEnabled;
 
   const hexToRgba = (hex: string, opacity: number) => {
     const normalized = hex.replace('#', '').trim();
@@ -204,7 +207,7 @@ export default function Navbar() {
             setShowLogin((prev) => !prev);
             setShowRegister(false);
           }}
-          className="text-[10px] md:text-[11px] font-black uppercase tracking-widest text-white/70 hover:text-white"
+          className="text-[10px] md:text-[11px] font-black uppercase tracking-widest text-amber-300 hover:text-amber-200"
         >
           ავტორიზაცია
         </button>
