@@ -207,7 +207,7 @@ export default function Navbar() {
             setShowLogin((prev) => !prev);
             setShowRegister(false);
           }}
-          className="text-[10px] md:text-[11px] font-black uppercase tracking-widest text-amber-300 hover:text-amber-200"
+          className="mx-auto inline-flex items-center justify-center rounded-full border border-amber-300/40 bg-white/5 px-3 py-1 text-[10px] md:text-[11px] font-black uppercase tracking-widest text-amber-300 shadow-[0_6px_16px_rgba(0,0,0,0.2)] backdrop-blur hover:border-amber-200/60 hover:text-amber-200 transition"
         >
           ავტორიზაცია
         </button>
