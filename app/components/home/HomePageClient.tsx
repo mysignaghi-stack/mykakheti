@@ -753,7 +753,7 @@ export default function HomePageClient({
                       <button
                         type="button"
                         onClick={() => setAnnouncementsPage((p) => (p >= maxPage ? 0 : p + 1))}
-                        className="absolute bottom-3 left-3 px-4 py-2 rounded-full border border-amber-300/50 bg-amber-500/20 text-amber-200 font-black uppercase tracking-[0.2em] text-xs hover:bg-amber-500/30 transition"
+                        className="absolute top-3 left-3 px-4 py-2 rounded-full border border-amber-300/50 bg-amber-500/20 text-amber-200 font-black uppercase tracking-[0.2em] text-xs hover:bg-amber-500/30 transition"
                       >
                         შემდეგი
                       </button>
