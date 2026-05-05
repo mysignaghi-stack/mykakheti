@@ -24,7 +24,6 @@ import TransportModal from '@/app/components/features/transport/TransportModal';
 import AdminSideFrame from '@/app/components/home/AdminSideFrame';
 import ChatPopup from '@/app/components/features/ChatPopup';
 import AgroDetailsModal from '@/app/components/home/AgroDetailsModal';
-import CommunityEngagement from '../../components/home/CommunityEngagement';
 import AnnouncementCard from '@/app/components/home/AnnouncementCard';
 import { CommunitySideWidget } from '@/app/components/community/CommunityWidgets';
 import type { CommunityDataset } from '@/app/lib/homeData';
@@ -696,10 +695,79 @@ export default function HomePageClient({
               </div>
             </div>
 
-            {/* CommunityHub removed: community entry moved to navbar center */}
+            <div className="w-full max-w-6xl mx-auto px-6 md:px-10 mt-8">
+              <div className="relative bg-black/50 border border-amber-500/30 rounded-2xl px-5 py-4 shadow-[0_8px_30px_rgba(0,0,0,0.35)]">
+                <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
+                  <div className="flex items-center gap-3 shrink-0">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setSelectedCategories(['ყველა']);
+                        setShowAllAnnouncements(true);
+                      }}
+                      className="px-3 py-1 rounded-full border border-amber-300/40 bg-amber-500/10 text-[10px] font-black uppercase tracking-[0.2em] text-amber-200 hover:bg-amber-500/20 transition"
+                    >
+                      ყველა განცხადება
+                    </button>
+                    <span className="text-amber-400 text-base md:text-lg tracking-normal">{ads.length}</span>
+                  </div>
 
-            {/* Community Engagement Section */}
-            <CommunityEngagement />
+                  <div className="grid grid-cols-2 gap-2 flex-1 min-w-[200px] sm:flex sm:flex-wrap sm:items-center sm:gap-x-3 sm:gap-y-2 sm:justify-start">
+                    {visibleCategories.map((category) => (
+                      <button
+                        key={category}
+                        type="button"
+                        onClick={() => selectCategory(category)}
+                        className={`w-full sm:w-auto px-2.5 py-1 rounded-full border text-[10px] md:text-[11px] font-black uppercase tracking-[0.2em] transition ${
+                          selectedCategories.includes(category)
+                            ? 'border-amber-300/50 bg-amber-500/20 text-amber-200'
+                            : 'border-white/10 bg-white/5 text-white/70 hover:border-white/30 hover:text-white'
+                        }`}
+                      >
+                        {category}
+                      </button>
+                    ))}
+                  </div>
+
+                  <div className="w-full sm:w-auto sm:ml-auto">
+                    <button
+                      type="button"
+                      onClick={() => setShowAllCategories(true)}
+                      className="text-[10px] md:text-[11px] font-black uppercase tracking-[0.2em] text-amber-300 hover:text-amber-200 transition"
+                    >
+                      ყველა კატეგორია
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="w-full max-w-6xl mx-auto px-6 md:px-10 mt-6">
+              {visibleAds.length > 0 ? (
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {visibleAds.map((ad) => (
+                    <AnnouncementCard key={ad.id} announcement={ad} />
+                  ))}
+                  {filteredAds.length > 0 && (
+                    <div className="relative rounded-2xl border border-transparent min-h-[180px]">
+                      <button
+                        type="button"
+                        onClick={() => setAnnouncementsPage((p) => (p >= maxPage ? 0 : p + 1))}
+                        className="absolute bottom-3 left-3 px-4 py-2 rounded-full border border-amber-300/50 bg-amber-500/20 text-amber-200 font-black uppercase tracking-[0.2em] text-xs hover:bg-amber-500/30 transition"
+                      >
+                        შემდეგი
+                      </button>
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <div className="text-center py-10 text-white/60 text-sm">
+                  ამ კატეგორიაში განცხადებები არ მოიძებნა
+                </div>
+              )}
+            </div>
+
+            {/* CommunityHub removed: community entry moved to navbar center */}
 
           </div>
 
@@ -787,78 +855,6 @@ export default function HomePageClient({
   {/* Snackbar: modular and accessible */}
   <SnackbarWrapper open={snackbar.open} message={snackbar.message} type={snackbar.type} onClose={closeSnackbar} />
 
-      <div className="w-full max-w-6xl mx-auto px-6 md:px-10 mt-8 mb-10">
-        <div className="relative bg-black/50 border border-amber-500/30 rounded-2xl px-5 py-4 shadow-[0_8px_30px_rgba(0,0,0,0.35)]">
-          <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
-            <div className="flex items-center gap-3 shrink-0">
-              <button
-                type="button"
-                onClick={() => {
-                  setSelectedCategories(['ყველა']);
-                  setShowAllAnnouncements(true);
-                }}
-                className="px-3 py-1 rounded-full border border-amber-300/40 bg-amber-500/10 text-[10px] font-black uppercase tracking-[0.2em] text-amber-200 hover:bg-amber-500/20 transition"
-              >
-                ყველა განცხადება
-              </button>
-              <span className="text-amber-400 text-base md:text-lg tracking-normal">{ads.length}</span>
-            </div>
-
-            <div className="grid grid-cols-2 gap-2 flex-1 min-w-[200px] sm:flex sm:flex-wrap sm:items-center sm:gap-x-3 sm:gap-y-2 sm:justify-start">
-              {visibleCategories.map((category) => (
-                <button
-                  key={category}
-                  type="button"
-                  onClick={() => selectCategory(category)}
-                  className={`w-full sm:w-auto px-2.5 py-1 rounded-full border text-[10px] md:text-[11px] font-black uppercase tracking-[0.2em] transition ${
-                    selectedCategories.includes(category)
-                      ? 'border-amber-300/50 bg-amber-500/20 text-amber-200'
-                      : 'border-white/10 bg-white/5 text-white/70 hover:border-white/30 hover:text-white'
-                  }`}
-                >
-                  {category}
-                </button>
-              ))}
-            </div>
-
-            <div className="w-full sm:w-auto sm:ml-auto">
-              <button
-                type="button"
-                onClick={() => setShowAllCategories(true)}
-                className="text-[10px] md:text-[11px] font-black uppercase tracking-[0.2em] text-amber-300 hover:text-amber-200 transition"
-              >
-                ყველა კატეგორია
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-
-
-      <div className="w-full max-w-6xl mx-auto px-6 md:px-10 mt-6">
-        {visibleAds.length > 0 ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-            {visibleAds.map((ad) => (
-              <AnnouncementCard key={ad.id} announcement={ad} />
-            ))}
-            {filteredAds.length > 0 && (
-              <div className="relative rounded-2xl border border-transparent min-h-[180px]">
-                <button
-                  type="button"
-                  onClick={() => setAnnouncementsPage((p) => (p >= maxPage ? 0 : p + 1))}
-                  className="absolute bottom-3 left-3 px-4 py-2 rounded-full border border-amber-300/50 bg-amber-500/20 text-amber-200 font-black uppercase tracking-[0.2em] text-xs hover:bg-amber-500/30 transition"
-                >
-                  შემდეგი
-                </button>
-              </div>
-            )}
-          </div>
-        ) : (
-          <div className="text-center py-10 text-white/60 text-sm">
-            ამ კატეგორიაში განცხადებები არ მოიძებნა
-          </div>
-        )}
-      </div>
 
       {showAllCategories && (
         <div className="fixed inset-0 z-[120]" onClick={() => setShowAllCategories(false)}>
