@@ -124,121 +124,123 @@ export default function AnnouncementDetailsClient({ initialAd }: { initialAd: An
               {/* 📸 Gallery Section */}
               <div className="space-y-6">
                 <div className="aspect-[3/2] rounded-[12px] md:rounded-[16px] overflow-hidden border border-white/10 shadow-2xl bg-black/40 group relative max-h-[420px] md:max-h-[400px]">
-            {activeImg ? (
-                <Image
-                  src={activeImg}
-                  alt={ad.title}
-                  fill
-                  sizes="(max-width: 1024px) 100vw, 700px"
-                  className="object-contain transition-all duration-700 group-hover:scale-105 rounded-2xl cursor-zoom-in"
-                  onClick={() => {
-                    const images = getImages(ad);
-                    const idx = images.findIndex((img) => img === activeImg);
-                    setZoomIndex(idx >= 0 ? idx : 0);
-                    setZoomImg(activeImg);
-                    setZoomScale(1);
-                    setZoomOffset({ x: 0, y: 0 });
-                    setZoomOpen(true);
-                  }}
-                  onTouchStart={(e) => {
-                    setTouchStartX(e.touches?.[0]?.clientX ?? null);
-                  }}
-                  onTouchEnd={(e) => {
-                    const endX = e.changedTouches?.[0]?.clientX ?? null;
-                    if (touchStartX == null || endX == null) { setTouchStartX(null); return; }
-                    const delta = endX - touchStartX;
-                    const images = getImages(ad);
-                    if (delta < -50 && images.length > 1) {
-                      const idx = images.findIndex((img) => img === activeImg);
-                      const next = (idx + 1) % images.length;
-                      setActiveImg(images[next]);
-                    } else if (delta > 50 && images.length > 1) {
-                      const idx = images.findIndex((img) => img === activeImg);
-                      const prev = (idx - 1 + images.length) % images.length;
-                      setActiveImg(images[prev]);
-                    }
-                    setTouchStartX(null);
-                  }}
-                />
-            ) : (
-                <div className="w-full h-full flex items-center justify-center bg-slate-900 text-white/20 font-black uppercase italic">ფოტო არ არის</div>
-            )}
+                  {activeImg ? (
+                    <Image
+                      src={activeImg}
+                      alt={ad.title}
+                      fill
+                      sizes="(max-width: 1024px) 100vw, 700px"
+                      className="object-contain transition-all duration-700 group-hover:scale-105 rounded-2xl cursor-zoom-in"
+                      onClick={() => {
+                        const images = getImages(ad);
+                        const idx = images.findIndex((img) => img === activeImg);
+                        setZoomIndex(idx >= 0 ? idx : 0);
+                        setZoomImg(activeImg);
+                        setZoomScale(1);
+                        setZoomOffset({ x: 0, y: 0 });
+                        setZoomOpen(true);
+                      }}
+                      onTouchStart={(e) => {
+                        setTouchStartX(e.touches?.[0]?.clientX ?? null);
+                      }}
+                      onTouchEnd={(e) => {
+                        const endX = e.changedTouches?.[0]?.clientX ?? null;
+                        if (touchStartX == null || endX == null) {
+                          setTouchStartX(null);
+                          return;
+                        }
+                        const delta = endX - touchStartX;
+                        const images = getImages(ad);
+                        if (delta < -50 && images.length > 1) {
+                          const idx = images.findIndex((img) => img === activeImg);
+                          const next = (idx + 1) % images.length;
+                          setActiveImg(images[next]);
+                        } else if (delta > 50 && images.length > 1) {
+                          const idx = images.findIndex((img) => img === activeImg);
+                          const prev = (idx - 1 + images.length) % images.length;
+                          setActiveImg(images[prev]);
+                        }
+                        setTouchStartX(null);
+                      }}
+                    />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center bg-slate-900 text-white/20 font-black uppercase italic">ფოტო არ არის</div>
+                  )}
 
-            {getImages(ad).length > 1 && (
-              <>
-                <button
-                  type="button"
-                  onClick={() => {
-                    const images = getImages(ad);
-                    const idx = images.findIndex((img) => img === activeImg);
-                    const prev = (idx - 1 + images.length) % images.length;
-                    setActiveImg(images[prev]);
-                  }}
-                  className="hidden md:flex absolute left-3 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full bg-black/40 text-amber-200 text-2xl font-black shadow-[0_0_20px_rgba(245,158,11,0.35)] hover:bg-amber-500 hover:text-black transition items-center justify-center"
-                >
-                  ‹
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    const images = getImages(ad);
-                    const idx = images.findIndex((img) => img === activeImg);
-                    const next = (idx + 1) % images.length;
-                    setActiveImg(images[next]);
-                  }}
-                  className="hidden md:flex absolute right-3 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full bg-black/40 text-amber-200 text-2xl font-black shadow-[0_0_20px_rgba(245,158,11,0.35)] hover:bg-amber-500 hover:text-black transition items-center justify-center"
-                >
-                  ›
-                </button>
-              </>
-            )}
-          </div>
-          
-          {getImages(ad).length > 0 && (
-            <div className="flex gap-4 overflow-x-auto custom-scrollbar py-2 px-2">
-                {getImages(ad).map((img: string, i: number) => (
-                <button 
-                    key={i} 
-                    onClick={() => setActiveImg(img)} 
-                    className={`w-20 h-20 md:w-24 md:h-24 rounded-2xl overflow-hidden border-2 shrink-0 transition-all duration-300 ${
-                    activeImg === img ? 'border-amber-500 scale-105 shadow-lg shadow-amber-500/20' : 'border-white/10 opacity-60 hover:opacity-100'
-                    }`}
-                >
-                  <Image src={img} alt="" width={96} height={96} className="w-full h-full object-contain" />
-                </button>
-                ))}
-            </div>
-          )}
-            </div>
+                  {getImages(ad).length > 1 && (
+                    <>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const images = getImages(ad);
+                          const idx = images.findIndex((img) => img === activeImg);
+                          const prev = (idx - 1 + images.length) % images.length;
+                          setActiveImg(images[prev]);
+                        }}
+                        className="hidden md:flex absolute left-3 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full bg-black/40 text-amber-200 text-2xl font-black shadow-[0_0_20px_rgba(245,158,11,0.35)] hover:bg-amber-500 hover:text-black transition items-center justify-center"
+                      >
+                        ‹
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const images = getImages(ad);
+                          const idx = images.findIndex((img) => img === activeImg);
+                          const next = (idx + 1) % images.length;
+                          setActiveImg(images[next]);
+                        }}
+                        className="hidden md:flex absolute right-3 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full bg-black/40 text-amber-200 text-2xl font-black shadow-[0_0_20px_rgba(245,158,11,0.35)] hover:bg-amber-500 hover:text-black transition items-center justify-center"
+                      >
+                        ›
+                      </button>
+                    </>
+                  )}
+                </div>
 
-            {/* 📝 Content Block */}
-            <div className="flex flex-col h-full md:-ml-8 lg:-ml-16">
-            <div className="bg-gradient-to-br from-blue-900/40 via-slate-950/50 to-blue-950/40 backdrop-blur-3xl p-2 md:p-4 rounded-[20px] md:rounded-[28px] border border-white/10 shadow-2xl flex-grow relative overflow-hidden">
-            
-            <div className="flex justify-between items-start mb-4 md:mb-6 relative z-10">
-              <span className="bg-amber-600 text-white px-4 md:px-6 py-2 rounded-full text-[9px] md:text-[10px] font-black uppercase italic tracking-widest shadow-xl">
-                {ad.category}
-              </span>
-              <span className="text-amber-500 font-black uppercase italic text-[10px] md:text-xs tracking-wider drop-shadow-md">
-                {ad.location}
-              </span>
-            </div>
+                {getImages(ad).length > 0 && (
+                  <div className="flex gap-4 overflow-x-auto custom-scrollbar py-2 px-2">
+                    {getImages(ad).map((img: string, i: number) => (
+                      <button
+                        key={i}
+                        onClick={() => setActiveImg(img)}
+                        className={`w-20 h-20 md:w-24 md:h-24 rounded-2xl overflow-hidden border-2 shrink-0 transition-all duration-300 ${
+                          activeImg === img ? 'border-amber-500 scale-105 shadow-lg shadow-amber-500/20' : 'border-white/10 opacity-60 hover:opacity-100'
+                        }`}
+                      >
+                        <Image src={img} alt="" width={96} height={96} className="w-full h-full object-contain" />
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
 
-            <h1 className="text-3xl md:text-4xl font-black uppercase italic leading-tight mb-3 md:mb-4 relative z-10 drop-shadow-2xl">
-              {ad.title}
-            </h1>
-            
-            <div className="text-3xl md:text-4xl font-black text-amber-500 italic mb-6 md:mb-8 relative z-10 tracking-tighter drop-shadow-xl">
-              {ad.price} {ad.currency === 'USD' ? '$' : '₾'}
-            </div>
-            
-            <p className="text-white/80 leading-relaxed italic text-sm md:text-lg mb-6 md:mb-8 whitespace-pre-wrap relative z-10 font-medium">
-              {ad.description}
-            </p>
-            
-            {/* ✅ აქ ვიყენებთ ClientButtons კომპონენტს, რომელსაც უკვე გადავეცით დიზაინი */}
-            <ClientButtons ad={ad} shareUrl={shareUrl} />
+              {/* 📝 Content Block */}
+              <div className="flex flex-col h-full md:-ml-8 lg:-ml-16">
+                <div className="bg-gradient-to-br from-blue-900/40 via-slate-950/50 to-blue-950/40 backdrop-blur-3xl p-2 md:p-4 rounded-[20px] md:rounded-[28px] border border-white/10 shadow-2xl flex-grow relative overflow-hidden">
+                  <div className="flex justify-between items-start mb-4 md:mb-6 relative z-10">
+                    <span className="bg-amber-600 text-white px-4 md:px-6 py-2 rounded-full text-[9px] md:text-[10px] font-black uppercase italic tracking-widest shadow-xl">
+                      {ad.category}
+                    </span>
+                    <span className="text-amber-500 font-black uppercase italic text-[10px] md:text-xs tracking-wider drop-shadow-md">
+                      {ad.location}
+                    </span>
+                  </div>
 
+                  <h1 className="text-3xl md:text-4xl font-black uppercase italic leading-tight mb-3 md:mb-4 relative z-10 drop-shadow-2xl">
+                    {ad.title}
+                  </h1>
+
+                  <div className="text-3xl md:text-4xl font-black text-amber-500 italic mb-6 md:mb-8 relative z-10 tracking-tighter drop-shadow-xl">
+                    {ad.price} {ad.currency === 'USD' ? '$' : '₾'}
+                  </div>
+
+                  <p className="text-white/80 leading-relaxed italic text-sm md:text-lg mb-6 md:mb-8 whitespace-pre-wrap relative z-10 font-medium">
+                    {ad.description}
+                  </p>
+
+                  {/* ✅ აქ ვიყენებთ ClientButtons კომპონენტს, რომელსაც უკვე გადავეცით დიზაინი */}
+                  <ClientButtons ad={ad} shareUrl={shareUrl} />
+                </div>
               </div>
             </div>
           </div>
