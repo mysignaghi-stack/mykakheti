@@ -18,6 +18,23 @@ type CardConfig = {
   hrefBuilder?: (id: string) => string;
   placeholder: string;
 };
+
+const CARD_CONFIGS: CardConfig[] = [
+  {
+    title: "დაკარგული/ნაპოვნი",
+    accentClass: "from-[#2a1a0f] via-[#1a120c] to-[#3a2414]",
+    link: "/community/lost-found",
+    hrefBuilder: (id: string) => `/community/lost-found/${id}`,
+    placeholder: "ახალი განცხადებები მალე დაემატება",
+  },
+  {
+    title: "ხელოსნები/ტექნიკოსები",
+    accentClass: "from-[#101b2a] via-[#0d141f] to-[#1a2a42]",
+    link: "/community/masters",
+    hrefBuilder: (id: string) => `/community/masters/${id}`,
+    placeholder: "ახალი განცხადებები მალე დაემატება",
+  },
+];
 interface CommunityWidgetsProps {
   initialLostFound?: LostFoundRow[];
   initialMasters?: MasterRow[];
@@ -82,22 +99,7 @@ export default function CommunityWidgets({
   useEffect(() => setLfIndex(0), [lostFound.length]);
   useEffect(() => setMasterIndex(0), [masters.length]);
 
-  const cards: CardConfig[] = useMemo(() => ([
-    {
-      title: "დაკარგული/ნაპოვნი",
-      accentClass: "from-amber-700/50 via-black/50 to-amber-900/60",
-      link: "/community/lost-found",
-      hrefBuilder: (id: string) => `/community/lost-found/${id}`,
-      placeholder: "ახალი განცხადებები მალე დაემატება",
-    },
-    {
-      title: "ხელოსნები/ტექნიკოსები",
-      accentClass: "from-blue-700/45 via-black/50 to-blue-900/60",
-      link: "/community/masters",
-      hrefBuilder: (id: string) => `/community/masters/${id}`,
-      placeholder: "ახალი განცხადებები მალე დაემატება",
-    },
-  ]), []);
+  const cards = CARD_CONFIGS;
 
   const currentLostFound = lostFound[lfIndex] ?? null;
   const currentMaster = masters[masterIndex] ?? null;
@@ -129,6 +131,113 @@ export default function CommunityWidgets({
   );
 }
 
+interface CommunitySideWidgetProps {
+  variant: "lostFound" | "masters";
+  initialLostFound?: LostFoundRow[];
+  initialMasters?: MasterRow[];
+}
+
+export function CommunitySideWidget({
+  variant,
+  initialLostFound = [],
+  initialMasters = [],
+}: CommunitySideWidgetProps) {
+  const isLostFound = variant === "lostFound";
+  const [items, setItems] = useState<LostFoundRow[] | MasterRow[]>(
+    isLostFound ? initialLostFound : initialMasters
+  );
+  const [index, setIndex] = useState(0);
+  const lostKey = useMemo(
+    () => initialLostFound.map((item) => item.id).join("|"),
+    [initialLostFound]
+  );
+  const mastersKey = useMemo(
+    () => initialMasters.map((item) => item.id).join("|"),
+    [initialMasters]
+  );
+
+  useEffect(() => {
+    if (isLostFound) setItems(initialLostFound);
+  }, [isLostFound, lostKey]);
+
+  useEffect(() => {
+    if (!isLostFound) setItems(initialMasters);
+  }, [isLostFound, mastersKey]);
+
+  useEffect(() => {
+    const shouldFetch = isLostFound ? initialLostFound.length === 0 : initialMasters.length === 0;
+    if (!shouldFetch) return;
+
+    const fetchData = async () => {
+      try {
+        if (isLostFound) {
+          const { data } = await supabase
+            .from("lost_found")
+            .select("id, title, location, image_url, kind, is_approved, created_at")
+            .eq("is_approved", true)
+            .order("created_at", { ascending: false })
+            .limit(10);
+          setItems(data ?? []);
+        } else {
+          const { data } = await supabase
+            .from("masters")
+            .select("id, full_name, profession, location, description, rating_avg, is_approved, created_at")
+            .eq("is_approved", true)
+            .order("created_at", { ascending: false })
+            .limit(10);
+          setItems(data ?? []);
+        }
+      } catch (error) {
+        console.error("Failed to load community side widget", error);
+      }
+    };
+
+    fetchData();
+  }, [isLostFound, initialLostFound.length, initialMasters.length]);
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setIndex((prev) => (items.length ? (prev + 1) % items.length : 0));
+    }, ROTATE_MS);
+    return () => clearInterval(timer);
+  }, [items.length]);
+
+  useEffect(() => setIndex(0), [items.length]);
+
+  const config = isLostFound ? CARD_CONFIGS[0] : CARD_CONFIGS[1];
+  const current = items[index] ?? null;
+
+  if (isLostFound) {
+    const lostItem = current as LostFoundRow | null;
+    return (
+      <WidgetCard
+        config={config}
+        highlight={lostItem}
+        badge={lostItem ? (lostItem.kind === "found" ? "ნაპოვნი" : "დაკარგული") : "დაკარგული/ნაპოვნი"}
+        description={lostItem?.location || ""}
+        title={lostItem?.title || config.placeholder}
+        meta={lostItem?.kind ? (lostItem.kind === "found" ? "ნაპოვნი" : "დაკარგული") : undefined}
+        href={`/community/lost-found?selectedId=${lostItem?.id}`}
+        image={lostItem?.image_url || undefined}
+      />
+    );
+  }
+
+  const masterItem = current as MasterRow | null;
+  return (
+    <WidgetCard
+      config={config}
+      highlight={masterItem}
+      badge={masterItem ? "ოსტატი/სპეციალისტი" : "ხელოსნები/ტექნიკოსები"}
+      description={masterItem?.location || ""}
+      title={masterItem?.full_name || config.placeholder}
+      meta={masterItem?.profession}
+      href={`/community/masters?selectedId=${masterItem?.id}`}
+      image={undefined}
+    />
+  );
+}
+
 interface WidgetCardProps {
   config: CardConfig;
   title: string;
@@ -146,13 +255,11 @@ function WidgetCard({ config, title, description, meta, href, image, badge, high
   return (
     <Link
       href={href}
-      className={`group relative overflow-hidden rounded-[24px] border border-white/10 bg-gradient-to-br ${config.accentClass} shadow-[0_20px_50px_-20px_rgba(0,0,0,0.55)] transition-transform duration-300 hover:-translate-y-1 min-h-[120px]`}
+      className={`group relative overflow-hidden rounded-[24px] border border-white/10 bg-gradient-to-br ${config.accentClass} shadow-[0_18px_40px_-24px_rgba(0,0,0,0.8)] transition-transform duration-300 hover:-translate-y-1 min-h-[120px] h-full`}
     >
-      <div className="absolute inset-0 bg-white/5 opacity-0 group-hover:opacity-10 transition-opacity duration-300" />
       <div className="p-2 space-y-1.5">
         <div className="flex items-center justify-between text-white/80 text-[11px] font-black uppercase tracking-[0.2em]">
           <span className="px-3 py-1 rounded-full bg-white/10 backdrop-blur-lg border border-white/10">{badge}</span>
-          <span className="text-white/50">Community</span>
         </div>
 
         <div className="min-h-[50px] space-y-0.5">

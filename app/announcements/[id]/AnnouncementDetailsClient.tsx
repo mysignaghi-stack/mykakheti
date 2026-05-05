@@ -8,6 +8,7 @@ import { useParams } from 'next/navigation';
 import type { Database } from '@/types/supabase';
 import { supabase } from '../../lib/supabase';
 import ClientButtons from './ClientButtons';
+import { CommunitySideWidget } from '../../components/community/CommunityWidgets';
 
 type Announcement = Database['public']['Tables']['announcements']['Row'];
 
@@ -112,11 +113,17 @@ export default function AnnouncementDetailsClient({ initialAd }: { initialAd: An
          <p className="text-red-500 font-black uppercase italic text-[9px] tracking-[0.2em] animate-pulse">საიტი მუშაობს სატესტო რეჟიმში</p>
       </div>
 
-      <div ref={contentRef} className="max-w-7xl mx-auto mt-6 md:mt-10 px-3 md:px-6 grid grid-cols-1 lg:grid-cols-[1.1fr_0.9fr] gap-1 md:gap-2 relative z-10">
-        
-        {/* 📸 Gallery Section */}
-        <div className="space-y-6">
-          <div className="aspect-[3/2] rounded-[12px] md:rounded-[16px] overflow-hidden border border-white/10 shadow-2xl bg-black/40 group relative max-h-[420px] md:max-h-[400px]">
+      <div ref={contentRef} className="max-w-7xl mx-auto mt-6 md:mt-10 px-3 md:px-6 relative z-10">
+        <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,220px)_minmax(0,1fr)_minmax(0,220px)] gap-10 items-start">
+          <aside className="order-2 lg:order-1 w-full max-w-[320px] lg:max-w-[220px] mx-auto lg:mx-0 lg:sticky lg:top-24 lg:mt-8">
+            <CommunitySideWidget variant="lostFound" />
+          </aside>
+
+          <div className="order-1 lg:order-2">
+            <div className="grid grid-cols-1 lg:grid-cols-[1.1fr_0.9fr] gap-1 md:gap-2">
+              {/* 📸 Gallery Section */}
+              <div className="space-y-6">
+                <div className="aspect-[3/2] rounded-[12px] md:rounded-[16px] overflow-hidden border border-white/10 shadow-2xl bg-black/40 group relative max-h-[420px] md:max-h-[400px]">
             {activeImg ? (
                 <Image
                   src={activeImg}
@@ -202,10 +209,10 @@ export default function AnnouncementDetailsClient({ initialAd }: { initialAd: An
                 ))}
             </div>
           )}
-        </div>
+            </div>
 
-        {/* 📝 Content Block */}
-        <div className="flex flex-col h-full md:-ml-8 lg:-ml-16">
+            {/* 📝 Content Block */}
+            <div className="flex flex-col h-full md:-ml-8 lg:-ml-16">
             <div className="bg-gradient-to-br from-blue-900/40 via-slate-950/50 to-blue-950/40 backdrop-blur-3xl p-2 md:p-4 rounded-[20px] md:rounded-[28px] border border-white/10 shadow-2xl flex-grow relative overflow-hidden">
             
             <div className="flex justify-between items-start mb-4 md:mb-6 relative z-10">
@@ -232,7 +239,13 @@ export default function AnnouncementDetailsClient({ initialAd }: { initialAd: An
             {/* ✅ აქ ვიყენებთ ClientButtons კომპონენტს, რომელსაც უკვე გადავეცით დიზაინი */}
             <ClientButtons ad={ad} shareUrl={shareUrl} />
 
+              </div>
+            </div>
           </div>
+
+          <aside className="order-3 w-full max-w-[320px] lg:max-w-[220px] mx-auto lg:mx-0 lg:sticky lg:top-24 lg:mt-8">
+            <CommunitySideWidget variant="masters" />
+          </aside>
         </div>
       </div>
       {zoomOpen && zoomImg && (

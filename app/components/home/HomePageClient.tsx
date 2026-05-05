@@ -17,16 +17,16 @@ import SnackbarWrapper from '@/app/components/layout/SnackbarWrapper';
 import ConfirmModal from '@/app/components/layout/ConfirmModal';
 import EditAgroModal from '@/app/components/layout/EditAgroModal';
 import HeroSection from '@/app/components/home/HeroSection';
-import ServiceWidgets from '@/app/components/home/ServiceWidgets';
+import { GuideWidget, HeritageWidget } from '@/app/components/home/ServiceWidgets';
 import RightSidebar from '@/app/components/home/RightSidebar';
 import KakhetianSquare from '@/app/components/features/KakhetianSquare';
 import TransportModal from '@/app/components/features/transport/TransportModal';
 import AdminSideFrame from '@/app/components/home/AdminSideFrame';
 import ChatPopup from '@/app/components/features/ChatPopup';
 import AgroDetailsModal from '@/app/components/home/AgroDetailsModal';
-import CommunityWidgets from '@/app/components/community/CommunityWidgets';
 import CommunityEngagement from '../../components/home/CommunityEngagement';
 import AnnouncementCard from '@/app/components/home/AnnouncementCard';
+import { CommunitySideWidget } from '@/app/components/community/CommunityWidgets';
 import type { CommunityDataset } from '@/app/lib/homeData';
 
 type AdminPost = Tables<'admin_posts'>;
@@ -140,7 +140,6 @@ export default function HomePageClient({
   initialAdminPosts,
   initialBgImage,
   initialMarqueeText,
-  initialCommunity,
 }: HomePageClientProps) {
   const { isAdmin } = useAdminAuth();
   const {
@@ -579,13 +578,6 @@ export default function HomePageClient({
       <Navbar />
 
 
-      <div className="layout-shell relative z-10 w-full max-w-full xl:max-w-[1800px] px-4 sm:px-6 md:px-10 mx-auto mt-6 mb-3 overflow-hidden">
-        <CommunityWidgets
-          initialLostFound={initialCommunity.lostFound}
-          initialMasters={initialCommunity.masters}
-        />
-      </div>
-
       {/* Informational grid section, now outside header for independent styling */}
       <section className="layout-shell relative z-10 w-full max-w-full xl:max-w-[1800px] px-4 sm:px-6 md:px-10 mx-auto mt-10 overflow-hidden">
         <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,260px)_minmax(0,1fr)_minmax(0,260px)] xl:grid-cols-[minmax(0,300px)_minmax(0,1fr)_minmax(0,300px)] gap-4 md:gap-6 xl:gap-8 items-start text-white bg-black/70 backdrop-blur-2xl rounded-[30px] border border-white/10 p-4 sm:p-6 md:p-8 shadow-xl w-full max-w-full overflow-hidden">
@@ -624,6 +616,12 @@ export default function HomePageClient({
                 onRefresh={fetchAdminPosts}
               />
             </div>
+              <div className="w-full min-w-[260px] xl:min-w-[300px] bg-gradient-to-br from-amber-900/40 via-black/50 to-amber-700/20 backdrop-blur-sm rounded-[24px] border border-amber-500/30 shadow-[0_0_20px_4px_rgba(255,191,0,0.1)] p-4 ring-1 ring-amber-400/20 relative">
+                <CommunitySideWidget variant="lostFound" />
+              </div>
+              <div className="w-full min-w-[260px] xl:min-w-[300px] bg-gradient-to-br from-amber-900/40 via-black/50 to-amber-700/20 backdrop-blur-sm rounded-[24px] border border-amber-500/30 shadow-[0_0_20px_4px_rgba(255,191,0,0.1)] p-4 ring-1 ring-amber-400/20 relative">
+                <GuideWidget onMapSearch={handleMapSearch} />
+              </div>
           </div>
 
           {/* --- ცენტრალური სვეტი --- */}
@@ -700,10 +698,6 @@ export default function HomePageClient({
 
             {/* CommunityHub removed: community entry moved to navbar center */}
 
-            <ServiceWidgets
-              onMapSearch={handleMapSearch}
-            />
-
             {/* Community Engagement Section */}
             <CommunityEngagement />
 
@@ -741,6 +735,12 @@ export default function HomePageClient({
                   isAdmin={isAdmin} 
                   onRefresh={fetchAdminPosts}
                 />
+              </div>
+              <div className="w-full bg-gradient-to-br from-amber-900/40 via-black/50 to-amber-700/20 backdrop-blur-sm rounded-[24px] border border-amber-500/30 shadow-[0_0_20px_4px_rgba(255,191,0,0.1)] p-4 ring-1 ring-amber-400/20 relative">
+                <CommunitySideWidget variant="masters" />
+              </div>
+              <div className="w-full bg-gradient-to-br from-amber-900/40 via-black/50 to-amber-700/20 backdrop-blur-sm rounded-[24px] border border-amber-500/30 shadow-[0_0_20px_4px_rgba(255,191,0,0.1)] p-4 ring-1 ring-amber-400/20 relative">
+                <HeritageWidget />
               </div>
             </div>
           </div>

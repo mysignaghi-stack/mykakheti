@@ -44,14 +44,29 @@ interface ServiceWidgetsProps {
   onMapSearch: (service: string) => void;
 }
 
-export default function ServiceWidgets({ onMapSearch }: ServiceWidgetsProps) {
+export function GuideWidget({ onMapSearch }: ServiceWidgetsProps) {
+  return (
+    <div className="bg-white/[0.03] backdrop-blur-3xl rounded-[30px] border border-white/10 p-5 flex flex-col items-center group relative overflow-hidden transition-all hover:border-cyan-500/30 shadow-xl h-full">
+      <h4 className="text-[10px] font-black text-cyan-400 uppercase tracking-[0.4em] mb-4 w-full text-left">📍 გზამკვლევი</h4>
+      <div className="grid grid-cols-2 gap-2 w-full">
+        {[{ label: 'ბანკომატი', icon: '🏦', k: 'ბანკომატი' }, { label: 'სადგური', icon: '⛽', k: 'ავტოგასამართი სადგური' }, { label: 'აფთიაქი', icon: '💊', k: 'აფთიაქი' }, { label: 'სამრეცხაო', icon: '🚿', k: 'ავტოსამრეცხაო' }].map((btn) => (
+          <button key={btn.label} onClick={() => onMapSearch(btn.k)} className="bg-white/5 p-3 rounded-2xl flex flex-col items-center hover:bg-cyan-500/20 transition-all border border-white/5">
+            <span className="text-xl mb-1">{btn.icon}</span>
+            <span className="text-[9px] font-black uppercase tracking-widest text-center">{btn.label}</span>
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+export function HeritageWidget() {
   const [kakhetiPlaces, setKakhetiPlaces] = useState<KakhetiHeritageRow[]>([]);
   const [categories, setCategories] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
   const [currentPlaceIndex, setCurrentPlaceIndex] = useState(0);
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
 
-  
   useEffect(() => {
     const fetchPlaces = async () => {
       setLoading(true);
@@ -79,17 +94,14 @@ export default function ServiceWidgets({ onMapSearch }: ServiceWidgetsProps) {
     return () => undefined;
   }, []);
 
-  // Filter places by selected category
-  const filteredPlaces = selectedCategory === 'all' 
-    ? kakhetiPlaces 
+  const filteredPlaces = selectedCategory === 'all'
+    ? kakhetiPlaces
     : kakhetiPlaces.filter(place => place.category === selectedCategory);
 
-  // Reset current place index when category changes
   useEffect(() => {
     setCurrentPlaceIndex(0);
   }, [selectedCategory]);
 
-  // Auto-rotate places every 8 seconds (only for filtered places)
   useEffect(() => {
     if (filteredPlaces.length > 0) {
       const interval = setInterval(() => {
@@ -100,39 +112,8 @@ export default function ServiceWidgets({ onMapSearch }: ServiceWidgetsProps) {
     }
   }, [filteredPlaces.length]);
 
-  const getPlaceIcon = (place: KakhetiHeritageRow) => {
-    const categoryIcons: Record<string, string> = {
-      'ისტორია': '🏰',
-      'ბუნება': '🏞️',
-      'ღვინო': '🍷',
-      'პერსონაჟი': '👤',
-      'ლეგენდა': '📖'
-    };
-
-    return categoryIcons[place.category || ''] || '🏛️';
-  };
-  
-  // 👇 მთავარი ცვლილება GRID-ში:
-  // grid-cols-1 (ყველა ეკრანზე) -> 1 სვეტი (გზამკვლევი და ღირსშესანიშნაობები ერთმანეთის ქვემოთ)
-  
   return (
-    <div className="grid grid-cols-1 gap-5 w-full relative z-0 text-left">
-      
-      {/* 📍 გზამკვლევი */}
-      <div className="bg-white/[0.03] backdrop-blur-3xl rounded-[30px] border border-white/10 p-5 flex flex-col items-center group relative overflow-hidden transition-all hover:border-cyan-500/30 shadow-xl h-full">
-        <h4 className="text-[10px] font-black text-cyan-400 uppercase tracking-[0.4em] mb-4 w-full text-left">📍 გზამკვლევი</h4>
-        <div className="grid grid-cols-2 gap-2 w-full">
-          {[{ label: 'ბანკომატი', icon: '🏦', k: 'ბანკომატი' }, { label: 'სადგური', icon: '⛽', k: 'ავტოგასამართი სადგური' }, { label: 'აფთიაქი', icon: '💊', k: 'აფთიაქი' }, { label: 'სამრეცხაო', icon: '🚿', k: 'ავტოსამრეცხაო' }].map((btn) => (
-            <button key={btn.label} onClick={() => onMapSearch(btn.k)} className="bg-white/5 p-3 rounded-2xl flex flex-col items-center hover:bg-cyan-500/20 transition-all border border-white/5">
-              <span className="text-xl mb-1">{btn.icon}</span>
-              <span className="text-[9px] font-black uppercase tracking-widest text-center">{btn.label}</span>
-            </button>
-          ))}
-        </div>
-      </div>
-
-      {/* 🏛️ კახეთის ღირსშესანიშნაობები */}
-      <div className="bg-white/[0.03] backdrop-blur-3xl rounded-[30px] border border-white/10 p-5 flex flex-col items-center group relative overflow-hidden transition-all hover:border-cyan-500/30 shadow-xl h-80">
+    <div className="bg-white/[0.03] backdrop-blur-3xl rounded-[30px] border border-white/10 p-5 flex flex-col items-center group relative overflow-hidden transition-all hover:border-cyan-500/30 shadow-xl h-80">
         <h4 className="text-[10px] font-black text-cyan-400 uppercase tracking-[0.4em] mb-4 w-full text-left">🏛️ კახეთის ღირსშესანიშნაობები</h4>
         
         {/* Category filters */}
@@ -211,6 +192,14 @@ export default function ServiceWidgets({ onMapSearch }: ServiceWidgetsProps) {
           </div>
         )}
       </div>
+  );
+}
+
+export default function ServiceWidgets({ onMapSearch }: ServiceWidgetsProps) {
+  return (
+    <div className="grid grid-cols-1 gap-5 w-full relative z-0 text-left">
+      <GuideWidget onMapSearch={onMapSearch} />
+      <HeritageWidget />
     </div>
   );
 }
