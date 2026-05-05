@@ -157,6 +157,11 @@ export default function HomePageClient({
   const [showAllAnnouncements, setShowAllAnnouncements] = useState(false);
   const [announcementsPage, setAnnouncementsPage] = useState(0);
   const [showAllFilters, setShowAllFilters] = useState(false);
+  const [modalAnnouncementsPage, setModalAnnouncementsPage] = useState(0);
+  const [showCategoryDropdown, setShowCategoryDropdown] = useState(false);
+  const [showLocationDropdown, setShowLocationDropdown] = useState(false);
+  const categoryDropdownRef = useRef<HTMLDivElement | null>(null);
+  const locationDropdownRef = useRef<HTMLDivElement | null>(null);
   const [bgImage, setBgImage] = useState<string | null>(initialBgImage ?? null);
   // Marquee text state
   const [marqueeText, setMarqueeText] = useState<string>(initialMarqueeText || FALLBACK_MARQUEE);
@@ -467,8 +472,29 @@ export default function HomePageClient({
     if (!showAllFilters) return;
     const previousOverflow = document.body.style.overflow;
     document.body.style.overflow = 'hidden';
+    setShowCategoryDropdown(false);
+    setShowLocationDropdown(false);
     return () => {
       document.body.style.overflow = previousOverflow;
+    };
+  }, [showAllFilters]);
+
+  useEffect(() => {
+    if (!showAllFilters) return;
+    const handleClickOutside = (event: MouseEvent) => {
+      const categoryNode = categoryDropdownRef.current;
+      const locationNode = locationDropdownRef.current;
+      const target = event.target as Node;
+      if (categoryNode && !categoryNode.contains(target)) {
+        setShowCategoryDropdown(false);
+      }
+      if (locationNode && !locationNode.contains(target)) {
+        setShowLocationDropdown(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
     };
   }, [showAllFilters]);
 
@@ -538,6 +564,14 @@ export default function HomePageClient({
     ? filteredAds
     : filteredAds.slice(safePage * pageSize, safePage * pageSize + pageSize);
 
+  const modalPageSize = 15;
+  const modalMaxPage = Math.max(0, Math.ceil(filteredAds.length / modalPageSize) - 1);
+  const modalSafePage = Math.min(modalAnnouncementsPage, modalMaxPage);
+  const modalVisibleAds = filteredAds.slice(
+    modalSafePage * modalPageSize,
+    modalSafePage * modalPageSize + modalPageSize
+  );
+
 
   const allNonCommunityCategories = useMemo(() => {
     const derivedFromAds = Array.from(
@@ -565,6 +599,32 @@ export default function HomePageClient({
     () => allNonCommunityCategories.slice(0, 5),
     [allNonCommunityCategories]
   );
+
+  const flatLocations = useMemo(() => {
+    const list = new Set<string>();
+    for (const municipality of LOCATIONS) {
+      if (typeof municipality === 'string') {
+        list.add(municipality);
+        continue;
+      }
+      for (const city of municipality.cities ?? []) {
+        if (typeof city === 'string') {
+          list.add(city);
+          continue;
+        }
+        if (city.name) list.add(city.name);
+        if (Array.isArray(city.villages)) {
+          city.villages.forEach((village) => list.add(village));
+        }
+      }
+    }
+    return ['ყველა კახეთი', ...Array.from(list)];
+  }, []);
+
+  useEffect(() => {
+    if (!showAllFilters) return;
+    setModalAnnouncementsPage(0);
+  }, [showAllFilters, selectedCategories, selectedLocations]);
 
   const seasonal = getSeasonalContent();
 
@@ -949,21 +1009,63 @@ export default function HomePageClient({
                 <div className="text-[10px] font-black uppercase tracking-[0.3em] text-white/40 mb-3">
                   კატეგორიები
                 </div>
-                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
-                  {allNonCommunityCategories.map((category) => (
+                <div ref={categoryDropdownRef} className="relative">
+                  <div className="flex items-center gap-3">
                     <button
-                      key={category}
                       type="button"
-                      onClick={() => selectCategory(category)}
-                      className={`px-3 py-3 rounded-2xl border text-[11px] md:text-xs font-black uppercase tracking-[0.2em] transition text-center ${
-                        selectedCategories.includes(category)
-                          ? 'border-amber-300/50 bg-amber-500/20 text-amber-200'
-                          : 'border-white/10 bg-white/5 text-white/80 hover:border-white/30 hover:text-white'
-                      }`}
+                      onClick={() => setShowCategoryDropdown((prev) => !prev)}
+                      className="flex-1 bg-[#0b0b15] border border-white/10 rounded-2xl px-4 py-3 text-xs font-black uppercase tracking-[0.2em] text-amber-200 text-left"
                     >
-                      {category}
+                      {selectedCategories.includes('ყველა')
+                        ? 'ყველა'
+                        : selectedCategories.length === 1
+                          ? selectedCategories[0]
+                          : `${selectedCategories.length} კატეგორია`}
                     </button>
-                  ))}
+                    <button
+                      type="button"
+                      onClick={() => setShowCategoryDropdown((prev) => !prev)}
+                      className="sm:hidden w-10 h-10 rounded-full border border-white/10 bg-white/5 text-white/70 hover:text-white hover:border-white/30 transition"
+                    >
+                      {showCategoryDropdown ? '−' : '+'}
+                    </button>
+                  </div>
+                  {showCategoryDropdown && (
+                    <div className="absolute z-10 mt-3 w-full bg-[#0b0b15] border border-white/10 rounded-[26px] p-2 shadow-[0_20px_60px_rgba(0,0,0,0.6)]">
+                      <div className="max-h-44 overflow-y-auto space-y-1">
+                        {['ყველა', ...allNonCommunityCategories].map((category) => {
+                          const isActive = selectedCategories.includes(category);
+                          return (
+                            <button
+                              key={category}
+                              type="button"
+                              onClick={() => {
+                                if (category === 'ყველა') {
+                                  setSelectedCategories(['ყველა']);
+                                } else {
+                                  setSelectedCategories((prev) => {
+                                    const withoutAll = prev.filter((c) => c !== 'ყველა');
+                                    const exists = withoutAll.includes(category);
+                                    const next = exists ? withoutAll.filter((c) => c !== category) : [...withoutAll, category];
+                                    return next.length === 0 ? ['ყველა'] : next;
+                                  });
+                                }
+                                setShowAllAnnouncements(false);
+                                setAnnouncementsPage(0);
+                              }}
+                              className={`w-full text-left px-3 py-2 rounded-xl text-[11px] font-black uppercase tracking-[0.2em] transition ${
+                                isActive
+                                  ? 'bg-amber-500/20 text-amber-200 border border-amber-300/50'
+                                  : 'text-white/80 hover:text-white hover:bg-white/5 border border-transparent'
+                              }`}
+                            >
+                              {category}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
 
@@ -971,101 +1073,90 @@ export default function HomePageClient({
                 <div className="text-[10px] font-black uppercase tracking-[0.3em] text-white/40 mb-3">
                   ქალაქები და სოფლები
                 </div>
-                <button
-                  type="button"
-                  onClick={() => handleToggleLocation('ყველა კახეთი')}
-                  className={`mb-4 w-full text-left px-4 py-2 rounded-xl text-xs font-black uppercase tracking-[0.2em] transition ${
-                    selectedLocations.includes('ყველა კახეთი')
-                      ? 'border border-amber-300/50 bg-amber-500/20 text-amber-200'
-                      : 'border border-white/10 bg-white/5 text-white/80 hover:border-white/30 hover:text-white'
-                  }`}
-                >
-                  ყველა კახეთი
-                </button>
-
-                <div className="grid grid-cols-1 gap-4">
-                  {LOCATIONS.map((municipality, idx) => {
-                    if (typeof municipality === 'string') {
-                      return (
-                        <div key={`filter-loc-${idx}`} className="bg-white/5 border border-white/10 rounded-2xl p-4">
-                          <button
-                            type="button"
-                            onClick={() => handleToggleLocation(municipality)}
-                            className={`w-full text-left px-4 py-2 rounded-xl text-xs font-black uppercase tracking-[0.2em] transition ${
-                              selectedLocations.includes(municipality)
-                                ? 'border border-amber-300/50 bg-amber-500/20 text-amber-200'
-                                : 'border border-white/10 bg-white/5 text-white/80 hover:border-white/30 hover:text-white'
-                            }`}
-                          >
-                            {municipality}
-                          </button>
-                        </div>
-                      );
-                    }
-
-                    return (
-                      <div key={municipality.municipality ?? idx} className="bg-white/5 border border-white/10 rounded-2xl p-4">
-                        <div className="text-[10px] font-black uppercase tracking-[0.3em] text-white/40 mb-3">
-                          {municipality.municipality}
-                        </div>
-                        <div className="space-y-4">
-                          {(municipality.cities ?? []).map((city, cIdx) => {
-                            if (typeof city === 'string') {
-                              return (
-                                <button
-                                  key={`${municipality.municipality}-${city}-${cIdx}`}
-                                  type="button"
-                                  onClick={() => handleToggleLocation(city)}
-                                  className={`w-full text-left px-4 py-2 rounded-xl text-xs font-black uppercase tracking-[0.2em] transition ${
-                                    selectedLocations.includes(city)
-                                      ? 'border border-amber-300/50 bg-amber-500/20 text-amber-200'
-                                      : 'border border-white/10 bg-white/5 text-white/80 hover:border-white/30 hover:text-white'
-                                  }`}
-                                >
-                                  {city}
-                                </button>
-                              );
-                            }
-
-                            return (
-                              <div key={`${municipality.municipality}-${city.name}-${cIdx}`} className="space-y-2">
-                                <button
-                                  type="button"
-                                  onClick={() => handleToggleLocation(city.name)}
-                                  className={`w-full text-left px-4 py-2 rounded-xl text-xs font-black uppercase tracking-[0.2em] transition ${
-                                    selectedLocations.includes(city.name)
-                                      ? 'border border-amber-300/50 bg-amber-500/20 text-amber-200'
-                                      : 'border border-white/10 bg-white/5 text-white/80 hover:border-white/30 hover:text-white'
-                                  }`}
-                                >
-                                  {city.name}
-                                </button>
-                                {Array.isArray(city.villages) && city.villages.length > 0 && (
-                                  <div className="flex flex-wrap gap-2">
-                                    {city.villages.map((village) => (
-                                      <button
-                                        key={`${city.name}-${village}`}
-                                        type="button"
-                                        onClick={() => handleToggleLocation(village)}
-                                        className={`px-3 py-2 rounded-xl text-[10px] font-black uppercase tracking-[0.2em] transition ${
-                                          selectedLocations.includes(village)
-                                            ? 'border border-amber-300/50 bg-amber-500/20 text-amber-200'
-                                            : 'border border-white/10 bg-white/5 text-white/70 hover:border-white/30 hover:text-white'
-                                        }`}
-                                      >
-                                        {village}
-                                      </button>
-                                    ))}
-                                  </div>
-                                )}
-                              </div>
-                            );
-                          })}
-                        </div>
+                <div ref={locationDropdownRef} className="relative">
+                  <div className="flex items-center gap-3">
+                    <button
+                      type="button"
+                      onClick={() => setShowLocationDropdown((prev) => !prev)}
+                      className="flex-1 bg-[#0b0b15] border border-white/10 rounded-2xl px-4 py-3 text-xs font-black uppercase tracking-[0.2em] text-cyan-200 text-left"
+                    >
+                      {selectedLocations.includes('ყველა კახეთი')
+                        ? 'ყველა კახეთი'
+                        : selectedLocations.length === 1
+                          ? selectedLocations[0]
+                          : `${selectedLocations.length} ლოკაცია`}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setShowLocationDropdown((prev) => !prev)}
+                      className="sm:hidden w-10 h-10 rounded-full border border-white/10 bg-white/5 text-white/70 hover:text-white hover:border-white/30 transition"
+                    >
+                      {showLocationDropdown ? '−' : '+'}
+                    </button>
+                  </div>
+                  {showLocationDropdown && (
+                    <div className="absolute z-10 mt-3 w-full bg-[#0b0b15] border border-white/10 rounded-[26px] p-2 shadow-[0_20px_60px_rgba(0,0,0,0.6)]">
+                      <div className="max-h-44 overflow-y-auto space-y-1">
+                        {flatLocations.map((loc) => {
+                          const isActive = selectedLocations.includes(loc);
+                          return (
+                            <button
+                              key={loc}
+                              type="button"
+                              onClick={() => {
+                                if (loc === 'ყველა კახეთი') {
+                                  setSelectedLocations(['ყველა კახეთი']);
+                                } else {
+                                  setSelectedLocations((prev) => {
+                                    const withoutAll = prev.filter((item) => item !== 'ყველა კახეთი');
+                                    const exists = withoutAll.includes(loc);
+                                    const next = exists ? withoutAll.filter((item) => item !== loc) : [...withoutAll, loc];
+                                    return next.length === 0 ? ['ყველა კახეთი'] : next;
+                                  });
+                                }
+                                setAnnouncementsPage(0);
+                              }}
+                              className={`w-full text-left px-3 py-2 rounded-xl text-[11px] font-black uppercase tracking-[0.2em] transition ${
+                                isActive
+                                  ? 'bg-cyan-500/20 text-cyan-200 border border-cyan-300/40'
+                                  : 'text-white/80 hover:text-white hover:bg-white/5 border border-transparent'
+                              }`}
+                            >
+                              {loc}
+                            </button>
+                          );
+                        })}
                       </div>
-                    );
-                  })}
+                    </div>
+                  )}
                 </div>
+              </div>
+
+              <div className="bg-white/5 border border-white/10 rounded-2xl p-4">
+                <div className="text-[10px] font-black uppercase tracking-[0.3em] text-white/40 mb-3">
+                  განცხადებები
+                </div>
+                {modalVisibleAds.length > 0 ? (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {modalVisibleAds.map((ad) => (
+                      <AnnouncementCard key={ad.id} announcement={ad} />
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-white/50 text-sm">განცხადებები ვერ მოიძებნა</div>
+                )}
+
+                {filteredAds.length > modalPageSize && (
+                  <div className="mt-4 flex justify-center">
+                    <button
+                      type="button"
+                      onClick={() => setModalAnnouncementsPage((p) => (p >= modalMaxPage ? 0 : p + 1))}
+                      className="px-4 py-2 rounded-full border border-amber-300/50 bg-amber-500/20 text-amber-200 font-black uppercase tracking-[0.2em] text-xs hover:bg-amber-500/30 transition"
+                    >
+                      შემდეგი
+                    </button>
+                  </div>
+                )}
               </div>
             </div>
           </div>
