@@ -97,29 +97,14 @@ export default function AnnouncementDetailsClient({ initialAd }: { initialAd: An
           mykakheti<span className="text-amber-500">.ge</span>
         </Link>
 
-        <div className="hidden md:block">
-          <p className="text-red-500 font-black uppercase italic text-[10px] md:text-[14px] tracking-[0.3em] animate-pulse drop-shadow-[0_0_15px_rgba(220,38,38,1)]">
-            საიტი მუშაობს სატესტო რეჟიმში
-          </p>
-        </div>
-
         <Link href="/" className="bg-white/5 border border-white/10 px-6 py-2.5 rounded-xl text-[9px] md:text-[10px] font-black uppercase italic hover:bg-white hover:text-black transition-all">
           ← უკან
         </Link>
       </nav>
 
-      {/* მობილური სატესტო წარწერა */}
-      <div className="block md:hidden text-center py-4 relative z-10">
-         <p className="text-red-500 font-black uppercase italic text-[9px] tracking-[0.2em] animate-pulse">საიტი მუშაობს სატესტო რეჟიმში</p>
-      </div>
-
       <div ref={contentRef} className="max-w-7xl mx-auto mt-6 md:mt-10 px-3 md:px-6 relative z-10">
-        <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,220px)_minmax(0,1fr)_minmax(0,220px)] gap-10 items-start">
-          <aside className="order-2 lg:order-1 w-full max-w-[320px] lg:max-w-[220px] mx-auto lg:mx-0 lg:sticky lg:top-24 lg:mt-8">
-            <CommunitySideWidget variant="lostFound" />
-          </aside>
-
-          <div className="order-1 lg:order-2">
+        <div className="grid grid-cols-1 gap-10 items-start">
+          <div>
             <div className="grid grid-cols-1 lg:grid-cols-[1.1fr_0.9fr] gap-1 md:gap-2">
               {/* 📸 Gallery Section */}
               <div className="space-y-6">
@@ -245,9 +230,6 @@ export default function AnnouncementDetailsClient({ initialAd }: { initialAd: An
             </div>
           </div>
 
-          <aside className="order-3 w-full max-w-[320px] lg:max-w-[220px] mx-auto lg:mx-0 lg:sticky lg:top-24 lg:mt-8">
-            <CommunitySideWidget variant="masters" />
-          </aside>
         </div>
       </div>
       {zoomOpen && zoomImg && (
