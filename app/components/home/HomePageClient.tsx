@@ -1007,6 +1007,31 @@ export default function HomePageClient({
             <div className="grid grid-cols-1 gap-6">
               <div className="bg-white/5 border border-white/10 rounded-2xl p-4">
                 <div className="text-[10px] font-black uppercase tracking-[0.3em] text-white/40 mb-3">
+                  ძიება სათაურით
+                </div>
+                <div className="flex items-center gap-3 bg-[#0b0b15] border border-white/10 rounded-2xl px-4 py-3">
+                  <span className="text-lg text-amber-300/80">🔎</span>
+                  <input
+                    type="text"
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    placeholder="მოძებნე განცხადება..."
+                    className="w-full bg-transparent text-sm font-black uppercase tracking-[0.2em] text-amber-100 placeholder:text-white/30 outline-none"
+                  />
+                  {searchTerm && (
+                    <button
+                      type="button"
+                      onClick={() => setSearchTerm('')}
+                      className="text-xs font-black uppercase tracking-[0.2em] text-white/40 hover:text-amber-200 transition"
+                    >
+                      ✕
+                    </button>
+                  )}
+                </div>
+              </div>
+
+              <div className="bg-white/5 border border-white/10 rounded-2xl p-4">
+                <div className="text-[10px] font-black uppercase tracking-[0.3em] text-white/40 mb-3">
                   კატეგორიები
                 </div>
                 <div ref={categoryDropdownRef} className="relative">
