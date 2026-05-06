@@ -313,11 +313,17 @@ nav {
   z-index: var(--z-modal) !important;
 }
 
-/* Ensure any sticky/top fixed elements reserve content space to avoid overlap */
-/* Apply to the main layout container if a fixed/sticky nav is present */
+/* Ensure the fixed mobile navigation reserves enough space above the first content block. */
+/* The mobile navbar stacks logo, banner, and action buttons vertically, so it needs a taller offset plus a small breathing gap. */
 @media (max-width: 640px) {
-  .layout-shell, main {
-    padding-top: 5.25rem;
+  .has-fixed-mobile-nav > .layout-shell {
+    padding-top: 10.75rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .has-fixed-mobile-nav > .layout-shell {
+    padding-top: 11.25rem;
   }
 }
 
