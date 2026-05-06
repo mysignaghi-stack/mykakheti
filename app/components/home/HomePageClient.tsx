@@ -160,6 +160,7 @@ export default function HomePageClient({
   const [modalAnnouncementsPage, setModalAnnouncementsPage] = useState(0);
   const [showCategoryDropdown, setShowCategoryDropdown] = useState(false);
   const [showLocationDropdown, setShowLocationDropdown] = useState(false);
+  const [visibleCategoryCount, setVisibleCategoryCount] = useState(6);
   const categoryDropdownRef = useRef<HTMLDivElement | null>(null);
   const locationDropdownRef = useRef<HTMLDivElement | null>(null);
   const [bgImage, setBgImage] = useState<string | null>(initialBgImage ?? null);
@@ -204,6 +205,37 @@ export default function HomePageClient({
       supabase.removeChannel(channel);
     };
   }, [fetchBG]);
+
+  useEffect(() => {
+    const updateCategoryCount = () => {
+      const width = typeof window !== 'undefined' ? window.innerWidth : 0;
+      if (width < 480) {
+        setVisibleCategoryCount(3);
+        return;
+      }
+      if (width < 768) {
+        setVisibleCategoryCount(4);
+        return;
+      }
+      if (width < 1024) {
+        setVisibleCategoryCount(5);
+        return;
+      }
+      if (width < 1440) {
+        setVisibleCategoryCount(5);
+        return;
+      }
+      if (width < 1800) {
+        setVisibleCategoryCount(6);
+        return;
+      }
+      setVisibleCategoryCount(7);
+    };
+
+    updateCategoryCount();
+    window.addEventListener('resize', updateCategoryCount);
+    return () => window.removeEventListener('resize', updateCategoryCount);
+  }, []);
 
   // Agro hook
   const {
@@ -595,9 +627,8 @@ export default function HomePageClient({
   }, [ads]);
 
   const visibleCategories = useMemo(
-    // show one fewer category to avoid asymmetrical wrapping on some viewports
-    () => allNonCommunityCategories.slice(0, 6),
-    [allNonCommunityCategories]
+    () => allNonCommunityCategories.slice(0, visibleCategoryCount),
+    [allNonCommunityCategories, visibleCategoryCount]
   );
 
   const flatLocations = useMemo(() => {
@@ -725,10 +756,10 @@ export default function HomePageClient({
               </div>
             </div>
 
-            <div className="w-full max-w-6xl mx-auto px-6 md:px-10 mt-8">
-              <div className="relative bg-black/50 border border-amber-500/30 rounded-2xl px-5 py-4 shadow-[0_8px_30px_rgba(0,0,0,0.35)]">
-                <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
-                  <div className="flex items-center gap-3 shrink-0">
+            <div className="w-full max-w-6xl mx-auto px-4 sm:px-6 md:px-10 mt-6">
+              <div className="relative bg-black/50 border border-amber-500/30 rounded-2xl px-3 sm:px-4 py-2 sm:py-3 shadow-[0_8px_30px_rgba(0,0,0,0.35)]">
+                <div className="flex flex-wrap items-center gap-2">
+                  <div className="flex items-center justify-center sm:justify-start gap-2 shrink-0 order-1 sm:order-1">
                     <button
                       type="button"
                       onClick={() => {
@@ -736,20 +767,20 @@ export default function HomePageClient({
                         setShowAllAnnouncements(false);
                         setAnnouncementsPage(0);
                       }}
-                      className="px-3 py-1 rounded-full border border-amber-300/40 bg-amber-500/10 text-[10px] font-black uppercase tracking-[0.2em] text-amber-200 hover:bg-amber-500/20 transition"
+                      className="h-9 px-3 rounded-full border border-amber-300/40 bg-amber-500/10 text-[10px] font-black uppercase tracking-[0.16em] text-amber-200 hover:bg-amber-500/20 transition whitespace-nowrap"
                     >
                       ყველა განცხადება
                     </button>
-                    <span className="text-amber-400 text-base md:text-lg tracking-normal">{ads.length}</span>
+                    <span className="text-amber-400 text-sm md:text-base tracking-normal">{ads.length}</span>
                   </div>
 
-                  <div className="grid grid-cols-2 gap-2 flex-1 min-w-[200px] sm:flex sm:flex-wrap sm:items-center sm:gap-x-3 sm:gap-y-2 sm:justify-start">
+                  <div className="flex flex-wrap items-center justify-center gap-2 flex-1 min-w-[200px] order-3 sm:order-2">
                     {visibleCategories.map((category) => (
                       <button
                         key={category}
                         type="button"
                         onClick={() => selectCategory(category)}
-                        className={`w-full sm:w-auto px-2.5 py-1 rounded-full border text-[10px] md:text-[11px] font-black uppercase tracking-[0.2em] transition ${
+                        className={`h-9 px-3 rounded-full border text-[10px] md:text-[11px] font-black uppercase tracking-[0.16em] transition whitespace-nowrap ${
                           selectedCategories.includes(category)
                             ? 'border-amber-300/50 bg-amber-500/20 text-amber-200'
                             : 'border-white/10 bg-white/5 text-white/70 hover:border-white/30 hover:text-white'
@@ -760,11 +791,11 @@ export default function HomePageClient({
                     ))}
                   </div>
 
-                  <div className="w-full sm:w-auto sm:ml-auto">
+                  <div className="flex items-center justify-center sm:justify-end gap-2 shrink-0 order-2 sm:order-3 sm:ml-auto">
                     <button
                       type="button"
                       onClick={() => setShowAllCategories(true)}
-                      className="text-[10px] md:text-[11px] font-black uppercase tracking-[0.2em] text-amber-300 hover:text-amber-200 transition"
+                      className="h-9 px-3 rounded-full border border-amber-300/30 bg-amber-500/10 text-[10px] md:text-[11px] font-black uppercase tracking-[0.16em] text-amber-200 hover:bg-amber-500/20 transition whitespace-nowrap"
                     >
                       ყველა კატეგორია
                     </button>
