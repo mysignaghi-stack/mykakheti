@@ -662,7 +662,7 @@ export default function HomePageClient({
 
       {/* Informational grid section, now outside header for independent styling */}
       <section className="layout-shell relative z-10 w-full max-w-full xl:max-w-[1800px] px-4 sm:px-6 md:px-10 mx-auto mt-3 overflow-hidden">
-        <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,260px)_minmax(0,1fr)_minmax(0,260px)] xl:grid-cols-[minmax(0,300px)_minmax(0,1fr)_minmax(0,300px)] gap-4 md:gap-6 xl:gap-8 items-start text-white bg-black/70 backdrop-blur-2xl rounded-[30px] border border-white/10 p-4 sm:p-6 md:p-8 shadow-xl w-full max-w-full overflow-hidden">
+        <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,220px)_minmax(0,1fr)_minmax(0,220px)] xl:grid-cols-[minmax(0,240px)_minmax(0,1fr)_minmax(0,240px)] 2xl:grid-cols-[minmax(0,300px)_minmax(0,1fr)_minmax(0,300px)] gap-4 md:gap-6 xl:gap-8 items-start text-white bg-black/70 backdrop-blur-2xl rounded-[30px] border border-white/10 p-4 sm:p-6 md:p-8 shadow-xl w-full max-w-full overflow-hidden">
           {/* --- მარცხენა სვეტი (Desktop Only) --- */}
           <div className="hidden lg:flex flex-col gap-6 sticky top-0 order-1 w-full max-w-full min-w-0">
             {/* კახური მოედანი (სქროლით) */}

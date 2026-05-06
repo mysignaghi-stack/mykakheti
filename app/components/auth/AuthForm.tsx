@@ -105,7 +105,7 @@ export default function AuthForm({ initialMode = "login", onClose, compact = fal
 
   return (
     <div
-      className={`w-full ${compact ? "max-w-sm" : "max-w-md"} mx-auto bg-white/5 border border-white/10 rounded-3xl ${compact ? "p-5" : "p-8"} space-y-6 backdrop-blur-xl text-white`}
+      className={`w-full ${compact ? "max-w-sm" : "max-w-md"} mx-auto bg-white/5 border border-white/10 rounded-3xl ${compact ? "p-4 sm:p-5" : "p-6 sm:p-8"} space-y-6 backdrop-blur-xl text-white`}
     >
       <div className="flex justify-between items-center">
         <h1 className="text-2xl font-black uppercase italic">

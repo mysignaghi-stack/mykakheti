@@ -65,10 +65,10 @@ export default function HeroSection({
     <div className="flex flex-col items-center text-center space-y-8 animate-in fade-in duration-1000 w-full relative z-[50]">
       {/* სათაური */}
       <div className="space-y-4 px-2">
-        <h1 className="text-[22px] sm:text-[32px] md:text-[42px] font-black uppercase tracking-[0.08em] leading-snug drop-shadow-2xl text-center text-white/95 font-sans">
+        <h1 className="text-[clamp(22px,3.6vw,42px)] font-black uppercase tracking-[0.08em] leading-snug drop-shadow-2xl text-center text-white/95 font-sans">
           კახეთის ერთიანი ციფრული პლატფორმა
         </h1>
-        <p className="text-amber-500/60 font-black text-[10px] md:text-[13px] uppercase italic tracking-[0.2em] sm:tracking-[0.3em] text-center">
+        <p className="text-amber-500/60 font-black text-[clamp(10px,1.4vw,13px)] uppercase italic tracking-[0.2em] sm:tracking-[0.3em] text-center">
           იპოვე, გაყიდე და განავითარე საქმიანობა კახეთში
         </p>
       </div>

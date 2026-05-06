@@ -72,7 +72,7 @@ export default function AnnouncementsPage() {
           <Link href="/" className="text-[11px] font-black uppercase italic text-white/50 hover:text-white transition">← მთავარი გვერდი</Link>
         </div>
         <h1 className="text-2xl font-black text-amber-500 uppercase italic mb-6">განცხადებები</h1>
-        <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,240px)_minmax(0,1fr)] gap-10 items-start">
+        <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,220px)_minmax(0,1fr)] xl:grid-cols-[minmax(0,220px)_minmax(0,1fr)_minmax(0,220px)] gap-10 items-start">
           <aside className="order-2 lg:order-1 w-full max-w-[360px] lg:max-w-[240px] mx-auto lg:mx-0 lg:sticky lg:top-24 lg:mt-8">
             <CommunitySideWidget variant="lostFound" />
           </aside>
@@ -96,20 +96,20 @@ export default function AnnouncementsPage() {
                     }}
                   >
                     <div className="p-5 bg-white/5 rounded-2xl border border-white/10 hover:bg-white/10 transition">
-                      <div className="flex gap-4 items-start">
+                      <div className="flex flex-col sm:flex-row gap-4 items-start">
                         {(item.image_url || item.all_images?.[0]) && (
                           <Image
                             src={item.image_url || item.all_images![0]}
                             alt=""
                             width={80}
                             height={80}
-                            className="rounded-2xl object-contain flex-shrink-0 shadow-lg ring-1 ring-amber-400/20"
+                            className="rounded-2xl object-contain flex-shrink-0 shadow-lg ring-1 ring-amber-400/20 w-16 h-16 sm:w-20 sm:h-20"
                           />
                         )}
                         <div className="flex-1">
-                          <div className="flex justify-between items-start mb-2">
+                          <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-2 mb-2">
                             <h3 className="font-black text-white text-lg italic">{item.title}</h3>
-                            <div className="flex gap-2">
+                            <div className="flex flex-wrap gap-2">
                               <span className="text-amber-500 text-xs font-bold uppercase px-2 py-1 bg-amber-500/10 rounded">
                                 {item.category}
                               </span>

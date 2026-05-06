@@ -133,8 +133,8 @@ export default function Navbar() {
     : undefined;
 
   return (
-    <nav className="fixed top-0 left-0 right-0 z-[100] px-3 sm:px-4 md:px-8 py-2 sm:py-3 flex items-center bg-black/40 backdrop-blur-3xl border-b border-white/5 shadow-2xl">
-      <div className="relative flex flex-col items-start shrink-0">
+    <nav className="fixed top-0 left-0 right-0 z-[100] px-3 sm:px-4 md:px-8 py-2 sm:py-3 flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-0 bg-black/40 backdrop-blur-3xl border-b border-white/5 shadow-2xl">
+      <div className="relative flex flex-col items-center sm:items-start shrink-0 w-full sm:w-auto">
         <Link href="/" className="text-xl md:text-2xl font-black italic tracking-tighter">
           mykakheti<span className="text-amber-500">.ge</span>
         </Link>
@@ -166,11 +166,11 @@ export default function Navbar() {
       </div>
       
       {/* Test Mode Message */}
-      <div className="flex-1 flex justify-center items-center px-4">
+      <div className="w-full sm:flex-1 flex justify-center items-center px-2 sm:px-4">
         <div className="text-center">
           {showBanner && bannerMode === 'marquee' ? (
             <div
-              className="w-full max-w-[520px] marquee-outer rounded-full px-3 py-1"
+              className="w-full max-w-full sm:max-w-[520px] marquee-outer rounded-full px-3 py-1"
               style={bannerBgStyle}
             >
               <span
@@ -197,7 +197,7 @@ export default function Navbar() {
         </div>
       </div>
       
-      <div className="relative flex flex-col items-start gap-1 shrink-0">
+      <div className="relative flex flex-col items-center sm:items-start gap-1 shrink-0 w-full sm:w-auto">
         <Link href="/add" className="bg-amber-600 text-white px-4 sm:px-6 py-2 rounded-xl font-black uppercase text-[10px] md:text-[11px] italic shadow-2xl hover:scale-105 transition-all">
           განცხადება +
         </Link>

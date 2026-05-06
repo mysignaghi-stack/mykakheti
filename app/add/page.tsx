@@ -378,9 +378,9 @@ export default function AddPage() {
          <div className="absolute inset-0 bg-[#050510]/80 backdrop-blur-[10px]" />
       </div>
 
-      <nav className="relative z-50 px-10 py-6 border-b border-white/10 flex justify-between items-center bg-black/40 backdrop-blur-xl">
+      <nav className="relative z-50 px-4 sm:px-6 md:px-10 py-4 sm:py-6 border-b border-white/10 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 bg-black/40 backdrop-blur-xl">
         <Link href="/" className="text-xl font-black italic tracking-tighter">mykakheti<span className="text-amber-500">.ge</span></Link>
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center justify-center sm:justify-end gap-3">
           <Link href="/" className="text-[10px] font-black uppercase italic text-white/40 hover:text-white transition-all">← მთავარზე დაბრუნება</Link>
           {isAuthenticated && (
             <button
@@ -394,7 +394,7 @@ export default function AddPage() {
         </div>
       </nav>
 
-      <div className="relative z-10 max-w-2xl mx-auto w-full px-6 py-20">
+      <div className="relative z-10 max-w-3xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-12 sm:py-16 lg:py-20">
         <div className="bg-slate-950/60 backdrop-blur-3xl p-8 md:p-12 rounded-[45px] border border-white/10 shadow-2xl">
           <div className="text-center mb-6">
             <h1 className="text-3xl font-black uppercase italic tracking-widest text-amber-500 drop-shadow-lg">განცხადების დამატება</h1>
@@ -514,7 +514,7 @@ export default function AddPage() {
 
                 <form onSubmit={handleEmailActivation} className="space-y-2">
                   <h3 className="text-[11px] font-black uppercase tracking-wide text-white/70">სწრაფი რეგისტრაცია (Email ლინკი)</h3>
-                  <div className="grid grid-cols-2 gap-2">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                     <input
                       className="w-full p-3 rounded-xl bg-white/10 border border-white/10 focus:border-amber-500 outline-none text-white placeholder:text-white/40 text-[12px]"
                       placeholder="სახელი"
@@ -574,7 +574,7 @@ export default function AddPage() {
 
           {isAuthenticated && !isSubmitted && (
           <form onSubmit={handlePost} className="space-y-6">
-            <div className="grid grid-cols-3 md:grid-cols-5 gap-3 mb-8">
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3 mb-8">
                {previews.map((src, i) => (
                  <div key={i} className="aspect-square rounded-2xl overflow-hidden border border-white/20 relative shadow-xl group">
                    <Image src={src} alt="" fill sizes="120px" className="object-cover" />
@@ -607,7 +607,7 @@ export default function AddPage() {
                 </select>
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 {/* ✨ განახლებული ფასის ველი ვალუტის არჩევით */}
                 <div className="relative flex items-center bg-white/5 border border-white/10 rounded-2xl focus-within:border-amber-500 transition-all overflow-hidden">
                    <input 
