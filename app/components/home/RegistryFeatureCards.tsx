@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import type { ReactNode } from 'react';
+import type { ReactElement, ReactNode } from 'react';
 
 const CARD_CONTENT = [
   {
@@ -57,7 +57,7 @@ type RegistryCardProps = {
   href: string;
   glow: string;
   accent: string;
-  icons: Array<(props: { className?: string }) => JSX.Element>;
+  icons: Array<(props: { className?: string }) => ReactElement>;
 };
 
 function RegistryCard({ title, badge, headline, description, cta, statValue, statLabel, href, glow, accent, icons }: RegistryCardProps) {
@@ -113,7 +113,7 @@ function RegistryCard({ title, badge, headline, description, cta, statValue, sta
 }
 
 type IconClusterProps = {
-  icons: Array<(props: { className?: string }) => JSX.Element>;
+  icons: Array<(props: { className?: string }) => ReactElement>;
 };
 
 function IconCluster({ icons }: IconClusterProps) {
