@@ -21,7 +21,7 @@ const COMMUNITY_CARDS: CommunityCardConfig[] = [
   {
     key: 'lost-found',
     icon: '🔎',
-    label: 'დაკარგული/ნაპოვნი',
+    label: 'დაკარგული/ნაპონის რეესტრი',
     submitHref: '/community/lost-found/submit',
     submitLabel: 'დაკარგული/ნაპოვნის დამატება',
     viewHref: '/community/lost-found',
@@ -30,7 +30,7 @@ const COMMUNITY_CARDS: CommunityCardConfig[] = [
   {
     key: 'masters',
     icon: '🛠️',
-    label: 'ხელოსნები/ტექნიკოსები',
+    label: 'ხელოსნების/ტექნიკოსების რეესტრი',
     submitHref: '/community/masters/submit',
     submitLabel: 'ოსტატის/სპეციალისტის დამატება',
     viewHref: '/community/masters',

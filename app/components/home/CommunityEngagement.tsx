@@ -14,7 +14,7 @@ interface CommunityCard {
 const COMMUNITY_CARDS: CommunityCard[] = [
   {
     id: 'lost-found',
-    title: 'დაკარგული/ნაპოვნი',
+    title: 'დაკარგული/ნაპონის რეესტრი',
     icon: '🔍',
     value: 'დაკარგული/ნაპოვნის დამატება',
     table: 'lost_found',
@@ -22,7 +22,7 @@ const COMMUNITY_CARDS: CommunityCard[] = [
   },
   {
     id: 'masters',
-    title: 'ხელოსნები/ტექნიკოსები',
+    title: 'ხელოსნების/ტექნიკოსების რეესტრი',
     icon: '🔧',
     value: 'სპეციალისტი/ოსტატი დამატება',
     table: 'masters',

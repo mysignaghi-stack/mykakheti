@@ -21,14 +21,14 @@ type CardConfig = {
 
 const CARD_CONFIGS: CardConfig[] = [
   {
-    title: "დაკარგული/ნაპოვნი",
+    title: "დაკარგული/ნაპონის რეესტრი",
     accentClass: "from-[#2a1a0f] via-[#1a120c] to-[#3a2414]",
     link: "/community/lost-found",
     hrefBuilder: (id: string) => `/community/lost-found/${id}`,
     placeholder: "ახალი განცხადებები მალე დაემატება",
   },
   {
-    title: "ხელოსნები/ტექნიკოსები",
+    title: "ხელოსნების/ტექნიკოსების რეესტრი",
     accentClass: "from-[#101b2a] via-[#0d141f] to-[#1a2a42]",
     link: "/community/masters",
     hrefBuilder: (id: string) => `/community/masters/${id}`,
@@ -109,7 +109,7 @@ export default function CommunityWidgets({
       <WidgetCard
         config={cards[0]}
         highlight={currentLostFound}
-        badge={currentLostFound ? (currentLostFound.kind === "found" ? "ნაპოვნი" : "დაკარგული") : "დაკარგული/ნაპოვნი"}
+        badge={currentLostFound ? (currentLostFound.kind === "found" ? "ნაპოვნი" : "დაკარგული") : "დაკარგული/ნაპოვნის რეესტრი"}
         description={currentLostFound?.location || ""}
         title={currentLostFound?.title || cards[0].placeholder}
         meta={currentLostFound?.kind ? (currentLostFound.kind === "found" ? "ნაპოვნი" : "დაკარგული") : undefined}
@@ -120,7 +120,7 @@ export default function CommunityWidgets({
       <WidgetCard
         config={cards[1]}
         highlight={currentMaster}
-        badge={currentMaster ? "ოსტატი/სპეციალისტი" : "ხელოსნები/ტექნიკოსები"}
+        badge={currentMaster ? "ოსტატი/სპეციალისტი" : "ხელოსნების/ტექნიკოსების რეესტრი"}
         description={currentMaster?.location || ""}
         title={currentMaster?.full_name || cards[1].placeholder}
         meta={currentMaster?.profession}
@@ -213,7 +213,7 @@ export function CommunitySideWidget({
       <WidgetCard
         config={config}
         highlight={lostItem}
-        badge={lostItem ? (lostItem.kind === "found" ? "ნაპოვნი" : "დაკარგული") : "დაკარგული/ნაპოვნი"}
+        badge={lostItem ? (lostItem.kind === "found" ? "ნაპოვნი" : "დაკარგული") : "დაკარგული/ნაპოვნის რეესტრი"}
         description={lostItem?.location || ""}
         title={lostItem?.title || config.placeholder}
         meta={lostItem?.kind ? (lostItem.kind === "found" ? "ნაპოვნი" : "დაკარგული") : undefined}
@@ -228,7 +228,7 @@ export function CommunitySideWidget({
     <WidgetCard
       config={config}
       highlight={masterItem}
-      badge={masterItem ? "ოსტატი/სპეციალისტი" : "ხელოსნები/ტექნიკოსები"}
+      badge={masterItem ? "ოსტატი/სპეციალისტი" : "ხელოსნების/ტექნიკოსების რეესტრი"}
       description={masterItem?.location || ""}
       title={masterItem?.full_name || config.placeholder}
       meta={masterItem?.profession}

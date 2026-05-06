@@ -5,14 +5,14 @@ import Link from 'next/link';
 const sections = [
   {
     icon: '🔎',
-    title: 'დაკარგული/ნაპოვნი',
+    title: 'დაკარგული/ნაპონის რეესტრი',
     description: 'მოძებნეთ განცხადება ან დაეხმარეთ პოვნის პროცესში.',
     viewHref: '/community/lost-found',
     addHref: '/community/lost-found/submit',
   },
   {
     icon: '🛠️',
-    title: 'ხელოსნები/ტექნიკოსები',
+    title: 'ხელოსნების/ტექნიკოსების რეესტრი',
     description: 'იპოვეთ და დაამატეთ სანდო სპეციალისტები.',
     viewHref: '/community/masters',
     addHref: '/community/masters/submit',
