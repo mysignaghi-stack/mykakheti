@@ -71,7 +71,7 @@ export default function HeroSection({
       </div>
 
       {/* საძიებო ბლოკი */}
-      <div className="w-full bg-white/[0.03] backdrop-blur-2xl rounded-[30px] sm:rounded-[40px] p-1.5 md:p-2 border border-white/10 shadow-2xl relative group/searchBox z-[60]">
+      <div className="w-full max-w-3xl bg-white/[0.03] backdrop-blur-2xl rounded-[30px] sm:rounded-[40px] p-1.5 md:p-2 border border-white/10 shadow-2xl relative group/searchBox z-[60]">
         <div className="flex flex-col gap-2">
           {/* Input */}
           <div className="flex items-center px-4 sm:px-6 py-2 border-b border-white/5 text-left">
@@ -124,12 +124,12 @@ export default function HeroSection({
 
           {/* ლოკაციის არჩევა და ღილაკი */}
           <div className="flex flex-col md:flex-row gap-2 p-1">
-            <div className="flex-grow relative" ref={locRef}>
+            <div className="md:flex-[2] relative" ref={locRef}>
               <button onClick={() => setIsLocOpen(true)} className="w-full py-3 sm:py-4 px-6 sm:px-8 flex justify-between items-center bg-white/[0.03] backdrop-blur-2xl rounded-[20px] sm:rounded-[25px] border border-white/10 hover:bg-white/[0.05] hover:border-amber-500/30 transition-all font-black text-[10px] sm:text-[11px] uppercase italic tracking-widest text-left shadow-lg">
                 <span className="text-white/80">{locationLabel}</span><span className="text-amber-500/60">▼</span>
               </button>
             </div>
-            <button className="px-12 py-3 sm:py-4 bg-amber-600 rounded-[20px] sm:rounded-[25px] font-black uppercase italic text-[12px] hover:bg-amber-500 hover:shadow-[0_0_30px_rgba(245,158,11,0.4)] transition-all active:scale-95 shadow-lg border border-amber-400/20">ძიება</button>
+            <button className="md:flex-none md:px-8 py-3 sm:py-4 bg-amber-600 rounded-[20px] sm:rounded-[25px] font-black uppercase italic text-[12px] hover:bg-amber-500 hover:shadow-[0_0_30px_rgba(245,158,11,0.4)] transition-all active:scale-95 shadow-lg border border-amber-400/20">ძიება</button>
           </div>
         </div>
       </div>

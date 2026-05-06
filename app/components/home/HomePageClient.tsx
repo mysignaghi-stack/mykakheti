@@ -761,17 +761,27 @@ export default function HomePageClient({
       <section className="layout-shell relative z-10 w-full max-w-full xl:max-w-[1800px] px-4 sm:px-6 md:px-10 mx-auto mt-5 sm:mt-3 overflow-hidden">
         <div className="grid grid-cols-1 gap-4 md:gap-6 xl:gap-8 items-start text-white bg-black/70 backdrop-blur-2xl rounded-[30px] border border-white/10 p-4 sm:p-6 md:p-8 shadow-xl w-full max-w-full overflow-hidden">
           {/* --- ცენტრალური სვეტი --- */}
-          <div className="flex flex-col items-center text-center space-y-4 lg:space-y-8 animate-in fade-in duration-1000 w-full min-w-0">
-             <HeroSection 
-                searchTerm={searchTerm} setSearchTerm={setSearchTerm} filteredAds={filteredAds}
-               selectedLocations={selectedLocations} setSelectedLocations={setSelectedLocations}
-               isLocOpen={isLocOpen} setIsLocOpen={setIsLocOpen} locRef={locRef as React.RefObject<HTMLDivElement>}
-             />
+          <div className="flex flex-col items-center text-center gap-2 lg:gap-6 animate-in fade-in duration-1000 w-full min-w-0">
+             <div className="w-full grid grid-cols-1 lg:grid-cols-[minmax(0,220px)_minmax(0,1fr)_minmax(0,220px)] gap-4 lg:gap-6 items-start">
+              <div className="w-full bg-gradient-to-br from-amber-900/30 via-black/40 to-amber-700/20 backdrop-blur-sm rounded-[24px] border border-amber-500/20 shadow-[0_0_18px_2px_rgba(255,191,0,0.08)] p-3 ring-1 ring-amber-400/10 relative">
+                <GuideWidget onMapSearch={handleMapSearch} />
+              </div>
+              <div className="w-full">
+                <HeroSection 
+                  searchTerm={searchTerm} setSearchTerm={setSearchTerm} filteredAds={filteredAds}
+                  selectedLocations={selectedLocations} setSelectedLocations={setSelectedLocations}
+                  isLocOpen={isLocOpen} setIsLocOpen={setIsLocOpen} locRef={locRef as React.RefObject<HTMLDivElement>}
+                />
+              </div>
+              <div className="w-full bg-gradient-to-br from-amber-900/30 via-black/40 to-amber-700/20 backdrop-blur-sm rounded-[24px] border border-amber-500/20 shadow-[0_0_18px_2px_rgba(255,191,0,0.08)] p-3 ring-1 ring-amber-400/10 relative">
+                <HeritageWidget />
+              </div>
+            </div>
 
 
             {/* --- Announcement/Marquee Bar (center column, in the middle) --- */}
-            <div className="w-full my-1">
-              <div className="w-full bg-gradient-to-r from-amber-600/80 via-black/80 to-amber-600/80 rounded-full border border-amber-400/30 shadow px-2 py-0.5 marquee-outer">
+            <div className="w-full mt-0 mb-0 flex justify-center relative -top-10">
+              <div className="w-full max-w-2xl bg-gradient-to-r from-amber-600/80 via-black/80 to-amber-600/80 rounded-full border border-amber-400/30 shadow px-2 py-0.5 marquee-outer">
                 {/* True infinite marquee */}
                 <span className="marquee-inner text-sm sm:text-base font-bold italic tracking-widest text-amber-100 drop-shadow-lg">
                   {marqueeText || 'საიტი მუშაობს სატესტო რეჟიმში'}
@@ -779,7 +789,7 @@ export default function HomePageClient({
               </div>
             </div>
 
-            <div className="w-full max-w-6xl mx-auto px-4 sm:px-6 md:px-10 mt-6">
+            <div className="w-full max-w-6xl mx-auto px-4 sm:px-6 md:px-10 -mt-8">
               <div className="relative bg-black/50 border border-amber-500/30 rounded-2xl px-3 sm:px-4 py-2.5 shadow-[0_8px_30px_rgba(0,0,0,0.35)]">
                 <div className="grid grid-cols-2 sm:grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-x-3 gap-y-2">
                   <div className="flex min-w-0 items-center justify-start gap-2">
@@ -855,7 +865,7 @@ export default function HomePageClient({
             <div className="w-full mt-6 mobile-announcements-spacing">
               <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,260px)_minmax(0,1fr)_minmax(0,260px)] gap-6 items-start">
                 <div className="hidden lg:flex flex-col gap-6">
-                  <div className="bg-white/[0.03] backdrop-blur-3xl rounded-[30px] border border-white/10 p-5 flex flex-col items-center group relative overflow-hidden transition-all hover:border-purple-500/30 shadow-xl h-[360px]">
+                  <div className="bg-white/[0.03] backdrop-blur-3xl rounded-[30px] border border-white/10 p-5 flex flex-col items-center group relative overflow-hidden transition-all hover:border-purple-500/30 shadow-xl h-[300px]">
                     <div className="flex justify-between w-full items-center mb-4">
                       <h4 className="text-[10px] font-black text-purple-400 uppercase tracking-[0.4em]">🍇 აგრო-ბირჟა</h4>
                     </div>
@@ -906,7 +916,7 @@ export default function HomePageClient({
                 </div>
 
                 <div className="hidden lg:flex flex-col gap-6">
-                  <div className="w-full bg-white/[0.03] backdrop-blur-3xl rounded-[30px] border border-white/10 p-5 flex flex-col items-center group relative overflow-hidden transition-all hover:border-yellow-500/30 shadow-xl h-[360px]">
+                  <div className="w-full bg-white/[0.03] backdrop-blur-3xl rounded-[30px] border border-white/10 p-5 flex flex-col items-center group relative overflow-hidden transition-all hover:border-yellow-500/30 shadow-xl h-[300px]">
                     <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-yellow-500 to-transparent opacity-30" />
                     <h4 className="text-[10px] font-black text-yellow-500 uppercase tracking-[0.4em] mb-4 w-full text-left">🌾 მარცვლეული</h4>
                     <p className="w-full text-[10px] text-white/40 font-bold uppercase tracking-[0.2em] mb-3 leading-tight">საორიენტაციო ფასები · დააჭირე პროდუქტს რომ ნახო მიმღები ობიექტები</p>
@@ -936,24 +946,12 @@ export default function HomePageClient({
               <RegistryFeatureCards />
             </div>
 
-            <div className="hidden lg:grid w-full max-w-6xl mx-auto mt-8 grid-cols-1 xl:grid-cols-2 gap-6">
-              <div className="flex flex-col gap-6">
-                <div className="w-full min-w-[260px] xl:min-w-[300px] bg-gradient-to-br from-amber-900/40 via-black/50 to-amber-700/20 backdrop-blur-sm rounded-[24px] border border-amber-500/30 shadow-[0_0_20px_4px_rgba(255,191,0,0.1)] p-4 ring-1 ring-amber-400/20 relative">
-                  <GuideWidget onMapSearch={handleMapSearch} />
-                </div>
-              </div>
 
-              <div className="flex flex-col gap-6">
-                <div className="w-full bg-gradient-to-br from-amber-900/40 via-black/50 to-amber-700/20 backdrop-blur-sm rounded-[24px] border border-amber-500/30 shadow-[0_0_20px_4px_rgba(255,191,0,0.1)] p-4 ring-1 ring-amber-400/20 relative">
-                  <HeritageWidget />
-                </div>
-              </div>
-            </div>
 
             {/* მობილური ვერსია - მარცხენა მხარე */}
             <div className="flex flex-col gap-4 w-full lg:hidden mobile-agro-raise mobile-agro-raise-strong">
                 {/* 🍇 აგრო-ბირჟა */}
-                <div className="bg-white/[0.03] backdrop-blur-3xl rounded-[30px] border border-white/10 p-5 flex flex-col items-center group relative overflow-hidden transition-all hover:border-purple-500/30 shadow-xl h-[360px]">
+                <div className="bg-white/[0.03] backdrop-blur-3xl rounded-[30px] border border-white/10 p-5 flex flex-col items-center group relative overflow-hidden transition-all hover:border-purple-500/30 shadow-xl h-[300px]">
                   <div className="flex justify-between w-full items-center mb-4">
                     <h4 className="text-[10px] font-black text-purple-400 uppercase tracking-[0.4em]">🍇 აგრო-ბირჟა</h4>
                   </div>
@@ -969,7 +967,7 @@ export default function HomePageClient({
                   <p className="mt-auto pt-3 text-[12px] text-white/90 font-black text-center tracking-wide">თქვენი ფასი და საკონტაქტო ნომერი გამოჩნდება ამ ფანჯარაში</p>
                 </div>
                  {/* 🌾 მარცვლეული */}
-                 <div className="bg-white/[0.03] backdrop-blur-3xl rounded-[30px] border border-white/10 p-5 flex flex-col items-center group relative overflow-hidden transition-all hover:border-yellow-500/30 shadow-xl h-[360px]">
+                 <div className="bg-white/[0.03] backdrop-blur-3xl rounded-[30px] border border-white/10 p-5 flex flex-col items-center group relative overflow-hidden transition-all hover:border-yellow-500/30 shadow-xl h-[300px]">
                    <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-yellow-500 to-transparent opacity-30" />
                    <h4 className="text-[10px] font-black text-yellow-500 uppercase tracking-[0.4em] mb-4 w-full text-left">🌾 მარცვლეული</h4>
                    <p className="w-full text-[10px] text-white/40 font-bold uppercase tracking-[0.2em] mb-3 leading-tight">საორიენტაციო ფასები · დააჭირე პროდუქტს რომ ნახო მიმღები ობიექტები</p>
