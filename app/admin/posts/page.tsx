@@ -1,12 +1,13 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { supabase } from '../../lib/supabase';
 import { useAdminAuth } from '../../hooks/useAdminAuth';
 import type { Database } from '@/types/supabase';
 import AdminNav from '../../components/admin/AdminNav';
+import { renderAdminPostContent } from '@/app/lib/adminPostContent';
 
 type AdminPost = Database['public']['Tables']['admin_posts']['Row'];
 
@@ -29,6 +30,15 @@ export default function AdminPosts() {
   const [hasMore, setHasMore] = useState(true);
   const pageSize = 50;
   const [expandedPostId, setExpandedPostId] = useState<number | null>(null);
+  const contentRef = useRef<HTMLTextAreaElement | null>(null);
+  const [selectedColor, setSelectedColor] = useState('#f59e0b');
+  const emojiPalette = [
+    '😀', '😁', '😄', '😅', '😉', '😊', '😍', '😎',
+    '🤝', '🙏', '🎉', '🔥', '✅', '⚠️',
+  ];
+  const vipEmojiPalette = [
+    '💎VIP', '👑VIP', '⭐VIP', '🏆VIP', '🛡️VIP', '⚜️VIP'
+  ];
   const [formData, setFormData] = useState({
     title: '',
     content: '',
@@ -236,6 +246,43 @@ export default function AdminPosts() {
       console.error('Submit error:', error);
       alert('შეცდომა შენახვისას');
     }
+  };
+
+  const insertTextAtCursor = (text: string) => {
+    const el = contentRef.current;
+    if (!el) return;
+    const start = el.selectionStart ?? formData.content.length;
+    const end = el.selectionEnd ?? formData.content.length;
+    const nextValue = `${formData.content.slice(0, start)}${text}${formData.content.slice(end)}`;
+    setFormData(prev => ({ ...prev, content: nextValue }));
+    requestAnimationFrame(() => {
+      el.focus();
+      const caret = start + text.length;
+      el.setSelectionRange(caret, caret);
+    });
+  };
+
+  const applyColorToSelection = (color: string) => {
+    const el = contentRef.current;
+    if (!el) return;
+    const start = el.selectionStart ?? 0;
+    const end = el.selectionEnd ?? 0;
+    const selected = formData.content.slice(start, end);
+    const openTag = `[[color:${color}]]`;
+    const closeTag = '[[/color]]';
+    const insertValue = `${openTag}${selected}${closeTag}`;
+    const nextValue = `${formData.content.slice(0, start)}${insertValue}${formData.content.slice(end)}`;
+    setFormData(prev => ({ ...prev, content: nextValue }));
+    requestAnimationFrame(() => {
+      el.focus();
+      if (selected.length === 0) {
+        const caret = start + openTag.length;
+        el.setSelectionRange(caret, caret);
+      } else {
+        const caret = start + insertValue.length;
+        el.setSelectionRange(caret, caret);
+      }
+    });
   };
 
   const deletePost = async (id: number) => {
@@ -561,12 +608,60 @@ export default function AdminPosts() {
 
               <div>
                 <label className="block text-sm font-bold text-white/60 mb-2">შინაარსი</label>
+                <div className="mb-3 space-y-3">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span className="text-xs text-white/50 font-bold">შრიფტის ფერი:</span>
+                    <input
+                      type="color"
+                      value={selectedColor}
+                      onChange={(e) => setSelectedColor(e.target.value)}
+                      className="h-8 w-10 rounded-lg border border-white/10 bg-transparent"
+                      aria-label="ფერის არჩევა"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => applyColorToSelection(selectedColor)}
+                      className="px-3 py-1 rounded-xl text-xs font-bold bg-amber-600 text-white hover:bg-amber-500"
+                    >
+                      ფერის გამოყენება
+                    </button>
+                    <span className="text-[11px] text-white/40">მონიშნე ტექსტი და დააჭირე</span>
+                  </div>
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span className="text-xs text-white/50 font-bold">სმაილები:</span>
+                    {emojiPalette.map((emoji) => (
+                      <button
+                        key={emoji}
+                        type="button"
+                        onClick={() => insertTextAtCursor(emoji)}
+                        className="px-2 py-1 rounded-lg text-sm bg-white/5 hover:bg-white/10"
+                      >
+                        {emoji}
+                      </button>
+                    ))}
+                  </div>
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span className="text-xs text-white/50 font-bold">VIP ემოჯები:</span>
+                    {vipEmojiPalette.map((emoji) => (
+                      <button
+                        key={emoji}
+                        type="button"
+                        onClick={() => insertTextAtCursor(emoji)}
+                        className="px-2 py-1 rounded-lg text-[11px] font-black bg-white/5 hover:bg-white/10"
+                      >
+                        {emoji}
+                      </button>
+                    ))}
+                  </div>
+                </div>
                 <textarea
                   value={formData.content}
                   onChange={(e) => setFormData(prev => ({ ...prev, content: e.target.value }))}
+                  ref={contentRef}
                   className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-white h-32"
                   required
                 />
+                <p className="text-[11px] text-white/40 mt-2">ფერადი ტექსტი ინახება მხოლოდ ამ ფორმატით: [[color:#hex]]ტექსტი[[/color]]</p>
               </div>
 
               <div>
@@ -832,7 +927,9 @@ export default function AdminPosts() {
                       </div>
                     );
                   })()}
-                  <p className={`text-white/80 text-sm ${expandedPostId === post.id ? '' : 'line-clamp-2'}`}>{post.content}</p>
+                  <p className={`text-white/80 text-sm ${expandedPostId === post.id ? '' : 'line-clamp-2'}`}>
+                    {renderAdminPostContent(post.content || '')}
+                  </p>
                   <div className="flex gap-2 mt-2">
                     <span className={`text-xs px-2 py-1 rounded ${(post as any).is_published ? 'bg-green-600' : 'bg-red-600'}`}>
                       {(post as any).is_published ? 'გამოქვეყნებული' : 'დამალული'}

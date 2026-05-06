@@ -6,6 +6,7 @@ import Image from 'next/image';
 import { supabase } from '../../lib/supabase';
 import { AdminPost } from '../../lib/types';
 import { formatGeorgianDate } from '../../lib/utils';
+import { renderAdminPostContent } from '@/app/lib/adminPostContent';
 
 interface AdminBoardProps {
   isAdmin: boolean;
@@ -155,7 +156,9 @@ export default function AdminBoard({ isAdmin, user: _user, children }: AdminBoar
                <h4 className="text-base font-black text-red-100 uppercase italic line-clamp-2">{post.title}</h4>
                {isAdmin && <button onClick={() => handleDelete(post.id)} className="text-red-500 hover:text-white text-xs">✕</button>}
             </div>
-            <p className="text-xs text-white/70 leading-relaxed line-clamp-6 whitespace-pre-line mb-3">{post.content}</p>
+            <p className="text-xs text-white/70 leading-relaxed line-clamp-6 whitespace-pre-line mb-3">
+              {renderAdminPostContent(post.content || '')}
+            </p>
             <span className="text-[9px] text-white/20 mt-auto font-mono text-right">{formatGeorgianDate(post.created_at)}</span>
          </div>
       </div>

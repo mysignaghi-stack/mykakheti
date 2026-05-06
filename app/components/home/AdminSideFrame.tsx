@@ -12,6 +12,7 @@ import 'swiper/css/pagination';
 import 'swiper/css/effect-fade';
 import 'swiper/css/autoplay';
 import { supabase } from '../../lib/supabase';
+import { renderAdminPostContent, stripAdminPostContent } from '@/app/lib/adminPostContent';
 // წავშალეთ AdminPost იმპორტი lib/types-დან კონფლიქტის თავიდან ასაცილებლად
 import type { Database } from '@/types/supabase';
 
@@ -481,11 +482,17 @@ export default function AdminSideFrame({ post, position, isAdmin, onRefresh }: A
           {/* Content Preview */}
           <div className="relative">
             <p className="text-white/80 text-xs leading-relaxed">
-              {showFullContent || !post.content || post.content.length <= 150 
-                ? post.content 
-                : `${post.content.substring(0, 150)}...`}
+              {(() => {
+                const fullContent = post.content || '';
+                const plainContent = stripAdminPostContent(fullContent);
+                const isLong = plainContent.length > 150;
+                if (showFullContent || !isLong) {
+                  return renderAdminPostContent(fullContent);
+                }
+                return renderAdminPostContent(`${plainContent.substring(0, 150)}...`);
+              })()}
             </p>
-            {post.content && post.content.length > 150 && !showFullContent && (
+            {post.content && stripAdminPostContent(post.content).length > 150 && !showFullContent && (
               <div className="absolute bottom-0 left-0 right-0 h-8 bg-gradient-to-t from-black/60 to-transparent rounded-b-xl flex items-end justify-center pb-1">
                 <button
                   onClick={() => setShowFullContent(true)}
@@ -495,7 +502,7 @@ export default function AdminSideFrame({ post, position, isAdmin, onRefresh }: A
                 </button>
               </div>
             )}
-            {showFullContent && post.content && post.content.length > 150 && (
+            {showFullContent && post.content && stripAdminPostContent(post.content).length > 150 && (
               <div className="text-center mt-1">
                 <button
                   onClick={() => setShowFullContent(false)}
