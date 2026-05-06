@@ -38,8 +38,8 @@ export default function RegistryFeatureCards() {
   return (
     <section className="w-full max-w-[1440px] mx-auto px-4 sm:px-6 md:px-10">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-7 md:gap-8">
-        {CARD_CONTENT.map((card) => (
-          <RegistryCard key={card.key} {...card} />
+        {CARD_CONTENT.map(({ key, ...card }) => (
+          <RegistryCard key={key} {...card} />
         ))}
       </div>
     </section>
