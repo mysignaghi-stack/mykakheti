@@ -317,7 +317,7 @@ nav {
 /* Apply to the main layout container if a fixed/sticky nav is present */
 @media (max-width: 640px) {
   .layout-shell, main {
-    padding-top: 4.75rem;
+    padding-top: 5.25rem;
   }
 }
 
