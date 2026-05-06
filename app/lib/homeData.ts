@@ -105,6 +105,11 @@ export interface CommunityDataset {
   congratulations: CongratsRow[];
 }
 
+export interface CommunityCounts {
+  lostFound: number;
+  masters: number;
+}
+
 export interface HomePageData {
   ads: Ad[];
   agroData: AgroItem[];
@@ -113,7 +118,24 @@ export interface HomePageData {
   backgroundUrl: string | null;
   marqueeText: string;
   community: CommunityDataset;
+  communityCounts: CommunityCounts;
 }
+
+type CountResult = PromiseSettledResult<{ count: number | null; error: unknown }>;
+
+const extractCount = (result: CountResult, label: string): number => {
+  if (result.status === 'fulfilled') {
+    const { count, error } = result.value;
+    if (error) {
+      if ((error as any)?.code === 'PGRST205') return 0;
+      console.error(`[homeData] ${label} count error`, error);
+      return 0;
+    }
+    return count ?? 0;
+  }
+  console.error(`[homeData] ${label} count rejected`, result.reason);
+  return 0;
+};
 
 export const fetchHomePageData = async (): Promise<HomePageData> => {
   const supabase = getSupabaseAdmin();
@@ -131,6 +153,10 @@ export const fetchHomePageData = async (): Promise<HomePageData> => {
         lostFound: [],
         masters: [],
         congratulations: [],
+      },
+      communityCounts: {
+        lostFound: 0,
+        masters: 0,
       },
     };
   }
@@ -180,6 +206,14 @@ export const fetchHomePageData = async (): Promise<HomePageData> => {
       .order('created_at', { ascending: false })
       .limit(12),
     supabase
+      .from('lost_found')
+      .select('id', { count: 'exact', head: true })
+      .eq('is_approved', true),
+    supabase
+      .from('masters')
+      .select('id', { count: 'exact', head: true })
+      .eq('is_approved', true),
+    supabase
       .from('agro_prices' as any)
       .select('*'),
   ]);
@@ -193,6 +227,8 @@ export const fetchHomePageData = async (): Promise<HomePageData> => {
     lostFoundResult,
     mastersResult,
     congratsResult,
+    lostFoundCountResult,
+    mastersCountResult,
     agroResult,
   ] = results;
 
@@ -223,6 +259,8 @@ export const fetchHomePageData = async (): Promise<HomePageData> => {
     congratsResult as SettledResponse<CongratsRow>,
     'congratulations'
   );
+  const lostFoundCount = extractCount(lostFoundCountResult as CountResult, 'lost_found');
+  const mastersCount = extractCount(mastersCountResult as CountResult, 'masters');
 
   const now = Date.now();
   const ads = rawAnnouncements
@@ -260,6 +298,10 @@ export const fetchHomePageData = async (): Promise<HomePageData> => {
       lostFound,
       masters,
       congratulations,
+    },
+    communityCounts: {
+      lostFound: lostFoundCount,
+      masters: mastersCount,
     },
   };
 };

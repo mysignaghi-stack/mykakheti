@@ -15,6 +15,7 @@ export default async function HomePage() {
       initialBgImage={data.backgroundUrl}
       initialMarqueeText={data.marqueeText}
       initialCommunity={data.community}
+      initialCommunityCounts={data.communityCounts}
     />
   );
 }

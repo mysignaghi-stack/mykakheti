@@ -329,7 +329,7 @@ nav {
 
 @media (max-width: 1023px) {
   .mobile-agro-raise {
-    margin-top: -4rem;
+    margin-top: 0;
   }
 }
 
@@ -338,10 +338,10 @@ nav {
     margin-bottom: -3.5rem;
   }
   .mobile-agro-raise {
-    margin-top: -2rem;
+    margin-top: 0;
   }
   .mobile-agro-raise-strong {
-    transform: translateY(-3.5rem);
+    transform: none;
   }
 }
 

@@ -24,7 +24,7 @@ import ChatPopup from '@/app/components/features/ChatPopup';
 import AgroDetailsModal from '@/app/components/home/AgroDetailsModal';
 import AnnouncementCard from '@/app/components/home/AnnouncementCard';
 import RegistryFeatureCards from '@/app/components/home/RegistryFeatureCards';
-import type { CommunityDataset } from '@/app/lib/homeData';
+import type { CommunityCounts, CommunityDataset } from '@/app/lib/homeData';
 
 type AdminPost = Tables<'admin_posts'>;
 type SiteSettingRow = Tables<'site_settings'>;
@@ -117,6 +117,7 @@ interface HomePageClientProps {
   initialBgImage: string | null;
   initialMarqueeText: string;
   initialCommunity: CommunityDataset;
+  initialCommunityCounts: CommunityCounts;
 }
 
 // Helpers
@@ -137,6 +138,7 @@ export default function HomePageClient({
   initialAdminPosts,
   initialBgImage,
   initialMarqueeText,
+  initialCommunityCounts,
 }: HomePageClientProps) {
   const { isAdmin } = useAdminAuth();
   const {
@@ -780,8 +782,8 @@ export default function HomePageClient({
 
 
             {/* --- Announcement/Marquee Bar (center column, in the middle) --- */}
-            <div className="w-full mt-0 mb-0 flex justify-center relative -top-10">
-              <div className="w-full max-w-2xl bg-gradient-to-r from-amber-600/80 via-black/80 to-amber-600/80 rounded-full border border-amber-400/30 shadow px-2 py-0.5 marquee-outer">
+            <div className="w-full mt-4 sm:mt-2 mb-2 flex justify-center relative">
+              <div className="w-full max-w-[520px] sm:max-w-2xl bg-gradient-to-r from-amber-600/80 via-black/80 to-amber-600/80 rounded-full border border-amber-400/30 shadow px-2 py-0.5 marquee-outer">
                 {/* True infinite marquee */}
                 <span className="marquee-inner text-sm sm:text-base font-bold italic tracking-widest text-amber-100 drop-shadow-lg">
                   {marqueeText || 'საიტი მუშაობს სატესტო რეჟიმში'}
@@ -789,7 +791,7 @@ export default function HomePageClient({
               </div>
             </div>
 
-            <div className="w-full max-w-6xl mx-auto px-4 sm:px-6 md:px-10 -mt-8">
+            <div className="w-full max-w-6xl mx-auto px-4 sm:px-6 md:px-10 mt-3 sm:-mt-8">
               <div className="relative bg-black/50 border border-amber-500/30 rounded-2xl px-3 sm:px-4 py-2.5 shadow-[0_8px_30px_rgba(0,0,0,0.35)]">
                 <div className="grid grid-cols-2 sm:grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-x-3 gap-y-2">
                   <div className="flex min-w-0 items-center justify-start gap-2">
@@ -943,7 +945,7 @@ export default function HomePageClient({
             </div>
 
             <div className="w-full mt-8">
-              <RegistryFeatureCards />
+              <RegistryFeatureCards counts={initialCommunityCounts} />
             </div>
 
 

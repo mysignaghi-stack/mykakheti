@@ -11,7 +11,6 @@ const CARD_CONTENT = [
     headline: 'დაკარგული ნივთების მოძებნა სწრაფად და მარტივად',
     description: 'იპოვეთ დაკარგული ნივთები ან განათავსეთ ნაპოვნი ნივთის შესახებ ინფორმაცია ერთ სივრცეში.',
     cta: 'გადადით რეესტრში',
-    statValue: '1,248+',
     statLabel: 'აქტიური განცხადება',
     href: '/community/lost-found',
     glow: 'from-[#1b120b]/90 via-[#120c07]/85 to-[#2a1a0f]/80',
@@ -25,7 +24,6 @@ const CARD_CONTENT = [
     headline: 'იპოვეთ სანდო ხელოსნები და ტექნიკოსები მარტივად',
     description: 'მოიძიეთ ხელოსნები და ტექნიკოსები სერვისის მიხედვით, შეფასებებითა და საკონტაქტო მონაცემებით.',
     cta: 'გადადით რეესტრში',
-    statValue: '2,356+',
     statLabel: 'სერვის პროვაიდერი',
     href: '/community/masters',
     glow: 'from-[#111318]/90 via-[#0f1116]/85 to-[#1b120b]/75',
@@ -34,11 +32,33 @@ const CARD_CONTENT = [
   },
 ];
 
-export default function RegistryFeatureCards() {
+type RegistryCounts = {
+  lostFound?: number;
+  masters?: number;
+};
+
+type RegistryFeatureCardsProps = {
+  counts?: RegistryCounts;
+};
+
+const formatCount = (value?: number) => {
+  if (value === null || value === undefined) return '—';
+  return value.toLocaleString('en-US');
+};
+
+export default function RegistryFeatureCards({ counts }: RegistryFeatureCardsProps) {
+  const cards = CARD_CONTENT.map((card) => {
+    const countValue = card.key === 'lost-found' ? counts?.lostFound : counts?.masters;
+    return {
+      ...card,
+      statValue: formatCount(countValue),
+    };
+  });
+
   return (
     <section className="w-full max-w-[1440px] mx-auto px-4 sm:px-6 md:px-10">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-7 md:gap-8">
-        {CARD_CONTENT.map(({ key, ...card }) => (
+        {cards.map(({ key, ...card }) => (
           <RegistryCard key={key} {...card} />
         ))}
       </div>
@@ -95,6 +115,17 @@ function RegistryCard({ title, badge, headline, description, cta, statValue, sta
           </p>
         </div>
 
+        <div className="sm:hidden grid grid-cols-4 gap-3">
+          {icons.map((Icon, index) => (
+            <div
+              key={index}
+              className="flex h-12 w-12 items-center justify-center rounded-2xl border border-amber-400/20 bg-black/40 shadow-[0_0_14px_rgba(230,126,0,0.22)]"
+            >
+              <Icon className="h-7 w-7 text-amber-300/90 drop-shadow-[0_0_10px_rgba(230,126,0,0.35)]" />
+            </div>
+          ))}
+        </div>
+
         <div className="mt-auto flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div className="inline-flex items-center gap-3 rounded-2xl border border-amber-400/20 bg-black/40 px-4 py-2">
             <span className="text-lg font-black text-amber-200">{statValue}</span>
@@ -118,7 +149,7 @@ type IconClusterProps = {
 
 function IconCluster({ icons }: IconClusterProps) {
   return (
-    <div className="pointer-events-none absolute right-4 bottom-4 sm:right-5 sm:top-1/2 sm:-translate-y-1/2 sm:bottom-auto opacity-70 sm:opacity-90 scale-[0.75] sm:scale-100">
+    <div className="pointer-events-none absolute right-5 top-1/2 hidden -translate-y-1/2 opacity-90 sm:flex">
       <div className="absolute -right-8 -top-8 h-44 w-44 rounded-full bg-amber-500/10 blur-2xl" />
       <div className="absolute right-4 top-6 h-28 w-28 rounded-full border border-amber-400/20" />
       <div className="relative grid grid-cols-2 gap-4 sm:gap-5">
