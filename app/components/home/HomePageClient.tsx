@@ -210,26 +210,30 @@ export default function HomePageClient({
     const updateCategoryCount = () => {
       const width = typeof window !== 'undefined' ? window.innerWidth : 0;
       if (width < 480) {
+        setVisibleCategoryCount(2);
+        return;
+      }
+      if (width < 640) {
         setVisibleCategoryCount(3);
         return;
       }
-      if (width < 768) {
+      if (width < 1024) {
         setVisibleCategoryCount(4);
         return;
       }
-      if (width < 1024) {
-        setVisibleCategoryCount(5);
+      if (width < 1366) {
+        setVisibleCategoryCount(4);
         return;
       }
       if (width < 1440) {
         setVisibleCategoryCount(5);
         return;
       }
-      if (width < 1800) {
-        setVisibleCategoryCount(6);
+      if (width < 1920) {
+        setVisibleCategoryCount(5);
         return;
       }
-      setVisibleCategoryCount(7);
+      setVisibleCategoryCount(6);
     };
 
     updateCategoryCount();
@@ -757,9 +761,9 @@ export default function HomePageClient({
             </div>
 
             <div className="w-full max-w-6xl mx-auto px-4 sm:px-6 md:px-10 mt-6">
-              <div className="relative bg-black/50 border border-amber-500/30 rounded-2xl px-3 sm:px-4 py-2 sm:py-3 shadow-[0_8px_30px_rgba(0,0,0,0.35)]">
-                <div className="flex flex-wrap items-center gap-2">
-                  <div className="flex items-center justify-center sm:justify-start gap-2 shrink-0 order-1 sm:order-1">
+              <div className="relative bg-black/50 border border-amber-500/30 rounded-2xl px-3 sm:px-4 py-2 shadow-[0_8px_30px_rgba(0,0,0,0.35)]">
+                <div className="flex items-center justify-between gap-2">
+                  <div className="flex items-center justify-center lg:justify-start gap-2">
                     <button
                       type="button"
                       onClick={() => {
@@ -767,20 +771,22 @@ export default function HomePageClient({
                         setShowAllAnnouncements(false);
                         setAnnouncementsPage(0);
                       }}
-                      className="h-9 px-3 rounded-full border border-amber-300/40 bg-amber-500/10 text-[10px] font-black uppercase tracking-[0.16em] text-amber-200 hover:bg-amber-500/20 transition whitespace-nowrap"
+                      className="h-8 px-3 rounded-full border border-amber-300/40 bg-amber-500/10 text-[10px] font-black uppercase tracking-[0.14em] text-amber-200 hover:bg-amber-500/20 transition whitespace-nowrap"
                     >
                       ყველა განცხადება
                     </button>
-                    <span className="text-amber-400 text-sm md:text-base tracking-normal">{ads.length}</span>
+                    <span className="min-w-[1.75rem] px-2 h-8 inline-flex items-center justify-center rounded-full border border-amber-400/20 bg-amber-500/10 text-amber-300 text-[11px] sm:text-sm font-black tracking-normal">
+                      {ads.length}
+                    </span>
                   </div>
 
-                  <div className="flex flex-wrap items-center justify-center gap-2 flex-1 min-w-[200px] order-3 sm:order-2">
-                    {visibleCategories.map((category) => (
+                  <div className="flex items-center justify-center gap-2 flex-1">
+                    {['უძრავი ქონება', 'ავტო'].map((category) => (
                       <button
                         key={category}
                         type="button"
                         onClick={() => selectCategory(category)}
-                        className={`h-9 px-3 rounded-full border text-[10px] md:text-[11px] font-black uppercase tracking-[0.16em] transition whitespace-nowrap ${
+                        className={`h-8 px-3 rounded-full border text-[10px] md:text-[11px] font-black uppercase tracking-[0.14em] transition whitespace-nowrap ${
                           selectedCategories.includes(category)
                             ? 'border-amber-300/50 bg-amber-500/20 text-amber-200'
                             : 'border-white/10 bg-white/5 text-white/70 hover:border-white/30 hover:text-white'
@@ -791,11 +797,11 @@ export default function HomePageClient({
                     ))}
                   </div>
 
-                  <div className="flex items-center justify-center sm:justify-end gap-2 shrink-0 order-2 sm:order-3 sm:ml-auto">
+                  <div className="flex items-center justify-center lg:justify-end">
                     <button
                       type="button"
                       onClick={() => setShowAllCategories(true)}
-                      className="h-9 px-3 rounded-full border border-amber-300/30 bg-amber-500/10 text-[10px] md:text-[11px] font-black uppercase tracking-[0.16em] text-amber-200 hover:bg-amber-500/20 transition whitespace-nowrap"
+                      className="h-8 px-3 rounded-full border border-amber-300/30 bg-amber-500/10 text-[10px] md:text-[11px] font-black uppercase tracking-[0.14em] text-amber-200 hover:bg-amber-500/20 transition whitespace-nowrap"
                     >
                       ყველა კატეგორია
                     </button>
