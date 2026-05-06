@@ -71,15 +71,15 @@ export default function AnnouncementCard({ announcement }: AnnouncementCardProps
   return (
     <Link
       href={`/announcements/${announcement.id}`}
-      className="group relative overflow-hidden rounded-2xl bg-white/5 backdrop-blur-2xl border border-white/10 shadow-xl transition-all duration-300 hover:shadow-[0_0_35px_rgba(230,126,34,0.25)] hover:-translate-y-0.5 hover:scale-[1.01]"
+      className="group relative overflow-hidden rounded-2xl bg-white/5 backdrop-blur-2xl border border-white/10 shadow-xl transition-all duration-300 hover:shadow-[0_0_35px_rgba(230,126,34,0.25)] hover:-translate-y-0.5"
     >
       {/* Media */}
-      <div className="relative h-44 w-full overflow-hidden">
+      <div className="relative h-28 w-full overflow-hidden">
         <div className="absolute top-2 left-2 z-10 flex items-center gap-2">
           <button
             type="button"
             onClick={handleFBShare}
-            className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-blue-600/20 text-blue-200 border border-blue-500/30 hover:bg-blue-600 hover:text-white transition"
+            className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-blue-600/20 text-blue-200 border border-blue-500/30 hover:bg-blue-600 hover:text-white transition"
             aria-label="Facebook გაზიარება"
           >
             f
@@ -87,7 +87,7 @@ export default function AnnouncementCard({ announcement }: AnnouncementCardProps
           <button
             type="button"
             onClick={handleTikTokShare}
-            className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-black/50 text-white/90 border border-white/20 hover:bg-white hover:text-black transition"
+            className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-black/50 text-white/90 border border-white/20 hover:bg-white hover:text-black transition"
             aria-label="ბმულის გაზიარება"
           >
             🔗
@@ -109,53 +109,27 @@ export default function AnnouncementCard({ announcement }: AnnouncementCardProps
       </div>
 
       {/* Content */}
-      <div className="p-4 space-y-3">
+      <div className="relative p-2 space-y-1 pb-5">
         <div className="flex items-start justify-between gap-3">
-          <h3 className="text-sm sm:text-base font-black text-white line-clamp-2">
+          <h3 className="text-[13px] sm:text-sm font-black text-white line-clamp-1">
             {announcement.title || '—'}
           </h3>
-          <div className="text-right">
-            <div className="text-[10px] text-white/50">
-              {announcement.created_at ? formatGeorgianDate(announcement.created_at) : ''}
-            </div>
-            {announcement.price && (
-              <div className="text-sm font-black text-[#e67e22]">
-                {announcement.price} {currencySymbol}
-              </div>
-            )}
-          </div>
         </div>
 
-        <div className="flex items-center gap-2 text-xs text-white/60">
+        {announcement.price && (
+          <div className="text-[12px] font-black text-[#e67e22]">
+            {announcement.price} {currencySymbol}
+          </div>
+        )}
+
+        <div className="flex items-center gap-2 text-[10px] text-white/60">
           <span>📍</span>
           <span className="truncate">{announcement.location || '—'}</span>
         </div>
 
-        <p className="text-xs sm:text-sm text-white/70 line-clamp-3">
-          {announcement.description || 'აღწერა არ არის'}
-        </p>
-
-        {announcement.phone && (
-          <div className="pt-2">
-            <span
-              role="button"
-              tabIndex={0}
-              onClick={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                window.location.href = `tel:${announcement.phone}`;
-              }}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter' || e.key === ' ') {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  window.location.href = `tel:${announcement.phone}`;
-                }
-              }}
-              className="inline-flex items-center justify-center px-3 py-2 rounded-xl bg-[#e67e22]/15 text-[#e67e22] text-xs font-black border border-[#e67e22]/30 hover:bg-[#e67e22]/25 transition"
-            >
-              📞 {announcement.phone}
-            </span>
+        {announcement.created_at && (
+          <div className="absolute bottom-1.5 right-2 text-[9px] text-white/45">
+            {formatGeorgianDate(announcement.created_at)}
           </div>
         )}
 

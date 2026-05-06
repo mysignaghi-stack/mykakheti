@@ -282,14 +282,14 @@ export default function AdminSideFrame({ post, position, isAdmin, onRefresh }: A
     : 'relative z-10 w-full h-32 object-cover rounded-[20px] shadow-2xl shadow-indigo-900/50 border-2 border-amber-500/40 hover:border-amber-500/60 transition-all duration-300';
 
   // Fixed height based on position
-  const heightClass = position === 'left_top' || position === 'right_top' ? 'min-h-[320px]' : 'h-auto';
+  const heightClass = position === 'left_top' || position === 'right_top' ? 'min-h-[240px]' : 'h-auto';
 
   const openLightbox = (url: string, isVideo: boolean) => {
     setLightbox({ open: true, media: [url], currentIndex: 0, isVideo });
   };
 
   return (
-    <div className={`w-full ${heightClass} bg-gradient-to-br from-slate-900/80 via-black/60 to-slate-800/80 backdrop-blur-xl rounded-[32px] border-2 border-amber-500/30 shadow-[inset_0_0_30px_rgba(245,158,11,0.15),0_20px_40px_-10px_rgba(0,0,0,0.5)] p-5 ring-1 ring-white/10 relative animate-in fade-in duration-700`}>
+    <div className={`w-full ${heightClass} bg-gradient-to-br from-slate-900/80 via-black/60 to-slate-800/80 backdrop-blur-xl rounded-[32px] border-2 border-amber-500/30 shadow-[inset_0_0_30px_rgba(245,158,11,0.15),0_20px_40px_-10px_rgba(0,0,0,0.5)] p-4 ring-1 ring-white/10 relative animate-in fade-in duration-700`}>
       {/* Badge removed per request */}
       {/* Header with controls */}
       <div className="flex justify-end items-center mb-2 pt-2">

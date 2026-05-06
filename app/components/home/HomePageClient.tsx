@@ -18,14 +18,12 @@ import ConfirmModal from '@/app/components/layout/ConfirmModal';
 import EditAgroModal from '@/app/components/layout/EditAgroModal';
 import HeroSection from '@/app/components/home/HeroSection';
 import { GuideWidget, HeritageWidget } from '@/app/components/home/ServiceWidgets';
-import RightSidebar from '@/app/components/home/RightSidebar';
-import KakhetianSquare from '@/app/components/features/KakhetianSquare';
 import TransportModal from '@/app/components/features/transport/TransportModal';
 import AdminSideFrame from '@/app/components/home/AdminSideFrame';
 import ChatPopup from '@/app/components/features/ChatPopup';
 import AgroDetailsModal from '@/app/components/home/AgroDetailsModal';
 import AnnouncementCard from '@/app/components/home/AnnouncementCard';
-import { CommunitySideWidget } from '@/app/components/community/CommunityWidgets';
+import RegistryFeatureCards from '@/app/components/home/RegistryFeatureCards';
 import type { CommunityDataset } from '@/app/lib/homeData';
 
 type AdminPost = Tables<'admin_posts'>;
@@ -761,52 +759,9 @@ export default function HomePageClient({
 
       {/* Informational grid section, now outside header for independent styling */}
       <section className="layout-shell relative z-10 w-full max-w-full xl:max-w-[1800px] px-4 sm:px-6 md:px-10 mx-auto mt-5 sm:mt-3 overflow-hidden">
-        <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,220px)_minmax(0,1fr)_minmax(0,220px)] xl:grid-cols-[minmax(0,240px)_minmax(0,1fr)_minmax(0,240px)] 2xl:grid-cols-[minmax(0,300px)_minmax(0,1fr)_minmax(0,300px)] gap-4 md:gap-6 xl:gap-8 items-start text-white bg-black/70 backdrop-blur-2xl rounded-[30px] border border-white/10 p-4 sm:p-6 md:p-8 shadow-xl w-full max-w-full overflow-hidden">
-          {/* --- მარცხენა სვეტი (Desktop Only) --- */}
-          <div className="hidden lg:flex flex-col gap-6 sticky top-0 order-1 w-full max-w-full min-w-0">
-            {/* კახური მოედანი (სქროლით) */}
-            {isDesktop !== false && (
-              <div 
-                className="w-full h-[450px] overflow-hidden bg-black/60 backdrop-blur-xl rounded-[30px] border border-white/5 relative"
-              >
-                <KakhetianSquare isAdmin={isAdmin} controlToken={controlToken} />
-              </div>
-            )}
-            {/* 🍇 აგრო-ბირჟა */}
-            <div className="bg-white/[0.03] backdrop-blur-3xl rounded-[30px] border border-white/10 p-5 flex flex-col items-center group relative overflow-hidden transition-all hover:border-purple-500/30 shadow-xl h-[360px]">
-              <div className="flex justify-between w-full items-center mb-4">
-                <h4 className="text-[10px] font-black text-purple-400 uppercase tracking-[0.4em]">🍇 აგრო-ბირჟა</h4>
-              </div>
-              <p className="w-full text-[10px] text-white/40 font-bold uppercase tracking-[0.2em] mb-3 leading-tight">საორიენტაციო ფასები · დააჭირე პროდუქტს რომ ნახო მიმღები ობიექტები</p>
-              <div className="w-full flex-1 space-y-2 overflow-y-auto custom-scrollbar pr-1">
-                {agroData.filter(i => i.category === 'grape').map(item => (
-                  <button key={item.id} onClick={() => setSelectedAgro(item)} className="w-full flex justify-between items-center bg-black/40 p-3 rounded-xl border border-white/5 transition-all group/item hover:bg-white/5">
-                    <span className="text-xs font-black uppercase text-purple-300 flex gap-2">{item.name}</span>
-                    <span className="text-sm font-black italic">{getAgroDisplayPrice(item)}</span>
-                  </button>
-                ))}
-              </div>
-              <p className="mt-auto pt-3 text-[12px] text-white/90 font-black text-center tracking-wide">თქვენი ფასი და საკონტაქტო ნომერი გამოჩნდება ამ ფანჯარაში</p>
-            </div>
-            {/* 🏛️ ადმინისტრაციული განცხადება */}
-            <div className="w-full min-w-[260px] xl:min-w-[300px] bg-gradient-to-br from-amber-900/40 via-black/50 to-amber-700/20 backdrop-blur-sm rounded-[24px] border border-amber-500/30 shadow-[0_0_20px_4px_rgba(255,191,0,0.1)] p-4 ring-1 ring-amber-400/20 relative">
-              <AdminSideFrame 
-                post={getPostByPos('left_top')} 
-                position="left_top" 
-                isAdmin={isAdmin} 
-                onRefresh={fetchAdminPosts}
-              />
-            </div>
-              <div className="w-full min-w-[260px] xl:min-w-[300px] bg-gradient-to-br from-amber-900/40 via-black/50 to-amber-700/20 backdrop-blur-sm rounded-[24px] border border-amber-500/30 shadow-[0_0_20px_4px_rgba(255,191,0,0.1)] p-4 ring-1 ring-amber-400/20 relative">
-                <CommunitySideWidget variant="lostFound" />
-              </div>
-              <div className="w-full min-w-[260px] xl:min-w-[300px] bg-gradient-to-br from-amber-900/40 via-black/50 to-amber-700/20 backdrop-blur-sm rounded-[24px] border border-amber-500/30 shadow-[0_0_20px_4px_rgba(255,191,0,0.1)] p-4 ring-1 ring-amber-400/20 relative">
-                <GuideWidget onMapSearch={handleMapSearch} />
-              </div>
-          </div>
-
+        <div className="grid grid-cols-1 gap-4 md:gap-6 xl:gap-8 items-start text-white bg-black/70 backdrop-blur-2xl rounded-[30px] border border-white/10 p-4 sm:p-6 md:p-8 shadow-xl w-full max-w-full overflow-hidden">
           {/* --- ცენტრალური სვეტი --- */}
-          <div className="flex flex-col items-center text-center space-y-4 lg:space-y-8 animate-in fade-in duration-1000 w-full min-w-0 order-1 lg:order-2">
+          <div className="flex flex-col items-center text-center space-y-4 lg:space-y-8 animate-in fade-in duration-1000 w-full min-w-0">
              <HeroSection 
                 searchTerm={searchTerm} setSearchTerm={setSearchTerm} filteredAds={filteredAds}
                selectedLocations={selectedLocations} setSelectedLocations={setSelectedLocations}
@@ -897,29 +852,102 @@ export default function HomePageClient({
               </div>
             </div>
 
-            <div className="w-full max-w-6xl mx-auto px-6 md:px-10 mt-6 mobile-announcements-spacing">
-              {visibleAds.length > 0 ? (
-                <div className="grid grid-cols-1 sm:grid-cols-2 2xl:grid-cols-3 gap-4">
-                  {visibleAds.map((ad) => (
-                    <AnnouncementCard key={ad.id} announcement={ad} />
-                  ))}
-                  {filteredAds.length > 0 && (
-                    <div className="relative flex justify-center rounded-2xl border border-transparent py-1 sm:block sm:min-h-[180px] sm:py-0">
-                      <button
-                        type="button"
-                        onClick={() => setShowAllFilters(true)}
-                        className="static px-4 py-2 rounded-full border border-amber-300/50 bg-amber-500/20 text-amber-200 font-black uppercase tracking-[0.2em] text-xs hover:bg-amber-500/30 transition sm:absolute sm:left-3 sm:top-3"
-                      >
-                        ყველა განცხადება
-                      </button>
+            <div className="w-full mt-6 mobile-announcements-spacing">
+              <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,260px)_minmax(0,1fr)_minmax(0,260px)] gap-6 items-start">
+                <div className="hidden lg:flex flex-col gap-6">
+                  <div className="bg-white/[0.03] backdrop-blur-3xl rounded-[30px] border border-white/10 p-5 flex flex-col items-center group relative overflow-hidden transition-all hover:border-purple-500/30 shadow-xl h-[360px]">
+                    <div className="flex justify-between w-full items-center mb-4">
+                      <h4 className="text-[10px] font-black text-purple-400 uppercase tracking-[0.4em]">🍇 აგრო-ბირჟა</h4>
+                    </div>
+                    <p className="w-full text-[10px] text-white/40 font-bold uppercase tracking-[0.2em] mb-3 leading-tight">საორიენტაციო ფასები · დააჭირე პროდუქტს რომ ნახო მიმღები ობიექტები</p>
+                    <div className="w-full flex-1 space-y-2 overflow-y-auto custom-scrollbar pr-1">
+                      {agroData.filter(i => i.category === 'grape').map(item => (
+                        <button key={item.id} onClick={() => setSelectedAgro(item)} className="w-full flex justify-between items-center bg-black/40 p-3 rounded-xl border border-white/5 transition-all group/item hover:bg-white/5">
+                          <span className="text-xs font-black uppercase text-purple-300 flex gap-2">{item.name}</span>
+                          <span className="text-sm font-black italic">{getAgroDisplayPrice(item)}</span>
+                        </button>
+                      ))}
+                    </div>
+                    <p className="mt-auto pt-3 text-[12px] text-white/90 font-black text-center tracking-wide">თქვენი ფასი და საკონტაქტო ნომერი გამოჩნდება ამ ფანჯარაში</p>
+                  </div>
+                  <div className="w-full bg-gradient-to-br from-amber-900/40 via-black/50 to-amber-700/20 backdrop-blur-sm rounded-[24px] border border-amber-500/30 shadow-[0_0_20px_4px_rgba(255,191,0,0.1)] p-4 ring-1 ring-amber-400/20 relative">
+                    <AdminSideFrame 
+                      post={getPostByPos('left_top')} 
+                      position="left_top" 
+                      isAdmin={isAdmin} 
+                      onRefresh={fetchAdminPosts}
+                    />
+                  </div>
+                </div>
+
+                <div className="w-full min-w-0">
+                  {visibleAds.length > 0 ? (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-3">
+                      {visibleAds.map((ad) => (
+                        <AnnouncementCard key={ad.id} announcement={ad} />
+                      ))}
+                      {filteredAds.length > 0 && (
+                        <div className="relative flex justify-center rounded-2xl border border-transparent py-1 sm:block sm:min-h-[180px] sm:py-0">
+                          <button
+                            type="button"
+                            onClick={() => setShowAllFilters(true)}
+                            className="static px-4 py-2 rounded-full border border-amber-300/50 bg-amber-500/20 text-amber-200 font-black uppercase tracking-[0.2em] text-xs hover:bg-amber-500/30 transition sm:absolute sm:left-3 sm:top-3"
+                          >
+                            ყველა განცხადება
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  ) : (
+                    <div className="text-center py-10 text-white/60 text-sm">
+                      ამ კატეგორიაში განცხადებები არ მოიძებნა
                     </div>
                   )}
                 </div>
-              ) : (
-                <div className="text-center py-10 text-white/60 text-sm">
-                  ამ კატეგორიაში განცხადებები არ მოიძებნა
+
+                <div className="hidden lg:flex flex-col gap-6">
+                  <div className="w-full bg-white/[0.03] backdrop-blur-3xl rounded-[30px] border border-white/10 p-5 flex flex-col items-center group relative overflow-hidden transition-all hover:border-yellow-500/30 shadow-xl h-[360px]">
+                    <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-yellow-500 to-transparent opacity-30" />
+                    <h4 className="text-[10px] font-black text-yellow-500 uppercase tracking-[0.4em] mb-4 w-full text-left">🌾 მარცვლეული</h4>
+                    <p className="w-full text-[10px] text-white/40 font-bold uppercase tracking-[0.2em] mb-3 leading-tight">საორიენტაციო ფასები · დააჭირე პროდუქტს რომ ნახო მიმღები ობიექტები</p>
+                    <div className="w-full flex-1 space-y-2 overflow-y-auto custom-scrollbar pr-1">
+                      {agroData.filter(i => i.category === 'grain').map(item => (
+                        <button key={item.id} onClick={() => setSelectedAgro(item)} className="w-full flex justify-between items-center bg-black/40 p-3 rounded-xl border border-white/5 transition-all group/item hover:bg-white/5">
+                          <span className="text-xs font-black uppercase text-yellow-500 flex gap-2">{item.name}</span>
+                          <span className="text-sm font-black italic">{getAgroDisplayPrice(item)}</span>
+                        </button>
+                      ))}
+                    </div>
+                    <p className="mt-auto pt-3 text-[12px] text-yellow-200 font-black text-center tracking-wide">თქვენი ფასი და საკონტაქტო ნომერი გამოჩნდება ამ ფანჯარაში</p>
+                  </div>
+                  <div className="w-full bg-gradient-to-br from-amber-900/40 via-black/50 to-amber-700/20 backdrop-blur-sm rounded-[24px] border border-amber-500/30 shadow-[0_0_20px_4px_rgba(255,191,0,0.1)] p-4 ring-1 ring-amber-400/20 relative">
+                    <AdminSideFrame 
+                      post={getPostByPos('right_top')} 
+                      position="right_top" 
+                      isAdmin={isAdmin} 
+                      onRefresh={fetchAdminPosts}
+                    />
+                  </div>
                 </div>
-              )}
+              </div>
+            </div>
+
+            <div className="w-full mt-8">
+              <RegistryFeatureCards />
+            </div>
+
+            <div className="hidden lg:grid w-full max-w-6xl mx-auto mt-8 grid-cols-1 xl:grid-cols-2 gap-6">
+              <div className="flex flex-col gap-6">
+                <div className="w-full min-w-[260px] xl:min-w-[300px] bg-gradient-to-br from-amber-900/40 via-black/50 to-amber-700/20 backdrop-blur-sm rounded-[24px] border border-amber-500/30 shadow-[0_0_20px_4px_rgba(255,191,0,0.1)] p-4 ring-1 ring-amber-400/20 relative">
+                  <GuideWidget onMapSearch={handleMapSearch} />
+                </div>
+              </div>
+
+              <div className="flex flex-col gap-6">
+                <div className="w-full bg-gradient-to-br from-amber-900/40 via-black/50 to-amber-700/20 backdrop-blur-sm rounded-[24px] border border-amber-500/30 shadow-[0_0_20px_4px_rgba(255,191,0,0.1)] p-4 ring-1 ring-amber-400/20 relative">
+                  <HeritageWidget />
+                </div>
+              </div>
             </div>
 
             {/* მობილური ვერსია - მარცხენა მხარე */}
@@ -977,48 +1005,6 @@ export default function HomePageClient({
 
             {/* CommunityHub removed: community entry moved to navbar center */}
 
-          </div>
-
-          {/* --- მარჯვენა სვეტი (Desktop Only) --- */}
-          <div className="hidden lg:flex flex-col gap-6 sticky top-0 order-3 w-full max-w-full min-w-0">
-            {/* ჰაბი */}
-            <div className="w-full h-[450px] overflow-y-auto custom-scrollbar bg-black/60 backdrop-blur-xl rounded-[30px] border border-white/5 relative">
-              <div className="p-1">
-                <RightSidebar weatherData={weatherData} seasonal={seasonal} fact={KAKHETI_FACTS[factIndex]} onShowTransport={() => setShowTransport(true)} />
-              </div>
-            </div>
-            {/* 🌾 მარცვლეული */}
-            <div className="w-full bg-white/[0.03] backdrop-blur-3xl rounded-[30px] border border-white/10 p-5 flex flex-col items-center group relative overflow-hidden transition-all hover:border-yellow-500/30 shadow-xl h-[360px]">
-              <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-yellow-500 to-transparent opacity-30" />
-              <h4 className="text-[10px] font-black text-yellow-500 uppercase tracking-[0.4em] mb-4 w-full text-left">🌾 მარცვლეული</h4>
-              <p className="w-full text-[10px] text-white/40 font-bold uppercase tracking-[0.2em] mb-3 leading-tight">საორიენტაციო ფასები · დააჭირე პროდუქტს რომ ნახო მიმღები ობიექტები</p>
-              <div className="w-full flex-1 space-y-2 overflow-y-auto custom-scrollbar pr-1">
-                {agroData.filter(i => i.category === 'grain').map(item => (
-                  <button key={item.id} onClick={() => setSelectedAgro(item)} className="w-full flex justify-between items-center bg-black/40 p-3 rounded-xl border border-white/5 transition-all group/item hover:bg-white/5">
-                    <span className="text-xs font-black uppercase text-yellow-500 flex gap-2">{item.name}</span>
-                    <span className="text-sm font-black italic">{getAgroDisplayPrice(item)}</span>
-                  </button>
-                ))}
-              </div>
-              <p className="mt-auto pt-3 text-[12px] text-yellow-200 font-black text-center tracking-wide">თქვენი ფასი და საკონტაქტო ნომერი გამოჩნდება ამ ფანჯარაში</p>
-            </div>
-            {/* 🏛️ ადმინისტრაციული განცხადებები */}
-            <div className="flex flex-col gap-4 w-full">
-              <div className="w-full bg-gradient-to-br from-amber-900/40 via-black/50 to-amber-700/20 backdrop-blur-sm rounded-[24px] border border-amber-500/30 shadow-[0_0_20px_4px_rgba(255,191,0,0.1)] p-4 ring-1 ring-amber-400/20 relative">
-                <AdminSideFrame 
-                  post={getPostByPos('right_top')} 
-                  position="right_top" 
-                  isAdmin={isAdmin} 
-                  onRefresh={fetchAdminPosts}
-                />
-              </div>
-              <div className="w-full bg-gradient-to-br from-amber-900/40 via-black/50 to-amber-700/20 backdrop-blur-sm rounded-[24px] border border-amber-500/30 shadow-[0_0_20px_4px_rgba(255,191,0,0.1)] p-4 ring-1 ring-amber-400/20 relative">
-                <CommunitySideWidget variant="masters" />
-              </div>
-              <div className="w-full bg-gradient-to-br from-amber-900/40 via-black/50 to-amber-700/20 backdrop-blur-sm rounded-[24px] border border-amber-500/30 shadow-[0_0_20px_4px_rgba(255,191,0,0.1)] p-4 ring-1 ring-amber-400/20 relative">
-                <HeritageWidget />
-              </div>
-            </div>
           </div>
         </div>
       </section>
