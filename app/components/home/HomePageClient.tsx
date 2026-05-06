@@ -160,9 +160,11 @@ export default function HomePageClient({
   const [modalAnnouncementsPage, setModalAnnouncementsPage] = useState(0);
   const [showCategoryDropdown, setShowCategoryDropdown] = useState(false);
   const [showLocationDropdown, setShowLocationDropdown] = useState(false);
-  const [visibleCategoryCount, setVisibleCategoryCount] = useState(6);
+  const [visibleCategoryCount, setVisibleCategoryCount] = useState(2);
   const categoryDropdownRef = useRef<HTMLDivElement | null>(null);
   const locationDropdownRef = useRef<HTMLDivElement | null>(null);
+  const categoryBarRef = useRef<HTMLDivElement | null>(null);
+  const categoryMeasureRefs = useRef<Map<string, HTMLButtonElement>>(new Map());
   const [bgImage, setBgImage] = useState<string | null>(initialBgImage ?? null);
   // Marquee text state
   const [marqueeText, setMarqueeText] = useState<string>(initialMarqueeText || FALLBACK_MARQUEE);
@@ -630,6 +632,102 @@ export default function HomePageClient({
     ];
   }, [ads]);
 
+  useEffect(() => {
+    const categoryGap = 8;
+    const maxRows = 2;
+    let isActive = true;
+
+    const updateVisibleCategoryCount = () => {
+      if (!isActive) return;
+      const container = categoryBarRef.current;
+      const containerWidth = Math.floor(container?.clientWidth ?? 0);
+
+      if (!containerWidth) return;
+
+      let nextCount = 0;
+      let rowCount = 1;
+      let currentRowWidth = 0;
+
+      for (const category of allNonCommunityCategories) {
+        const button = categoryMeasureRefs.current.get(category);
+        const buttonWidth = Math.ceil(button?.getBoundingClientRect().width ?? 0);
+
+        if (!buttonWidth) continue;
+
+        if (buttonWidth > containerWidth) break;
+
+        const nextRowWidth = currentRowWidth === 0
+          ? buttonWidth
+          : currentRowWidth + categoryGap + buttonWidth;
+
+        if (nextRowWidth <= containerWidth) {
+          currentRowWidth = nextRowWidth;
+          nextCount += 1;
+          continue;
+        }
+
+        rowCount += 1;
+
+        if (rowCount > maxRows) break;
+
+        currentRowWidth = buttonWidth;
+        nextCount += 1;
+      }
+
+      setVisibleCategoryCount(nextCount);
+    };
+
+    const frameId = window.requestAnimationFrame(updateVisibleCategoryCount);
+    const resizeObserver = typeof ResizeObserver !== 'undefined'
+      ? new ResizeObserver(updateVisibleCategoryCount)
+      : null;
+
+    if (categoryBarRef.current) {
+      resizeObserver?.observe(categoryBarRef.current);
+    }
+
+    window.addEventListener('resize', updateVisibleCategoryCount);
+
+    if ('fonts' in document) {
+      document.fonts.ready.then(updateVisibleCategoryCount);
+    }
+
+    return () => {
+      isActive = false;
+      window.cancelAnimationFrame(frameId);
+      resizeObserver?.disconnect();
+      window.removeEventListener('resize', updateVisibleCategoryCount);
+    };
+  }, [allNonCommunityCategories]);
+
+  useEffect(() => {
+    const updateVisibleCategoryCount = () => {
+      const width = window.innerWidth;
+
+      if (width < 480) {
+        setVisibleCategoryCount(3);
+        return;
+      }
+
+      if (width < 768) {
+        setVisibleCategoryCount(4);
+        return;
+      }
+
+      if (width < 1280) {
+        setVisibleCategoryCount(5);
+        return;
+      }
+
+      setVisibleCategoryCount(6);
+    };
+
+    updateVisibleCategoryCount();
+    window.addEventListener('resize', updateVisibleCategoryCount);
+
+    return () => window.removeEventListener('resize', updateVisibleCategoryCount);
+  }, []);
+
   const visibleCategories = useMemo(
     () => allNonCommunityCategories.slice(0, visibleCategoryCount),
     [allNonCommunityCategories, visibleCategoryCount]
@@ -761,9 +859,9 @@ export default function HomePageClient({
             </div>
 
             <div className="w-full max-w-6xl mx-auto px-4 sm:px-6 md:px-10 mt-6">
-              <div className="relative bg-black/50 border border-amber-500/30 rounded-2xl px-3 sm:px-4 py-2 shadow-[0_8px_30px_rgba(0,0,0,0.35)]">
-                <div className="flex items-center justify-between gap-2">
-                  <div className="flex items-center justify-center lg:justify-start gap-2">
+              <div className="relative bg-black/50 border border-amber-500/30 rounded-2xl px-3 sm:px-4 py-2.5 shadow-[0_8px_30px_rgba(0,0,0,0.35)]">
+                <div className="grid grid-cols-2 sm:grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-x-3 gap-y-2">
+                  <div className="flex min-w-0 items-center justify-start gap-2">
                     <button
                       type="button"
                       onClick={() => {
@@ -771,22 +869,25 @@ export default function HomePageClient({
                         setShowAllAnnouncements(false);
                         setAnnouncementsPage(0);
                       }}
-                      className="h-8 px-3 rounded-full border border-amber-300/40 bg-amber-500/10 text-[10px] font-black uppercase tracking-[0.14em] text-amber-200 hover:bg-amber-500/20 transition whitespace-nowrap"
+                      className="inline-flex h-8 flex-none items-center justify-center rounded-full border border-amber-300/40 bg-amber-500/10 px-3 text-[10px] font-black uppercase tracking-[0.12em] text-amber-200 transition hover:bg-amber-500/20 whitespace-nowrap"
                     >
                       ყველა განცხადება
                     </button>
-                    <span className="min-w-[1.75rem] px-2 h-8 inline-flex items-center justify-center rounded-full border border-amber-400/20 bg-amber-500/10 text-amber-300 text-[11px] sm:text-sm font-black tracking-normal">
+                    <span className="inline-flex h-8 min-w-8 flex-none items-center justify-center rounded-full border border-amber-400/20 bg-amber-500/10 px-2 text-[11px] sm:text-sm font-black leading-none tracking-normal text-amber-300 whitespace-nowrap">
                       {ads.length}
                     </span>
                   </div>
 
-                  <div className="flex items-center justify-center gap-2 flex-1">
-                    {['უძრავი ქონება', 'ავტო'].map((category) => (
+                  <div
+                    ref={categoryBarRef}
+                    className="order-3 col-span-2 flex max-h-[4.5rem] min-w-0 flex-wrap items-center justify-center gap-x-2 gap-y-2 overflow-hidden sm:order-none sm:col-span-1 sm:px-1"
+                  >
+                    {visibleCategories.map((category) => (
                       <button
                         key={category}
                         type="button"
                         onClick={() => selectCategory(category)}
-                        className={`h-8 px-3 rounded-full border text-[10px] md:text-[11px] font-black uppercase tracking-[0.14em] transition whitespace-nowrap ${
+                        className={`inline-flex h-8 flex-none items-center justify-center rounded-full border px-3 text-[10px] md:text-[11px] font-black uppercase tracking-[0.12em] transition whitespace-nowrap ${
                           selectedCategories.includes(category)
                             ? 'border-amber-300/50 bg-amber-500/20 text-amber-200'
                             : 'border-white/10 bg-white/5 text-white/70 hover:border-white/30 hover:text-white'
@@ -797,11 +898,31 @@ export default function HomePageClient({
                     ))}
                   </div>
 
-                  <div className="flex items-center justify-center lg:justify-end">
+                  <div aria-hidden="true" className="absolute left-0 top-0 flex h-0 flex-wrap gap-x-2 gap-y-2 overflow-hidden opacity-0 pointer-events-none">
+                    {allNonCommunityCategories.map((category) => (
+                      <button
+                        key={`measure-${category}`}
+                        ref={(node) => {
+                          if (node) {
+                            categoryMeasureRefs.current.set(category, node);
+                          } else {
+                            categoryMeasureRefs.current.delete(category);
+                          }
+                        }}
+                        type="button"
+                        tabIndex={-1}
+                        className="inline-flex h-8 flex-none items-center justify-center rounded-full border border-white/10 bg-white/5 px-3 text-[10px] md:text-[11px] font-black uppercase tracking-[0.12em] text-white/70 transition whitespace-nowrap"
+                      >
+                        {category}
+                      </button>
+                    ))}
+                  </div>
+
+                  <div className="flex min-w-0 items-center justify-end">
                     <button
                       type="button"
                       onClick={() => setShowAllCategories(true)}
-                      className="h-8 px-3 rounded-full border border-amber-300/30 bg-amber-500/10 text-[10px] md:text-[11px] font-black uppercase tracking-[0.14em] text-amber-200 hover:bg-amber-500/20 transition whitespace-nowrap"
+                      className="inline-flex h-8 flex-none items-center justify-center rounded-full border border-amber-300/30 bg-amber-500/10 px-3 text-[10px] md:text-[11px] font-black uppercase tracking-[0.12em] text-amber-200 transition hover:bg-amber-500/20 whitespace-nowrap"
                     >
                       ყველა კატეგორია
                     </button>
