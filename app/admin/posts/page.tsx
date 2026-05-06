@@ -157,6 +157,11 @@ export default function AdminPosts() {
       return;
     }
 
+    if (formData.is_published && !formData.position) {
+      alert('გამოქვეყნებისას აუცილებელია პოზიციის არჩევა (მარცხენა ზედა ან მარჯვენა ზედა).');
+      return;
+    }
+
     try {
       const hasMedia = formData.media_urls.length > 0 || !!formData.media_url;
       const mediaTypeFromUrls = (() => {

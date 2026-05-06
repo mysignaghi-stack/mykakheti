@@ -74,13 +74,26 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Server misconfiguration: missing Supabase admin env vars.' }, { status: 500 });
     }
 
+    const rawMediaUrls = Array.isArray(body.media_urls) ? body.media_urls.filter(Boolean) : [];
+    const singleMediaUrl = typeof body.media_url === 'string' && body.media_url.trim()
+      ? body.media_url.trim()
+      : null;
+    const mediaUrls = rawMediaUrls.length > 0
+      ? rawMediaUrls
+      : (singleMediaUrl ? [singleMediaUrl] : []);
+
+    if ((typeof body.is_published !== 'boolean' || body.is_published) && !body.position) {
+      return NextResponse.json({ error: 'Missing position for published post' }, { status: 400 });
+    }
+
     const insertPayload = {
       title: body.title,
       content: body.content,
       category: body.category ?? null,
       priority: body.priority ?? 0,
       link: body.link ?? null,
-      media_urls: body.media_urls && body.media_urls.length > 0 ? body.media_urls : null,
+      media_url: singleMediaUrl ?? mediaUrls[0] ?? null,
+      media_urls: mediaUrls.length > 0 ? mediaUrls : null,
       media_type: body.media_type ?? null,
       video_background: !!body.video_background,
       position: body.position ?? null,
