@@ -208,40 +208,6 @@ export default function HomePageClient({
     };
   }, [fetchBG]);
 
-  useEffect(() => {
-    const updateCategoryCount = () => {
-      const width = typeof window !== 'undefined' ? window.innerWidth : 0;
-      if (width < 480) {
-        setVisibleCategoryCount(2);
-        return;
-      }
-      if (width < 640) {
-        setVisibleCategoryCount(3);
-        return;
-      }
-      if (width < 1024) {
-        setVisibleCategoryCount(4);
-        return;
-      }
-      if (width < 1366) {
-        setVisibleCategoryCount(4);
-        return;
-      }
-      if (width < 1440) {
-        setVisibleCategoryCount(5);
-        return;
-      }
-      if (width < 1920) {
-        setVisibleCategoryCount(5);
-        return;
-      }
-      setVisibleCategoryCount(6);
-    };
-
-    updateCategoryCount();
-    window.addEventListener('resize', updateCategoryCount);
-    return () => window.removeEventListener('resize', updateCategoryCount);
-  }, []);
 
   // Agro hook
   const {
@@ -938,11 +904,11 @@ export default function HomePageClient({
                     <AnnouncementCard key={ad.id} announcement={ad} />
                   ))}
                   {filteredAds.length > 0 && (
-                    <div className="relative rounded-2xl border border-transparent min-h-[180px]">
+                    <div className="relative flex justify-center rounded-2xl border border-transparent py-1 sm:block sm:min-h-[180px] sm:py-0">
                       <button
                         type="button"
                         onClick={() => setShowAllFilters(true)}
-                        className="absolute top-3 left-3 px-4 py-2 rounded-full border border-amber-300/50 bg-amber-500/20 text-amber-200 font-black uppercase tracking-[0.2em] text-xs hover:bg-amber-500/30 transition"
+                        className="static px-4 py-2 rounded-full border border-amber-300/50 bg-amber-500/20 text-amber-200 font-black uppercase tracking-[0.2em] text-xs hover:bg-amber-500/30 transition sm:absolute sm:left-3 sm:top-3"
                       >
                         ყველა განცხადება
                       </button>
