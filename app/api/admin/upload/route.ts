@@ -45,8 +45,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'File too large. Max 50MB allowed.' }, { status: 400 });
     }
 
-    // For now, skip authentication and just test upload
-    // TODO: Restore authentication after testing
+    // Require an authenticated admin before uploading files.
     const cookieStore = await cookies();
     const authClient = createServerClient<Database>(supabaseUrl, supabaseAnonKey, {
       cookies: {

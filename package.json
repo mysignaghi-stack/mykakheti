@@ -6,7 +6,8 @@
     "dev": "TURBOPACK=0 next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "test:admin-auth": "node scripts/test_admin_check.js"
   },
   "dependencies": {
     "@supabase/ssr": "^0.4.0",

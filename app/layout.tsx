@@ -5,13 +5,13 @@ import MobileAddButton from './components/layout/MobileAddButton';
 import './globals.css';
 
 // 1. ფონტის ოპტიმიზაცია
-const inter = Inter({ 
+const inter = Inter({
   subsets: ['latin'],
   display: 'swap',
   variable: '--font-inter',
 });
 
-// 2. Viewport-ის პარამეტრები (Next.js 15 სტანდარტი)
+// 2. Viewport-ის პარამეტრები (Next.js Metadata API სტანდარტი)
 export const viewport: Viewport = {
   themeColor: '#050510',
   width: 'device-width',
