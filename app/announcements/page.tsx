@@ -72,7 +72,7 @@ export default function AnnouncementsPage() {
           <Link href="/" className="text-[11px] font-black uppercase italic text-white/50 hover:text-white transition">← მთავარი გვერდი</Link>
         </div>
         <h1 className="text-2xl font-black text-amber-500 uppercase italic mb-6">განცხადებები</h1>
-        <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,240px)_minmax(0,1fr)_minmax(0,240px)] gap-10 items-start">
+        <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,240px)_minmax(0,1fr)] gap-10 items-start">
           <aside className="order-2 lg:order-1 w-full max-w-[360px] lg:max-w-[240px] mx-auto lg:mx-0 lg:sticky lg:top-24 lg:mt-8">
             <CommunitySideWidget variant="lostFound" />
           </aside>

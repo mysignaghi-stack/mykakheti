@@ -775,7 +775,7 @@ export default function HomePageClient({
 
             <div className="w-full max-w-6xl mx-auto px-6 md:px-10 mt-6 mobile-announcements-spacing">
               {visibleAds.length > 0 ? (
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 2xl:grid-cols-3 gap-4">
                   {visibleAds.map((ad) => (
                     <AnnouncementCard key={ad.id} announcement={ad} />
                   ))}
