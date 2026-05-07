@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
+import dynamic from 'next/dynamic';
 import { useAdminAuth } from '@/app/hooks/useAdminAuth';
 import { useAdsData } from '@/app/hooks/useAdsData';
 import { useAgroData } from '@/app/hooks/useAgroData';
@@ -20,7 +21,6 @@ import HeroSection from '@/app/components/home/HeroSection';
 import { GuideWidget, HeritageWidget } from '@/app/components/home/ServiceWidgets';
 import TransportModal from '@/app/components/features/transport/TransportModal';
 import AdminSideFrame from '@/app/components/home/AdminSideFrame';
-import ChatPopup from '@/app/components/features/ChatPopup';
 import AgroDetailsModal from '@/app/components/home/AgroDetailsModal';
 import AnnouncementCard from '@/app/components/home/AnnouncementCard';
 import RegistryFeatureCards from '@/app/components/home/RegistryFeatureCards';
@@ -28,6 +28,10 @@ import type { CommunityCounts, CommunityDataset } from '@/app/lib/homeData';
 
 type AdminPost = Tables<'admin_posts'>;
 type SiteSettingRow = Tables<'site_settings'>;
+
+const ChatPopup = dynamic(() => import('@/app/components/features/ChatPopup'), {
+  ssr: false,
+});
 
 // Type for agro details
 interface AgroDetail {
@@ -194,7 +198,10 @@ export default function HomePageClient({
   }, []);
 
   useEffect(() => {
-    fetchBG();
+    const hasInitialSettings = Boolean(initialBgImage) && Boolean(initialMarqueeText);
+    if (!hasInitialSettings) {
+      fetchBG();
+    }
 
     const channel = supabase
       .channel('site_settings_changes')
@@ -348,23 +355,17 @@ export default function HomePageClient({
     };
     initSecurity();
 
-    fetchAds();
-    fetchAdminPosts();
-    // ...existing code for chat scroll, channel, cleanup, etc...
-    // სესიის შემოწმება Supabase-ში
-    (async () => {
-      try {
-        const { data } = await supabase.auth.getUser();
-        console.log('Supabase User UUID:', data.user?.id);
-      } catch (error) {
-        console.log('Auth session missing or error:', error);
-      }
-    })();
+    if (initialAds.length === 0) {
+      fetchAds();
+    }
+    if (initialAdminPosts.length === 0) {
+      fetchAdminPosts();
+    }
     return () => {
       clearInterval(factTimer);
       mediaQuery.removeEventListener('change', handleMediaChange);
     };
-  }, [fetchAds, fetchAdminPosts]);
+  }, [fetchAds, fetchAdminPosts, initialAds.length, initialAdminPosts.length]);
 
   const getPostByPos = (pos: string) => adminPosts.find(p => p.position === pos);
 

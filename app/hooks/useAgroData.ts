@@ -43,8 +43,11 @@ export function useAgroData(initialData: AgroItem[] = DEFAULT_AGRO_DATA) {
   }, [initialData]);
 
   useEffect(() => {
-    fetchAgroData();
-  }, [fetchAgroData]);
+    // Avoid duplicate first-load fetch when SSR already provided data.
+    if (initialData.length === 0) {
+      fetchAgroData();
+    }
+  }, [fetchAgroData, initialData.length]);
 
 
 

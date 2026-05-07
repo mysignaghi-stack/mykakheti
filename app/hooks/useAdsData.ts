@@ -39,7 +39,6 @@ export function useAdsData(initialAds: Ad[] = []) {
   const fetchAds = useCallback(async () => {
     setLoading(true);
     try {
-      console.log('Fetching announcements...');
       const { data, error } = await supabase
         .from('announcements')
         .select('*')
@@ -55,7 +54,6 @@ export function useAdsData(initialAds: Ad[] = []) {
         throw error;
       }
 
-      console.log('Fetched announcements data:', data);
       if (data) {
         const now = Date.now();
         const filtered = data.filter((row) => {
@@ -66,7 +64,6 @@ export function useAdsData(initialAds: Ad[] = []) {
           return publishOk;
         });
         setAds(filtered.map(mapRowToAd));
-        console.log('Filtered and mapped ads:', filtered.length);
       }
     } catch (error) {
       console.error('Failed to fetch announcements', error);
