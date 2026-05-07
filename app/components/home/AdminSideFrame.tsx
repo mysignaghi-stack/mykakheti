@@ -343,7 +343,7 @@ export default function AdminSideFrame({ post, position, isAdmin, onRefresh }: A
                         {isVideoUrl(url) ? (
                           <video src={url} className="w-full h-full object-cover" playsInline autoPlay muted loop />
                         ) : (
-                          <Image src={url!} alt="" fill sizes="(max-width: 768px) 100vw, 800px" className="object-cover" />
+                          <Image src={url!} alt="" fill loading="eager" sizes="(max-width: 768px) 100vw, 800px" className="object-cover" />
                         )}
                       </SwiperSlide>
                     ))}
@@ -354,7 +354,7 @@ export default function AdminSideFrame({ post, position, isAdmin, onRefresh }: A
                   {isVideoUrl((post.media_urls?.[0] || (post as any).media_url)!) ? (
                     <video src={(post.media_urls?.[0] || (post as any).media_url)!} className="w-full h-full object-cover" playsInline autoPlay muted loop />
                   ) : (
-                    <Image src={(post.media_urls?.[0] || (post as any).media_url)!} alt="" fill sizes="(max-width: 768px) 100vw, 800px" className="object-cover" />
+                    <Image src={(post.media_urls?.[0] || (post as any).media_url)!} alt="" fill loading="eager" sizes="(max-width: 768px) 100vw, 800px" className="object-cover" />
                   )}
                   <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent pointer-events-none" />
                 </div>

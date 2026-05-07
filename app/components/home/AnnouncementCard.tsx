@@ -98,6 +98,7 @@ export default function AnnouncementCard({ announcement }: AnnouncementCardProps
             src={mainImage}
             alt={announcement.title || 'Announcement'}
             fill
+            loading="eager"
             sizes="(max-width: 768px) 100vw, 33vw"
             className="object-cover group-hover:scale-105 transition-transform duration-300"
           />
