@@ -2,6 +2,11 @@ import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 
 export async function proxy(request: NextRequest) {
+  // Bypass proxy for upload routes to avoid consuming the request body
+  if (request.nextUrl.pathname.startsWith('/api/upload') || request.nextUrl.pathname.startsWith('/api/admin/upload')) {
+    return NextResponse.next();
+  }
+
   let supabaseResponse = NextResponse.next({
     request,
   })

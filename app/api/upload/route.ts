@@ -7,6 +7,9 @@ export async function GET() {
 }
 
 export async function POST(request: NextRequest) {
+  if (!request.body) {
+    return NextResponse.json({ error: 'Request body is empty' }, { status: 400 });
+  }
   try {
     const formData = await request.formData();
     const files = (formData.getAll('file') as File[]).filter((f) => f instanceof File);

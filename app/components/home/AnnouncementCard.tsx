@@ -4,6 +4,7 @@ import React from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { formatGeorgianDate } from '@/app/lib/utils';
+
 type AnnouncementLike = {
   id: string;
   title?: string | null;
@@ -11,6 +12,7 @@ type AnnouncementLike = {
   price?: string | null;
   currency?: string | null;
   location?: string | null;
+  category?: string | null;
   image_url?: string | null;
   all_images?: string[] | null;
   phone?: string | null;
@@ -19,121 +21,118 @@ type AnnouncementLike = {
 
 interface AnnouncementCardProps {
   announcement: AnnouncementLike;
+  layout?: 'grid' | 'list';
 }
 
-export default function AnnouncementCard({ announcement }: AnnouncementCardProps) {
-  const images = Array.isArray(announcement.all_images) ? announcement.all_images : [];
+export default function AnnouncementCard({ announcement, layout = 'grid' }: AnnouncementCardProps) {
+  const images = Array.isArray(announcement.all_images) ? announcement.all_images.filter(Boolean) : [];
   const mainImage = images[0] || announcement.image_url || null;
+  const hasPrice = Boolean(announcement.price && announcement.price !== '0');
   const currencySymbol = announcement.currency === 'USD' ? '$' : '₾';
-  const shareUrl = typeof window !== 'undefined'
-    ? `${window.location.origin}/announcements/${announcement.id}`
-    : '';
 
-  const handleFBShare = (e: React.MouseEvent<HTMLButtonElement>) => {
-    e.preventDefault();
-    e.stopPropagation();
-    const url = shareUrl || `/announcements/${announcement.id}`;
-    window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`, 'fb-share', 'width=600,height=400');
-  };
+  if (layout === 'list') {
+    return (
+      <Link
+        href={`/announcements/${announcement.id}`}
+        className="group flex gap-4 p-3 rounded-xl bg-white/5 border border-white/10 hover:bg-white/8 hover:border-amber-400/30 transition-all duration-200"
+      >
+        {/* Thumbnail */}
+        <div className="relative flex-shrink-0 w-24 h-20 rounded-lg overflow-hidden bg-white/5">
+          {mainImage ? (
+            <Image src={mainImage} alt={announcement.title || ''} fill sizes="96px" className="object-cover group-hover:scale-105 transition-transform duration-300" />
+          ) : (
+            <div className="w-full h-full flex items-center justify-center text-2xl text-white/20">📷</div>
+          )}
+          {images.length > 1 && (
+            <span className="absolute bottom-1 right-1 text-[9px] bg-black/70 text-white/80 px-1 rounded">{images.length} 📷</span>
+          )}
+        </div>
+        {/* Info */}
+        <div className="flex-1 min-w-0 flex flex-col justify-between py-0.5">
+          <div>
+            <h3 className="text-sm font-bold text-white line-clamp-1 group-hover:text-amber-300 transition-colors">{announcement.title || '—'}</h3>
+            {announcement.description && (
+              <p className="text-xs text-white/50 line-clamp-1 mt-0.5">{announcement.description}</p>
+            )}
+          </div>
+          <div className="flex items-center justify-between gap-2 mt-1">
+            <div className="flex items-center gap-3">
+              {announcement.location && (
+                <span className="text-[10px] text-white/45 flex items-center gap-1">
+                  <svg className="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/><circle cx="12" cy="9" r="2.5"/></svg>
+                  {announcement.location}
+                </span>
+              )}
+              {announcement.created_at && (
+                <span className="text-[10px] text-white/30">{formatGeorgianDate(announcement.created_at)}</span>
+              )}
+            </div>
+            {hasPrice && (
+              <span className="text-sm font-black text-amber-400 whitespace-nowrap">
+                {announcement.price} {currencySymbol}
+              </span>
+            )}
+          </div>
+        </div>
+      </Link>
+    );
+  }
 
-  const isMobileDevice = () => {
-    if (typeof navigator === 'undefined') return false;
-    const uaData = (navigator as Navigator & { userAgentData?: { mobile?: boolean } }).userAgentData;
-    return Boolean(uaData?.mobile) || /Android|iPhone|iPad|iPod|Mobi/i.test(navigator.userAgent);
-  };
-
-  const handleTikTokShare = async (e: React.MouseEvent<HTMLButtonElement>) => {
-    e.preventDefault();
-    e.stopPropagation();
-    const url = shareUrl || `/announcements/${announcement.id}`;
-    if (isMobileDevice() && navigator.share) {
-      try {
-        await navigator.share({ url, title: announcement.title || undefined });
-        return;
-      } catch {
-        // Fall back to copy on share failure or cancel.
-      }
-    }
-    try {
-      await navigator.clipboard.writeText(url);
-      window.alert('ბმული კოპირებულია! ✅');
-    } catch {
-      const textarea = document.createElement('textarea');
-      textarea.value = url;
-      document.body.appendChild(textarea);
-      textarea.select();
-      document.execCommand('copy');
-      document.body.removeChild(textarea);
-      window.alert('ბმული კოპირებულია! ✅');
-    }
-  };
-
+  // grid layout (default)
   return (
     <Link
       href={`/announcements/${announcement.id}`}
-      className="group relative overflow-hidden rounded-2xl bg-white/5 backdrop-blur-2xl border border-white/10 shadow-xl transition-all duration-300 hover:shadow-[0_0_35px_rgba(230,126,34,0.25)] hover:-translate-y-0.5"
+      className="group flex flex-col overflow-hidden rounded-xl bg-white/5 border border-white/10 hover:border-amber-400/30 hover:shadow-[0_0_20px_rgba(230,126,34,0.15)] transition-all duration-200"
     >
-      {/* Media */}
-      <div className="relative h-28 w-full overflow-hidden">
-        <div className="absolute top-2 left-2 z-10 flex items-center gap-2">
-          <button
-            type="button"
-            onClick={handleFBShare}
-            className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-blue-600/20 text-blue-200 border border-blue-500/30 hover:bg-blue-600 hover:text-white transition"
-            aria-label="Facebook გაზიარება"
-          >
-            f
-          </button>
-          <button
-            type="button"
-            onClick={handleTikTokShare}
-            className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-black/50 text-white/90 border border-white/20 hover:bg-white hover:text-black transition"
-            aria-label="ბმულის გაზიარება"
-          >
-            🔗
-          </button>
-        </div>
+      {/* Image */}
+      <div className="relative w-full aspect-[4/3] overflow-hidden bg-white/5">
         {mainImage ? (
           <Image
             src={mainImage}
-            alt={announcement.title || 'Announcement'}
+            alt={announcement.title || ''}
             fill
-            loading="eager"
-            sizes="(max-width: 768px) 100vw, 33vw"
+            sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
             className="object-cover group-hover:scale-105 transition-transform duration-300"
           />
         ) : (
-          <div className="w-full h-full bg-gradient-to-br from-white/10 to-white/5 flex items-center justify-center">
-            <span className="text-4xl text-white/30">📷</span>
-          </div>
+          <div className="w-full h-full flex items-center justify-center text-4xl text-white/15">📷</div>
+        )}
+        {images.length > 1 && (
+          <span className="absolute bottom-2 right-2 text-[10px] bg-black/70 text-white/80 px-1.5 py-0.5 rounded-full">📷 {images.length}</span>
+        )}
+        {announcement.category && (
+          <span className="absolute top-2 left-2 text-[9px] font-bold uppercase bg-black/60 text-amber-300/90 px-2 py-0.5 rounded-full border border-amber-400/20 backdrop-blur-sm">
+            {announcement.category}
+          </span>
         )}
       </div>
 
       {/* Content */}
-      <div className="relative p-2 space-y-1 pb-5">
-        <div className="flex items-start justify-between gap-3">
-          <h3 className="text-[13px] sm:text-sm font-black text-white line-clamp-1">
-            {announcement.title || '—'}
-          </h3>
-        </div>
+      <div className="flex flex-col gap-1 p-3 flex-1">
+        <h3 className="text-[13px] font-bold text-white/90 line-clamp-2 leading-snug group-hover:text-white transition-colors">
+          {announcement.title || '—'}
+        </h3>
 
-        {announcement.price && (
-          <div className="text-[12px] font-black text-[#e67e22]">
-            {announcement.price} {currencySymbol}
+        <div className="mt-auto pt-2 flex items-end justify-between gap-2">
+          <div className="flex flex-col gap-0.5">
+            {announcement.location && (
+              <span className="text-[10px] text-white/40 flex items-center gap-1">
+                <svg className="w-2.5 h-2.5 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5}><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/><circle cx="12" cy="9" r="2.5"/></svg>
+                <span className="truncate max-w-[100px]">{announcement.location}</span>
+              </span>
+            )}
+            {announcement.created_at && (
+              <span className="text-[9px] text-white/25">{formatGeorgianDate(announcement.created_at)}</span>
+            )}
           </div>
-        )}
-
-        <div className="flex items-center gap-2 text-[10px] text-white/60">
-          <span>📍</span>
-          <span className="truncate">{announcement.location || '—'}</span>
+          {hasPrice ? (
+            <span className="text-sm font-black text-amber-400 whitespace-nowrap">
+              {announcement.price} {currencySymbol}
+            </span>
+          ) : (
+            <span className="text-[10px] text-white/30 italic">ფასი შეთანხმებით</span>
+          )}
         </div>
-
-        {announcement.created_at && (
-          <div className="absolute bottom-1.5 right-2 text-[9px] text-white/45">
-            {formatGeorgianDate(announcement.created_at)}
-          </div>
-        )}
-
       </div>
     </Link>
   );

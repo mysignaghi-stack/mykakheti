@@ -118,54 +118,92 @@ export default function SubmitForm() {
       let imageUrls: string[] = [];
 
       if (files.length > 0) {
-        const uploads: string[] = [];
-        for (const file of files) {
-          try {
-            // Sanitize file name to avoid Unicode issues with browser-image-compression
-            const sanitizedName = file.name.replace(/[^a-zA-Z0-9._-]/g, '_');
-            const sanitizedFile = new File([file], sanitizedName, { type: file.type });
-            const compressed = await imageCompression(sanitizedFile, { maxSizeMB: 0.5, maxWidthOrHeight: 1200, useWebWorker: true });
-            const fileName = `congrats-${Date.now()}-${Math.random().toString(36).slice(2)}.jpg`;
-            const formDataUpload = new FormData();
-            formDataUpload.append('file', compressed, fileName);
-            formDataUpload.append('fileName', fileName);
-            formDataUpload.append('bucket', 'congratulations');
+        try {
+          const uploads: string[] = [];
+          for (const file of files) {
+            try {
+              // Sanitize file name to avoid Unicode issues with browser-image-compression
+              const sanitizedName = file.name.replace(/[^a-zA-Z0-9._-]/g, '_');
+              const sanitizedFile = new File([file], sanitizedName, { type: file.type });
+              const compressed = await imageCompression(sanitizedFile, { maxSizeMB: 0.5, maxWidthOrHeight: 1200, useWebWorker: true });
+              const fileName = `congrats-${Date.now()}-${Math.random().toString(36).slice(2)}.jpg`;
+              const formDataUpload = new FormData();
+              formDataUpload.append('file', compressed, fileName);
+              formDataUpload.append('fileName', fileName);
+              formDataUpload.append('bucket', 'congratulations');
 
-            const response = await fetch('/api/upload', {
-              method: 'POST',
-              body: formDataUpload,
-            });
+              const response = await fetch('/api/upload', {
+                method: 'POST',
+                body: formDataUpload,
+              });
 
-            const result = await response.json();
-            if (!response.ok) {
-              throw new Error(result?.error || 'Storage upload failed');
+              if (!response.ok) {
+                console.error('Upload failed with status:', response.status);
+                const errorResult = await response.json().catch(() => ({ error: 'Failed to parse error response' }));
+                throw new Error(errorResult?.error || `Storage upload failed with status ${response.status}`);
+              }
+
+              const result = await response.json();
+              if (result.urls && result.urls.length > 0) {
+                uploads.push(result.urls[0] as string);
+              } else {
+                console.warn('Upload response did not contain expected URLs.');
+              }
+            } catch (compressionError) {
+              console.warn('Image compression failed, trying original file:', compressionError);
+              // Fall back to original file if compression fails
+              const fileName = `congrats-${Date.now()}-${Math.random().toString(36).slice(2)}.jpg`;
+              const formDataUpload = new FormData();
+              formDataUpload.append('file', file, fileName);
+              formDataUpload.append('fileName', fileName);
+              formDataUpload.append('bucket', 'congratulations');
+
+              const response = await fetch('/api/upload', {
+                method: 'POST',
+                body: formDataUpload,
+              });
+
+              if (!response.ok) {
+                console.error('Fallback upload failed with status:', response.status);
+                const errorResult = await response.json().catch(() => ({ error: 'Failed to parse error response' }));
+                throw new Error(errorResult?.error || `Fallback storage upload failed with status ${response.status}`);
+              }
+              
+              const result = await response.json();
+              if (result.urls && result.urls.length > 0) {
+                uploads.push(result.urls[0] as string);
+              } else {
+                console.warn('Fallback upload response did not contain expected URLs.');
+              }
             }
-
-            uploads.push(result.urls[0] as string);
-          } catch (compressionError) {
-            console.warn('Image compression failed, trying original file:', compressionError);
-            // Fall back to original file if compression fails
-            const fileName = `congrats-${Date.now()}-${Math.random().toString(36).slice(2)}.jpg`;
-            const formDataUpload = new FormData();
-            formDataUpload.append('file', file, fileName);
-            formDataUpload.append('fileName', fileName);
-            formDataUpload.append('bucket', 'congratulations');
-
-            const response = await fetch('/api/upload', {
-              method: 'POST',
-              body: formDataUpload,
-            });
-
-            const result = await response.json();
-            if (!response.ok) {
-              throw new Error(result?.error || 'Storage upload failed');
-            }
-
-            uploads.push(result.urls[0] as string);
           }
+          if (uploads.length > 0) {
+            imageUrls = uploads;
+            imageUrl = uploads[0];
+          }
+        } catch (uploadError) {
+          console.error("An error occurred during file upload, proceeding without image:", uploadError);
+          // Allow submission to continue without image
         }
-        imageUrls = uploads;
-        imageUrl = uploads[0] ?? null;
+      }
+
+      const submissionValues: any = {
+        sender_name: formData.sender_name,
+        recipient_name: formData.recipient_name,
+        message: formData.message,
+        occasion: formData.category,
+        is_approved: false,
+        ...(formData.template && { template: formData.template }),
+        ...(formData.toast && { toast: formData.toast }),
+        ...(formData.music_url && { music_url: formData.music_url }),
+        ...(typeof formData.animation_enabled === 'boolean' && { animation_enabled: formData.animation_enabled }),
+      };
+
+      if (imageUrl) {
+        submissionValues.image_url = imageUrl;
+      }
+      if (imageUrls.length > 0) {
+        submissionValues.all_images = imageUrls;
       }
 
       const response = await fetch('/api/community/submit', {
@@ -173,19 +211,7 @@ export default function SubmitForm() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           table: 'congratulations',
-          values: {
-            sender_name: formData.sender_name,
-            recipient_name: formData.recipient_name,
-            message: formData.message,
-            occasion: formData.category,
-            image_url: imageUrl,
-            all_images: imageUrls.length > 0 ? imageUrls : null,
-            is_approved: false,
-            ...(formData.template && { template: formData.template }),
-            ...(formData.toast && { toast: formData.toast }),
-            ...(formData.music_url && { music_url: formData.music_url }),
-            ...(typeof formData.animation_enabled === 'boolean' && { animation_enabled: formData.animation_enabled }),
-          },
+          values: submissionValues,
         }),
       });
 

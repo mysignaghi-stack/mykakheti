@@ -783,7 +783,7 @@ export default function HomePageClient({
 
 
             {/* --- Announcement/Marquee Bar (center column, in the middle) --- */}
-            <div className="w-full mt-4 sm:mt-2 mb-2 flex justify-center relative">
+            <div className="w-full mb-2 flex justify-center relative">
               <div className="w-full max-w-[520px] sm:max-w-2xl bg-gradient-to-r from-amber-600/80 via-black/80 to-amber-600/80 rounded-full border border-amber-400/30 shadow px-2 py-0.5 marquee-outer">
                 {/* True infinite marquee */}
                 <span className="marquee-inner text-sm sm:text-base font-bold italic tracking-widest text-amber-100 drop-shadow-lg">
@@ -792,7 +792,7 @@ export default function HomePageClient({
               </div>
             </div>
 
-            <div className="w-full max-w-6xl mx-auto px-4 sm:px-6 md:px-10 mt-3 sm:-mt-8">
+            <div className="w-full max-w-6xl mx-auto px-4 sm:px-6 md:px-10 mt-3 sm:mt-2">
               <div className="relative bg-black/50 border border-amber-500/30 rounded-2xl px-3 sm:px-4 py-2.5 shadow-[0_8px_30px_rgba(0,0,0,0.35)]">
                 <div className="grid grid-cols-2 sm:grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-x-3 gap-y-2">
                   <div className="flex min-w-0 items-center justify-start gap-2">
@@ -868,21 +868,6 @@ export default function HomePageClient({
             <div className="w-full mt-6 mobile-announcements-spacing">
               <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,260px)_minmax(0,1fr)_minmax(0,260px)] gap-6 items-start">
                 <div className="hidden lg:flex flex-col gap-6">
-                  <div className="bg-white/[0.03] backdrop-blur-3xl rounded-[30px] border border-white/10 p-5 flex flex-col items-center group relative overflow-hidden transition-all hover:border-purple-500/30 shadow-xl h-[300px]">
-                    <div className="flex justify-between w-full items-center mb-4">
-                      <h4 className="text-[10px] font-black text-purple-400 uppercase tracking-[0.4em]">🍇 აგრო-ბირჟა</h4>
-                    </div>
-                    <p className="w-full text-[10px] text-white/40 font-bold uppercase tracking-[0.2em] mb-3 leading-tight">საორიენტაციო ფასები · დააჭირე პროდუქტს რომ ნახო მიმღები ობიექტები</p>
-                    <div className="w-full flex-1 space-y-2 overflow-y-auto custom-scrollbar pr-1">
-                      {agroData.filter(i => i.category === 'grape').map(item => (
-                        <button key={item.id} onClick={() => setSelectedAgro(item)} className="w-full flex justify-between items-center bg-black/40 p-3 rounded-xl border border-white/5 transition-all group/item hover:bg-white/5">
-                          <span className="text-xs font-black uppercase text-purple-300 flex gap-2">{item.name}</span>
-                          <span className="text-sm font-black italic">{getAgroDisplayPrice(item)}</span>
-                        </button>
-                      ))}
-                    </div>
-                    <p className="mt-auto pt-3 text-[12px] text-white/90 font-black text-center tracking-wide">თქვენი ფასი და საკონტაქტო ნომერი გამოჩნდება ამ ფანჯარაში</p>
-                  </div>
                   <div className="w-full bg-gradient-to-br from-amber-900/40 via-black/50 to-amber-700/20 backdrop-blur-sm rounded-[24px] border border-amber-500/30 shadow-[0_0_20px_4px_rgba(255,191,0,0.1)] p-4 ring-1 ring-amber-400/20 relative">
                     <AdminSideFrame 
                       post={getPostByPos('left_top')} 
@@ -896,9 +881,46 @@ export default function HomePageClient({
                 <div className="w-full min-w-0">
                   {visibleAds.length > 0 ? (
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-3">
-                      {visibleAds.map((ad) => (
+                      {visibleAds.slice(0, 6).map((ad) => (
                         <AnnouncementCard key={ad.id} announcement={ad} />
                       ))}
+
+                      {/* AGRO-GRAIN INJECTION */}
+                      <div className="bg-white/[0.03] backdrop-blur-3xl rounded-[30px] border border-white/10 p-5 flex flex-col items-center group relative overflow-hidden transition-all hover:border-purple-500/30 shadow-xl h-[300px]">
+                        <div className="flex justify-between w-full items-center mb-4">
+                          <h4 className="text-[10px] font-black text-purple-400 uppercase tracking-[0.4em]">🍇 აგრო-ბირჟა</h4>
+                        </div>
+                        <p className="w-full text-[10px] text-white/40 font-bold uppercase tracking-[0.2em] mb-3 leading-tight">საორიენტაციო ფასები · დააჭირე პროდუქტს რომ ნახო მიმღები ობიექტები</p>
+                        <div className="w-full flex-1 space-y-2 overflow-y-auto custom-scrollbar pr-1">
+                          {agroData.filter(i => i.category === 'grape').map(item => (
+                            <button key={item.id} onClick={() => setSelectedAgro(item)} className="w-full flex justify-between items-center bg-black/40 p-3 rounded-xl border border-white/5 transition-all group/item hover:bg-white/5">
+                              <span className="text-xs font-black uppercase text-purple-300 flex gap-2">{item.name}</span>
+                              <span className="text-sm font-black italic">{getAgroDisplayPrice(item)}</span>
+                            </button>
+                          ))}
+                        </div>
+                        <p className="mt-auto pt-3 text-[12px] text-white/90 font-black text-center tracking-wide">თქვენი ფასი და საკონტაქტო ნომერი გამოჩნდება ამ ფანჯარაში</p>
+                      </div>
+                      <div className="w-full bg-white/[0.03] backdrop-blur-3xl rounded-[30px] border border-white/10 p-5 flex flex-col items-center group relative overflow-hidden transition-all hover:border-yellow-500/30 shadow-xl h-[300px]">
+                        <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-yellow-500 to-transparent opacity-30" />
+                        <h4 className="text-[10px] font-black text-yellow-500 uppercase tracking-[0.4em] mb-4 w-full text-left">🌾 მარცვლეული</h4>
+                        <p className="w-full text-[10px] text-white/40 font-bold uppercase tracking-[0.2em] mb-3 leading-tight">საორიენტაციო ფასები · დააჭირე პროდუქტს რომ ნახო მიმღები ობიექტები</p>
+                        <div className="w-full flex-1 space-y-2 overflow-y-auto custom-scrollbar pr-1">
+                          {agroData.filter(i => i.category === 'grain').map(item => (
+                            <button key={item.id} onClick={() => setSelectedAgro(item)} className="w-full flex justify-between items-center bg-black/40 p-3 rounded-xl border border-white/5 transition-all group/item hover:bg-white/5">
+                              <span className="text-xs font-black uppercase text-yellow-500 flex gap-2">{item.name}</span>
+                              <span className="text-sm font-black italic">{getAgroDisplayPrice(item)}</span>
+                            </button>
+                          ))}
+                        </div>
+                        <p className="mt-auto pt-3 text-[12px] text-yellow-200 font-black text-center tracking-wide">თქვენი ფასი და საკონტაქტო ნომერი გამოჩნდება ამ ფანჯარაში</p>
+                      </div>
+                      {/* END AGRO-GRAIN INJECTION */}
+
+                      {visibleAds.slice(6).map((ad) => (
+                        <AnnouncementCard key={ad.id} announcement={ad} />
+                      ))}
+
                       {filteredAds.length > 0 && (
                         <div className="relative flex justify-center rounded-2xl border border-transparent py-1 sm:block sm:min-h-[180px] sm:py-0">
                           <button
@@ -919,20 +941,6 @@ export default function HomePageClient({
                 </div>
 
                 <div className="hidden lg:flex flex-col gap-6">
-                  <div className="w-full bg-white/[0.03] backdrop-blur-3xl rounded-[30px] border border-white/10 p-5 flex flex-col items-center group relative overflow-hidden transition-all hover:border-yellow-500/30 shadow-xl h-[300px]">
-                    <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-yellow-500 to-transparent opacity-30" />
-                    <h4 className="text-[10px] font-black text-yellow-500 uppercase tracking-[0.4em] mb-4 w-full text-left">🌾 მარცვლეული</h4>
-                    <p className="w-full text-[10px] text-white/40 font-bold uppercase tracking-[0.2em] mb-3 leading-tight">საორიენტაციო ფასები · დააჭირე პროდუქტს რომ ნახო მიმღები ობიექტები</p>
-                    <div className="w-full flex-1 space-y-2 overflow-y-auto custom-scrollbar pr-1">
-                      {agroData.filter(i => i.category === 'grain').map(item => (
-                        <button key={item.id} onClick={() => setSelectedAgro(item)} className="w-full flex justify-between items-center bg-black/40 p-3 rounded-xl border border-white/5 transition-all group/item hover:bg-white/5">
-                          <span className="text-xs font-black uppercase text-yellow-500 flex gap-2">{item.name}</span>
-                          <span className="text-sm font-black italic">{getAgroDisplayPrice(item)}</span>
-                        </button>
-                      ))}
-                    </div>
-                    <p className="mt-auto pt-3 text-[12px] text-yellow-200 font-black text-center tracking-wide">თქვენი ფასი და საკონტაქტო ნომერი გამოჩნდება ამ ფანჯარაში</p>
-                  </div>
                   <div className="w-full bg-gradient-to-br from-amber-900/40 via-black/50 to-amber-700/20 backdrop-blur-sm rounded-[24px] border border-amber-500/30 shadow-[0_0_20px_4px_rgba(255,191,0,0.1)] p-4 ring-1 ring-amber-400/20 relative">
                     <AdminSideFrame 
                       post={getPostByPos('right_top')} 
@@ -951,8 +959,8 @@ export default function HomePageClient({
 
 
 
-            {/* მობილური ვერსია - მარცხენა მხარე */}
-            <div className="flex flex-col gap-4 w-full lg:hidden mobile-agro-raise mobile-agro-raise-strong">
+            {/* Mobile version is now handled by the main grid, so this section is removed. */}
+            <div className="hidden lg:hidden">
                 {/* 🍇 აგრო-ბირჟა */}
                 <div className="bg-white/[0.03] backdrop-blur-3xl rounded-[30px] border border-white/10 p-5 flex flex-col items-center group relative overflow-hidden transition-all hover:border-purple-500/30 shadow-xl h-[300px]">
                   <div className="flex justify-between w-full items-center mb-4">

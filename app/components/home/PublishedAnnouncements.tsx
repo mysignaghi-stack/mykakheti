@@ -106,7 +106,7 @@ export default function PublishedAnnouncements() {
                 <div
                   key={category.id}
                   className={`relative overflow-hidden rounded-[16px] p-4 bg-gradient-to-br ${category.color} backdrop-blur-2xl border border-white/10 hover:border-white/20 transition-all duration-300 hover:scale-[1.02] ${hasAnnouncements ? 'cursor-pointer' : 'opacity-50'}`}
-                  onClick={hasAnnouncements ? () => window.open(`/announcements?category=${encodeURIComponent(category.id)}`, '_blank') : undefined}
+                  onClick={hasAnnouncements ? () => window.open(`/announcements?category=${encodeURIComponent(category.id)}`, '_self') : undefined}
                 >
                   {/* Category Icon */}
                   <div className="flex items-center justify-between mb-3">

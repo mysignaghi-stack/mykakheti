@@ -36,6 +36,10 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
+  if (!request.body) {
+    return NextResponse.json({ error: 'Request body is empty' }, { status: 400 });
+  }
+
   const formData = await request.formData();
   const file = formData.get('file');
   if (!(file instanceof File)) {

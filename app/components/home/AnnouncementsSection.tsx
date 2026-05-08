@@ -39,6 +39,24 @@ export default function AnnouncementsSection() {
   const [announcements, setAnnouncements] = useState<Announcement[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [cardsPerView, setCardsPerView] = useState(3);
+
+  useEffect(() => {
+    const updateCardsPerView = () => {
+      if (window.innerWidth < 640) setCardsPerView(1);
+      else if (window.innerWidth < 1024) setCardsPerView(2);
+      else if (window.innerWidth < 1280) setCardsPerView(3);
+      else setCardsPerView(4);
+    };
+    updateCardsPerView();
+    window.addEventListener('resize', updateCardsPerView);
+    return () => window.removeEventListener('resize', updateCardsPerView);
+  }, []);
+
+  useEffect(() => {
+    setCurrentIndex(0);
+  }, [selectedCategory]);
 
   const normalizeCategory = (value: string | null | undefined) =>
     (value ?? '').trim();
@@ -83,6 +101,10 @@ export default function AnnouncementsSection() {
     : visibleAnnouncements.filter(
         announcement => normalizeCategory(announcement.category) === normalizeCategory(selectedCategory)
       );
+
+  const maxIndex = Math.max(0, filteredAnnouncements.length - cardsPerView);
+  const goNext = () => setCurrentIndex(prev => Math.min(prev + 1, maxIndex));
+  const goPrev = () => setCurrentIndex(prev => Math.max(prev - 1, 0));
 
   const getCategoryColor = (categoryId: string) => {
     const category = MAIN_CATEGORIES.find(cat => cat.id === categoryId);
@@ -266,21 +288,12 @@ export default function AnnouncementsSection() {
         </div>
       </div>
 
-      {/* Announcements Grid */}
+      {/* Announcements Slider */}
       {loading ? (
         <div className="text-center py-12">
           <div className="text-white/60 text-sm">იტვირთება...</div>
         </div>
-      ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 w-full max-w-full">
-          {filteredAnnouncements.map(announcement => (
-            <AnnouncementCard key={announcement.id} announcement={announcement} />
-          ))}
-        </div>
-      )}
-
-      {/* No announcements message */}
-      {!loading && filteredAnnouncements.length === 0 && (
+      ) : filteredAnnouncements.length === 0 ? (
         <div className="text-center py-12">
           <div className="text-white/60 text-sm">
             {selectedCategory === 'all'
@@ -288,6 +301,75 @@ export default function AnnouncementsSection() {
               : `განცხადებები არ მოიძებნა კატეგორიაში: ${selectedCategory}`
             }
           </div>
+        </div>
+      ) : (
+        <div className="relative w-full">
+          {/* Left Arrow */}
+          <button
+            onClick={goPrev}
+            disabled={currentIndex === 0}
+            aria-label="წინა"
+            className={`absolute left-0 top-1/2 -translate-y-1/2 z-10 -translate-x-4 flex items-center justify-center w-10 h-10 rounded-full border backdrop-blur-xl transition-all duration-200 ${
+              currentIndex === 0
+                ? 'bg-white/5 border-white/10 text-white/20 cursor-not-allowed'
+                : 'bg-black/60 border-white/20 text-white hover:bg-amber-500/30 hover:border-amber-400/50 shadow-lg'
+            }`}
+          >
+            <svg viewBox="0 0 24 24" className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={2.2} strokeLinecap="round" strokeLinejoin="round">
+              <path d="M15 18l-6-6 6-6" />
+            </svg>
+          </button>
+
+          {/* Cards Track */}
+          <div className="overflow-hidden mx-6">
+            <div
+              className="flex transition-transform duration-500 ease-in-out"
+              style={{ transform: `translateX(-${(currentIndex * 100) / cardsPerView}%)` }}
+            >
+              {filteredAnnouncements.map(announcement => (
+                <div
+                  key={announcement.id}
+                  style={{ minWidth: `${100 / cardsPerView}%` }}
+                  className="px-2"
+                >
+                  <AnnouncementCard announcement={announcement} />
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Right Arrow */}
+          <button
+            onClick={goNext}
+            disabled={currentIndex >= maxIndex}
+            aria-label="შემდეგი"
+            className={`absolute right-0 top-1/2 -translate-y-1/2 z-10 translate-x-4 flex items-center justify-center w-10 h-10 rounded-full border backdrop-blur-xl transition-all duration-200 ${
+              currentIndex >= maxIndex
+                ? 'bg-white/5 border-white/10 text-white/20 cursor-not-allowed'
+                : 'bg-black/60 border-white/20 text-white hover:bg-amber-500/30 hover:border-amber-400/50 shadow-lg'
+            }`}
+          >
+            <svg viewBox="0 0 24 24" className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={2.2} strokeLinecap="round" strokeLinejoin="round">
+              <path d="M9 18l6-6-6-6" />
+            </svg>
+          </button>
+
+          {/* Dot indicators */}
+          {filteredAnnouncements.length > cardsPerView && (
+            <div className="flex justify-center gap-1.5 mt-5">
+              {Array.from({ length: maxIndex + 1 }).map((_, i) => (
+                <button
+                  key={i}
+                  onClick={() => setCurrentIndex(i)}
+                  className={`rounded-full transition-all duration-300 ${
+                    i === currentIndex
+                      ? 'w-6 h-2 bg-amber-400'
+                      : 'w-2 h-2 bg-white/20 hover:bg-white/40'
+                  }`}
+                />
+              ))}
+            </div>
+          )}
         </div>
       )}
 
