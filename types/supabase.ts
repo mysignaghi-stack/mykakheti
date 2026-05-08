@@ -83,6 +83,7 @@ export type Database = {
           image_url: string | null
           is_approved: boolean | null
           is_archived: boolean | null
+          is_vip: boolean | null
           location: string
           phone: string | null
           price: string
@@ -101,6 +102,7 @@ export type Database = {
           image_url?: string | null
           is_approved?: boolean | null
           is_archived?: boolean | null
+          is_vip?: boolean | null
           location: string
           phone?: string | null
           price: string
@@ -119,6 +121,7 @@ export type Database = {
           image_url?: string | null
           is_approved?: boolean | null
           is_archived?: boolean | null
+          is_vip?: boolean | null
           location?: string
           phone?: string | null
           price?: string

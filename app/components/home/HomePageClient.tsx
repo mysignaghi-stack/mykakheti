@@ -160,6 +160,10 @@ export default function HomePageClient({
   const [selectedLocations, setSelectedLocations] = useState<string[]>(['ყველა კახეთი']);
   const [showAllAnnouncements, setShowAllAnnouncements] = useState(false);
   const [announcementsPage, setAnnouncementsPage] = useState(0);
+  const [adsSliderIndex, setAdsSliderIndex] = useState(0);
+  const [adsCardsPerView, setAdsCardsPerView] = useState(3);
+  const adsSliderRef = useRef<HTMLDivElement>(null);
+  const adsTouchStartX = useRef<number | null>(null);
   const [showAllFilters, setShowAllFilters] = useState(false);
   const [modalAnnouncementsPage, setModalAnnouncementsPage] = useState(0);
   const [showCategoryDropdown, setShowCategoryDropdown] = useState(false);
@@ -547,9 +551,30 @@ export default function HomePageClient({
     });
     setShowAllAnnouncements(false);
     setAnnouncementsPage(0);
+    setAdsSliderIndex(0);
   };
 
   const pageSize = 6;
+
+  // Carousel: cards-per-view + scroll sync
+  useEffect(() => {
+    const update = () => {
+      if (window.innerWidth < 640) setAdsCardsPerView(1);
+      else if (window.innerWidth < 1024) setAdsCardsPerView(2);
+      else if (window.innerWidth < 1280) setAdsCardsPerView(3);
+      else setAdsCardsPerView(4);
+    };
+    update();
+    window.addEventListener('resize', update);
+    return () => window.removeEventListener('resize', update);
+  }, []);
+
+  useEffect(() => {
+    const el = adsSliderRef.current;
+    if (!el) return;
+    const cardWidth = el.offsetWidth / adsCardsPerView;
+    el.scrollTo({ left: adsSliderIndex * cardWidth, behavior: 'smooth' });
+  }, [adsSliderIndex, adsCardsPerView]);
     const handleToggleLocation = (loc: string) => {
       if (loc === 'ყველა კახეთი') {
         setSelectedLocations(['ყველა კახეთი']);
@@ -865,14 +890,68 @@ export default function HomePageClient({
               </div>
             </div>
 
-            {/* ── Announcements Grid (cards only) ── */}
+            {/* ── Announcements Carousel (cards only) ── */}
             <div className="w-full mt-6 mobile-announcements-spacing">
-              {visibleAds.length > 0 ? (
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
-                  {visibleAds.map((ad) => (
-                    <AnnouncementCard key={ad.id} announcement={ad} />
-                  ))}
-                </div>
+              {filteredAds.length > 0 ? (
+                <>
+                  {/* Arrows row — top, side-by-side right-aligned */}
+                  <div className="flex items-center justify-between mb-3">
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs text-white/35">{filteredAds.length} განცხადება</span>
+                      <span className="sm:hidden text-[10px] text-white/20">· swipe</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <button
+                        type="button"
+                        onClick={() => setAdsSliderIndex(i => Math.max(0, i - 1))}
+                        disabled={adsSliderIndex === 0}
+                        aria-label="წინა"
+                        className="flex items-center justify-center w-10 h-10 sm:w-9 sm:h-9 rounded-xl border border-white/20 bg-white/10 text-white hover:bg-amber-500/25 hover:border-amber-400/50 active:scale-95 disabled:opacity-30 disabled:cursor-not-allowed transition-all duration-200"
+                      >
+                        <svg viewBox="0 0 24 24" className="w-5 h-5 sm:w-4 sm:h-4" fill="none" stroke="currentColor" strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round">
+                          <path d="M15 18l-6-6 6-6" />
+                        </svg>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setAdsSliderIndex(i => Math.min(i + 1, Math.max(0, filteredAds.length - adsCardsPerView)))}
+                        disabled={adsSliderIndex >= Math.max(0, filteredAds.length - adsCardsPerView)}
+                        aria-label="შემდეგი"
+                        className="flex items-center justify-center w-10 h-10 sm:w-9 sm:h-9 rounded-xl border border-white/20 bg-white/10 text-white hover:bg-amber-500/25 hover:border-amber-400/50 active:scale-95 disabled:opacity-30 disabled:cursor-not-allowed transition-all duration-200"
+                      >
+                        <svg viewBox="0 0 24 24" className="w-5 h-5 sm:w-4 sm:h-4" fill="none" stroke="currentColor" strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round">
+                          <path d="M9 18l6-6-6-6" />
+                        </svg>
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Scrollable track */}
+                  <div
+                    ref={adsSliderRef}
+                    className="flex overflow-x-hidden"
+                    style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+                    onTouchStart={(e) => { adsTouchStartX.current = e.touches[0].clientX; }}
+                    onTouchEnd={(e) => {
+                      if (adsTouchStartX.current === null) return;
+                      const diff = adsTouchStartX.current - e.changedTouches[0].clientX;
+                      const maxIdx = Math.max(0, filteredAds.length - adsCardsPerView);
+                      if (diff > 40) setAdsSliderIndex(i => Math.min(i + 1, maxIdx));
+                      else if (diff < -40) setAdsSliderIndex(i => Math.max(0, i - 1));
+                      adsTouchStartX.current = null;
+                    }}
+                  >
+                    {filteredAds.map((ad) => (
+                      <div
+                        key={ad.id}
+                        style={{ minWidth: `calc(100% / ${adsCardsPerView})`, flexShrink: 0 }}
+                        className="px-1.5"
+                      >
+                        <AnnouncementCard announcement={ad} />
+                      </div>
+                    ))}
+                  </div>
+                </>
               ) : (
                 <div className="text-center py-10 text-white/60 text-sm">
                   ამ კატეგორიაში განცხადებები არ მოიძებნა
