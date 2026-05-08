@@ -85,7 +85,7 @@ export default function AnnouncementCard({ announcement, layout = 'grid' }: Anno
       className="group flex flex-col overflow-hidden rounded-xl bg-white/5 border border-white/10 hover:border-amber-400/30 hover:shadow-[0_0_20px_rgba(230,126,34,0.15)] transition-all duration-200"
     >
       {/* Image */}
-      <div className="relative w-full aspect-[4/3] overflow-hidden bg-white/5">
+      <div className="relative w-full aspect-[5/3] overflow-hidden bg-white/5">
         {mainImage ? (
           <Image
             src={mainImage}
@@ -108,25 +108,22 @@ export default function AnnouncementCard({ announcement, layout = 'grid' }: Anno
       </div>
 
       {/* Content */}
-      <div className="flex flex-col gap-1 p-3 flex-1">
-        <h3 className="text-[13px] font-bold text-white/90 line-clamp-2 leading-snug group-hover:text-white transition-colors">
+      <div className="flex flex-col gap-0.5 p-1.5 flex-1">
+        <h3 className="text-[11px] font-bold text-white/90 line-clamp-1 leading-snug group-hover:text-white transition-colors">
           {announcement.title || '—'}
         </h3>
 
-        <div className="mt-auto pt-2 flex items-end justify-between gap-2">
-          <div className="flex flex-col gap-0.5">
+        <div className="mt-auto pt-1 flex items-end justify-between gap-1">
+          <div className="flex flex-col gap-0">
             {announcement.location && (
-              <span className="text-[10px] text-white/40 flex items-center gap-1">
-                <svg className="w-2.5 h-2.5 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5}><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/><circle cx="12" cy="9" r="2.5"/></svg>
-                <span className="truncate max-w-[100px]">{announcement.location}</span>
+              <span className="text-[9px] text-white/40 flex items-center gap-0.5">
+                <svg className="w-2 h-2 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5}><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/><circle cx="12" cy="9" r="2.5"/></svg>
+                <span className="truncate max-w-[70px]">{announcement.location}</span>
               </span>
-            )}
-            {announcement.created_at && (
-              <span className="text-[9px] text-white/25">{formatGeorgianDate(announcement.created_at)}</span>
             )}
           </div>
           {hasPrice ? (
-            <span className="text-sm font-black text-amber-400 whitespace-nowrap">
+            <span className="text-[11px] font-black text-amber-400 whitespace-nowrap">
               {announcement.price} {currencySymbol}
             </span>
           ) : (

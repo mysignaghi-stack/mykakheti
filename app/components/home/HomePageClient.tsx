@@ -161,7 +161,7 @@ export default function HomePageClient({
   const [showAllAnnouncements, setShowAllAnnouncements] = useState(false);
   const [announcementsPage, setAnnouncementsPage] = useState(0);
   const [adsSliderIndex, setAdsSliderIndex] = useState(0);
-  const [adsCardsPerView, setAdsCardsPerView] = useState(3);
+  const [adsCardsPerView, setAdsCardsPerView] = useState(4);
   const adsSliderRef = useRef<HTMLDivElement>(null);
   const adsTouchStartX = useRef<number | null>(null);
   const [showAllFilters, setShowAllFilters] = useState(false);
@@ -559,10 +559,11 @@ export default function HomePageClient({
   // Carousel: cards-per-view + scroll sync
   useEffect(() => {
     const update = () => {
-      if (window.innerWidth < 640) setAdsCardsPerView(1);
-      else if (window.innerWidth < 1024) setAdsCardsPerView(2);
-      else if (window.innerWidth < 1280) setAdsCardsPerView(3);
-      else setAdsCardsPerView(4);
+      if (window.innerWidth < 480) setAdsCardsPerView(2);
+      else if (window.innerWidth < 640) setAdsCardsPerView(3);
+      else if (window.innerWidth < 1024) setAdsCardsPerView(4);
+      else if (window.innerWidth < 1280) setAdsCardsPerView(5);
+      else setAdsCardsPerView(6);
     };
     update();
     window.addEventListener('resize', update);
@@ -945,7 +946,7 @@ export default function HomePageClient({
                       <div
                         key={ad.id}
                         style={{ minWidth: `calc(100% / ${adsCardsPerView})`, flexShrink: 0 }}
-                        className="px-1.5"
+                        className="px-1"
                       >
                         <AnnouncementCard announcement={ad} />
                       </div>
