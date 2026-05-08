@@ -802,7 +802,7 @@ export default function HomePageClient({
                   isLocOpen={isLocOpen} setIsLocOpen={setIsLocOpen} locRef={locRef as React.RefObject<HTMLDivElement>}
                 />
               </div>
-              <div className="w-full bg-gradient-to-br from-amber-900/30 via-black/40 to-amber-700/20 backdrop-blur-sm rounded-[24px] border border-amber-500/20 shadow-[0_0_18px_2px_rgba(255,191,0,0.08)] p-3 ring-1 ring-amber-400/10 relative">
+              <div className="hidden lg:block w-full bg-gradient-to-br from-amber-900/30 via-black/40 to-amber-700/20 backdrop-blur-sm rounded-[24px] border border-amber-500/20 shadow-[0_0_18px_2px_rgba(255,191,0,0.08)] p-3 ring-1 ring-amber-400/10 relative">
                 <HeritageWidget />
               </div>
             </div>
@@ -914,6 +914,11 @@ export default function HomePageClient({
               )}
 
 
+            </div>
+
+            {/* ── Heritage Widget — mobile only, below announcements ── */}
+            <div className="lg:hidden w-full bg-gradient-to-br from-amber-900/30 via-black/40 to-amber-700/20 backdrop-blur-sm rounded-[24px] border border-amber-500/20 shadow-[0_0_18px_2px_rgba(255,191,0,0.08)] p-3 ring-1 ring-amber-400/10">
+              <HeritageWidget />
             </div>
 
             {/* ── Admin Frames + Agro/Grain section (below announcements) ── */}
