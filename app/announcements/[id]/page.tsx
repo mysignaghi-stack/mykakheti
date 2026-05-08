@@ -22,8 +22,17 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
   if (!ad) return { title: 'განცხადება | MYKAKHETI.GE' };
 
-  const title = `${ad.title} - ${ad.price} ₾`;
-  const description = ad.description?.substring(0, 160) || 'იპოვე საუკეთესო შეთავაზებები კახეთში';
+  const priceStr = ad.price && ad.price !== '0' ? ` - ${ad.price} ${ad.currency === 'USD' ? '$' : '₾'}` : '';
+  const title = `${ad.title}${priceStr}`;
+  const description = ad.description?.substring(0, 160) || `${ad.category || 'განცხადება'} კახეთში - mykakheti.ge`;
+
+  // Pick best available image: all_images first, then image_url, then no image
+  const allImages: string[] = Array.isArray(ad.all_images) ? ad.all_images.filter(Boolean) : [];
+  const mainImage: string | null = allImages[0] || ad.image_url || null;
+
+  const ogImages = mainImage
+    ? [{ url: mainImage, width: 1200, height: 630, alt: ad.title }]
+    : [];
 
   return {
     title: `${title} | MYKAKHETI.GE`,
@@ -33,9 +42,15 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       description: description,
       url: `https://mykakheti.ge/announcements/${id}`,
       siteName: 'MYKAKHETI.GE',
-      images: [{ url: ad.image_url || '/images/default-og.jpg', width: 1200, height: 630 }],
+      images: ogImages,
       locale: 'ka_GE',
       type: 'article',
+    },
+    twitter: {
+      card: mainImage ? 'summary_large_image' : 'summary',
+      title: title,
+      description: description,
+      images: mainImage ? [mainImage] : [],
     },
   };
 }
