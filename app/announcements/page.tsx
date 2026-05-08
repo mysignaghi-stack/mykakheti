@@ -240,16 +240,28 @@ export default function AnnouncementsPage() {
         {/* ── Main Content ── */}
         <div className="flex-1 min-w-0 px-4 md:px-6 py-4 space-y-4">
 
-          {/* Filter / Sort bar */}
-          <div className="flex flex-wrap items-center gap-3">
-            {/* Mobile sidebar toggle */}
+          {/* ── Header row: All Announcements (left) + All Categories (right) ── */}
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <button
+                onClick={clearFilters}
+                className="inline-flex h-8 items-center justify-center rounded-full border border-amber-300/40 bg-amber-500/10 px-3 text-[10px] font-black uppercase tracking-[0.12em] text-amber-200 transition hover:bg-amber-500/20 whitespace-nowrap"
+              >
+                ყველა განცხადება
+              </button>
+              <span className="text-[10px] text-white/30">{items.length}</span>
+            </div>
             <button
               onClick={() => setSidebarOpen(true)}
-              className="lg:hidden flex items-center gap-1.5 px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm text-white/70 hover:bg-white/10 transition"
+              className="inline-flex h-8 items-center justify-center rounded-full border border-amber-300/30 bg-amber-500/10 px-3 text-[10px] font-black uppercase tracking-[0.12em] text-amber-200 transition hover:bg-amber-500/20 whitespace-nowrap lg:hidden"
             >
-              <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}><path d="M4 6h16M4 12h10M4 18h7"/></svg>
-              კატეგორიები
+              ყველა კატეგორია
             </button>
+          </div>
+
+          {/* Filter / Sort bar */}
+          <div className="flex flex-wrap items-center gap-3">
+            {/* Mobile sidebar toggle — hidden, replaced by header button above */}
 
             {/* Sort */}
             <select

@@ -818,78 +818,7 @@ export default function HomePageClient({
               </div>
             </div>
 
-            <div className="w-full max-w-6xl mx-auto px-4 sm:px-6 md:px-10 mt-3 sm:mt-2">
-              <div className="relative bg-black/50 border border-amber-500/30 rounded-2xl px-3 sm:px-4 py-2.5 shadow-[0_8px_30px_rgba(0,0,0,0.35)]">
-                <div className="grid grid-cols-2 sm:grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-x-3 gap-y-2">
-                  <div className="flex min-w-0 items-center justify-start gap-2">
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setSelectedCategories(['ყველა']);
-                        setShowAllAnnouncements(false);
-                        setAnnouncementsPage(0);
-                      }}
-                      className="inline-flex h-8 flex-none items-center justify-center rounded-full border border-amber-300/40 bg-amber-500/10 px-3 text-[10px] font-black uppercase tracking-[0.12em] text-amber-200 transition hover:bg-amber-500/20 whitespace-nowrap"
-                    >
-                      ყველა განცხადება
-                    </button>
-                    <span className="inline-flex h-8 min-w-8 flex-none items-center justify-center rounded-full border border-amber-400/20 bg-amber-500/10 px-2 text-[11px] sm:text-sm font-black leading-none tracking-normal text-amber-300 whitespace-nowrap">
-                      {ads.length}
-                    </span>
-                  </div>
 
-                  <div
-                    ref={categoryBarRef}
-                    className="order-3 col-span-2 flex max-h-[4.5rem] min-w-0 flex-wrap items-center justify-center gap-x-2 gap-y-2 overflow-hidden sm:order-none sm:col-span-1 sm:px-1"
-                  >
-                    {visibleCategories.map((category) => (
-                      <button
-                        key={category}
-                        type="button"
-                        onClick={() => selectCategory(category)}
-                        className={`inline-flex h-8 flex-none items-center justify-center rounded-full border px-3 text-[10px] md:text-[11px] font-black uppercase tracking-[0.12em] transition whitespace-nowrap ${
-                          selectedCategories.includes(category)
-                            ? 'border-amber-300/50 bg-amber-500/20 text-amber-200'
-                            : 'border-white/10 bg-white/5 text-white/70 hover:border-white/30 hover:text-white'
-                        }`}
-                      >
-                        {category}
-                      </button>
-                    ))}
-                  </div>
-
-                  <div aria-hidden="true" className="absolute left-0 top-0 flex h-0 flex-wrap gap-x-2 gap-y-2 overflow-hidden opacity-0 pointer-events-none">
-                    {allNonCommunityCategories.map((category) => (
-                      <button
-                        key={`measure-${category}`}
-                        ref={(node) => {
-                          if (node) {
-                            categoryMeasureRefs.current.set(category, node);
-                          } else {
-                            categoryMeasureRefs.current.delete(category);
-                          }
-                        }}
-                        type="button"
-                        tabIndex={-1}
-                        className="inline-flex h-8 flex-none items-center justify-center rounded-full border border-white/10 bg-white/5 px-3 text-[10px] md:text-[11px] font-black uppercase tracking-[0.12em] text-white/70 transition whitespace-nowrap"
-                      >
-                        {category}
-                      </button>
-                    ))}
-                  </div>
-
-                  <div className="flex min-w-0 items-center justify-end">
-                    <button
-                      type="button"
-                      onClick={() => setShowAllCategories(true)}
-                      className="inline-flex h-8 flex-none items-center justify-center rounded-full border border-amber-300/30 bg-amber-500/10 px-3 text-[10px] md:text-[11px] font-black uppercase tracking-[0.12em] text-amber-200 transition hover:bg-amber-500/20 whitespace-nowrap"
-                    >
-                      ყველა კატეგორია
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </div>
 
             {/* ── Announcements Carousel (cards only) ── */}
             <div className="w-full mt-6 mobile-announcements-spacing">
@@ -898,37 +827,49 @@ export default function HomePageClient({
                   {/* Arrows row — shown only when carousel is active */}
                   <div className="flex items-center justify-between mb-3">
                     <div className="flex items-center gap-2">
-                      <span className="text-xs text-white/35">{filteredAds.length} განცხადება</span>
+                      <button
+                        type="button"
+                        onClick={() => setShowAllFilters(true)}
+                        className="inline-flex h-8 flex-none items-center justify-center rounded-full border border-amber-300/40 bg-amber-500/10 px-3 text-[10px] font-black uppercase tracking-[0.12em] text-amber-200 transition hover:bg-amber-500/20 whitespace-nowrap"
+                      >
+                        ყველა განცხადება
+                      </button>
+                      <span className="text-[10px] text-white/30">{filteredAds.length}</span>
                       {filteredAds.length > adsCardsPerView && (
                         <span className="sm:hidden text-[10px] text-white/20">· swipe</span>
                       )}
                     </div>
-                    {filteredAds.length > adsCardsPerView && (
-                      <div className="flex items-center gap-2">
-                        <button
-                          type="button"
-                          onClick={() => setAdsSliderIndex(i => Math.max(0, i - adsCardsPerView))}
-                          disabled={adsSliderIndex === 0}
-                          aria-label="წინა"
-                          className="flex items-center justify-center w-10 h-10 sm:w-9 sm:h-9 rounded-xl border border-white/20 bg-white/10 text-white hover:bg-amber-500/25 hover:border-amber-400/50 active:scale-95 disabled:opacity-30 disabled:cursor-not-allowed transition-all duration-200"
-                        >
-                          <svg viewBox="0 0 24 24" className="w-5 h-5 sm:w-4 sm:h-4" fill="none" stroke="currentColor" strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round">
-                            <path d="M15 18l-6-6 6-6" />
-                          </svg>
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => setAdsSliderIndex(i => Math.min(i + adsCardsPerView, Math.max(0, filteredAds.length - adsCardsPerView)))}
-                          disabled={adsSliderIndex >= Math.max(0, filteredAds.length - adsCardsPerView)}
-                          aria-label="შემდეგი"
-                          className="flex items-center justify-center w-10 h-10 sm:w-9 sm:h-9 rounded-xl border border-white/20 bg-white/10 text-white hover:bg-amber-500/25 hover:border-amber-400/50 active:scale-95 disabled:opacity-30 disabled:cursor-not-allowed transition-all duration-200"
-                        >
-                          <svg viewBox="0 0 24 24" className="w-5 h-5 sm:w-4 sm:h-4" fill="none" stroke="currentColor" strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round">
-                            <path d="M9 18l6-6-6-6" />
-                          </svg>
-                        </button>
-                      </div>
-                    )}
+                    <div className="flex items-center gap-2">
+                      <button
+                        type="button"
+                        onClick={() => setShowAllCategories(true)}
+                        className="inline-flex h-8 flex-none items-center justify-center rounded-full border border-amber-300/30 bg-amber-500/10 px-3 text-[10px] font-black uppercase tracking-[0.12em] text-amber-200 transition hover:bg-amber-500/20 whitespace-nowrap"
+                      >
+                        ყველა კატეგორია
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setAdsSliderIndex(i => Math.max(0, i - adsCardsPerView))}
+                        disabled={adsSliderIndex === 0}
+                        aria-label="წინა"
+                        className="flex items-center justify-center w-9 h-9 rounded-xl border border-white/20 bg-white/10 text-white hover:bg-amber-500/25 hover:border-amber-400/50 active:scale-95 disabled:opacity-30 disabled:cursor-not-allowed transition-all duration-200"
+                      >
+                        <svg viewBox="0 0 24 24" className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round">
+                          <path d="M15 18l-6-6 6-6" />
+                        </svg>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setAdsSliderIndex(i => Math.min(i + adsCardsPerView, Math.max(0, filteredAds.length - adsCardsPerView)))}
+                        disabled={adsSliderIndex >= Math.max(0, filteredAds.length - adsCardsPerView)}
+                        aria-label="შემდეგი"
+                        className="flex items-center justify-center w-9 h-9 rounded-xl border border-white/20 bg-white/10 text-white hover:bg-amber-500/25 hover:border-amber-400/50 active:scale-95 disabled:opacity-30 disabled:cursor-not-allowed transition-all duration-200"
+                      >
+                        <svg viewBox="0 0 24 24" className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round">
+                          <path d="M9 18l6-6-6-6" />
+                        </svg>
+                      </button>
+                    </div>
                   </div>
 
                   {/* If few cards, use a simple grid; otherwise carousel */}
@@ -972,18 +913,7 @@ export default function HomePageClient({
                 </div>
               )}
 
-              {/* ── ყველა განცხადება button ── */}
-              {filteredAds.length > 0 && (
-                <div className="flex justify-center mt-6">
-                  <button
-                    type="button"
-                    onClick={() => setShowAllFilters(true)}
-                    className="px-6 py-2.5 rounded-full border border-amber-300/50 bg-amber-500/20 text-amber-200 font-black uppercase tracking-[0.2em] text-xs hover:bg-amber-500/30 transition"
-                  >
-                    ყველა განცხადება
-                  </button>
-                </div>
-              )}
+
             </div>
 
             {/* ── Admin Frames + Agro/Grain section (below announcements) ── */}
