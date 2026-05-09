@@ -4,6 +4,7 @@ import React from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { formatGeorgianDate } from '@/app/lib/utils';
+import FavoriteButton from '@/app/components/announcements/FavoriteButton';
 
 type AnnouncementLike = {
   id: string;
@@ -46,6 +47,7 @@ export default function AnnouncementCard({ announcement, layout = 'grid' }: Anno
           {images.length > 1 && (
             <span className="absolute bottom-1 right-1 text-[9px] bg-black/70 text-white/80 px-1 rounded">{images.length} 📷</span>
           )}
+          <FavoriteButton announcementId={announcement.id} compact className="absolute right-1 top-1 z-10" />
         </div>
         {/* Info */}
         <div className="flex-1 min-w-0 flex flex-col justify-between py-0.5">
@@ -100,8 +102,9 @@ export default function AnnouncementCard({ announcement, layout = 'grid' }: Anno
         {images.length > 1 && (
           <span className="absolute bottom-2 right-2 text-[10px] bg-black/70 text-white/80 px-1.5 py-0.5 rounded-full">📷 {images.length}</span>
         )}
+        <FavoriteButton announcementId={announcement.id} compact className="absolute right-2 top-2 z-10" />
         {announcement.category && (
-          <span className="absolute top-2 left-2 text-[9px] font-bold uppercase bg-black/60 text-amber-300/90 px-2 py-0.5 rounded-full border border-amber-400/20 backdrop-blur-sm">
+          <span className="absolute top-2 left-2 max-w-[calc(100%-3rem)] truncate text-[9px] font-bold uppercase bg-black/60 text-amber-300/90 px-2 py-0.5 rounded-full border border-amber-400/20 backdrop-blur-sm">
             {announcement.category}
           </span>
         )}

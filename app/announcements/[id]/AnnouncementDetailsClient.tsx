@@ -7,10 +7,22 @@ import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import type { Database } from '@/types/supabase';
 import { supabase } from '../../lib/supabase';
+import { ANNOUNCEMENT_CATEGORIES, LOCATIONS } from '@/app/lib/constants';
+import FavoriteButton from '@/app/components/announcements/FavoriteButton';
 import ClientButtons from './ClientButtons';
 import { CommunitySideWidget } from '../../components/community/CommunityWidgets';
 
 type Announcement = Database['public']['Tables']['announcements']['Row'];
+
+const LOCATION_OPTIONS = Array.from(new Set(
+  LOCATIONS.flatMap((municipality) => [
+    municipality.municipality,
+    ...municipality.cities.flatMap((city) => [
+      city.name,
+      ...city.villages.map((village) => `${city.name} - ${village}`),
+    ]),
+  ])
+));
 
 export default function AnnouncementDetailsClient({ initialAd }: { initialAd: Announcement | null }) {
   const { id } = useParams<{ id: string }>();
@@ -32,8 +44,21 @@ export default function AnnouncementDetailsClient({ initialAd }: { initialAd: An
   const [zoomOffset, setZoomOffset] = useState({ x: 0, y: 0 });
   const [dragging, setDragging] = useState(false);
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+  const [isEditing, setIsEditing] = useState(false);
+  const [savingEdit, setSavingEdit] = useState(false);
+  const [editForm, setEditForm] = useState({
+    title: initialAd?.title ?? '',
+    description: initialAd?.description ?? '',
+    category: initialAd?.category ?? ANNOUNCEMENT_CATEGORIES[0],
+    location: initialAd?.location ?? LOCATION_OPTIONS[0] ?? '',
+    price: initialAd?.price ?? '',
+    currency: initialAd?.currency ?? 'GEL',
+    phone: initialAd?.phone ?? '',
+  });
   const contentRef = useRef<HTMLDivElement | null>(null);
   const router = useRouter();
+  const isOwner = Boolean(ad?.user_id && currentUserId && ad.user_id === currentUserId);
 
   // Share URL-ის დაყენება კლიენტის მხარეს
   useEffect(() => {
@@ -43,22 +68,76 @@ export default function AnnouncementDetailsClient({ initialAd }: { initialAd: An
   }, []);
 
   useEffect(() => {
+    let active = true;
+    const loadUser = async () => {
+      const { data } = await supabase.auth.getUser();
+      if (!active) return;
+      setCurrentUserId(data.user?.id ?? null);
+    };
+    loadUser();
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setCurrentUserId(session?.user?.id ?? null);
+    });
+    return () => {
+      active = false;
+      subscription.unsubscribe();
+    };
+  }, []);
+
+  useEffect(() => {
     if (!initialAd) {
       const fetchAd = async () => {
         const { data } = await (supabase as any).from('announcements').select('*').eq('id', id).single();
         if (data) {
           setAd(data);
           setActiveImg(getImages(data)[0] ?? null);
+          setEditForm({
+            title: data.title ?? '',
+            description: data.description ?? '',
+            category: data.category ?? ANNOUNCEMENT_CATEGORIES[0],
+            location: data.location ?? LOCATION_OPTIONS[0] ?? '',
+            price: data.price ?? '',
+            currency: data.currency ?? 'GEL',
+            phone: data.phone ?? '',
+          });
         }
       };
       fetchAd();
     }
   }, [id, initialAd]);
 
+  const saveEdit = async () => {
+    if (!ad || savingEdit) return;
+    if (!editForm.title || !editForm.category || !editForm.location || !editForm.price) {
+      alert('გთხოვთ შეავსოთ სათაური, კატეგორია, ლოკაცია და ფასი.');
+      return;
+    }
+
+    setSavingEdit(true);
+    try {
+      const response = await fetch(`/api/announcements/${ad.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ values: editForm }),
+      });
+      const result = await response.json().catch(() => ({}));
+      if (!response.ok) throw new Error(result?.error || 'განცხადების რედაქტირება ვერ მოხერხდა');
+      setAd(result.announcement);
+      setIsEditing(false);
+      alert('განცხადება განახლდა და გადაგზავნილია მოდერაციაზე.');
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'უცნობი შეცდომა';
+      alert('შეცდომა: ' + message);
+    } finally {
+      setSavingEdit(false);
+    }
+  };
+
   // Click outside the content area should navigate back to previous page
   useEffect(() => {
     const handler = (e: MouseEvent) => {
       if (zoomOpen) return; // don't navigate while zoom modal open
+      if (isEditing) return; // don't navigate while edit modal is open
       const node = contentRef.current;
       if (!node) return;
       if (node.contains(e.target as Node)) return; // clicked inside
@@ -75,7 +154,7 @@ export default function AnnouncementDetailsClient({ initialAd }: { initialAd: An
     };
     document.addEventListener('mousedown', handler);
     return () => document.removeEventListener('mousedown', handler);
-  }, [router, zoomOpen]);
+  }, [router, zoomOpen, isEditing]);
 
   if (!ad) return (
     <div className="min-h-screen bg-[#050510] flex items-center justify-center text-white font-black italic uppercase tracking-widest">
@@ -206,9 +285,12 @@ export default function AnnouncementDetailsClient({ initialAd }: { initialAd: An
                     <span className="bg-amber-600 text-white px-4 md:px-6 py-2 rounded-full text-[9px] md:text-[10px] font-black uppercase italic tracking-widest shadow-xl">
                       {ad.category}
                     </span>
-                    <span className="text-amber-500 font-black uppercase italic text-[10px] md:text-xs tracking-wider drop-shadow-md">
-                      {ad.location}
-                    </span>
+                    <div className="flex flex-col items-end gap-2">
+                      <FavoriteButton announcementId={ad.id} />
+                      <span className="text-amber-500 font-black uppercase italic text-[10px] md:text-xs tracking-wider drop-shadow-md">
+                        {ad.location}
+                      </span>
+                    </div>
                   </div>
 
                   <h1 className="text-3xl md:text-4xl font-black uppercase italic leading-tight mb-3 md:mb-4 relative z-10 drop-shadow-2xl">
@@ -225,6 +307,18 @@ export default function AnnouncementDetailsClient({ initialAd }: { initialAd: An
 
                   {/* ✅ აქ ვიყენებთ ClientButtons კომპონენტს, რომელსაც უკვე გადავეცით დიზაინი */}
                   <ClientButtons ad={ad} shareUrl={shareUrl} />
+
+                  {isOwner && (
+                    <div className="mt-4 relative z-10">
+                      <button
+                        type="button"
+                        onClick={() => setIsEditing((value) => !value)}
+                        className="rounded-xl border border-amber-300/35 bg-amber-500/15 px-4 py-2 text-[10px] font-black uppercase tracking-[0.12em] text-amber-100 transition hover:bg-amber-500/25"
+                      >
+                        {isEditing ? 'რედაქტირების დახურვა' : 'ჩემი განცხადების რედაქტირება'}
+                      </button>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
@@ -232,6 +326,48 @@ export default function AnnouncementDetailsClient({ initialAd }: { initialAd: An
 
         </div>
       </div>
+      {isOwner && isEditing && (
+        <div className="fixed inset-0 z-[115] overflow-y-auto bg-black/80 px-4 py-8 backdrop-blur-xl">
+          <div className="mx-auto max-w-2xl rounded-[28px] border border-white/10 bg-[#0b0b15] p-5 shadow-2xl md:p-6">
+            <div className="mb-5 flex items-center justify-between gap-4">
+              <div>
+                <h2 className="text-lg font-black uppercase text-amber-300">განცხადების რედაქტირება</h2>
+                <p className="mt-1 text-xs text-white/45">შენახვის შემდეგ განცხადება ხელახლა გაივლის მოდერაციას.</p>
+              </div>
+              <button type="button" onClick={() => setIsEditing(false)} className="text-xs font-black uppercase text-white/45 hover:text-white">დახურვა ✕</button>
+            </div>
+
+            <div className="space-y-3">
+              <input value={editForm.title} onChange={(e) => setEditForm({ ...editForm, title: e.target.value })} className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white outline-none focus:border-amber-400" placeholder="სათაური" />
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                <select value={editForm.category} onChange={(e) => setEditForm({ ...editForm, category: e.target.value })} className="rounded-xl border border-white/10 bg-[#0b0b15] px-4 py-3 text-sm text-white outline-none focus:border-amber-400">
+                  {ANNOUNCEMENT_CATEGORIES.map((category) => <option key={category} value={category}>{category}</option>)}
+                </select>
+                <select value={editForm.location} onChange={(e) => setEditForm({ ...editForm, location: e.target.value })} className="rounded-xl border border-white/10 bg-[#0b0b15] px-4 py-3 text-sm text-white outline-none focus:border-amber-400">
+                  {LOCATION_OPTIONS.map((location) => <option key={location} value={location}>{location}</option>)}
+                </select>
+              </div>
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-[1fr_auto_1fr]">
+                <input value={editForm.price} onChange={(e) => setEditForm({ ...editForm, price: e.target.value })} className="rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white outline-none focus:border-amber-400" placeholder="ფასი" />
+                <select value={editForm.currency ?? 'GEL'} onChange={(e) => setEditForm({ ...editForm, currency: e.target.value })} className="rounded-xl border border-white/10 bg-[#0b0b15] px-4 py-3 text-sm text-white outline-none focus:border-amber-400">
+                  <option value="GEL">₾</option>
+                  <option value="USD">$</option>
+                </select>
+                <input value={editForm.phone ?? ''} onChange={(e) => setEditForm({ ...editForm, phone: e.target.value })} className="rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white outline-none focus:border-amber-400" placeholder="ტელეფონი" />
+              </div>
+              <textarea value={editForm.description ?? ''} onChange={(e) => setEditForm({ ...editForm, description: e.target.value })} rows={5} className="w-full resize-none rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white outline-none focus:border-amber-400" placeholder="აღწერა" />
+              <button
+                type="button"
+                onClick={saveEdit}
+                disabled={savingEdit}
+                className="w-full rounded-2xl bg-amber-600 px-5 py-4 text-xs font-black uppercase tracking-[0.14em] text-white transition hover:bg-amber-500 disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                {savingEdit ? 'ინახება...' : 'ცვლილებების შენახვა'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
       {zoomOpen && zoomImg && (
         <div
           className="fixed inset-0 z-[120] bg-black/95 backdrop-blur-xl flex items-center justify-center p-4"
