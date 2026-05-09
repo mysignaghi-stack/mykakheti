@@ -10,7 +10,9 @@ interface SubmissionAuthGateProps {
   heading?: string;
 }
 
-export default function SubmissionAuthGate({ redirectPath, children, heading }: SubmissionAuthGateProps) {
+const AUTH_LANDING_PATH = "/profile";
+
+export default function SubmissionAuthGate({ children, heading }: SubmissionAuthGateProps) {
   const [session, setSession] = useState<Session | null>(null);
   const [loadingSession, setLoadingSession] = useState(true);
   const [authError, setAuthError] = useState("");
@@ -147,10 +149,10 @@ export default function SubmissionAuthGate({ redirectPath, children, heading }: 
 
   const handleOAuth = async (provider: "google") => {
     setAuthError("");
-    setAuthRedirectCookie(redirectPath);
+    setAuthRedirectCookie(AUTH_LANDING_PATH);
     const { error } = await supabase.auth.signInWithOAuth({
       provider,
-      options: { redirectTo: `${window.location.origin}/auth/callback?redirect=${redirectPath}` },
+      options: { redirectTo: `${window.location.origin}/auth/callback?redirect=${AUTH_LANDING_PATH}` },
     });
     if (error) setAuthError("Social ავტორიზაცია ვერ შესრულდა, სცადეთ თავიდან.");
   };
@@ -166,7 +168,7 @@ export default function SubmissionAuthGate({ redirectPath, children, heading }: 
     }
 
     setRegisterLoading(true);
-    setAuthRedirectCookie(redirectPath);
+    setAuthRedirectCookie(AUTH_LANDING_PATH);
     try {
       const { error } = await supabase.auth.signUp({
         email: registerData.email,
@@ -177,7 +179,7 @@ export default function SubmissionAuthGate({ redirectPath, children, heading }: 
             last_name: registerData.lastName,
             phone: registerData.phone,
           },
-          emailRedirectTo: `${window.location.origin}/auth/callback?redirect=${redirectPath}`,
+          emailRedirectTo: `${window.location.origin}/auth/callback?redirect=${AUTH_LANDING_PATH}`,
         },
       });
 
@@ -202,7 +204,7 @@ export default function SubmissionAuthGate({ redirectPath, children, heading }: 
     }
 
     setLoginLoading(true);
-    setAuthRedirectCookie(redirectPath);
+    setAuthRedirectCookie(AUTH_LANDING_PATH);
     try {
       const { error } = await supabase.auth.signInWithPassword({
         email: loginEmail,
@@ -211,6 +213,7 @@ export default function SubmissionAuthGate({ redirectPath, children, heading }: 
       if (error) throw error;
       setLoginEmail("");
       setLoginPassword("");
+      window.location.href = AUTH_LANDING_PATH;
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : "Unknown error";
       setLoginError(message);
@@ -229,10 +232,10 @@ export default function SubmissionAuthGate({ redirectPath, children, heading }: 
     }
 
     setResetLoading(true);
-    setAuthRedirectCookie(redirectPath);
+    setAuthRedirectCookie(AUTH_LANDING_PATH);
     try {
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${window.location.origin}/auth/reset?redirect=${encodeURIComponent(redirectPath)}`,
+        redirectTo: `${window.location.origin}/auth/reset?redirect=${encodeURIComponent(AUTH_LANDING_PATH)}`,
       });
       if (error) throw error;
       setResetMessage("პაროლის აღდგენის ბმული გაიგზავნა ელფოსტაზე.");

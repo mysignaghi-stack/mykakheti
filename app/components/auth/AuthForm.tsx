@@ -1,8 +1,5 @@
 "use client";
 
-// Before: redirectTo: `${window.location.origin}/auth/callback`
-// After: redirectTo: `${window.location.origin}/auth/callback?redirect=/add`
-
 import { useState, type FormEvent } from "react";
 import type { User } from "@supabase/supabase-js";
 import Link from "next/link";
@@ -10,6 +7,7 @@ import { useRouter } from "next/navigation";
 import { supabase } from "../../lib/supabase";
 
 type Mode = "login" | "signup";
+const AUTH_LANDING_PATH = "/profile";
 
 interface AuthFormProps {
   initialMode?: Mode;
@@ -61,7 +59,7 @@ export default function AuthForm({ initialMode = "login", onClose, compact = fal
         if (error) throw error;
         if (data.user) await upsertProfile(data.user);
       }
-      router.push("/add");
+      router.push(AUTH_LANDING_PATH);
     } catch (err) {
       const msg = err instanceof Error ? err.message : "Auth error";
       setError(msg);
@@ -74,7 +72,7 @@ export default function AuthForm({ initialMode = "login", onClose, compact = fal
     setError("");
     const { error } = await supabase.auth.signInWithOAuth({
       provider,
-      options: { redirectTo: `${window.location.origin}/auth/callback?redirect=/add` },
+      options: { redirectTo: `${window.location.origin}/auth/callback?redirect=${AUTH_LANDING_PATH}` },
     });
     if (error) {
       setError("Social provider არ არის ჩართული Supabase Dashboard-ში.");
@@ -91,7 +89,7 @@ export default function AuthForm({ initialMode = "login", onClose, compact = fal
     setResetLoading(true);
     try {
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${window.location.origin}/auth/reset?redirect=/add`,
+        redirectTo: `${window.location.origin}/auth/reset?redirect=${AUTH_LANDING_PATH}`,
       });
       if (error) throw error;
       setResetMessage("პაროლის აღდგენის ბმული გაიგზავნა ელფოსტაზე.");

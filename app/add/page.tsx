@@ -19,6 +19,7 @@ const LOCATION_OPTIONS = Array.from(new Set(
     ]),
   ])
 ));
+const AUTH_LANDING_PATH = '/profile';
 
 export default function AddPage() {
   const router = useRouter();
@@ -189,10 +190,10 @@ export default function AddPage() {
 
   const handleOAuth = async (provider: 'google') => {
     setAuthError('');
-    setAuthRedirectCookie('/add');
+    setAuthRedirectCookie(AUTH_LANDING_PATH);
     const { error } = await supabase.auth.signInWithOAuth({
       provider,
-      options: { redirectTo: `${window.location.origin}/auth/callback?redirect=/add` },
+      options: { redirectTo: `${window.location.origin}/auth/callback?redirect=${AUTH_LANDING_PATH}` },
     });
     if (error) setAuthError('Social ავტორიზაცია ვერ შესრულდა, სცადეთ თავიდან.');
   };
@@ -214,7 +215,7 @@ export default function AddPage() {
     }
 
     setRegisterLoading(true);
-    setAuthRedirectCookie('/add');
+    setAuthRedirectCookie(AUTH_LANDING_PATH);
     try {
       const { error } = await supabase.auth.signUp({
         email: registerData.email,
@@ -225,7 +226,7 @@ export default function AddPage() {
             last_name: registerData.lastName,
             phone: registerData.phone,
           },
-          emailRedirectTo: `${window.location.origin}/auth/callback?redirect=/add`,
+          emailRedirectTo: `${window.location.origin}/auth/callback?redirect=${AUTH_LANDING_PATH}`,
         },
       });
 
@@ -250,7 +251,7 @@ export default function AddPage() {
     }
 
     setLoginLoading(true);
-    setAuthRedirectCookie('/add');
+    setAuthRedirectCookie(AUTH_LANDING_PATH);
     try {
       const { error } = await supabase.auth.signInWithPassword({
         email: loginEmail,
@@ -259,6 +260,7 @@ export default function AddPage() {
       if (error) throw error;
       setLoginEmail('');
       setLoginPassword('');
+      router.push(AUTH_LANDING_PATH);
     } catch (err: unknown) {
       const message = getErrorMessage(err);
       setLoginError(message);
@@ -277,10 +279,10 @@ export default function AddPage() {
     }
 
     setResetLoading(true);
-    setAuthRedirectCookie('/add');
+    setAuthRedirectCookie(AUTH_LANDING_PATH);
     try {
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${window.location.origin}/auth/reset?redirect=/add`,
+        redirectTo: `${window.location.origin}/auth/reset?redirect=${AUTH_LANDING_PATH}`,
       });
       if (error) throw error;
       setResetMessage('პაროლის აღდგენის ბმული გაიგზავნა ელფოსტაზე.');
