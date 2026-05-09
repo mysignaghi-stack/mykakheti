@@ -1019,9 +1019,6 @@ export default function HomePageClient({
             </div>
 
             <div className="w-full mt-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6 items-start">
-              <div className="w-full bg-gradient-to-br from-amber-900/30 via-black/40 to-amber-700/20 backdrop-blur-sm rounded-[24px] border border-amber-500/20 shadow-[0_0_18px_2px_rgba(255,191,0,0.08)] p-3 ring-1 ring-amber-400/10 relative">
-                <GuideWidget onMapSearch={handleMapSearch} />
-              </div>
               <div className="w-full h-[230px] overflow-hidden bg-gradient-to-br from-amber-900/40 via-black/50 to-amber-700/20 backdrop-blur-sm rounded-[24px] border border-amber-500/30 shadow-[0_0_20px_4px_rgba(255,191,0,0.1)] p-3 ring-1 ring-amber-400/20 relative">
                 <AdminSideFrame
                   post={getPostByPos('left_top')}
@@ -1030,6 +1027,12 @@ export default function HomePageClient({
                   onRefresh={fetchAdminPosts}
                 />
               </div>
+              <div className="w-full bg-gradient-to-br from-amber-900/30 via-black/40 to-amber-700/20 backdrop-blur-sm rounded-[24px] border border-amber-500/20 shadow-[0_0_18px_2px_rgba(255,191,0,0.08)] p-3 ring-1 ring-amber-400/10 relative">
+                <GuideWidget onMapSearch={handleMapSearch} />
+              </div>
+              <div className="w-full bg-gradient-to-br from-amber-900/30 via-black/40 to-amber-700/20 backdrop-blur-sm rounded-[24px] border border-amber-500/20 shadow-[0_0_18px_2px_rgba(255,191,0,0.08)] p-3 ring-1 ring-amber-400/10 relative">
+                <HeritageWidget />
+              </div>
               <div className="w-full h-[230px] overflow-hidden bg-gradient-to-br from-amber-900/40 via-black/50 to-amber-700/20 backdrop-blur-sm rounded-[24px] border border-amber-500/30 shadow-[0_0_20px_4px_rgba(255,191,0,0.1)] p-3 ring-1 ring-amber-400/20 relative">
                 <AdminSideFrame
                   post={getPostByPos('right_top')}
@@ -1037,9 +1040,6 @@ export default function HomePageClient({
                   isAdmin={isAdmin}
                   onRefresh={fetchAdminPosts}
                 />
-              </div>
-              <div className="w-full bg-gradient-to-br from-amber-900/30 via-black/40 to-amber-700/20 backdrop-blur-sm rounded-[24px] border border-amber-500/20 shadow-[0_0_18px_2px_rgba(255,191,0,0.08)] p-3 ring-1 ring-amber-400/10 relative">
-                <HeritageWidget />
               </div>
             </div>
 
