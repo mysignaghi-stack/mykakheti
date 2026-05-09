@@ -973,7 +973,7 @@ export default function HomePageClient({
                   {filteredAds.length <= adsCardsPerView ? (
                     <div className="grid gap-2" style={{ gridTemplateColumns: `repeat(${adsCardsPerView}, 1fr)` }}>
                       {filteredAds.map((ad) => (
-                        <AnnouncementCard key={ad.id} announcement={ad} />
+                        <AnnouncementCard key={ad.id} announcement={ad} compact />
                       ))}
                     </div>
                   ) : (
@@ -998,7 +998,7 @@ export default function HomePageClient({
                           style={{ minWidth: `calc(100% / ${adsCardsPerView})`, maxWidth: `calc(100% / ${adsCardsPerView})`, flexShrink: 0 }}
                           className="px-1"
                         >
-                          <AnnouncementCard announcement={ad} />
+                          <AnnouncementCard announcement={ad} compact />
                         </div>
                       ))}
                     </div>

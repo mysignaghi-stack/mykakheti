@@ -23,9 +23,10 @@ type AnnouncementLike = {
 interface AnnouncementCardProps {
   announcement: AnnouncementLike;
   layout?: 'grid' | 'list';
+  compact?: boolean;
 }
 
-export default function AnnouncementCard({ announcement, layout = 'grid' }: AnnouncementCardProps) {
+export default function AnnouncementCard({ announcement, layout = 'grid', compact = false }: AnnouncementCardProps) {
   const images = Array.isArray(announcement.all_images) ? announcement.all_images.filter(Boolean) : [];
   const mainImage = images[0] || announcement.image_url || null;
   const hasPrice = Boolean(announcement.price && announcement.price !== '0');
@@ -87,7 +88,7 @@ export default function AnnouncementCard({ announcement, layout = 'grid' }: Anno
       className="group flex flex-col overflow-hidden rounded-xl bg-white/5 border border-white/10 hover:border-amber-400/30 hover:shadow-[0_0_20px_rgba(230,126,34,0.15)] transition-all duration-200"
     >
       {/* Image */}
-      <div className="relative w-full aspect-[5/3] overflow-hidden bg-white/5">
+      <div className={`relative w-full overflow-hidden bg-white/5 ${compact ? 'h-32' : 'aspect-[5/3]'}`}>
         {mainImage ? (
           <Image
             src={mainImage}
@@ -111,8 +112,8 @@ export default function AnnouncementCard({ announcement, layout = 'grid' }: Anno
       </div>
 
       {/* Content */}
-      <div className="flex flex-col gap-0.5 p-1.5 flex-1">
-        <h3 className="text-[11px] font-bold text-white/90 line-clamp-1 leading-snug group-hover:text-white transition-colors">
+      <div className={`flex flex-col gap-0.5 flex-1 ${compact ? 'p-2' : 'p-1.5'}`}>
+        <h3 className={`${compact ? 'text-[10px]' : 'text-[11px]'} font-bold text-white/90 line-clamp-1 leading-snug group-hover:text-white transition-colors`}>
           {announcement.title || '—'}
         </h3>
 

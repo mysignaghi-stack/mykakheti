@@ -222,6 +222,7 @@ export default function AdminSideFrame({ post, position, isAdmin, onRefresh }: A
   const postMediaUrls = post?.media_urls;
   const postMediaType = post?.media_type;
   const postVideoBackground = post?.video_background;
+  const hasPostMedia = Boolean(post && ((post.media_urls && post.media_urls.length > 0) || (post as any).media_url));
 
   const isVideoUrl = (url?: string | null) => !!url && /\.(mp4|mov|avi|webm|m4v)$/i.test(url);
 
@@ -308,7 +309,7 @@ export default function AdminSideFrame({ post, position, isAdmin, onRefresh }: A
       </div>
 
       {/* Media Display - Moved to top */}
-      {post && ((post.media_urls && post.media_urls.length > 0) || (post as any).media_url) ? (
+      {post && hasPostMedia ? (
         <div className="mb-4 mt-4">
           {/* Decorative rounded frame with gradient border and inner dark panel */}
           <div className="relative w-full aspect-[16/9] rounded-[26px] p-[2px] bg-gradient-to-br from-amber-500/20 via-pink-400/10 to-violet-500/10 overflow-hidden">
@@ -320,7 +321,7 @@ export default function AdminSideFrame({ post, position, isAdmin, onRefresh }: A
                   tabIndex={0}
                   onClick={() => openLightbox((post.media_urls?.[0] || (post as any).media_url)!, true)}
                   onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openLightbox((post.media_urls?.[0] || (post as any).media_url)!, true); } }}
-                  className="w-full h-full rounded-[20px] overflow-hidden relative"
+                  className="w-full h-full rounded-[20px] overflow-hidden relative cursor-pointer"
                 >
                   <video src={(post.media_urls?.[0] || (post as any).media_url)!} className="w-full h-full object-cover" playsInline autoPlay muted loop />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent pointer-events-none" />
@@ -350,7 +351,7 @@ export default function AdminSideFrame({ post, position, isAdmin, onRefresh }: A
                   </Swiper>
                 </div>
               ) : (
-                <div className="w-full h-full rounded-[20px] overflow-hidden relative" onClick={() => openLightbox((post.media_urls?.[0] || (post as any).media_url)!, isVideoUrl((post.media_urls?.[0] || (post as any).media_url)!))}>
+                <div className="w-full h-full rounded-[20px] overflow-hidden relative cursor-pointer" onClick={() => openLightbox((post.media_urls?.[0] || (post as any).media_url)!, isVideoUrl((post.media_urls?.[0] || (post as any).media_url)!))}>
                   {isVideoUrl((post.media_urls?.[0] || (post as any).media_url)!) ? (
                     <video src={(post.media_urls?.[0] || (post as any).media_url)!} className="w-full h-full object-cover" playsInline autoPlay muted loop />
                   ) : (
@@ -361,6 +362,24 @@ export default function AdminSideFrame({ post, position, isAdmin, onRefresh }: A
               )}
             </div>
           </div>
+          {isAdmin && post && (
+            <div className="mt-2 flex justify-end gap-1">
+              <button
+                onClick={() => startEdit(post)}
+                className="text-blue-400 hover:text-white text-xs px-2 py-1 rounded hover:bg-blue-600/20 transition-all"
+                title="რედაქტირება"
+              >
+                ✏️
+              </button>
+              <button
+                onClick={() => handleHide(post.id)}
+                className="text-gray-400 hover:text-white text-xs px-2 py-1 rounded hover:bg-gray-600/20 transition-all"
+                title="დამალვა"
+              >
+                👁️
+              </button>
+            </div>
+          )}
         </div>
       ) : null}
 
@@ -454,7 +473,7 @@ export default function AdminSideFrame({ post, position, isAdmin, onRefresh }: A
       )}
 
       {/* Content Display */}
-      {post ? (
+      {post && !hasPostMedia ? (
         <div className="space-y-1">
           <div className="flex justify-between items-start">
             <h4 className="text-amber-500 font-black text-base italic flex-1">{post.title}</h4>
@@ -520,7 +539,7 @@ export default function AdminSideFrame({ post, position, isAdmin, onRefresh }: A
             <a href={post.link} target="_blank" rel="noopener noreferrer" className="inline-block px-2 py-1 bg-cyan-600/20 text-cyan-400 rounded text-xs font-bold hover:bg-cyan-600 hover:text-white transition-all">🔗 ბმული</a>
           )}
         </div>
-      ) : (
+      ) : !post ? (
         <div className="text-white/50 text-sm italic text-center py-8">
           <span className="text-2xl block mb-2">📄</span>
           <p>კონტენტი არ არის დამატებული</p>
@@ -533,7 +552,7 @@ export default function AdminSideFrame({ post, position, isAdmin, onRefresh }: A
             </button>
           )}
         </div>
-      )}
+      ) : null}
       
       {/* Lightbox Modal */}
       {isMounted && lightbox?.open
@@ -576,6 +595,26 @@ export default function AdminSideFrame({ post, position, isAdmin, onRefresh }: A
                     />
                   )}
                 </div>
+                {post && (
+                  <div className="mt-5 rounded-2xl border border-white/10 bg-white/[0.04] p-4 text-left">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <h3 className="text-base font-black uppercase italic text-amber-300">{post.title}</h3>
+                      {post.category && (
+                        <span className="rounded-full bg-purple-600/20 px-2 py-1 text-[10px] font-bold text-purple-300">{post.category}</span>
+                      )}
+                    </div>
+                    {post.content && (
+                      <p className="mt-3 text-sm leading-relaxed text-white/80">
+                        {renderAdminPostContent(post.content)}
+                      </p>
+                    )}
+                    {post.link && (
+                      <a href={post.link} target="_blank" rel="noopener noreferrer" className="mt-3 inline-block rounded-xl bg-cyan-600/20 px-3 py-2 text-xs font-bold text-cyan-300 hover:bg-cyan-600 hover:text-white transition-all">
+                        🔗 ბმული
+                      </a>
+                    )}
+                  </div>
+                )}
               </div>
             </div>,
             document.body
