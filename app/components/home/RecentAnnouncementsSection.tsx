@@ -275,7 +275,7 @@ export default function RecentAnnouncementsSection({ ads }: Props) {
         /* ───── DESKTOP: filters + grid/list + pagination (≥ sm) ───── */
         <>
           {/* Filters row */}
-          <div className="grid grid-cols-[1fr_auto_auto_auto] gap-3 mb-5">
+          <div className="grid grid-cols-[1fr_auto_auto_auto_auto] gap-3 mb-5">
             {/* Search */}
             <div className="flex items-center gap-2 bg-[#0b0b15] border border-white/10 rounded-2xl px-4 py-2.5">
               <span className="text-amber-300/70 text-base">🔎</span>
@@ -364,6 +364,31 @@ export default function RecentAnnouncementsSection({ ads }: Props) {
               <option value="price_asc">ფასი ↑</option>
               <option value="price_desc">ფასი ↓</option>
             </select>
+
+            <div className="flex items-center justify-end gap-2">
+              <button
+                type="button"
+                onClick={() => setPage((p) => Math.max(1, p - 1))}
+                disabled={safePage === 1}
+                aria-label="წინა"
+                className="flex items-center justify-center w-9 h-9 rounded-xl border border-white/20 bg-white/10 text-white hover:bg-amber-500/25 hover:border-amber-400/50 active:scale-95 disabled:opacity-30 disabled:cursor-not-allowed transition-all duration-200"
+              >
+                <svg viewBox="0 0 24 24" className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M15 18l-6-6 6-6" />
+                </svg>
+              </button>
+              <button
+                type="button"
+                onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                disabled={safePage === totalPages}
+                aria-label="შემდეგი"
+                className="flex items-center justify-center w-9 h-9 rounded-xl border border-white/20 bg-white/10 text-white hover:bg-amber-500/25 hover:border-amber-400/50 active:scale-95 disabled:opacity-30 disabled:cursor-not-allowed transition-all duration-200"
+              >
+                <svg viewBox="0 0 24 24" className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M9 18l6-6-6-6" />
+                </svg>
+              </button>
+            </div>
           </div>
 
           {/* Active filter chips */}

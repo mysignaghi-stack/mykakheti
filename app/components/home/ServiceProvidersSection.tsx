@@ -14,6 +14,7 @@ type ServiceProvidersSectionProps = {
 const SERVICE_DESCRIPTION = 'თუ კახეთში სთავაზობთ რაიმე სახის მომსახურებას — ხართ ხელოსანი, ტექნიკოსი, მძღოლი, მასწავლებელი, ფოტოგრაფი, გიდი, დასუფთავების სპეციალისტი ან სხვა მომსახურების მიმწოდებელი — შეგიძლიათ დარეგისტრირდეთ და განათავსოთ ინფორმაცია თქვენი სერვისის შესახებ.';
 const SERVICE_HINT = 'მიუთითეთ რას სთავაზობთ მომხმარებელს, რომელ მუნიციპალიტეტში მუშაობთ, გაქვთ თუ არა გამოძახებით მომსახურება, საკონტაქტო ნომერი და საჭიროების შემთხვევაში ფოტოები.';
 type ServiceSortOption = 'newest' | 'rating' | 'name';
+const SERVICE_FILTER_PAGE_SIZE = 6;
 
 const SERVICE_GROUPS = [
   {
@@ -214,6 +215,7 @@ export default function ServiceProvidersSection({ providers = [], count = 0 }: S
   const [selectedService, setSelectedService] = useState('ყველა სერვისი');
   const [selectedServiceLocation, setSelectedServiceLocation] = useState('ყველა კახეთი');
   const [serviceSort, setServiceSort] = useState<ServiceSortOption>('newest');
+  const [servicePage, setServicePage] = useState(1);
   const [showServiceCategoryDropdown, setShowServiceCategoryDropdown] = useState(false);
   const [showServiceDropdown, setShowServiceDropdown] = useState(false);
   const [showServiceLocationDropdown, setShowServiceLocationDropdown] = useState(false);
@@ -238,6 +240,10 @@ export default function ServiceProvidersSection({ providers = [], count = 0 }: S
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
+
+  useEffect(() => {
+    setServicePage(1);
+  }, [selectedService, selectedServiceCategory, selectedServiceLocation, serviceSearch, serviceSort]);
 
   const serviceCategories = useMemo(
     () => ['ყველა კატეგ.', ...buildOptions(providers.map((provider) => provider.category), SERVICE_CATEGORY_FALLBACKS)],
@@ -288,6 +294,8 @@ export default function ServiceProvidersSection({ providers = [], count = 0 }: S
 
   const showHealthWarning = selectedServiceCategory === 'ჯანმრთელობა და კეთილდღეობა' ||
     SERVICE_GROUPS.find((group) => group.category === 'ჯანმრთელობა და კეთილდღეობა')?.services.includes(selectedService);
+  const serviceTotalPages = Math.max(1, Math.ceil(filteredProviders.length / SERVICE_FILTER_PAGE_SIZE));
+  const serviceSafePage = Math.min(servicePage, serviceTotalPages);
 
   return (
     <section className="w-full mt-8">
@@ -325,7 +333,7 @@ export default function ServiceProvidersSection({ providers = [], count = 0 }: S
       </div>
 
       <div className="mt-3 rounded-[24px] border border-white/10 bg-white/[0.035] p-3 shadow-xl sm:p-4">
-        <div className="grid grid-cols-1 gap-3 lg:grid-cols-[1fr_auto_auto_auto_auto] lg:items-stretch">
+        <div className="grid grid-cols-1 gap-3 lg:grid-cols-[1fr_auto_auto_auto_auto_auto] lg:items-stretch">
           <div className="flex min-w-0 flex-1 items-center gap-2 rounded-2xl border border-white/10 bg-[#0b0b15] px-4 py-2.5">
             <span className="text-base text-amber-300/70">🔎</span>
             <input
@@ -471,6 +479,31 @@ export default function ServiceProvidersSection({ providers = [], count = 0 }: S
             <option value="rating">რეიტინგი</option>
             <option value="name">სახელი A-Z</option>
           </select>
+
+          <div className="flex items-center justify-end gap-2">
+            <button
+              type="button"
+              onClick={() => setServicePage((page) => Math.max(1, page - 1))}
+              disabled={serviceSafePage === 1}
+              aria-label="წინა"
+              className="flex items-center justify-center w-9 h-9 rounded-xl border border-white/20 bg-white/10 text-white hover:bg-amber-500/25 hover:border-amber-400/50 active:scale-95 disabled:opacity-30 disabled:cursor-not-allowed transition-all duration-200"
+            >
+              <svg viewBox="0 0 24 24" className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round">
+                <path d="M15 18l-6-6 6-6" />
+              </svg>
+            </button>
+            <button
+              type="button"
+              onClick={() => setServicePage((page) => Math.min(serviceTotalPages, page + 1))}
+              disabled={serviceSafePage === serviceTotalPages}
+              aria-label="შემდეგი"
+              className="flex items-center justify-center w-9 h-9 rounded-xl border border-white/20 bg-white/10 text-white hover:bg-amber-500/25 hover:border-amber-400/50 active:scale-95 disabled:opacity-30 disabled:cursor-not-allowed transition-all duration-200"
+            >
+              <svg viewBox="0 0 24 24" className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round">
+                <path d="M9 18l6-6-6-6" />
+              </svg>
+            </button>
+          </div>
         </div>
 
         <div className="mt-3 flex flex-wrap items-center justify-between gap-3">
