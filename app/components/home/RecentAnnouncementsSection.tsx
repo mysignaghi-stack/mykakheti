@@ -203,7 +203,6 @@ export default function RecentAnnouncementsSection({ ads }: Props) {
 
         {/* Mobile: arrow controls — hidden on desktop */}
         <div className="flex sm:hidden items-center gap-2">
-          <span className="text-[10px] text-white/20">swipe ·</span>
           <button
             type="button"
             onClick={() => setSliderIndex((i) => Math.max(0, i - cardsPerView))}
@@ -244,8 +243,8 @@ export default function RecentAnnouncementsSection({ ads }: Props) {
         ) : (
           <div
             ref={sliderRef}
-            className="flex overflow-x-hidden"
-            style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+            className="flex overflow-hidden"
+            style={{ scrollbarWidth: 'none', msOverflowStyle: 'none', flexWrap: 'nowrap' }}
             onTouchStart={(e) => { touchStartX.current = e.touches[0].clientX; }}
             onTouchEnd={(e) => {
               if (touchStartX.current === null) return;
@@ -261,7 +260,9 @@ export default function RecentAnnouncementsSection({ ads }: Props) {
                 style={{
                   minWidth: `calc(100% / ${cardsPerView})`,
                   maxWidth: `calc(100% / ${cardsPerView})`,
+                  width: `calc(100% / ${cardsPerView})`,
                   flexShrink: 0,
+                  flexGrow: 0,
                 }}
                 className="px-1"
               >

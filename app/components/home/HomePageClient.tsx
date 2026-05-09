@@ -836,9 +836,7 @@ export default function HomePageClient({
                         ყველა განცხადება
                       </button>
                       <span className="text-[10px] text-white/30">{filteredAds.length}</span>
-                      {filteredAds.length > adsCardsPerView && (
-                        <span className="sm:hidden text-[10px] text-white/20">· swipe</span>
-                      )}
+
                     </div>
                     <div className="flex items-center gap-2">
                       <button
@@ -918,7 +916,7 @@ export default function HomePageClient({
             </div>
 
             {/* ── ახლად გამოქვეყნებული განცხადებები ── */}
-            <div className="w-full bg-white/[0.03] backdrop-blur-sm rounded-[28px] border border-white/10 p-5 shadow-xl">
+            <div className="w-full">
               <RecentAnnouncementsSection ads={ads} />
             </div>
 
