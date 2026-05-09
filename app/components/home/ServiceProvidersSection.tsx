@@ -119,6 +119,13 @@ const normalizeServiceText = (value: string | null | undefined) => (
   (value ?? '').toLowerCase().replace(/\s+/g, ' ').trim()
 );
 
+const splitStoredList = (value: string | null | undefined) => (
+  (value ?? '')
+    .split(',')
+    .map((item) => item.trim())
+    .filter(Boolean)
+);
+
 const buildOptions = (values: Array<string | null | undefined>, fallbacks: string[]) => {
   return Array.from(new Set(
     [
@@ -247,15 +254,15 @@ export default function ServiceProvidersSection({ providers = [], count = 0 }: S
   }, [selectedService, selectedServiceCategory, selectedServiceLocation, serviceSearch, serviceSort]);
 
   const serviceCategories = useMemo(
-    () => ['ყველა კატეგ.', ...buildOptions(providers.map((provider) => provider.category), SERVICE_CATEGORY_FALLBACKS)],
+    () => ['ყველა კატეგ.', ...buildOptions(providers.flatMap((provider) => splitStoredList(provider.category)), SERVICE_CATEGORY_FALLBACKS)],
     [providers]
   );
 
   const serviceOptions = useMemo(() => {
     const categoryServices = SERVICE_GROUPS.find((group) => group.category === selectedServiceCategory)?.services;
     const providerServices = providers
-      .filter((provider) => selectedServiceCategory === 'ყველა კატეგ.' || provider.category === selectedServiceCategory)
-      .map((provider) => provider.profession);
+      .filter((provider) => selectedServiceCategory === 'ყველა კატეგ.' || splitStoredList(provider.category).includes(selectedServiceCategory))
+      .flatMap((provider) => splitStoredList(provider.profession));
 
     return [
       'ყველა სერვისი',
@@ -277,8 +284,8 @@ export default function ServiceProvidersSection({ providers = [], count = 0 }: S
         normalizeServiceText(provider.category).includes(query) ||
         normalizeServiceText(provider.location).includes(query) ||
         normalizeServiceText(provider.description).includes(query);
-      const matchesCategory = selectedServiceCategory === 'ყველა კატეგ.' || provider.category === selectedServiceCategory;
-      const matchesService = selectedService === 'ყველა სერვისი' || provider.profession === selectedService;
+      const matchesCategory = selectedServiceCategory === 'ყველა კატეგ.' || splitStoredList(provider.category).includes(selectedServiceCategory);
+      const matchesService = selectedService === 'ყველა სერვისი' || splitStoredList(provider.profession).includes(selectedService);
       const matchesLocation = selectedServiceLocation === 'ყველა კახეთი' || normalizeServiceText(provider.location).includes(normalizeServiceText(selectedServiceLocation));
 
       return matchesSearch && matchesCategory && matchesService && matchesLocation;
