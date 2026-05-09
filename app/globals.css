@@ -95,11 +95,6 @@
   animation-delay: -4.1s;
 }
 
-.service-3d-icon--home {
-  --service-icon-rotate: 12deg;
-  animation-delay: -1.8s;
-}
-
 @media (prefers-reduced-motion: reduce) {
   .service-3d-icon {
     animation: none;

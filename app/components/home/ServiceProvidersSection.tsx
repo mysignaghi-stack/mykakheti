@@ -91,20 +91,6 @@ function PremiumServiceIconCluster() {
         </svg>
       </div>
 
-      <div className="service-3d-icon service-3d-icon--home bottom-[1.15rem] right-0 h-10 w-10 lg:h-11 lg:w-11">
-        <svg viewBox="0 0 64 64" role="presentation">
-          <defs>
-            <linearGradient id="serviceHome" x1="12" y1="15" x2="51" y2="56" gradientUnits="userSpaceOnUse">
-              <stop stopColor="#F7D98B" />
-              <stop offset="0.5" stopColor="#A96F1B" />
-              <stop offset="1" stopColor="#2B1A08" />
-            </linearGradient>
-          </defs>
-          <path d="M9.8 31.1 32 12.8l22.2 18.3-5.4 6.3-3.4-2.8V54H18.6V34.6l-3.4 2.8-5.4-6.3Z" fill="url(#serviceHome)" />
-          <path d="M26.6 54V39.2h10.8V54H26.6Z" fill="#10151D" opacity=".72" />
-          <path d="m18.4 31.8 13.5-11.1 13.8 11.2" stroke="#FFF3C9" strokeWidth="2.4" strokeLinecap="round" opacity=".48" />
-        </svg>
-      </div>
     </div>
   );
 }
