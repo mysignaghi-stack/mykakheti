@@ -290,8 +290,43 @@ export default function AdminSideFrame({ post, position, isAdmin, onRefresh }: A
     setLightbox({ open: true, media: [url], currentIndex: 0, isVideo });
   };
 
+  const getShareUrl = () => (
+    typeof window === 'undefined'
+      ? ''
+      : `${window.location.origin}${window.location.pathname}#admin-${position}`
+  );
+
+  const shareToFacebook = () => {
+    const url = getShareUrl();
+    if (!url) return;
+    window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`, 'fb-share', 'width=600,height=400');
+  };
+
+  const sharePost = async () => {
+    const url = getShareUrl();
+    if (!url) return;
+    if (navigator.share) {
+      try {
+        await navigator.share({ title: post?.title ?? 'MyKakheti', url });
+        return;
+      } catch {
+        // fall back to clipboard
+      }
+    }
+    await navigator.clipboard.writeText(url);
+  };
+
+  const openPostPreview = () => {
+    const url = post?.media_urls?.[0] || (post as any)?.media_url;
+    if (!url) {
+      setShowFullContent(true);
+      return;
+    }
+    openLightbox(url, post?.media_type === 'video' || isVideoUrl(url));
+  };
+
   return (
-    <div className={`w-full ${heightClass} bg-gradient-to-br from-slate-900/80 via-black/60 to-slate-800/80 backdrop-blur-xl rounded-[24px] border border-amber-500/30 shadow-[inset_0_0_20px_rgba(245,158,11,0.12),0_14px_28px_-12px_rgba(0,0,0,0.5)] p-2 ring-1 ring-white/10 relative animate-in fade-in duration-700`}>
+    <div id={`admin-${position}`} className={`w-full ${heightClass} bg-gradient-to-br from-slate-900/80 via-black/60 to-slate-800/80 backdrop-blur-xl rounded-[24px] border border-amber-500/30 shadow-[inset_0_0_20px_rgba(245,158,11,0.12),0_14px_28px_-12px_rgba(0,0,0,0.5)] p-2 ring-1 ring-white/10 relative animate-in fade-in duration-700`}>
       {/* Badge removed per request */}
       {/* Header with controls */}
       <div className="flex justify-end items-center mb-1">
@@ -377,6 +412,31 @@ export default function AdminSideFrame({ post, position, isAdmin, onRefresh }: A
                 title="დამალვა"
               >
                 👁️
+              </button>
+            </div>
+          )}
+          {post && (
+            <div className="mt-2 flex flex-wrap justify-end gap-1">
+              <button
+                type="button"
+                onClick={openPostPreview}
+                className="rounded-lg border border-amber-300/30 bg-amber-500/10 px-2 py-1 text-[10px] font-black uppercase text-amber-100 hover:bg-amber-500/20 transition"
+              >
+                ნახვა
+              </button>
+              <button
+                type="button"
+                onClick={shareToFacebook}
+                className="rounded-lg border border-blue-300/30 bg-blue-500/10 px-2 py-1 text-[10px] font-black uppercase text-blue-100 hover:bg-blue-500/20 transition"
+              >
+                Facebook
+              </button>
+              <button
+                type="button"
+                onClick={sharePost}
+                className="rounded-lg border border-white/15 bg-white/5 px-2 py-1 text-[10px] font-black uppercase text-white/75 hover:text-white transition"
+              >
+                გაზიარება
               </button>
             </div>
           )}
@@ -538,6 +598,29 @@ export default function AdminSideFrame({ post, position, isAdmin, onRefresh }: A
           {post.link && (
             <a href={post.link} target="_blank" rel="noopener noreferrer" className="inline-block px-2 py-1 bg-cyan-600/20 text-cyan-400 rounded text-xs font-bold hover:bg-cyan-600 hover:text-white transition-all">🔗 ბმული</a>
           )}
+          <div className="mt-2 flex flex-wrap gap-1">
+            <button
+              type="button"
+              onClick={openPostPreview}
+              className="rounded-lg border border-amber-300/30 bg-amber-500/10 px-2 py-1 text-[10px] font-black uppercase text-amber-100 hover:bg-amber-500/20 transition"
+            >
+              ნახვა
+            </button>
+            <button
+              type="button"
+              onClick={shareToFacebook}
+              className="rounded-lg border border-blue-300/30 bg-blue-500/10 px-2 py-1 text-[10px] font-black uppercase text-blue-100 hover:bg-blue-500/20 transition"
+            >
+              Facebook
+            </button>
+            <button
+              type="button"
+              onClick={sharePost}
+              className="rounded-lg border border-white/15 bg-white/5 px-2 py-1 text-[10px] font-black uppercase text-white/75 hover:text-white transition"
+            >
+              გაზიარება
+            </button>
+          </div>
         </div>
       ) : !post ? (
         <div className="text-white/50 text-sm italic text-center py-8">

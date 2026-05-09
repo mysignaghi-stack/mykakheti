@@ -4,14 +4,18 @@ import { useState } from 'react';
 
 interface ShareButtonsProps {
   className?: string;
+  url?: string;
+  title?: string;
 }
 
-export default function ShareButtons({ className }: ShareButtonsProps) {
+export default function ShareButtons({ className, url, title }: ShareButtonsProps) {
   const [copied, setCopied] = useState(false);
 
+  const getShareUrl = () => url || window.location.href;
+
   const shareToFacebook = () => {
-    const url = window.location.href;
-    window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`, '_blank');
+    const shareUrl = getShareUrl();
+    window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`, '_blank');
   };
 
   const isMobileDevice = () => {
@@ -21,22 +25,22 @@ export default function ShareButtons({ className }: ShareButtonsProps) {
   };
 
   const shareToTikTok = async () => {
-    const url = window.location.href;
+    const shareUrl = getShareUrl();
     if (isMobileDevice() && navigator.share) {
       try {
-        await navigator.share({ url });
+        await navigator.share({ title, url: shareUrl });
         return;
       } catch {
         // Fall back to copy on share failure or cancel.
       }
     }
     try {
-      await navigator.clipboard.writeText(url);
+      await navigator.clipboard.writeText(shareUrl);
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     } catch {
       const textarea = document.createElement('textarea');
-      textarea.value = url;
+      textarea.value = shareUrl;
       document.body.appendChild(textarea);
       textarea.select();
       document.execCommand('copy');

@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import type { AgroItem } from '@/app/lib/types';
 
 interface AgroDetailsModalProps {
@@ -6,6 +7,8 @@ interface AgroDetailsModalProps {
 }
 
 const AgroDetailsModal = ({ selectedAgro, onClose }: AgroDetailsModalProps) => {
+  const [copied, setCopied] = useState(false);
+
   if (!selectedAgro) return null;
 
   const details = selectedAgro.details ?? [];
@@ -19,6 +22,30 @@ const AgroDetailsModal = ({ selectedAgro, onClose }: AgroDetailsModalProps) => {
     if (value === null || value === undefined || value === '') return '';
     const text = String(value);
     return text.includes('₾') ? text : `${text} ₾`;
+  };
+
+  const shareUrl = typeof window !== 'undefined'
+    ? `${window.location.origin}${window.location.pathname}#${selectedAgro.category === 'grain' ? 'grain-market' : 'agro-birzha'}`
+    : '';
+
+  const shareToFacebook = () => {
+    if (!shareUrl) return;
+    window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`, 'fb-share', 'width=600,height=400');
+  };
+
+  const copyOrNativeShare = async () => {
+    if (!shareUrl) return;
+    if (navigator.share) {
+      try {
+        await navigator.share({ title: selectedAgro.name, url: shareUrl });
+        return;
+      } catch {
+        // fall through to copy
+      }
+    }
+    await navigator.clipboard.writeText(shareUrl);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
   };
 
   return (
@@ -78,6 +105,22 @@ const AgroDetailsModal = ({ selectedAgro, onClose }: AgroDetailsModalProps) => {
         <p className="mt-6 text-[11px] sm:text-[12px] text-white/40 leading-relaxed">
           ინფორმაცია განახლდება რეგულარულად; კონკრეტული შეთავაზებები შეიძლება მერყეობდეს ადგილმდებარეობისა და მოცულობის მიხედვით.
         </p>
+        <div className="mt-5 flex flex-wrap justify-center gap-3">
+          <button
+            type="button"
+            onClick={shareToFacebook}
+            className="rounded-xl bg-blue-600/20 px-4 py-2 text-sm text-blue-300 transition hover:bg-blue-600 hover:text-white"
+          >
+            Facebook გაზიარება
+          </button>
+          <button
+            type="button"
+            onClick={copyOrNativeShare}
+            className="rounded-xl border border-white/10 bg-white/5 px-4 py-2 text-sm text-white/75 transition hover:border-white/30 hover:text-white"
+          >
+            {copied ? 'ბმული დაკოპირდა' : 'გაზიარება'}
+          </button>
+        </div>
       </div>
     </div>
   );

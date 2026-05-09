@@ -171,7 +171,7 @@ export default function AdminAgroPanel({ showCategory }: { showCategory?: 'grape
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-4">
         <div>
           <h3 className="text-lg md:text-xl font-black uppercase text-amber-300 tracking-[0.2em]">აგრო კონტროლი</h3>
-          <p className="text-xs text-white/50 mt-1">აგრო-ბირჟა და მარცვლეული — დამატება, რედაქტირება, წაშლა</p>
+          <p className="text-xs text-white/50 mt-1">აგრო-ბირჟა და მარცვლეული — რედაქტირება და წაშლა</p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
           <button
@@ -187,20 +187,6 @@ export default function AdminAgroPanel({ showCategory }: { showCategory?: 'grape
             type="button"
           >
             სტანდარტული ჩასმა
-          </button>
-          <button
-            onClick={() => openCreate('grape')}
-            className="px-3 py-1 rounded-xl text-xs font-black bg-purple-600 text-white"
-            type="button"
-          >
-            + აგრო-ბირჟა
-          </button>
-          <button
-            onClick={() => openCreate('grain')}
-            className="px-3 py-1 rounded-xl text-xs font-black bg-yellow-600 text-white"
-            type="button"
-          >
-            + მარცვლეული
           </button>
         </div>
       </div>
@@ -247,7 +233,6 @@ export default function AdminAgroPanel({ showCategory }: { showCategory?: 'grape
           <div>
             <div className="flex items-center justify-between">
               <div className="text-[11px] text-white/70 mb-2">🍇 აგრო-ბირჟა (გონდაწკიცი)</div>
-              <button onClick={() => openCreate('grape')} className="text-[11px] px-2 py-1 rounded-lg bg-amber-600 text-white font-black">ახალი</button>
             </div>
             <div className="space-y-2">
               {filteredItems.filter(i => i.category === 'grape').map(it => (
@@ -268,7 +253,6 @@ export default function AdminAgroPanel({ showCategory }: { showCategory?: 'grape
           <div>
             <div className="flex items-center justify-between">
               <div className="text-[11px] text-white/70 mb-2">🌾 მარცვლეული</div>
-              <button onClick={() => openCreate('grain')} className="text-[11px] px-2 py-1 rounded-lg bg-amber-600 text-white font-black">ახალი</button>
             </div>
             <div className="space-y-2">
               {filteredItems.filter(i => i.category === 'grain').map(it => (

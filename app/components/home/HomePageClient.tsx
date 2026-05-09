@@ -22,7 +22,6 @@ import TransportModal from '@/app/components/features/transport/TransportModal';
 import AdminSideFrame from '@/app/components/home/AdminSideFrame';
 import AgroDetailsModal from '@/app/components/home/AgroDetailsModal';
 import AnnouncementCard from '@/app/components/home/AnnouncementCard';
-import RegistryFeatureCards from '@/app/components/home/RegistryFeatureCards';
 import RecentAnnouncementsSection from '@/app/components/home/RecentAnnouncementsSection';
 import ServiceProvidersSection from '@/app/components/home/ServiceProvidersSection';
 import FavoritesDropdown from '@/app/components/home/FavoritesDropdown';
@@ -31,6 +30,7 @@ import type { CommunityCounts, CommunityDataset } from '@/app/lib/homeData';
 type AdminPost = Tables<'admin_posts'>;
 type SiteSettingRow = Tables<'site_settings'>;
 type AdsSortOption = 'newest' | 'oldest' | 'price_asc' | 'price_desc';
+type AgroSubmissionType = 'grape' | 'grain';
 
 const ChatPopup = dynamic(() => import('@/app/components/features/ChatPopup'), {
   ssr: false,
@@ -249,6 +249,15 @@ export default function HomePageClient({
   const closeEditAgroModal = useCallback(() => setEditAgroItem(null), []);
   const [snackbar, setSnackbar] = useState<{ open: boolean; message: string; type?: 'success' | 'error' | 'info' }>({ open: false, message: '', type: 'info' });
   const [showAllCategories, setShowAllCategories] = useState(false);
+  const [agroSubmissionType, setAgroSubmissionType] = useState<AgroSubmissionType | null>(null);
+  const [agroSubmissionLoading, setAgroSubmissionLoading] = useState(false);
+  const [agroSubmissionForm, setAgroSubmissionForm] = useState({
+    product: '',
+    price: '',
+    location: '',
+    phone: '',
+    note: '',
+  });
 
   const showSnackbar = useCallback((message: string, type: 'success' | 'error' | 'info' = 'info') => {
     setSnackbar({ open: true, message, type });
@@ -257,6 +266,69 @@ export default function HomePageClient({
   const closeSnackbar = useCallback(() => {
     setSnackbar(prev => ({ ...prev, open: false }));
   }, []);
+
+  const shareHomeSection = useCallback(async (label: string, hash: string) => {
+    if (typeof window === 'undefined') return;
+    const url = `${window.location.origin}${window.location.pathname}${hash}`;
+    if (navigator.share) {
+      try {
+        await navigator.share({ title: label, url });
+        return;
+      } catch {
+        // fall back to clipboard below
+      }
+    }
+    try {
+      await navigator.clipboard.writeText(url);
+      showSnackbar('ბმული დაკოპირდა.', 'success');
+    } catch {
+      window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`, 'fb-share', 'width=600,height=400');
+    }
+  }, [showSnackbar]);
+
+  const shareHomeSectionToFacebook = useCallback((hash: string) => {
+    if (typeof window === 'undefined') return;
+    const url = `${window.location.origin}${window.location.pathname}${hash}`;
+    window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`, 'fb-share', 'width=600,height=400');
+  }, []);
+
+  const openAgroSubmission = useCallback((type: AgroSubmissionType) => {
+    setAgroSubmissionType(type);
+    setAgroSubmissionForm({ product: '', price: '', location: '', phone: '', note: '' });
+  }, []);
+
+  const closeAgroSubmission = useCallback(() => {
+    if (agroSubmissionLoading) return;
+    setAgroSubmissionType(null);
+  }, [agroSubmissionLoading]);
+
+  const submitAgroSubmission = useCallback(async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    if (!agroSubmissionType || agroSubmissionLoading) return;
+
+    setAgroSubmissionLoading(true);
+    try {
+      const response = await fetch('/api/agro-submissions', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ type: agroSubmissionType, ...agroSubmissionForm }),
+      });
+      const payload = await response.json().catch(() => ({}));
+      if (response.status === 401) {
+        showSnackbar('განაცხადის გასაგზავნად გაიარეთ ავტორიზაცია.', 'error');
+        return;
+      }
+      if (!response.ok) throw new Error(payload?.error || 'განაცხადის გაგზავნა ვერ მოხერხდა');
+      showSnackbar('განაცხადი გაიგზავნა მოდერაციაზე.', 'success');
+      setAgroSubmissionType(null);
+      setAgroSubmissionForm({ product: '', price: '', location: '', phone: '', note: '' });
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'უცნობი შეცდომა';
+      showSnackbar(message, 'error');
+    } finally {
+      setAgroSubmissionLoading(false);
+    }
+  }, [agroSubmissionForm, agroSubmissionLoading, agroSubmissionType, showSnackbar]);
 
   const handleUpdatePrice = useCallback(async () => {
     if (!editAgroItem) {
@@ -1043,47 +1115,133 @@ export default function HomePageClient({
               </div>
             </div>
 
-            <div className="w-full mt-8">
-              <RegistryFeatureCards counts={initialCommunityCounts} visibleCards={['lost-found']} />
-            </div>
-
-            {/* ── Agro/Grain section (below announcements) ── */}
-            <div className="w-full mt-8">
-                {/* აგრო-ბირჟა + მარცვლეული */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  {/* 🍇 აგრო-ბირჟა */}
-                  <div className="bg-white/[0.03] backdrop-blur-3xl rounded-[30px] border border-white/10 p-5 flex flex-col items-center group relative overflow-hidden transition-all hover:border-purple-500/30 shadow-xl h-[300px]">
-                    <div className="flex justify-between w-full items-center mb-4">
-                      <h4 className="text-[10px] font-black text-purple-400 uppercase tracking-[0.4em]">🍇 აგრო-ბირჟა</h4>
-                    </div>
-                    <p className="w-full text-[10px] text-white/40 font-bold uppercase tracking-[0.2em] mb-3 leading-tight">საორიენტაციო ფასები · დააჭირე პროდუქტს</p>
-                    <div className="w-full flex-1 space-y-2 overflow-y-auto custom-scrollbar pr-1">
-                      {agroData.filter(i => i.category === 'grape').map(item => (
-                        <button key={item.id} onClick={() => setSelectedAgro(item)} className="w-full flex justify-between items-center bg-black/40 p-3 rounded-xl border border-white/5 transition-all group/item hover:bg-white/5">
-                          <span className="text-xs font-black uppercase text-purple-300">{item.name}</span>
-                          <span className="text-sm font-black italic">{getAgroDisplayPrice(item)}</span>
-                        </button>
-                      ))}
-                    </div>
-                    <p className="mt-auto pt-3 text-[11px] text-white/70 font-black text-center tracking-wide">თქვენი ფასი გამოჩნდება ამ ფანჯარაში</p>
-                  </div>
-
-                  {/* 🌾 მარცვლეული */}
-                  <div className="bg-white/[0.03] backdrop-blur-3xl rounded-[30px] border border-white/10 p-5 flex flex-col items-center group relative overflow-hidden transition-all hover:border-yellow-500/30 shadow-xl h-[300px]">
-                    <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-yellow-500 to-transparent opacity-30" />
-                    <h4 className="text-[10px] font-black text-yellow-500 uppercase tracking-[0.4em] mb-4 w-full text-left">🌾 მარცვლეული</h4>
-                    <p className="w-full text-[10px] text-white/40 font-bold uppercase tracking-[0.2em] mb-3 leading-tight">საორიენტაციო ფასები · დააჭირე პროდუქტს</p>
-                    <div className="w-full flex-1 space-y-2 overflow-y-auto custom-scrollbar pr-1">
-                      {agroData.filter(i => i.category === 'grain').map(item => (
-                        <button key={item.id} onClick={() => setSelectedAgro(item)} className="w-full flex justify-between items-center bg-black/40 p-3 rounded-xl border border-white/5 transition-all group/item hover:bg-white/5">
-                          <span className="text-xs font-black uppercase text-yellow-500">{item.name}</span>
-                          <span className="text-sm font-black italic">{getAgroDisplayPrice(item)}</span>
-                        </button>
-                      ))}
-                    </div>
-                    <p className="mt-auto pt-3 text-[11px] text-yellow-200 font-black text-center tracking-wide">თქვენი ფასი გამოჩნდება ამ ფანჯარაში</p>
+            <div className="w-full mt-8 grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div id="agro-birzha" className="bg-white/[0.03] backdrop-blur-3xl rounded-[30px] border border-white/10 p-5 flex flex-col items-center group relative overflow-hidden transition-all hover:border-purple-500/30 shadow-xl h-[300px]">
+                <div className="flex justify-between w-full items-center mb-4">
+                  <h4 className="text-[10px] font-black text-purple-400 uppercase tracking-[0.4em]">🍇 აგრო-ბირჟა</h4>
+                  <div className="flex items-center gap-1.5">
+                    <button
+                      type="button"
+                      onClick={() => shareHomeSectionToFacebook('#agro-birzha')}
+                      className="rounded-xl border border-blue-300/30 bg-blue-500/10 px-2 py-1.5 text-[9px] font-black uppercase tracking-[0.12em] text-blue-100 hover:bg-blue-500/20 transition"
+                    >
+                      FB
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => shareHomeSection('აგრო-ბირჟა', '#agro-birzha')}
+                      className="rounded-xl border border-white/15 bg-white/5 px-2 py-1.5 text-[9px] font-black uppercase tracking-[0.12em] text-white/75 hover:text-white transition"
+                    >
+                      გაზიარება
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => openAgroSubmission('grape')}
+                      className="rounded-xl border border-purple-300/30 bg-purple-500/10 px-3 py-1.5 text-[9px] font-black uppercase tracking-[0.14em] text-purple-100 hover:bg-purple-500/20 transition"
+                    >
+                      დამატება
+                    </button>
                   </div>
                 </div>
+                <p className="w-full text-[10px] text-white/40 font-bold uppercase tracking-[0.2em] mb-3 leading-tight">საორიენტაციო ფასები · დააჭირე პროდუქტს</p>
+                <div className="w-full flex-1 space-y-2 overflow-y-auto custom-scrollbar pr-1">
+                  {agroData.filter(i => i.category === 'grape').map(item => (
+                    <button key={item.id} onClick={() => setSelectedAgro(item)} className="w-full flex justify-between items-center bg-black/40 p-3 rounded-xl border border-white/5 transition-all group/item hover:bg-white/5">
+                      <span className="text-xs font-black uppercase text-purple-300">{item.name}</span>
+                      <span className="text-sm font-black italic">{getAgroDisplayPrice(item)}</span>
+                    </button>
+                  ))}
+                </div>
+                <p className="mt-auto pt-3 text-[11px] text-white/70 font-black text-center tracking-wide">თქვენი განაცხადი გაიგზავნება მოდერაციაზე</p>
+              </div>
+
+              <div
+                id="lost-found"
+                className="bg-white/[0.03] backdrop-blur-3xl rounded-[30px] border border-white/10 p-5 flex flex-col items-center group relative overflow-hidden transition-all hover:border-amber-500/30 shadow-xl h-[300px]"
+              >
+                <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(245,158,11,0.14),_transparent_55%)]" />
+                <div className="relative z-10 flex h-full w-full flex-col">
+                  <div className="mb-4 flex w-full items-center justify-between gap-2">
+                    <h4 className="text-[10px] font-black text-amber-300 uppercase tracking-[0.34em] text-left">🔎 დაკარგული/ნაპოვნი</h4>
+                    <Link
+                      href="/community/lost-found/submit"
+                      className="rounded-xl border border-amber-300/30 bg-amber-500/10 px-3 py-1.5 text-[9px] font-black uppercase tracking-[0.14em] text-amber-100 hover:bg-amber-500/20 transition"
+                    >
+                      დამატება
+                    </Link>
+                  </div>
+                  <p className="text-left text-sm font-black leading-snug text-white/90">
+                    დაკარგული ნივთების და ნაპოვნი ინფორმაციის რეესტრი
+                  </p>
+                  <p className="mt-3 text-left text-xs leading-relaxed text-white/55">
+                    განათავსეთ ან მოძებნეთ განცხადება ერთ სივრცეში.
+                  </p>
+                  <div className="mt-auto flex items-center justify-between gap-3">
+                    <span className="rounded-2xl border border-amber-400/20 bg-black/40 px-3 py-2 text-[11px] font-black text-amber-100">
+                      {initialCommunityCounts.lostFound ?? 0} აქტიური
+                    </span>
+                    <Link href="/community/lost-found" className="rounded-full border border-amber-400/30 bg-amber-500/10 px-4 py-2 text-[11px] font-black uppercase tracking-[0.16em] text-amber-100">
+                      ნახვა →
+                    </Link>
+                  </div>
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    <button
+                      type="button"
+                      onClick={() => shareHomeSectionToFacebook('#lost-found')}
+                      className="rounded-xl border border-blue-300/30 bg-blue-500/10 px-3 py-2 text-[10px] font-black uppercase text-blue-100"
+                    >
+                      Facebook
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => shareHomeSection('დაკარგული/ნაპოვნი', '#lost-found')}
+                      className="rounded-xl border border-white/15 bg-white/5 px-3 py-2 text-[10px] font-black uppercase text-white/75"
+                    >
+                      გაზიარება
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              <div id="grain-market" className="bg-white/[0.03] backdrop-blur-3xl rounded-[30px] border border-white/10 p-5 flex flex-col items-center group relative overflow-hidden transition-all hover:border-yellow-500/30 shadow-xl h-[300px]">
+                <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-yellow-500 to-transparent opacity-30" />
+                <div className="flex justify-between w-full items-center mb-4">
+                  <h4 className="text-[10px] font-black text-yellow-500 uppercase tracking-[0.4em]">🌾 მარცვლეული</h4>
+                  <div className="flex items-center gap-1.5">
+                    <button
+                      type="button"
+                      onClick={() => shareHomeSectionToFacebook('#grain-market')}
+                      className="rounded-xl border border-blue-300/30 bg-blue-500/10 px-2 py-1.5 text-[9px] font-black uppercase tracking-[0.12em] text-blue-100 hover:bg-blue-500/20 transition"
+                    >
+                      FB
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => shareHomeSection('მარცვლეული', '#grain-market')}
+                      className="rounded-xl border border-white/15 bg-white/5 px-2 py-1.5 text-[9px] font-black uppercase tracking-[0.12em] text-white/75 hover:text-white transition"
+                    >
+                      გაზიარება
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => openAgroSubmission('grain')}
+                      className="rounded-xl border border-yellow-300/30 bg-yellow-500/10 px-3 py-1.5 text-[9px] font-black uppercase tracking-[0.14em] text-yellow-100 hover:bg-yellow-500/20 transition"
+                    >
+                      დამატება
+                    </button>
+                  </div>
+                </div>
+                <p className="w-full text-[10px] text-white/40 font-bold uppercase tracking-[0.2em] mb-3 leading-tight">საორიენტაციო ფასები · დააჭირე პროდუქტს</p>
+                <div className="w-full flex-1 space-y-2 overflow-y-auto custom-scrollbar pr-1">
+                  {agroData.filter(i => i.category === 'grain').map(item => (
+                    <button key={item.id} onClick={() => setSelectedAgro(item)} className="w-full flex justify-between items-center bg-black/40 p-3 rounded-xl border border-white/5 transition-all group/item hover:bg-white/5">
+                      <span className="text-xs font-black uppercase text-yellow-500">{item.name}</span>
+                      <span className="text-sm font-black italic">{getAgroDisplayPrice(item)}</span>
+                    </button>
+                  ))}
+                </div>
+                <p className="mt-auto pt-3 text-[11px] text-yellow-200 font-black text-center tracking-wide">თქვენი განაცხადი გაიგზავნება მოდერაციაზე</p>
+              </div>
             </div>
 
 
@@ -1102,6 +1260,74 @@ export default function HomePageClient({
       {showTransport && <TransportModal isAdmin={isAdmin} onClose={() => setShowTransport(false)} staticSchedule={TRANSPORT_SCHEDULE} />}
 
       <AgroDetailsModal selectedAgro={selectedAgro} onClose={() => setSelectedAgro(null)} />
+
+      {agroSubmissionType && (
+        <div className="fixed inset-0 z-[130] flex items-center justify-center bg-black/80 px-4 py-8 backdrop-blur-xl">
+          <form
+            onSubmit={submitAgroSubmission}
+            className="w-full max-w-lg rounded-[28px] border border-white/10 bg-[#0b0b15] p-5 text-left text-white shadow-2xl"
+          >
+            <div className="mb-5 flex items-start justify-between gap-4">
+              <div>
+                <p className="text-[10px] font-black uppercase tracking-[0.2em] text-amber-300">მოდერაციაზე გაგზავნა</p>
+                <h3 className="mt-1 text-lg font-black uppercase italic">
+                  {agroSubmissionType === 'grape' ? 'აგრო-ბირჟა' : 'მარცვლეული'}
+                </h3>
+              </div>
+              <button
+                type="button"
+                onClick={closeAgroSubmission}
+                className="text-xs font-black uppercase text-white/45 hover:text-white"
+              >
+                დახურვა ✕
+              </button>
+            </div>
+
+            <div className="space-y-3">
+              <input
+                value={agroSubmissionForm.product}
+                onChange={(event) => setAgroSubmissionForm((form) => ({ ...form, product: event.target.value }))}
+                placeholder="პროდუქტი"
+                className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white outline-none focus:border-amber-400"
+              />
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                <input
+                  value={agroSubmissionForm.price}
+                  onChange={(event) => setAgroSubmissionForm((form) => ({ ...form, price: event.target.value }))}
+                  placeholder="ფასი ₾"
+                  className="rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white outline-none focus:border-amber-400"
+                />
+                <input
+                  value={agroSubmissionForm.location}
+                  onChange={(event) => setAgroSubmissionForm((form) => ({ ...form, location: event.target.value }))}
+                  placeholder="ლოკაცია"
+                  className="rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white outline-none focus:border-amber-400"
+                />
+              </div>
+              <input
+                value={agroSubmissionForm.phone}
+                onChange={(event) => setAgroSubmissionForm((form) => ({ ...form, phone: event.target.value }))}
+                placeholder="ტელეფონი"
+                className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white outline-none focus:border-amber-400"
+              />
+              <textarea
+                value={agroSubmissionForm.note}
+                onChange={(event) => setAgroSubmissionForm((form) => ({ ...form, note: event.target.value }))}
+                placeholder="დამატებითი ინფორმაცია"
+                rows={4}
+                className="w-full resize-none rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white outline-none focus:border-amber-400"
+              />
+              <button
+                type="submit"
+                disabled={agroSubmissionLoading}
+                className="w-full rounded-2xl bg-amber-600 px-5 py-4 text-xs font-black uppercase tracking-[0.14em] text-white transition hover:bg-amber-500 disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                {agroSubmissionLoading ? 'იგზავნება...' : 'გაგზავნა მოდერაციაზე'}
+              </button>
+            </div>
+          </form>
+        </div>
+      )}
 
       <EditAgroModal
           open={!!editAgroItem}
