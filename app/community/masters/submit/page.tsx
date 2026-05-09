@@ -94,8 +94,7 @@ const findServiceGroup = (service: string) => (
 
 export default function MastersSubmit() {
   const [full_name, setFullName] = useState('');
-  const [profession, setProfession] = useState('');
-  const [category, setCategory] = useState('');
+  const [selectedServices, setSelectedServices] = useState<string[]>([]);
   const [municipality, setMunicipality] = useState('');
   const [settlement, setSettlement] = useState('');
   const [phone, setPhone] = useState('');
@@ -108,9 +107,20 @@ export default function MastersSubmit() {
   const [hasOnCall, setHasOnCall] = useState(false);
   const [submitted, setSubmitted] = useState(false);
 
+  const profession = selectedServices.join(', ');
+  const category = Array.from(new Set(selectedServices.map(findServiceGroup).filter(Boolean))).join(', ');
+
+  const toggleService = (service: string) => {
+    setSelectedServices((current) => (
+      current.includes(service)
+        ? current.filter((item) => item !== service)
+        : [...current, service]
+    ));
+  };
+
   const submit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    if (!full_name || !profession) return alert('სერვისის დასახელება და სერვისის არჩევა აუცილებელია');
+    if (!full_name || selectedServices.length === 0) return alert('სერვისის დასახელება და მინიმუმ ერთი სერვისის არჩევა აუცილებელია');
     const { data: { session } } = await supabase.auth.getSession();
     if (!session) {
       alert('სერვისის დასამატებლად გაიარეთ ავტორიზაცია.');
@@ -176,23 +186,52 @@ export default function MastersSubmit() {
           {() => (
             <form className="space-y-3" onSubmit={submit}>
               <input value={full_name} onChange={e=>setFullName(e.target.value)} placeholder="სერვისის დასახელება" className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-sm text-white" />
-              <select
-                value={profession}
-                onChange={(e) => {
-                  setProfession(e.target.value);
-                  setCategory(findServiceGroup(e.target.value));
-                }}
-                className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-sm text-white"
-              >
-                <option value="" className="bg-[#0b0b15] text-white">რა სერვისს სთავაზობთ?</option>
-                {SERVICE_GROUPS.map((group) => (
-                  <optgroup key={group.label} label={group.label} className="bg-[#0b0b15] text-amber-200">
-                    {group.services.map((service) => (
-                      <option key={`${group.label}-${service}`} value={service} className="bg-[#0b0b15] text-white">{service}</option>
-                    ))}
-                  </optgroup>
-                ))}
-              </select>
+              <div className="rounded-xl border border-white/10 bg-white/5 p-3">
+                <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+                  <span className="text-[11px] font-black uppercase tracking-[0.18em] text-amber-200">აირჩიეთ ერთი ან რამდენიმე სერვისი</span>
+                  {selectedServices.length > 0 && (
+                    <button
+                      type="button"
+                      onClick={() => setSelectedServices([])}
+                      className="text-[10px] font-black uppercase tracking-[0.16em] text-white/40 transition hover:text-amber-200"
+                    >
+                      გასუფთავება
+                    </button>
+                  )}
+                </div>
+                <div className="max-h-72 space-y-3 overflow-y-auto pr-1 custom-scrollbar">
+                  {SERVICE_GROUPS.map((group) => (
+                    <div key={group.label} className="rounded-xl border border-white/10 bg-[#0b0b15]/80 p-3">
+                      <div className="mb-2 text-[10px] font-black uppercase tracking-[0.18em] text-amber-200">
+                        {group.label}
+                      </div>
+                      <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+                        {group.services.map((service) => {
+                          const isChecked = selectedServices.includes(service);
+                          return (
+                            <label
+                              key={`${group.label}-${service}`}
+                              className={`flex cursor-pointer items-center gap-2 rounded-lg border px-3 py-2 text-left text-[11px] font-bold text-white/80 transition ${
+                                isChecked
+                                  ? 'border-amber-400/40 bg-amber-500/15 text-amber-100'
+                                  : 'border-white/10 bg-white/[0.03] hover:border-white/20 hover:bg-white/[0.06]'
+                              }`}
+                            >
+                              <input
+                                type="checkbox"
+                                checked={isChecked}
+                                onChange={() => toggleService(service)}
+                                className="h-4 w-4 flex-none accent-amber-500"
+                              />
+                              <span>{service}</span>
+                            </label>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
               <input value={category} readOnly placeholder="მომსახურების ტიპი" className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-sm text-white/70" />
               <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                 <input value={municipality} onChange={e=>setMunicipality(e.target.value)} placeholder="მუნიციპალიტეტი" className="bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-sm text-white" />
