@@ -814,15 +814,7 @@ export default function HomePageClient({
             </div>
 
 
-            {/* --- Announcement/Marquee Bar (center column, in the middle) --- */}
-            <div className="w-full mb-2 flex justify-center relative">
-              <div className="w-full max-w-[520px] sm:max-w-2xl bg-gradient-to-r from-amber-600/80 via-black/80 to-amber-600/80 rounded-full border border-amber-400/30 shadow px-2 py-0.5 marquee-outer">
-                {/* True infinite marquee */}
-                <span className="marquee-inner text-sm sm:text-base font-bold italic tracking-widest text-amber-100 drop-shadow-lg">
-                  {marqueeText || 'საიტი მუშაობს სატესტო რეჟიმში'}
-                </span>
-              </div>
-            </div>
+            {/* მორბენალი სტრიქონი ამოღებულია per request */}
 
 
 
