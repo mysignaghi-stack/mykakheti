@@ -551,7 +551,7 @@ export default function ServiceProvidersSection({ providers = [], count = 0 }: S
                       alt={provider.full_name}
                       fill
                       sizes="(max-width: 640px) 100vw, (max-width: 1280px) 50vw, 33vw"
-                      className="object-cover transition duration-300 group-hover:scale-105"
+                      className="object-contain p-2 transition duration-300 group-hover:scale-[1.03]"
                     />
                   </div>
                 )}

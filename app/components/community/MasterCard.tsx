@@ -99,7 +99,7 @@ export default function MasterCard({ master }: { master: Master }) {
     <div className="overflow-hidden bg-white/5 rounded-2xl border border-white/10">
       {master.photo_url && (
         <div className="relative h-40 w-full bg-white/5">
-          <Image src={master.photo_url} alt={master.full_name} fill sizes="(max-width: 640px) 100vw, 50vw" className="object-cover" />
+          <Image src={master.photo_url} alt={master.full_name} fill sizes="(max-width: 640px) 100vw, 50vw" className="object-contain p-2" />
         </div>
       )}
       <div className="p-5 flex justify-between items-start gap-4">
