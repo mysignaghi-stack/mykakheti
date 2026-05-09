@@ -1,5 +1,6 @@
 'use client';
 
+import { useMemo, useRef, useState, useEffect } from 'react';
 import Link from 'next/link';
 import type { Tables } from '@/types/helpers';
 
@@ -12,6 +13,118 @@ type ServiceProvidersSectionProps = {
 
 const SERVICE_DESCRIPTION = 'თუ კახეთში სთავაზობთ რაიმე სახის მომსახურებას — ხართ ხელოსანი, ტექნიკოსი, მძღოლი, მასწავლებელი, ფოტოგრაფი, გიდი, დასუფთავების სპეციალისტი ან სხვა მომსახურების მიმწოდებელი — შეგიძლიათ დარეგისტრირდეთ და განათავსოთ ინფორმაცია თქვენი სერვისის შესახებ.';
 const SERVICE_HINT = 'მიუთითეთ რას სთავაზობთ მომხმარებელს, რომელ მუნიციპალიტეტში მუშაობთ, გაქვთ თუ არა გამოძახებით მომსახურება, საკონტაქტო ნომერი და საჭიროების შემთხვევაში ფოტოები.';
+type ServiceSortOption = 'newest' | 'rating' | 'name';
+
+const SERVICE_GROUPS = [
+  {
+    category: 'სარემონტო და სამშენებლო მომსახურება',
+    services: ['სახლის რემონტი', 'ბინის რემონტი', 'კოსმეტიკური რემონტი', 'კაპიტალური რემონტი', 'მშენებლობა', 'სახურავის შეკეთება', 'ფასადის სამუშაოები', 'კედლის გალესვა', 'კაფელ-მეტლახის დაგება', 'იატაკის დაგება', 'ლამინატის დაგება', 'პარკეტის დაგება', 'თაბაშირ-მუყაოს სამუშაოები', 'შპალერის გაკვრა', 'შეღებვა', 'კარ-ფანჯრის მონტაჟი', 'ლითონის კონსტრუქციები', 'ჭიშკარი / მოაჯირი / კიბე', 'შედუღების სამუშაოები'],
+  },
+  {
+    category: 'ელექტროობა და ტექნიკური სამუშაოები',
+    services: ['ელექტრიკოსი', 'ელექტროგაყვანილობის მონტაჟი', 'ელექტროგაყვანილობის შეკეთება', 'მრიცხველის / ავტომატის მონტაჟი', 'განათების მონტაჟი', 'კამერების მონტაჟი', 'სიგნალიზაციის მონტაჟი', 'ინტერნეტ-ქსელის გაყვანა', 'ჭკვიანი სახლის მოწყობილობები'],
+  },
+  {
+    category: 'სანტექნიკა და გათბობა',
+    services: ['სანტექნიკოსი', 'წყლის მილის შეკეთება', 'კანალიზაციის გაწმენდა', 'ონკანის / უნიტაზის / ნიჟარის მონტაჟი', 'წყლის გამაცხელებლის მონტაჟი', 'გათბობის სისტემის მონტაჟი', 'რადიატორების მონტაჟი', 'ქვაბის შეკეთება', 'გაზის გამათბობლის მონტაჟი', 'იატაკქვეშა გათბობა'],
+  },
+  {
+    category: 'საყოფაცხოვრებო ტექნიკის შეკეთება',
+    services: ['მაცივრის შეკეთება', 'სარეცხი მანქანის შეკეთება', 'ჭურჭლის სარეცხი მანქანის შეკეთება', 'ტელევიზორის შეკეთება', 'გაზქურის შეკეთება', 'ელექტროქურის შეკეთება', 'წყლის გამაცხელებლის შეკეთება', 'კონდიციონერის შეკეთება', 'მტვერსასრუტის შეკეთება', 'მცირე საყოფაცხოვრებო ტექნიკის შეკეთება'],
+  },
+  {
+    category: 'კომპიუტერი, ტელეფონი და ელექტრონიკა',
+    services: ['კომპიუტერის შეკეთება', 'ლეპტოპის შეკეთება', 'ტელეფონის შეკეთება', 'პლანშეტის შეკეთება', 'პროგრამების დაყენება', 'Windows-ის დაყენება', 'მონაცემების აღდგენა', 'პრინტერის შეკეთება', 'ქსელის გამართვა', 'კამერების / DVR-ის გამართვა', 'ვებგვერდის შექმნა', 'სოციალური ქსელების მართვა'],
+  },
+  {
+    category: 'ავტოსერვისი',
+    services: ['ავტომობილის შეკეთება', 'ძრავის შეკეთება', 'სავალი ნაწილის შეკეთება', 'ელექტრიკოსი ავტომობილებისთვის', 'დიაგნოსტიკა', 'ზეთის შეცვლა', 'საბურავების შეცვლა', 'ვულკანიზაცია', 'ავტომობილის ევაკუატორი', 'ავტოსამრეცხაო', 'ქიმწმენდა', 'ავტო-კონდიციონერის შეკეთება', 'ავტო-მღებავი', 'ავტო-ჟეშტი', 'მინის შეცვლა'],
+  },
+  {
+    category: 'ტრანსპორტი და გადაზიდვები',
+    services: ['ტაქსი', 'კერძო მძღოლი', 'ტვირთის გადაზიდვა', 'ავეჯის გადაზიდვა', 'სამშენებლო მასალის გადაზიდვა', 'სოფლის მეურნეობის პროდუქტის გადაზიდვა', 'მიკროავტობუსით მომსახურება', 'მგზავრთა გადაყვანა', 'ევაკუატორი', 'ტრაქტორი / სპეციალური ტექნიკა', 'მიწის დამუშავების ტექნიკა'],
+  },
+  {
+    category: 'დასუფთავება და მოვლა',
+    services: ['სახლის დასუფთავება', 'ოფისის დასუფთავება', 'ეზოს დასუფთავება', 'სამშენებლო ნარჩენების გატანა', 'ავეჯის ქიმწმენდა', 'ხალიჩის წმენდა', 'ფანჯრების წმენდა', 'სადარბაზოს დასუფთავება', 'დეზინფექცია', 'მწერებისა და მღრღნელების საწინააღმდეგო მომსახურება'],
+  },
+  {
+    category: 'ეზო, ბაღი და სოფლის მეურნეობა',
+    services: ['ბაღის მოვლა', 'ეზოს მოწყობა', 'ხეების გასხვლა', 'ვენახის მოვლა', 'ვენახის შეწამვლა', 'მიწის დამუშავება', 'ბალახის გაკრეჭა', 'სარწყავი სისტემის მონტაჟი', 'ჭის ამოწმენდა', 'ჭაბურღილის მოწყობა', 'სათბურის მოწყობა', 'აგრონომის მომსახურება', 'ვეტერინარის მომსახურება'],
+  },
+  {
+    category: 'სილამაზე და თავის მოვლა',
+    services: ['თმის სტილისტი', 'დალაქი', 'ვიზაჟისტი', 'მანიკური / პედიკური', 'კოსმეტოლოგი', 'მასაჟი', 'წარბების კორექცია', 'წამწამების დაგრძელება', 'ტატუ / პირსინგი', 'სახლში გამოძახებით სილამაზის მომსახურება'],
+  },
+  {
+    category: 'ჯანმრთელობა და კეთილდღეობა',
+    services: ['ექთნის მომსახურება', 'მომვლელი', 'ხანდაზმულის მოვლა', 'ბავშვის მოვლა', 'რეაბილიტაციის სპეციალისტი', 'მასაჟისტი', 'ფსიქოლოგი', 'ლოგოპედი', 'დიეტოლოგი'],
+  },
+  {
+    category: 'განათლება და რეპეტიტორები',
+    services: ['დაწყებითი კლასების მომზადება', 'ქართული ენა და ლიტერატურა', 'მათემატიკა', 'ინგლისური ენა', 'რუსული ენა', 'ისტორია', 'ქიმია', 'ფიზიკა', 'ბიოლოგია', 'კომპიუტერული უნარები', 'მუსიკა', 'ცეკვა', 'ხატვა', 'აბიტურიენტების მომზადება', 'ონლაინ გაკვეთილები'],
+  },
+  {
+    category: 'იურიდიული, საბუღალტრო და საოფისე მომსახურება',
+    services: ['იურიდიული კონსულტაცია', 'ხელშეკრულების შედგენა', 'განცხადებების / საჩივრების მომზადება', 'ბუღალტრული მომსახურება', 'საგადასახადო კონსულტაცია', 'დოკუმენტების აკრეფა', 'თარგმნა', 'ნოტარიული მომსახურების მოძიება', 'საბანკო / სადაზღვევო კონსულტაცია'],
+  },
+  {
+    category: 'ღონისძიებები და ფოტო-ვიდეო მომსახურება',
+    services: ['ფოტოგრაფი', 'ვიდეოგადაღება', 'დრონით გადაღება', 'მონტაჟი', 'ქორწილის ორგანიზება', 'დაბადების დღის ორგანიზება', 'მუსიკოსი / დიჯეი', 'წამყვანი', 'დეკორაცია', 'ტორტი / ტკბილეული', 'ქეითერინგი', 'დარბაზის გაფორმება', 'მანქანის მორთვა'],
+  },
+  {
+    category: 'საკვები, კულინარია და ქეითერინგი',
+    services: ['სახლში მომზადებული საჭმელი', 'ტორტები', 'ხაჭაპური / ლობიანი', 'ტრადიციული კერძები', 'ქეითერინგი', 'სადღესასწაულო სუფრა', 'ღვინის დეგუსტაცია', 'მარანი / მასპინძლობა', 'კულინარიული მომსახურება გამოძახებით'],
+  },
+  {
+    category: 'ტურიზმი და მასპინძლობა',
+    services: ['გიდის მომსახურება', 'საოჯახო სასტუმრო', 'დღიური ბინა', 'ტურების ორგანიზება', 'მძღოლი ტურისტებისთვის', 'ღვინის ტური', 'ცხენით გასეირნება', 'პიკნიკის სივრცე', 'კემპინგი', 'ლაშქრობა', 'კახეთის ღირსშესანიშნაობების ტური'],
+  },
+  {
+    category: 'ბავშვებთან დაკავშირებული მომსახურება',
+    services: ['ძიძა', 'ბავშვის მოვლა', 'საბავშვო ღონისძიებები', 'ანიმატორი', 'ბავშვთა ფოტოგრაფი', 'რეპეტიტორი', 'ლოგოპედი', 'საბავშვო ტორტი', 'საბავშვო სივრცე'],
+  },
+  {
+    category: 'ცხოველები',
+    services: ['ვეტერინარი', 'ცხოველების მოვლა', 'ძაღლის გაწვრთნა', 'ცხოველის დაბანა / გაკრეჭა', 'დროებითი დატოვება', 'დაკარგული ცხოველის მოძიებაში დახმარება', 'საკვების / აქსესუარების მიწოდება'],
+  },
+  {
+    category: 'უძრავ ქონებასთან დაკავშირებული მომსახურება',
+    services: ['მაკლერი', 'ბინის გაქირავებაში დახმარება', 'მიწის ნაკვეთის შეფასება', 'აზომვითი სამუშაოები', 'საკადასტრო ნახაზები', 'მშენებლობის კონსულტაცია', 'ინტერიერის დიზაინი', 'არქიტექტურული მომსახურება'],
+  },
+  {
+    category: 'სხვა მომსახურება',
+    services: ['სხვადასხვა სერვისი', 'ერთჯერადი დახმარება', 'ხელით სამუშაო', 'დამხმარე მუშა', 'ნივთების აწყობა', 'მცირე საყოფაცხოვრებო საქმეები', 'დროებითი მომსახურება', 'სხვა სერვისი'],
+  },
+];
+
+const SERVICE_CATEGORY_FALLBACKS = SERVICE_GROUPS.map((group) => group.category);
+const SERVICE_FALLBACKS = SERVICE_GROUPS.flatMap((group) => group.services);
+const HEALTH_SERVICE_WARNING = 'საიტზე განთავსებული ინფორმაცია არ წარმოადგენს სამედიცინო რეკომენდაციას. მომსახურების მიღებამდე გადაამოწმეთ სპეციალისტის კვალიფიკაცია.';
+
+const SERVICE_LOCATION_FALLBACKS = [
+  'თელავი',
+  'გურჯაანი',
+  'სიღნაღი',
+  'ყვარელი',
+  'ლაგოდეხი',
+  'ახმეტა',
+  'დედოფლისწყარო',
+  'საგარეჯო',
+];
+
+const normalizeServiceText = (value: string | null | undefined) => (
+  (value ?? '').toLowerCase().replace(/\s+/g, ' ').trim()
+);
+
+const buildOptions = (values: Array<string | null | undefined>, fallbacks: string[]) => {
+  return Array.from(new Set(
+    [
+      ...values.map((value) => value?.trim()).filter((value): value is string => Boolean(value)),
+      ...fallbacks,
+    ]
+  ));
+};
 
 function PremiumServiceIconCluster() {
   return (
@@ -95,7 +208,87 @@ function PremiumServiceIconCluster() {
   );
 }
 
-export default function ServiceProvidersSection({ count = 0 }: ServiceProvidersSectionProps) {
+export default function ServiceProvidersSection({ providers = [], count = 0 }: ServiceProvidersSectionProps) {
+  const [serviceSearch, setServiceSearch] = useState('');
+  const [selectedServiceCategory, setSelectedServiceCategory] = useState('ყველა კატეგ.');
+  const [selectedService, setSelectedService] = useState('ყველა სერვისი');
+  const [selectedServiceLocation, setSelectedServiceLocation] = useState('ყველა კახეთი');
+  const [serviceSort, setServiceSort] = useState<ServiceSortOption>('newest');
+  const [showServiceCategoryDropdown, setShowServiceCategoryDropdown] = useState(false);
+  const [showServiceDropdown, setShowServiceDropdown] = useState(false);
+  const [showServiceLocationDropdown, setShowServiceLocationDropdown] = useState(false);
+  const serviceCategoryRef = useRef<HTMLDivElement | null>(null);
+  const serviceRef = useRef<HTMLDivElement | null>(null);
+  const serviceLocationRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as Node;
+      if (serviceCategoryRef.current && !serviceCategoryRef.current.contains(target)) {
+        setShowServiceCategoryDropdown(false);
+      }
+      if (serviceRef.current && !serviceRef.current.contains(target)) {
+        setShowServiceDropdown(false);
+      }
+      if (serviceLocationRef.current && !serviceLocationRef.current.contains(target)) {
+        setShowServiceLocationDropdown(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  const serviceCategories = useMemo(
+    () => ['ყველა კატეგ.', ...buildOptions(providers.map((provider) => provider.category), SERVICE_CATEGORY_FALLBACKS)],
+    [providers]
+  );
+
+  const serviceOptions = useMemo(() => {
+    const categoryServices = SERVICE_GROUPS.find((group) => group.category === selectedServiceCategory)?.services;
+    const providerServices = providers
+      .filter((provider) => selectedServiceCategory === 'ყველა კატეგ.' || provider.category === selectedServiceCategory)
+      .map((provider) => provider.profession);
+
+    return [
+      'ყველა სერვისი',
+      ...buildOptions(providerServices, categoryServices ?? SERVICE_FALLBACKS),
+    ];
+  }, [providers, selectedServiceCategory]);
+
+  const serviceLocations = useMemo(
+    () => ['ყველა კახეთი', ...buildOptions(providers.map((provider) => provider.location), SERVICE_LOCATION_FALLBACKS)],
+    [providers]
+  );
+
+  const filteredProviders = useMemo(() => {
+    const query = normalizeServiceText(serviceSearch);
+    const nextProviders = providers.filter((provider) => {
+      const matchesSearch = !query ||
+        normalizeServiceText(provider.full_name).includes(query) ||
+        normalizeServiceText(provider.profession).includes(query) ||
+        normalizeServiceText(provider.category).includes(query) ||
+        normalizeServiceText(provider.location).includes(query) ||
+        normalizeServiceText(provider.description).includes(query);
+      const matchesCategory = selectedServiceCategory === 'ყველა კატეგ.' || provider.category === selectedServiceCategory;
+      const matchesService = selectedService === 'ყველა სერვისი' || provider.profession === selectedService;
+      const matchesLocation = selectedServiceLocation === 'ყველა კახეთი' || normalizeServiceText(provider.location).includes(normalizeServiceText(selectedServiceLocation));
+
+      return matchesSearch && matchesCategory && matchesService && matchesLocation;
+    });
+
+    nextProviders.sort((a, b) => {
+      if (serviceSort === 'rating') return (b.rating_avg ?? 0) - (a.rating_avg ?? 0);
+      if (serviceSort === 'name') return (a.full_name ?? '').localeCompare(b.full_name ?? '', 'ka');
+      return new Date(b.created_at ?? 0).getTime() - new Date(a.created_at ?? 0).getTime();
+    });
+
+    return nextProviders;
+  }, [providers, selectedService, selectedServiceCategory, selectedServiceLocation, serviceSearch, serviceSort]);
+
+  const showHealthWarning = selectedServiceCategory === 'ჯანმრთელობა და კეთილდღეობა' ||
+    SERVICE_GROUPS.find((group) => group.category === 'ჯანმრთელობა და კეთილდღეობა')?.services.includes(selectedService);
+
   return (
     <section className="w-full mt-8">
       <div className="relative overflow-hidden rounded-[24px] border border-white/10 bg-white/[0.04] p-4 shadow-xl sm:p-5">
@@ -129,6 +322,170 @@ export default function ServiceProvidersSection({ count = 0 }: ServiceProvidersS
             </Link>
           </div>
         </div>
+      </div>
+
+      <div className="mt-3 rounded-[24px] border border-white/10 bg-white/[0.035] p-3 shadow-xl sm:p-4">
+        <div className="grid grid-cols-1 gap-3 lg:grid-cols-[1fr_auto_auto_auto_auto] lg:items-stretch">
+          <div className="flex min-w-0 flex-1 items-center gap-2 rounded-2xl border border-white/10 bg-[#0b0b15] px-4 py-2.5">
+            <span className="text-base text-amber-300/70">🔎</span>
+            <input
+              type="text"
+              value={serviceSearch}
+              onChange={(event) => setServiceSearch(event.target.value)}
+              placeholder="მოძებნე სერვისი..."
+              className="w-full bg-transparent text-xs font-bold uppercase tracking-[0.15em] text-amber-100 placeholder:text-white/30 outline-none"
+            />
+            {serviceSearch && (
+              <button
+                type="button"
+                onClick={() => setServiceSearch('')}
+                className="text-xs text-white/40 transition hover:text-white"
+              >
+                ✕
+              </button>
+            )}
+          </div>
+
+          <div ref={serviceCategoryRef} className="relative">
+            <button
+              type="button"
+              onClick={() => {
+                setShowServiceCategoryDropdown((prev) => !prev);
+                setShowServiceDropdown(false);
+                setShowServiceLocationDropdown(false);
+              }}
+              className="h-full w-full rounded-2xl border border-white/10 bg-[#0b0b15] px-4 py-2.5 text-left text-xs font-black uppercase tracking-[0.15em] text-amber-200 lg:w-[210px] whitespace-nowrap"
+            >
+              {selectedServiceCategory}
+            </button>
+            {showServiceCategoryDropdown && (
+              <div className="absolute z-20 top-full mt-2 w-full min-w-64 rounded-[22px] border border-white/10 bg-[#0b0b15] p-2 shadow-[0_20px_60px_rgba(0,0,0,0.7)]">
+                <div className="max-h-52 space-y-1 overflow-y-auto">
+                  {serviceCategories.map((category) => (
+                    <button
+                      key={category}
+                      type="button"
+                      onClick={() => {
+                        setSelectedServiceCategory(category);
+                        setSelectedService('ყველა სერვისი');
+                        setShowServiceCategoryDropdown(false);
+                      }}
+                      className={`w-full rounded-xl border px-3 py-2 text-left text-[11px] font-black uppercase tracking-[0.15em] transition ${
+                        selectedServiceCategory === category
+                          ? 'border-amber-300/40 bg-amber-500/20 text-amber-200'
+                          : 'border-transparent text-white/80 hover:bg-white/5 hover:text-white'
+                      }`}
+                    >
+                      {category}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+
+          <div ref={serviceRef} className="relative">
+            <button
+              type="button"
+              onClick={() => {
+                setShowServiceDropdown((prev) => !prev);
+                setShowServiceCategoryDropdown(false);
+                setShowServiceLocationDropdown(false);
+              }}
+              className="h-full w-full rounded-2xl border border-white/10 bg-[#0b0b15] px-4 py-2.5 text-left text-xs font-black uppercase tracking-[0.15em] text-emerald-200 lg:w-[190px] whitespace-nowrap"
+            >
+              {selectedService}
+            </button>
+            {showServiceDropdown && (
+              <div className="absolute z-20 top-full mt-2 w-full min-w-56 rounded-[22px] border border-white/10 bg-[#0b0b15] p-2 shadow-[0_20px_60px_rgba(0,0,0,0.7)]">
+                <div className="max-h-52 space-y-1 overflow-y-auto">
+                  {serviceOptions.map((service) => (
+                    <button
+                      key={service}
+                      type="button"
+                      onClick={() => {
+                        setSelectedService(service);
+                        setShowServiceDropdown(false);
+                      }}
+                      className={`w-full rounded-xl border px-3 py-2 text-left text-[11px] font-black uppercase tracking-[0.15em] transition ${
+                        selectedService === service
+                          ? 'border-emerald-300/40 bg-emerald-500/20 text-emerald-200'
+                          : 'border-transparent text-white/80 hover:bg-white/5 hover:text-white'
+                      }`}
+                    >
+                      {service}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+
+          <div ref={serviceLocationRef} className="relative">
+            <button
+              type="button"
+              onClick={() => {
+                setShowServiceLocationDropdown((prev) => !prev);
+                setShowServiceCategoryDropdown(false);
+                setShowServiceDropdown(false);
+              }}
+              className="h-full w-full rounded-2xl border border-white/10 bg-[#0b0b15] px-4 py-2.5 text-left text-xs font-black uppercase tracking-[0.15em] text-cyan-200 lg:w-[180px] whitespace-nowrap"
+            >
+              {selectedServiceLocation}
+            </button>
+            {showServiceLocationDropdown && (
+              <div className="absolute right-0 z-20 top-full mt-2 w-full min-w-56 rounded-[22px] border border-white/10 bg-[#0b0b15] p-2 shadow-[0_20px_60px_rgba(0,0,0,0.7)]">
+                <div className="max-h-52 space-y-1 overflow-y-auto">
+                  {serviceLocations.map((location) => (
+                    <button
+                      key={location}
+                      type="button"
+                      onClick={() => {
+                        setSelectedServiceLocation(location);
+                        setShowServiceLocationDropdown(false);
+                      }}
+                      className={`w-full rounded-xl border px-3 py-2 text-left text-[11px] font-black uppercase tracking-[0.15em] transition ${
+                        selectedServiceLocation === location
+                          ? 'border-cyan-300/40 bg-cyan-500/20 text-cyan-200'
+                          : 'border-transparent text-white/80 hover:bg-white/5 hover:text-white'
+                      }`}
+                    >
+                      {location}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+
+          <select
+            value={serviceSort}
+            onChange={(event) => setServiceSort(event.target.value as ServiceSortOption)}
+            className="rounded-2xl border border-white/10 bg-[#0b0b15] px-3 py-2.5 text-xs font-black uppercase tracking-[0.1em] text-white/70 outline-none cursor-pointer"
+          >
+            <option value="newest">ახალი → ძველი</option>
+            <option value="rating">რეიტინგი</option>
+            <option value="name">სახელი A-Z</option>
+          </select>
+        </div>
+
+        <div className="mt-3 flex flex-wrap items-center justify-between gap-3">
+          <p className="text-left text-[10px] font-black uppercase tracking-[0.22em] text-white/35">
+            ნაპოვნია {filteredProviders.length} სერვისი
+          </p>
+          <Link
+            href="/community/masters"
+            className="inline-flex items-center justify-center rounded-xl border border-amber-400/30 bg-amber-500/10 px-3 py-2 text-[10px] font-black uppercase tracking-[0.14em] text-amber-100 transition hover:border-amber-300 hover:bg-amber-500/20"
+          >
+            ყველა სერვისის ნახვა
+          </Link>
+        </div>
+
+        {showHealthWarning && (
+          <div className="mt-3 rounded-2xl border border-amber-300/20 bg-amber-500/10 px-4 py-3 text-left text-[11px] font-bold leading-relaxed text-amber-100/80">
+            {HEALTH_SERVICE_WARNING}
+          </div>
+        )}
       </div>
     </section>
   );

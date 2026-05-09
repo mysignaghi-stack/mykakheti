@@ -29,6 +29,7 @@ import type { CommunityCounts, CommunityDataset } from '@/app/lib/homeData';
 
 type AdminPost = Tables<'admin_posts'>;
 type SiteSettingRow = Tables<'site_settings'>;
+type AdsSortOption = 'newest' | 'oldest' | 'price_asc' | 'price_desc';
 
 const ChatPopup = dynamic(() => import('@/app/components/features/ChatPopup'), {
   ssr: false,
@@ -160,6 +161,7 @@ export default function HomePageClient({
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategories, setSelectedCategories] = useState<string[]>(['ყველა']);
   const [selectedLocations, setSelectedLocations] = useState<string[]>(['ყველა კახეთი']);
+  const [adsSort, setAdsSort] = useState<AdsSortOption>('newest');
   const [showAllAnnouncements, setShowAllAnnouncements] = useState(false);
   const [announcementsPage, setAnnouncementsPage] = useState(0);
   const [adsSliderIndex, setAdsSliderIndex] = useState(0);
@@ -488,7 +490,6 @@ export default function HomePageClient({
   }, [showAllFilters]);
 
   useEffect(() => {
-    if (!showAllFilters) return;
     const handleClickOutside = (event: MouseEvent) => {
       const categoryNode = categoryDropdownRef.current;
       const locationNode = locationDropdownRef.current;
@@ -504,7 +505,7 @@ export default function HomePageClient({
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
     };
-  }, [showAllFilters]);
+  }, []);
 
   // Remove inline ConfirmModal, use component below
 
@@ -523,16 +524,30 @@ export default function HomePageClient({
     const selectedLocs = selectedLocations
       .filter((loc) => loc !== 'ყველა კახეთი')
       .map((loc) => normalizeText(loc));
-    return ads.filter(ad => {
+    const nextAds = ads.filter(ad => {
       if (COMMUNITY_CATEGORIES.includes(ad.category as typeof COMMUNITY_CATEGORIES[number])) return false;
       if (ad.is_archived) return false;
       const matchCat = selectedCategories.length === 0 || selectedCategories.includes('ყველა') || selectedCategories.includes(ad.category);
       const adLocation = normalizeText(ad.location);
       const matchLoc = selectedLocations.includes('ყველა კახეთი') || selectedLocs.some((loc) => adLocation.includes(loc));
-      const matchSearch = normalizeText(ad.title || '').includes(normalizeText(searchTerm));
+      const query = normalizeText(searchTerm);
+      const matchSearch = !query ||
+        normalizeText(ad.title || '').includes(query) ||
+        normalizeText(ad.description || '').includes(query) ||
+        normalizeText(ad.location || '').includes(query);
       return matchCat && matchLoc && matchSearch;
     });
-  }, [ads, normalizeText, selectedCategories, selectedLocations, searchTerm]);
+
+    nextAds.sort((a, b) => {
+      if (adsSort === 'newest') return new Date(b.created_at ?? 0).getTime() - new Date(a.created_at ?? 0).getTime();
+      if (adsSort === 'oldest') return new Date(a.created_at ?? 0).getTime() - new Date(b.created_at ?? 0).getTime();
+      if (adsSort === 'price_asc') return parseFloat(a.price || '0') - parseFloat(b.price || '0');
+      if (adsSort === 'price_desc') return parseFloat(b.price || '0') - parseFloat(a.price || '0');
+      return 0;
+    });
+
+    return nextAds;
+  }, [ads, adsSort, normalizeText, selectedCategories, selectedLocations, searchTerm]);
 
   const selectCategory = (category: string) => {
     if (category === 'ყველა') {
@@ -797,27 +812,136 @@ export default function HomePageClient({
             <div className="w-full mt-8 mobile-announcements-spacing">
               {filteredAds.length > 0 ? (
                 <>
-                  {/* Arrows row — shown only when carousel is active */}
-                  <div className="flex items-center justify-between mb-3">
-                    <div className="flex items-center gap-2">
-                      <button
-                        type="button"
-                        onClick={() => setShowAllFilters(true)}
-                        className="inline-flex h-8 flex-none items-center justify-center rounded-full border border-amber-300/40 bg-amber-500/10 px-3 text-[10px] font-black uppercase tracking-[0.12em] text-amber-200 transition hover:bg-amber-500/20 whitespace-nowrap"
-                      >
-                        ყველა განცხადება
-                      </button>
-                      <span className="text-[10px] text-white/30">{filteredAds.length}</span>
-
+                  {/* Search + arrows row — shown only when carousel is active */}
+                  <div className="mb-3 grid grid-cols-1 gap-3 sm:grid-cols-[1fr_auto_auto_auto_auto] sm:items-stretch">
+                    <div className="flex min-w-0 flex-1 items-center gap-2 rounded-2xl border border-white/10 bg-[#0b0b15] px-4 py-2.5">
+                      <span className="text-base text-amber-300/70">🔎</span>
+                      <input
+                        type="text"
+                        value={searchTerm}
+                        onChange={(e) => {
+                          setSearchTerm(e.target.value);
+                          setAdsSliderIndex(0);
+                        }}
+                        placeholder="მოძებნე განცხადება..."
+                        className="w-full bg-transparent text-xs font-bold uppercase tracking-[0.15em] text-amber-100 placeholder:text-white/30 outline-none"
+                      />
+                      {searchTerm && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setSearchTerm('');
+                            setAdsSliderIndex(0);
+                          }}
+                          className="text-xs text-white/40 transition hover:text-white"
+                        >
+                          ✕
+                        </button>
+                      )}
                     </div>
-                    <div className="flex items-center gap-2">
+
+                    <div ref={categoryDropdownRef} className="relative">
                       <button
                         type="button"
-                        onClick={() => setShowAllCategories(true)}
-                        className="inline-flex h-8 flex-none items-center justify-center rounded-full border border-amber-300/30 bg-amber-500/10 px-3 text-[10px] font-black uppercase tracking-[0.12em] text-amber-200 transition hover:bg-amber-500/20 whitespace-nowrap"
+                        onClick={() => {
+                          setShowCategoryDropdown((prev) => !prev);
+                          setShowLocationDropdown(false);
+                        }}
+                        className="h-full w-full rounded-2xl border border-white/10 bg-[#0b0b15] px-4 py-2.5 text-left text-xs font-black uppercase tracking-[0.15em] text-amber-200 sm:w-[180px] whitespace-nowrap"
                       >
-                        ყველა კატეგორია
+                        {selectedCategories.includes('ყველა')
+                          ? 'ყველა კატეგ.'
+                          : selectedCategories.length === 1
+                            ? selectedCategories[0]
+                            : `${selectedCategories.length} კატეგ.`}
                       </button>
+                      {showCategoryDropdown && (
+                        <div className="absolute z-20 top-full mt-2 w-full min-w-56 rounded-[22px] border border-white/10 bg-[#0b0b15] p-2 shadow-[0_20px_60px_rgba(0,0,0,0.7)]">
+                          <div className="max-h-52 space-y-1 overflow-y-auto">
+                            {['ყველა', ...allNonCommunityCategories].map((category) => (
+                              <button
+                                key={category}
+                                type="button"
+                                onClick={() => {
+                                  setSelectedCategories(category === 'ყველა' ? ['ყველა'] : [category]);
+                                  setShowCategoryDropdown(false);
+                                  setShowAllAnnouncements(false);
+                                  setAnnouncementsPage(0);
+                                  setAdsSliderIndex(0);
+                                }}
+                                className={`w-full rounded-xl border px-3 py-2 text-left text-[11px] font-black uppercase tracking-[0.15em] transition ${
+                                  selectedCategories.includes(category)
+                                    ? 'border-amber-300/40 bg-amber-500/20 text-amber-200'
+                                    : 'border-transparent text-white/80 hover:bg-white/5 hover:text-white'
+                                }`}
+                              >
+                                {category}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+
+                    <div ref={locationDropdownRef} className="relative">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setShowLocationDropdown((prev) => !prev);
+                          setShowCategoryDropdown(false);
+                        }}
+                        className="h-full w-full rounded-2xl border border-white/10 bg-[#0b0b15] px-4 py-2.5 text-left text-xs font-black uppercase tracking-[0.15em] text-cyan-200 sm:w-[180px] whitespace-nowrap"
+                      >
+                        {selectedLocations.includes('ყველა კახეთი')
+                          ? 'ყველა კახეთი'
+                          : selectedLocations.length === 1
+                            ? selectedLocations[0]
+                            : `${selectedLocations.length} ლოკაცია`}
+                      </button>
+                      {showLocationDropdown && (
+                        <div className="absolute right-0 z-20 top-full mt-2 w-full min-w-56 rounded-[22px] border border-white/10 bg-[#0b0b15] p-2 shadow-[0_20px_60px_rgba(0,0,0,0.7)]">
+                          <div className="max-h-52 space-y-1 overflow-y-auto">
+                            {flatLocations.map((loc) => (
+                              <button
+                                key={loc}
+                                type="button"
+                                onClick={() => {
+                                  setSelectedLocations([loc]);
+                                  setShowLocationDropdown(false);
+                                  setShowAllAnnouncements(false);
+                                  setAnnouncementsPage(0);
+                                  setAdsSliderIndex(0);
+                                }}
+                                className={`w-full rounded-xl border px-3 py-2 text-left text-[11px] font-black uppercase tracking-[0.15em] transition ${
+                                  selectedLocations.includes(loc)
+                                    ? 'border-cyan-300/40 bg-cyan-500/20 text-cyan-200'
+                                    : 'border-transparent text-white/80 hover:bg-white/5 hover:text-white'
+                                }`}
+                              >
+                                {loc}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+
+                    <select
+                      value={adsSort}
+                      onChange={(e) => {
+                        setAdsSort(e.target.value as AdsSortOption);
+                        setAdsSliderIndex(0);
+                      }}
+                      className="rounded-2xl border border-white/10 bg-[#0b0b15] px-3 py-2.5 text-xs font-black uppercase tracking-[0.1em] text-white/70 outline-none cursor-pointer"
+                    >
+                      <option value="newest">ახალი → ძველი</option>
+                      <option value="oldest">ძველი → ახალი</option>
+                      <option value="price_asc">ფასი ↑</option>
+                      <option value="price_desc">ფასი ↓</option>
+                    </select>
+
+                    <div className="flex items-center justify-end gap-2">
+                      <span className="text-[10px] text-white/30">{filteredAds.length}</span>
                       <button
                         type="button"
                         onClick={() => setAdsSliderIndex(i => Math.max(0, i - adsCardsPerView))}
