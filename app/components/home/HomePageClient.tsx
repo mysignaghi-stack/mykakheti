@@ -1022,7 +1022,7 @@ export default function HomePageClient({
               <div className="w-full bg-gradient-to-br from-amber-900/30 via-black/40 to-amber-700/20 backdrop-blur-sm rounded-[24px] border border-amber-500/20 shadow-[0_0_18px_2px_rgba(255,191,0,0.08)] p-3 ring-1 ring-amber-400/10 relative">
                 <GuideWidget onMapSearch={handleMapSearch} />
               </div>
-              <div className="w-full h-[300px] overflow-hidden bg-gradient-to-br from-amber-900/40 via-black/50 to-amber-700/20 backdrop-blur-sm rounded-[24px] border border-amber-500/30 shadow-[0_0_20px_4px_rgba(255,191,0,0.1)] p-4 ring-1 ring-amber-400/20 relative">
+              <div className="w-full h-[230px] overflow-hidden bg-gradient-to-br from-amber-900/40 via-black/50 to-amber-700/20 backdrop-blur-sm rounded-[24px] border border-amber-500/30 shadow-[0_0_20px_4px_rgba(255,191,0,0.1)] p-3 ring-1 ring-amber-400/20 relative">
                 <AdminSideFrame
                   post={getPostByPos('left_top')}
                   position="left_top"
@@ -1030,7 +1030,7 @@ export default function HomePageClient({
                   onRefresh={fetchAdminPosts}
                 />
               </div>
-              <div className="w-full h-[300px] overflow-hidden bg-gradient-to-br from-amber-900/40 via-black/50 to-amber-700/20 backdrop-blur-sm rounded-[24px] border border-amber-500/30 shadow-[0_0_20px_4px_rgba(255,191,0,0.1)] p-4 ring-1 ring-amber-400/20 relative">
+              <div className="w-full h-[230px] overflow-hidden bg-gradient-to-br from-amber-900/40 via-black/50 to-amber-700/20 backdrop-blur-sm rounded-[24px] border border-amber-500/30 shadow-[0_0_20px_4px_rgba(255,191,0,0.1)] p-3 ring-1 ring-amber-400/20 relative">
                 <AdminSideFrame
                   post={getPostByPos('right_top')}
                   position="right_top"

@@ -291,10 +291,10 @@ export default function AdminSideFrame({ post, position, isAdmin, onRefresh }: A
   };
 
   return (
-    <div className={`w-full ${heightClass} bg-gradient-to-br from-slate-900/80 via-black/60 to-slate-800/80 backdrop-blur-xl rounded-[32px] border-2 border-amber-500/30 shadow-[inset_0_0_30px_rgba(245,158,11,0.15),0_20px_40px_-10px_rgba(0,0,0,0.5)] p-4 ring-1 ring-white/10 relative animate-in fade-in duration-700`}>
+    <div className={`w-full ${heightClass} bg-gradient-to-br from-slate-900/80 via-black/60 to-slate-800/80 backdrop-blur-xl rounded-[24px] border border-amber-500/30 shadow-[inset_0_0_20px_rgba(245,158,11,0.12),0_14px_28px_-12px_rgba(0,0,0,0.5)] p-2 ring-1 ring-white/10 relative animate-in fade-in duration-700`}>
       {/* Badge removed per request */}
       {/* Header with controls */}
-      <div className="flex justify-end items-center mb-2 pt-2">
+      <div className="flex justify-end items-center mb-1">
         <div className="flex gap-2">
           {isAdmin && (
             <button
@@ -310,10 +310,10 @@ export default function AdminSideFrame({ post, position, isAdmin, onRefresh }: A
 
       {/* Media Display - Moved to top */}
       {post && hasPostMedia ? (
-        <div className="mb-4 mt-4">
+        <div className="mb-1 mt-1">
           {/* Decorative rounded frame with gradient border and inner dark panel */}
-          <div className="relative w-full aspect-[16/9] rounded-[26px] p-[2px] bg-gradient-to-br from-amber-500/20 via-pink-400/10 to-violet-500/10 overflow-hidden">
-            <div className="absolute inset-0 bg-[#06060b] rounded-[22px] overflow-hidden flex items-center justify-center">
+          <div className="relative w-full h-[150px] rounded-[20px] p-[2px] bg-gradient-to-br from-amber-500/20 via-pink-400/10 to-violet-500/10 overflow-hidden">
+            <div className="absolute inset-0 bg-[#06060b] rounded-[18px] overflow-hidden flex items-center justify-center">
               {/* media area */}
               {post.media_type === 'video' ? (
                 <div
@@ -321,7 +321,7 @@ export default function AdminSideFrame({ post, position, isAdmin, onRefresh }: A
                   tabIndex={0}
                   onClick={() => openLightbox((post.media_urls?.[0] || (post as any).media_url)!, true)}
                   onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openLightbox((post.media_urls?.[0] || (post as any).media_url)!, true); } }}
-                  className="w-full h-full rounded-[20px] overflow-hidden relative cursor-pointer"
+                  className="w-full h-full rounded-[18px] overflow-hidden relative cursor-pointer"
                 >
                   <video src={(post.media_urls?.[0] || (post as any).media_url)!} className="w-full h-full object-cover" playsInline autoPlay muted loop />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent pointer-events-none" />
@@ -337,10 +337,10 @@ export default function AdminSideFrame({ post, position, isAdmin, onRefresh }: A
                     effect="fade"
                     fadeEffect={{ crossFade: true }}
                     autoplay={{ delay: 3000, disableOnInteraction: false }}
-                    className="w-full h-full rounded-[20px] overflow-hidden"
+                  className="w-full h-full rounded-[18px] overflow-hidden"
                   >
                     {(post.media_urls || [(post as any).media_url]).filter(Boolean).map((url: string, idx: number) => (
-                      <SwiperSlide key={idx} className="w-full h-full rounded-[20px] overflow-hidden">
+                      <SwiperSlide key={idx} className="w-full h-full rounded-[18px] overflow-hidden">
                         {isVideoUrl(url) ? (
                           <video src={url} className="w-full h-full object-cover" playsInline autoPlay muted loop />
                         ) : (
@@ -351,7 +351,7 @@ export default function AdminSideFrame({ post, position, isAdmin, onRefresh }: A
                   </Swiper>
                 </div>
               ) : (
-                <div className="w-full h-full rounded-[20px] overflow-hidden relative cursor-pointer" onClick={() => openLightbox((post.media_urls?.[0] || (post as any).media_url)!, isVideoUrl((post.media_urls?.[0] || (post as any).media_url)!))}>
+                <div className="w-full h-full rounded-[18px] overflow-hidden relative cursor-pointer" onClick={() => openLightbox((post.media_urls?.[0] || (post as any).media_url)!, isVideoUrl((post.media_urls?.[0] || (post as any).media_url)!))}>
                   {isVideoUrl((post.media_urls?.[0] || (post as any).media_url)!) ? (
                     <video src={(post.media_urls?.[0] || (post as any).media_url)!} className="w-full h-full object-cover" playsInline autoPlay muted loop />
                   ) : (
