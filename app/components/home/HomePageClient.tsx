@@ -24,6 +24,7 @@ import AdminSideFrame from '@/app/components/home/AdminSideFrame';
 import AgroDetailsModal from '@/app/components/home/AgroDetailsModal';
 import AnnouncementCard from '@/app/components/home/AnnouncementCard';
 import RegistryFeatureCards from '@/app/components/home/RegistryFeatureCards';
+import RecentAnnouncementsSection from '@/app/components/home/RecentAnnouncementsSection';
 import type { CommunityCounts, CommunityDataset } from '@/app/lib/homeData';
 
 type AdminPost = Tables<'admin_posts'>;
@@ -914,6 +915,11 @@ export default function HomePageClient({
               )}
 
 
+            </div>
+
+            {/* ── ახლად გამოქვეყნებული განცხადებები ── */}
+            <div className="w-full bg-white/[0.03] backdrop-blur-sm rounded-[28px] border border-white/10 p-5 shadow-xl">
+              <RecentAnnouncementsSection ads={ads} />
             </div>
 
             {/* ── Heritage Widget — mobile only, below announcements ── */}
