@@ -165,6 +165,13 @@ export default function Navbar({
   const bannerStyle = { color: bannerColor };
   const showBanner = isBannerReady && Boolean(bannerText) && bannerEnabled;
 
+  const handleUserSignOut = async () => {
+    await supabase.auth.signOut();
+    setAuthUser(null);
+    setShowLogin(false);
+    setShowRegister(false);
+  };
+
   const hexToRgba = (hex: string, opacity: number) => {
     const normalized = hex.replace('#', '').trim();
     if (normalized.length !== 3 && normalized.length !== 6) return '';
@@ -354,13 +361,22 @@ export default function Navbar({
           განცხადება +
         </Link>
         {authUser ? (
-          <Link
-            href="/profile"
-            className="mx-auto max-w-[170px] truncate rounded-full border border-amber-300/40 bg-white/5 px-2.5 py-0.5 text-[10px] md:text-[11px] font-black uppercase tracking-widest text-amber-300 shadow-[0_6px_16px_rgba(0,0,0,0.2)] backdrop-blur transition hover:border-amber-200/60 hover:text-amber-200"
-            title={getUserDisplayName(authUser)}
-          >
-            {getUserDisplayName(authUser)}
-          </Link>
+          <div className="flex flex-wrap items-center justify-center gap-1.5">
+            <Link
+              href="/profile"
+              className="max-w-[150px] truncate rounded-full border border-amber-300/40 bg-white/5 px-2.5 py-0.5 text-[10px] md:text-[11px] font-black uppercase tracking-widest text-amber-300 shadow-[0_6px_16px_rgba(0,0,0,0.2)] backdrop-blur transition hover:border-amber-200/60 hover:text-amber-200"
+              title={getUserDisplayName(authUser)}
+            >
+              {getUserDisplayName(authUser)}
+            </Link>
+            <button
+              type="button"
+              onClick={handleUserSignOut}
+              className="rounded-full border border-red-300/30 bg-red-500/10 px-2.5 py-0.5 text-[10px] md:text-[11px] font-black uppercase tracking-widest text-red-100/80 shadow-[0_6px_16px_rgba(0,0,0,0.2)] backdrop-blur transition hover:border-red-200/60 hover:text-red-50"
+            >
+              გამოსვლა
+            </button>
+          </div>
         ) : (
           <button
             type="button"
