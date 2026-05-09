@@ -17,12 +17,12 @@ function PremiumServiceIconCluster() {
   return (
     <div
       aria-hidden="true"
-      className="pointer-events-none relative hidden h-32 w-[19rem] shrink-0 md:block lg:h-36 lg:w-[21rem]"
+      className="pointer-events-none relative mx-auto h-20 w-full max-w-[15.5rem] shrink-0 md:mx-0 md:h-32 md:w-[19rem] md:max-w-none lg:h-36 lg:w-[21rem]"
     >
-      <div className="absolute inset-3 rounded-full bg-amber-400/10 blur-2xl" />
-      <div className="absolute right-0 top-2 h-24 w-40 rounded-full bg-slate-200/5 blur-2xl" />
+      <div className="absolute inset-x-8 inset-y-2 rounded-full bg-amber-400/10 blur-2xl md:inset-3" />
+      <div className="absolute right-4 top-3 h-16 w-28 rounded-full bg-slate-200/5 blur-2xl md:right-0 md:top-2 md:h-24 md:w-40" />
 
-      <div className="service-3d-icon service-3d-icon--tool left-0 top-[3.15rem] h-10 w-10 lg:h-11 lg:w-11">
+      <div className="service-3d-icon service-3d-icon--tool left-1 top-8 h-8 w-8 md:left-0 md:top-[3.15rem] md:h-10 md:w-10 lg:h-11 lg:w-11">
         <svg viewBox="0 0 64 64" role="presentation">
           <defs>
             <linearGradient id="serviceToolMetal" x1="14" y1="9" x2="51" y2="56" gradientUnits="userSpaceOnUse">
@@ -41,7 +41,7 @@ function PremiumServiceIconCluster() {
         </svg>
       </div>
 
-      <div className="service-3d-icon service-3d-icon--bolt left-[5rem] top-0 h-9 w-9 lg:left-[5.75rem] lg:h-10 lg:w-10">
+      <div className="service-3d-icon service-3d-icon--bolt left-[4.3rem] top-1 h-7 w-7 md:left-[5rem] md:top-0 md:h-9 md:w-9 lg:left-[5.75rem] lg:h-10 lg:w-10">
         <svg viewBox="0 0 64 64" role="presentation">
           <defs>
             <linearGradient id="serviceBolt" x1="23" y1="6" x2="42" y2="58" gradientUnits="userSpaceOnUse">
@@ -55,7 +55,7 @@ function PremiumServiceIconCluster() {
         </svg>
       </div>
 
-      <div className="service-3d-icon service-3d-icon--camera left-[10rem] top-[2.15rem] h-12 w-12 lg:left-[11.4rem] lg:h-14 lg:w-14">
+      <div className="service-3d-icon service-3d-icon--camera left-[8.65rem] top-6 h-9 w-9 md:left-[10rem] md:top-[2.15rem] md:h-12 md:w-12 lg:left-[11.4rem] lg:h-14 lg:w-14">
         <svg viewBox="0 0 64 64" role="presentation">
           <defs>
             <linearGradient id="serviceCameraBody" x1="12" y1="16" x2="55" y2="55" gradientUnits="userSpaceOnUse">
@@ -76,7 +76,7 @@ function PremiumServiceIconCluster() {
         </svg>
       </div>
 
-      <div className="service-3d-icon service-3d-icon--pipe bottom-0 left-[5.35rem] h-10 w-10 lg:left-[6.2rem] lg:h-11 lg:w-11">
+      <div className="service-3d-icon service-3d-icon--pipe bottom-0 left-[4.7rem] h-8 w-8 md:left-[5.35rem] md:h-10 md:w-10 lg:left-[6.2rem] lg:h-11 lg:w-11">
         <svg viewBox="0 0 64 64" role="presentation">
           <defs>
             <linearGradient id="servicePipe" x1="14" y1="13" x2="51" y2="51" gradientUnits="userSpaceOnUse">
