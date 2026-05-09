@@ -1,6 +1,7 @@
 'use client';
 
 import { useMemo, useRef, useState, useEffect } from 'react';
+import Image from 'next/image';
 import Link from 'next/link';
 import type { Tables } from '@/types/helpers';
 
@@ -296,6 +297,10 @@ export default function ServiceProvidersSection({ providers = [], count = 0 }: S
     SERVICE_GROUPS.find((group) => group.category === 'ჯანმრთელობა და კეთილდღეობა')?.services.includes(selectedService);
   const serviceTotalPages = Math.max(1, Math.ceil(filteredProviders.length / SERVICE_FILTER_PAGE_SIZE));
   const serviceSafePage = Math.min(servicePage, serviceTotalPages);
+  const visibleProviders = filteredProviders.slice(
+    (serviceSafePage - 1) * SERVICE_FILTER_PAGE_SIZE,
+    serviceSafePage * SERVICE_FILTER_PAGE_SIZE
+  );
 
   return (
     <section className="w-full mt-8">
@@ -521,6 +526,50 @@ export default function ServiceProvidersSection({ providers = [], count = 0 }: S
         {showHealthWarning && (
           <div className="mt-3 rounded-2xl border border-amber-300/20 bg-amber-500/10 px-4 py-3 text-left text-[11px] font-bold leading-relaxed text-amber-100/80">
             {HEALTH_SERVICE_WARNING}
+          </div>
+        )}
+
+        {visibleProviders.length > 0 && (
+          <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3">
+            {visibleProviders.map((provider) => (
+              <Link
+                key={provider.id}
+                href={`/community/masters/${provider.id}`}
+                className="group overflow-hidden rounded-2xl border border-white/10 bg-[#0b0b15]/80 text-left transition hover:border-amber-300/35 hover:bg-white/[0.06]"
+              >
+                {provider.photo_url && (
+                  <div className="relative h-28 w-full bg-white/5">
+                    <Image
+                      src={provider.photo_url}
+                      alt={provider.full_name}
+                      fill
+                      sizes="(max-width: 640px) 100vw, (max-width: 1280px) 50vw, 33vw"
+                      className="object-cover transition duration-300 group-hover:scale-105"
+                    />
+                  </div>
+                )}
+                <div className="p-4">
+                  <div className="flex items-start justify-between gap-3">
+                    <div>
+                      <h3 className="text-sm font-black text-white">{provider.full_name}</h3>
+                      <p className="mt-1 line-clamp-2 text-[11px] font-black uppercase tracking-[0.12em] text-amber-300">
+                        {provider.profession}
+                      </p>
+                    </div>
+                    <span className="shrink-0 text-xs font-black text-amber-300">⭐ {provider.rating_avg?.toFixed(1) || '0.0'}</span>
+                  </div>
+                  {provider.category && (
+                    <p className="mt-2 line-clamp-1 text-[11px] text-white/45">{provider.category}</p>
+                  )}
+                  {provider.location && (
+                    <p className="mt-1 text-[11px] text-white/45">{provider.location}</p>
+                  )}
+                  {provider.phone && (
+                    <p className="mt-2 text-[11px] font-bold text-white/65">ტელ: {provider.phone}</p>
+                  )}
+                </div>
+              </Link>
+            ))}
           </div>
         )}
       </div>
