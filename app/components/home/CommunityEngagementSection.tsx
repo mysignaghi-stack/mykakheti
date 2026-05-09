@@ -30,9 +30,9 @@ const COMMUNITY_CARDS: CommunityCardConfig[] = [
   {
     key: 'masters',
     icon: '🛠️',
-    label: 'ხელოსნების/ტექნიკოსების რეესტრი',
+    label: 'სერვისები / მომსახურების მიმწოდებლები',
     submitHref: '/community/masters/submit',
-    submitLabel: 'ოსტატის/სპეციალისტის დამატება',
+    submitLabel: 'სერვისის დამატება',
     viewHref: '/community/masters',
     viewLabel: 'ნახვა',
   },

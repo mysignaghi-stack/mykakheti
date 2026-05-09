@@ -99,11 +99,11 @@ export async function POST(request: Request) {
       is_approved: true,
       user_id: announcement.user_id,
     }, { onConflict: 'id' });
-  } else if (category === 'ოსტატი/სპეციალისტი') {
+  } else if (category === 'ოსტატი/სპეციალისტი' || category === 'სერვისი') {
     await serviceClient.from('masters').upsert({
       id: announcement.id,
       full_name: announcement.title,
-      profession: announcement.description || 'სპეციალისტი',
+      profession: announcement.description || 'სერვისი',
       location: announcement.location,
       phone: announcement.phone,
       photo_url: images[0] || null,

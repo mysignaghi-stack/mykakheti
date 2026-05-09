@@ -2,16 +2,19 @@
 
 import React, { useState } from 'react';
 import Image from 'next/image';
-import type { Database } from '../../../types/supabase';
 import { supabase } from '../../lib/supabase';
 
 interface Master {
   id: string;
   full_name: string;
   profession: string;
+  category?: string | null;
   phone?: string | null;
   location?: string | null;
   description?: string | null;
+  photo_url?: string | null;
+  price_note?: string | null;
+  service_area?: string | null;
   rating_avg: number | null;
   ratings_count: number | null;
 }
@@ -23,7 +26,7 @@ export default function MasterCard({ master }: { master: Master }) {
 
   const submitRating = async () => {
     if (stars < 1 || stars > 5) return alert('აირჩიეთ 1-5 ვარსკვლავი');
-    if (!master.id) return alert('ოსტატის ID არ არის');
+    if (!master.id) return alert('სერვისის ID არ არის');
 
     setSubmitting(true);
     try {
@@ -45,7 +48,7 @@ export default function MasterCard({ master }: { master: Master }) {
       }
 
       if (existingRating) {
-        alert('თქვენ უკვე შეაფასეთ ეს ოსტატი');
+        alert('თქვენ უკვე შეაფასეთ ეს სერვისი');
         return;
       }
 
@@ -90,21 +93,32 @@ export default function MasterCard({ master }: { master: Master }) {
     }
   };
 
+  const hasOnCall = Boolean(master.service_area?.includes('გამოძახებით'));
+
   return (
-    <div className="p-5 bg-white/5 rounded-2xl border border-white/10">
-      <div className="flex justify-between items-start">
+    <div className="overflow-hidden bg-white/5 rounded-2xl border border-white/10">
+      {master.photo_url && (
+        <div className="relative h-40 w-full bg-white/5">
+          <Image src={master.photo_url} alt={master.full_name} fill sizes="(max-width: 640px) 100vw, 50vw" className="object-cover" />
+        </div>
+      )}
+      <div className="p-5 flex justify-between items-start gap-4">
         <div>
           <div className="flex items-center gap-2">
             <div>
               <h3 className="font-black text-white text-base italic">{master.full_name}</h3>
-              <p className="text-[11px] text-amber-400 uppercase font-black">ოსტატი - {master.profession}</p>
+              <p className="text-[11px] text-amber-400 uppercase font-black">{master.profession}</p>
             </div>
           </div>
           <div className="flex items-center gap-2 mt-1">
           </div>
+          {master.category && (<p className="text-[11px] text-white/50">მომსახურების ტიპი: {master.category}</p>)}
           {master.location && (<p className="text-[11px] text-white/50">ლოკაცია: {master.location}</p>)}
+          <p className="text-[11px] text-white/50">ფასი: {master.price_note || 'შეთანხმებით'}</p>
+          {hasOnCall && (<p className="text-[11px] text-emerald-300/80">გამოძახებით მომსახურება</p>)}
           {master.phone && (<p className="text-[11px] text-white/50">ტელ: {master.phone}</p>)}
-          {master.description && (<p className="mt-2 text-sm text-white/80">{master.description}</p>)}
+          {master.service_area && (<p className="text-[11px] text-white/50">{master.service_area}</p>)}
+          {master.description && (<p className="mt-2 whitespace-pre-line text-sm text-white/80">{master.description}</p>)}
         </div>
         <div className="text-right">
           <div className="text-amber-400 font-black">⭐ {master.rating_avg?.toFixed(1) || '0.0'}</div>
@@ -112,7 +126,7 @@ export default function MasterCard({ master }: { master: Master }) {
         </div>
       </div>
 
-      <div className="mt-4 border-t border-white/10 pt-3">
+      <div className="border-t border-white/10 p-5 pt-3">
         <div className="flex gap-1 mb-2">
           {[1,2,3,4,5].map(n => (
             <button key={n} onClick={() => setStars(n)} className={`text-xl ${stars >= n ? 'text-amber-400' : 'text-white/20'}`}>★</button>

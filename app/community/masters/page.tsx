@@ -72,10 +72,13 @@ function MastersPageContent() {
         <div className="flex justify-between items-center mb-4">
           <Link href="/" className="text-[11px] font-black uppercase italic text-white/50 hover:text-white transition">← მთავარი გვერდი</Link>
           <Link href="/community/masters/submit" className="bg-amber-500/20 text-amber-400 px-4 py-2 rounded-xl text-[11px] font-black uppercase hover:bg-amber-500 hover:text-black transition">
-            დამატება
+            დაამატე შენი სერვისი
           </Link>
         </div>
-        <h1 className="text-2xl font-black text-amber-500 uppercase italic mb-6">ოსტატების/სპეციალისტების ბაზა</h1>
+        <h1 className="text-2xl font-black text-amber-500 uppercase italic mb-3">მომსახურების მიმწოდებლები კახეთში</h1>
+        <p className="mb-6 text-sm leading-relaxed text-white/60">
+          იპოვეთ ადგილობრივი სერვისები და მომსახურების მიმწოდებლები კახეთში.
+        </p>
         {loading ? (
           <div className="opacity-50">იტვირთება...</div>
         ) : (
@@ -92,7 +95,9 @@ function MastersPageContent() {
               </div>
             ))}
             {items.length === 0 && (
-              <div className="opacity-20 italic">შესაბამისი ოსტატი/სპეციალისტი ვერ მოიძებნა</div>
+              <div className="rounded-2xl border border-white/10 bg-white/5 p-5 text-sm text-white/60 sm:col-span-2">
+                მომსახურების მიმწოდებლები ჯერ არ არიან დამატებული. თუ სთავაზობთ რაიმე სერვისს კახეთში, დაამატეთ თქვენი ინფორმაცია.
+              </div>
             )}
           </div>
         )}

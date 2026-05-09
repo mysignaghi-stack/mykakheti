@@ -18,7 +18,7 @@ export default function CommunityHub() {
         </Link>
         <Link href="/community/masters/submit" className="bg-white/5 p-3 rounded-2xl flex flex-col items-center hover:bg-emerald-500/20 transition-all border border-white/5">
           <span className="text-xl mb-1">🛠️</span>
-          <span className="text-[9px] font-black uppercase tracking-widest text-center">ოსტატის/სპეციალისტის დამატება</span>
+          <span className="text-[9px] font-black uppercase tracking-widest text-center">სერვისის დამატება</span>
         </Link>
       </div>
       <div className="mt-4 grid grid-cols-3 gap-2 w-full">

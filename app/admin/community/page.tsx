@@ -53,7 +53,7 @@ export default function AdminCommunityPage() {
               { key: 'congratulations', label: 'მისალოცი' },
               { key: 'obituaries', label: 'სამძიმარი' },
               { key: 'lost_found', label: 'დაკარგული/ნაპონის რეესტრი' },
-              { key: 'masters', label: 'ხელოსნების/ტექნიკოსების რეესტრი' },
+              { key: 'masters', label: 'სერვისები / მომსახურების მიმწოდებლები' },
             ].map(c => (
               <button
                 key={c.key}
@@ -91,9 +91,9 @@ export default function AdminCommunityPage() {
             </>
           )} />
 
-          <ModerationPanel table="masters" title="ხელოსნების/ტექნიკოსების რეესტრი" highlight={selectedCategory === 'masters'} renderItem={(item: any) => (
+          <ModerationPanel table="masters" title="სერვისები / მომსახურების მიმწოდებლები" highlight={selectedCategory === 'masters'} renderItem={(item: any) => (
             <>
-              <div className="font-black text-white text-lg italic">{item.full_name} — {item.category || 'ოსტატი'} - {item.profession}</div>
+              <div className="font-black text-white text-lg italic">{item.full_name} — {item.category || 'სერვისი'} - {item.profession}</div>
               <p className="text-white/80 italic leading-relaxed">{item.location ?? ''}</p>
             </>
           )} />
@@ -337,12 +337,12 @@ function MastersForm({ onAdded }: FormProps) {
   const [name, setName] = useState('');
   const submit = async () => {
     if (!name) return;
-    const { error } = await (supabase as any).from('masters').insert({ full_name: name, profession: 'ოსტატი' });
+    const { error } = await (supabase as any).from('masters').insert({ full_name: name, profession: 'სერვისი' });
     if (!error) { setName(''); onAdded(); }
   };
   return (
     <div className="flex gap-3">
-      <input value={name} onChange={e => setName(e.target.value)} placeholder="ოსტატის/სპეციალისტის სახელი" className="flex-1 bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-sm focus:border-blue-600 outline-none" />
+      <input value={name} onChange={e => setName(e.target.value)} placeholder="სერვისის დასახელება" className="flex-1 bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-sm focus:border-blue-600 outline-none" />
       <button onClick={submit} className="bg-blue-600 px-6 py-2 rounded-xl text-xs font-black uppercase">დამატება</button>
     </div>
   );

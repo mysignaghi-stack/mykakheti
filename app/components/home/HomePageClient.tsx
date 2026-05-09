@@ -24,6 +24,7 @@ import AgroDetailsModal from '@/app/components/home/AgroDetailsModal';
 import AnnouncementCard from '@/app/components/home/AnnouncementCard';
 import RegistryFeatureCards from '@/app/components/home/RegistryFeatureCards';
 import RecentAnnouncementsSection from '@/app/components/home/RecentAnnouncementsSection';
+import ServiceProvidersSection from '@/app/components/home/ServiceProvidersSection';
 import type { CommunityCounts, CommunityDataset } from '@/app/lib/homeData';
 
 type AdminPost = Tables<'admin_posts'>;
@@ -142,6 +143,7 @@ export default function HomePageClient({
   initialAdminPosts,
   initialBgImage,
   initialMarqueeText,
+  initialCommunity,
   initialCommunityCounts,
 }: HomePageClientProps) {
   const { isAdmin } = useAdminAuth();
@@ -787,39 +789,12 @@ export default function HomePageClient({
       <section className="layout-shell relative z-10 w-full max-w-full xl:max-w-[1800px] px-4 sm:px-6 md:px-10 mx-auto mt-5 sm:mt-3 overflow-hidden">
         <div className="grid grid-cols-1 gap-4 md:gap-6 xl:gap-8 items-start text-white bg-black/70 backdrop-blur-2xl rounded-[30px] border border-white/10 p-4 sm:p-6 md:p-8 shadow-xl w-full max-w-full overflow-hidden">
           {/* --- ცენტრალური სვეტი --- */}
+
           <div className="flex flex-col items-center text-center gap-2 lg:gap-6 animate-in fade-in duration-1000 w-full min-w-0">
-             <div className="w-full grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6 items-start">
-              <div className="w-full bg-gradient-to-br from-amber-900/30 via-black/40 to-amber-700/20 backdrop-blur-sm rounded-[24px] border border-amber-500/20 shadow-[0_0_18px_2px_rgba(255,191,0,0.08)] p-3 ring-1 ring-amber-400/10 relative">
-                <GuideWidget onMapSearch={handleMapSearch} />
-              </div>
-              <div className="w-full h-[300px] overflow-hidden bg-gradient-to-br from-amber-900/40 via-black/50 to-amber-700/20 backdrop-blur-sm rounded-[24px] border border-amber-500/30 shadow-[0_0_20px_4px_rgba(255,191,0,0.1)] p-4 ring-1 ring-amber-400/20 relative">
-                <AdminSideFrame
-                  post={getPostByPos('left_top')}
-                  position="left_top"
-                  isAdmin={isAdmin}
-                  onRefresh={fetchAdminPosts}
-                />
-              </div>
-              <div className="w-full h-[300px] overflow-hidden bg-gradient-to-br from-amber-900/40 via-black/50 to-amber-700/20 backdrop-blur-sm rounded-[24px] border border-amber-500/30 shadow-[0_0_20px_4px_rgba(255,191,0,0.1)] p-4 ring-1 ring-amber-400/20 relative">
-                <AdminSideFrame
-                  post={getPostByPos('right_top')}
-                  position="right_top"
-                  isAdmin={isAdmin}
-                  onRefresh={fetchAdminPosts}
-                />
-              </div>
-              <div className="w-full bg-gradient-to-br from-amber-900/30 via-black/40 to-amber-700/20 backdrop-blur-sm rounded-[24px] border border-amber-500/20 shadow-[0_0_18px_2px_rgba(255,191,0,0.08)] p-3 ring-1 ring-amber-400/10 relative">
-                <HeritageWidget />
-              </div>
-            </div>
-
-
-            {/* მორბენალი სტრიქონი ამოღებულია per request */}
-
-
+            <ServiceProvidersSection providers={initialCommunity.masters} count={initialCommunityCounts.masters} />
 
             {/* ── Announcements Carousel (cards only) ── */}
-            <div className="w-full mt-6 mobile-announcements-spacing">
+            <div className="w-full mt-8 mobile-announcements-spacing">
               {filteredAds.length > 0 ? (
                 <>
                   {/* Arrows row — shown only when carousel is active */}
@@ -876,7 +851,7 @@ export default function HomePageClient({
                       ))}
                     </div>
                   ) : (
-                    /* Scrollable track */
+                    // Scrollable track
                     <div
                       ref={adsSliderRef}
                       className="flex overflow-x-hidden"
@@ -915,6 +890,35 @@ export default function HomePageClient({
             {/* ── ახლად გამოქვეყნებული განცხადებები ── */}
             <div className="w-full">
               <RecentAnnouncementsSection ads={ads} />
+            </div>
+
+            <div className="w-full mt-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6 items-start">
+              <div className="w-full bg-gradient-to-br from-amber-900/30 via-black/40 to-amber-700/20 backdrop-blur-sm rounded-[24px] border border-amber-500/20 shadow-[0_0_18px_2px_rgba(255,191,0,0.08)] p-3 ring-1 ring-amber-400/10 relative">
+                <GuideWidget onMapSearch={handleMapSearch} />
+              </div>
+              <div className="w-full h-[300px] overflow-hidden bg-gradient-to-br from-amber-900/40 via-black/50 to-amber-700/20 backdrop-blur-sm rounded-[24px] border border-amber-500/30 shadow-[0_0_20px_4px_rgba(255,191,0,0.1)] p-4 ring-1 ring-amber-400/20 relative">
+                <AdminSideFrame
+                  post={getPostByPos('left_top')}
+                  position="left_top"
+                  isAdmin={isAdmin}
+                  onRefresh={fetchAdminPosts}
+                />
+              </div>
+              <div className="w-full h-[300px] overflow-hidden bg-gradient-to-br from-amber-900/40 via-black/50 to-amber-700/20 backdrop-blur-sm rounded-[24px] border border-amber-500/30 shadow-[0_0_20px_4px_rgba(255,191,0,0.1)] p-4 ring-1 ring-amber-400/20 relative">
+                <AdminSideFrame
+                  post={getPostByPos('right_top')}
+                  position="right_top"
+                  isAdmin={isAdmin}
+                  onRefresh={fetchAdminPosts}
+                />
+              </div>
+              <div className="w-full bg-gradient-to-br from-amber-900/30 via-black/40 to-amber-700/20 backdrop-blur-sm rounded-[24px] border border-amber-500/20 shadow-[0_0_18px_2px_rgba(255,191,0,0.08)] p-3 ring-1 ring-amber-400/10 relative">
+                <HeritageWidget />
+              </div>
+            </div>
+
+            <div className="w-full mt-8">
+              <RegistryFeatureCards counts={initialCommunityCounts} visibleCards={['lost-found']} />
             </div>
 
             {/* ── Agro/Grain section (below announcements) ── */}
@@ -956,10 +960,7 @@ export default function HomePageClient({
                 </div>
             </div>
 
-            {/* ── Community Feature Cards ── */}
-            <div className="w-full mt-8">
-              <RegistryFeatureCards counts={initialCommunityCounts} />
-            </div>
+
 
           </div>
         </div>

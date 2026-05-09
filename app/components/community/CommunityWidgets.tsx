@@ -28,7 +28,7 @@ const CARD_CONFIGS: CardConfig[] = [
     placeholder: "ახალი განცხადებები მალე დაემატება",
   },
   {
-    title: "ხელოსნების/ტექნიკოსების რეესტრი",
+    title: "სერვისები / მომსახურების მიმწოდებლები",
     accentClass: "from-[#101b2a] via-[#0d141f] to-[#1a2a42]",
     link: "/community/masters",
     hrefBuilder: (id: string) => `/community/masters/${id}`,
@@ -120,7 +120,7 @@ export default function CommunityWidgets({
       <WidgetCard
         config={cards[1]}
         highlight={currentMaster}
-        badge={currentMaster ? "ოსტატი/სპეციალისტი" : "ხელოსნების/ტექნიკოსების რეესტრი"}
+        badge={currentMaster ? "სერვისი" : "სერვისები / მომსახურების მიმწოდებლები"}
         description={currentMaster?.location || ""}
         title={currentMaster?.full_name || cards[1].placeholder}
         meta={currentMaster?.profession}
@@ -228,7 +228,7 @@ export function CommunitySideWidget({
     <WidgetCard
       config={config}
       highlight={masterItem}
-      badge={masterItem ? "ოსტატი/სპეციალისტი" : "ხელოსნების/ტექნიკოსების რეესტრი"}
+      badge={masterItem ? "სერვისი" : "სერვისები / მომსახურების მიმწოდებლები"}
       description={masterItem?.location || ""}
       title={masterItem?.full_name || config.placeholder}
       meta={masterItem?.profession}

@@ -19,10 +19,10 @@ const CARD_CONTENT = [
   },
   {
     key: 'masters',
-    title: 'ხელოსნების/ტექნიკოსების რეესტრი',
+    title: 'სერვისები / მომსახურების მიმწოდებლები',
     badge: 'კვალიფიკაცია • გამოცდილება • სანდოობა',
-    headline: 'იპოვეთ სანდო ხელოსნები და ტექნიკოსები მარტივად',
-    description: 'მოიძიეთ ხელოსნები და ტექნიკოსები სერვისის მიხედვით, შეფასებებითა და საკონტაქტო მონაცემებით.',
+    headline: 'იპოვეთ ადგილობრივი სერვისი მარტივად',
+    description: 'მოიძიეთ მომსახურების მიმწოდებლები სერვისის მიხედვით, შეფასებებითა და საკონტაქტო მონაცემებით.',
     cta: 'გადადით რეესტრში',
     statLabel: 'სერვის პროვაიდერი',
     href: '/community/masters',
@@ -39,6 +39,7 @@ type RegistryCounts = {
 
 type RegistryFeatureCardsProps = {
   counts?: RegistryCounts;
+  visibleCards?: Array<'lost-found' | 'masters'>;
 };
 
 const formatCount = (value?: number) => {
@@ -46,8 +47,8 @@ const formatCount = (value?: number) => {
   return value.toLocaleString('en-US');
 };
 
-export default function RegistryFeatureCards({ counts }: RegistryFeatureCardsProps) {
-  const cards = CARD_CONTENT.map((card) => {
+export default function RegistryFeatureCards({ counts, visibleCards }: RegistryFeatureCardsProps) {
+  const cards = CARD_CONTENT.filter((card) => !visibleCards || visibleCards.includes(card.key as 'lost-found' | 'masters')).map((card) => {
     const countValue = card.key === 'lost-found' ? counts?.lostFound : counts?.masters;
     return {
       ...card,

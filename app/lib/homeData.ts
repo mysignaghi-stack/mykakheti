@@ -195,7 +195,7 @@ export const fetchHomePageData = async (): Promise<HomePageData> => {
       .limit(12),
     supabase
       .from('masters')
-      .select('id,full_name,profession,location,description,rating_avg,is_approved,created_at')
+      .select('id,full_name,profession,category,location,description,phone,photo_url,price_note,service_area,rating_avg,ratings_count,is_approved,created_at')
       .eq('is_approved', true)
       .order('created_at', { ascending: false })
       .limit(12),

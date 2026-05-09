@@ -22,7 +22,7 @@ export default function ModerateAds() {
   const COMMUNITY_CATEGORIES = [
     { value: 'სამძიმარი', label: 'სამძიმრის გამოქვეყნება' },
     { value: 'დაკარგული/ნაპოვნი', label: 'დაკარგული/ნაპოვნის გამოქვეყნება' },
-    { value: 'ოსტატი', label: 'ოსტატის პროფილის გამოქვეყნება' },
+    { value: 'ოსტატი', label: 'სერვისის გამოქვეყნება' },
     { value: 'მილოცვა', label: 'მისალოცი ბარათი' },
   ];
 

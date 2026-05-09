@@ -48,9 +48,9 @@ export default function MasterDetailsPage() {
             <Link href="/" className="text-[11px] font-black uppercase italic text-white/50 hover:text-white transition">← მთავარი გვერდი</Link>
           </div>
           <div className="flex justify-between items-center">
-            <h1 className="text-2xl font-black text-amber-500 uppercase italic">ოსტატი/სპეციალისტი</h1>
+            <h1 className="text-2xl font-black text-amber-500 uppercase italic">სერვისი</h1>
           </div>
-          <div className="bg-white/5 border border-white/10 rounded-2xl p-6">ოსტატი/სპეციალისტი ვერ მოიძებნა.</div>
+          <div className="bg-white/5 border border-white/10 rounded-2xl p-6">სერვისი ვერ მოიძებნა.</div>
         </div>
       </main>
     );
@@ -63,7 +63,7 @@ export default function MasterDetailsPage() {
           <Link href="/" className="text-[11px] font-black uppercase italic text-white/50 hover:text-white transition">← მთავარი გვერდი</Link>
         </div>
         <div className="flex justify-between items-center">
-          <h1 className="text-2xl font-black text-amber-500 uppercase italic">ოსტატის/სპეციალისტის პროფილი</h1>
+          <h1 className="text-2xl font-black text-amber-500 uppercase italic">სერვისის დეტალები</h1>
         </div>
         
         <MasterCard master={item} />

@@ -22,9 +22,9 @@ const COMMUNITY_CARDS: CommunityCard[] = [
   },
   {
     id: 'masters',
-    title: 'ხელოსნების/ტექნიკოსების რეესტრი',
+    title: 'სერვისები / მომსახურების მიმწოდებლები',
     icon: '🔧',
-    value: 'სპეციალისტი/ოსტატი დამატება',
+    value: 'სერვისის დამატება',
     table: 'masters',
     fields: ['full_name', 'profession', 'category', 'phone', 'location', 'description', 'photo_url', 'service_area', 'price_note']
   },
@@ -51,7 +51,7 @@ export default function CommunityEngagement() {
               სათემო ჩართულობა
             </h3>
             <p className="text-white/60 text-[9px] leading-snug max-w-2xl mx-auto">
-              გააზიარეთ თქვენი სიახლეები და მოძებნეთ საჭირო სპეციალისტები. თქვენი განცხადება ადმინისტრაციის მიერ გადამოწმების შემდეგ გამოჩნდება საიტის მთავარი გვერდის ზედა სათემო ბარათებში.
+              გააზიარეთ თქვენი სიახლეები და მოძებნეთ ადგილობრივი სერვისები. თქვენი განცხადება ადმინისტრაციის მიერ გადამოწმების შემდეგ გამოჩნდება საიტის მთავარი გვერდის ზედა სათემო ბარათებში.
             </p>
           </div>
 

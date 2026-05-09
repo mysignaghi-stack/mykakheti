@@ -53,7 +53,9 @@ export async function POST(request: NextRequest) {
       lost_found: 'დაკარგული/ნაპოვნი',
       'დაკარგული/ნაპოვნი': 'დაკარგული/ნაპოვნი',
       master: 'ოსტატი',
+      service: 'ოსტატი',
       'ოსტატი': 'ოსტატი',
+      'სერვისი': 'ოსტატი',
       congratulation: 'მილოცვა',
       'მილოცვა': 'მილოცვა',
     };

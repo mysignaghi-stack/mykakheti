@@ -11,8 +11,8 @@ const sections = [
   },
   {
     icon: '🛠️',
-    title: 'ხელოსნების/ტექნიკოსების რეესტრი',
-    description: 'ოსტატის ან სპეციალისტის დამატება.',
+    title: 'სერვისები / მომსახურების მიმწოდებლები',
+    description: 'სერვისის დამატება.',
     addHref: '/community/masters/submit',
   },
 ];
