@@ -17,7 +17,6 @@ import Footer from '@/app/components/layout/Footer';
 import SnackbarWrapper from '@/app/components/layout/SnackbarWrapper';
 import ConfirmModal from '@/app/components/layout/ConfirmModal';
 import EditAgroModal from '@/app/components/layout/EditAgroModal';
-import HeroSection from '@/app/components/home/HeroSection';
 import { GuideWidget, HeritageWidget } from '@/app/components/home/ServiceWidgets';
 import TransportModal from '@/app/components/features/transport/TransportModal';
 import AdminSideFrame from '@/app/components/home/AdminSideFrame';
@@ -291,9 +290,6 @@ export default function HomePageClient({
       showSnackbar('ვერ განახლდა ფასი', 'error');
     }
   }, [editAgroItem, newPrice, editDetails, setAgroData, showSnackbar]);
-  const [isLocOpen, setIsLocOpen] = useState(false);
-  const locRef = useRef<HTMLDivElement>(null);
-  
   const [showTransport, setShowTransport] = useState(false);
   
   // ...moved to useAgroData
@@ -784,7 +780,7 @@ export default function HomePageClient({
         <div className="absolute inset-0 bg-gradient-to-b from-[#0a0a1f]/30 via-[#050510]/10 to-[#050510]/40 backdrop-blur-[2px]" />
       </div>
 
-      <Navbar />
+      <Navbar searchTerm={searchTerm} setSearchTerm={setSearchTerm} filteredAds={filteredAds} />
 
 
       {/* Informational grid section, now outside header for independent styling */}
@@ -792,18 +788,27 @@ export default function HomePageClient({
         <div className="grid grid-cols-1 gap-4 md:gap-6 xl:gap-8 items-start text-white bg-black/70 backdrop-blur-2xl rounded-[30px] border border-white/10 p-4 sm:p-6 md:p-8 shadow-xl w-full max-w-full overflow-hidden">
           {/* --- ცენტრალური სვეტი --- */}
           <div className="flex flex-col items-center text-center gap-2 lg:gap-6 animate-in fade-in duration-1000 w-full min-w-0">
-             <div className="w-full grid grid-cols-1 lg:grid-cols-[minmax(0,220px)_minmax(0,1fr)_minmax(0,220px)] gap-4 lg:gap-6 items-start">
+             <div className="w-full grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6 items-start">
               <div className="w-full bg-gradient-to-br from-amber-900/30 via-black/40 to-amber-700/20 backdrop-blur-sm rounded-[24px] border border-amber-500/20 shadow-[0_0_18px_2px_rgba(255,191,0,0.08)] p-3 ring-1 ring-amber-400/10 relative">
                 <GuideWidget onMapSearch={handleMapSearch} />
               </div>
-              <div className="w-full">
-                <HeroSection 
-                  searchTerm={searchTerm} setSearchTerm={setSearchTerm} filteredAds={filteredAds}
-                  selectedLocations={selectedLocations} setSelectedLocations={setSelectedLocations}
-                  isLocOpen={isLocOpen} setIsLocOpen={setIsLocOpen} locRef={locRef as React.RefObject<HTMLDivElement>}
+              <div className="w-full h-[300px] overflow-hidden bg-gradient-to-br from-amber-900/40 via-black/50 to-amber-700/20 backdrop-blur-sm rounded-[24px] border border-amber-500/30 shadow-[0_0_20px_4px_rgba(255,191,0,0.1)] p-4 ring-1 ring-amber-400/20 relative">
+                <AdminSideFrame
+                  post={getPostByPos('left_top')}
+                  position="left_top"
+                  isAdmin={isAdmin}
+                  onRefresh={fetchAdminPosts}
                 />
               </div>
-              <div className="hidden lg:block w-full bg-gradient-to-br from-amber-900/30 via-black/40 to-amber-700/20 backdrop-blur-sm rounded-[24px] border border-amber-500/20 shadow-[0_0_18px_2px_rgba(255,191,0,0.08)] p-3 ring-1 ring-amber-400/10 relative">
+              <div className="w-full h-[300px] overflow-hidden bg-gradient-to-br from-amber-900/40 via-black/50 to-amber-700/20 backdrop-blur-sm rounded-[24px] border border-amber-500/30 shadow-[0_0_20px_4px_rgba(255,191,0,0.1)] p-4 ring-1 ring-amber-400/20 relative">
+                <AdminSideFrame
+                  post={getPostByPos('right_top')}
+                  position="right_top"
+                  isAdmin={isAdmin}
+                  onRefresh={fetchAdminPosts}
+                />
+              </div>
+              <div className="w-full bg-gradient-to-br from-amber-900/30 via-black/40 to-amber-700/20 backdrop-blur-sm rounded-[24px] border border-amber-500/20 shadow-[0_0_18px_2px_rgba(255,191,0,0.08)] p-3 ring-1 ring-amber-400/10 relative">
                 <HeritageWidget />
               </div>
             </div>
@@ -920,26 +925,9 @@ export default function HomePageClient({
               <RecentAnnouncementsSection ads={ads} />
             </div>
 
-            {/* ── Heritage Widget — mobile only, below announcements ── */}
-            <div className="lg:hidden w-full bg-gradient-to-br from-amber-900/30 via-black/40 to-amber-700/20 backdrop-blur-sm rounded-[24px] border border-amber-500/20 shadow-[0_0_18px_2px_rgba(255,191,0,0.08)] p-3 ring-1 ring-amber-400/10">
-              <HeritageWidget />
-            </div>
-
-            {/* ── Admin Frames + Agro/Grain section (below announcements) ── */}
+            {/* ── Agro/Grain section (below announcements) ── */}
             <div className="w-full mt-8">
-              <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,260px)_minmax(0,1fr)_minmax(0,260px)] gap-6 items-start">
-
-                {/* Left: AdminSideFrame */}
-                <div className="w-full bg-gradient-to-br from-amber-900/40 via-black/50 to-amber-700/20 backdrop-blur-sm rounded-[24px] border border-amber-500/30 shadow-[0_0_20px_4px_rgba(255,191,0,0.1)] p-4 ring-1 ring-amber-400/20 relative">
-                  <AdminSideFrame
-                    post={getPostByPos('left_top')}
-                    position="left_top"
-                    isAdmin={isAdmin}
-                    onRefresh={fetchAdminPosts}
-                  />
-                </div>
-
-                {/* Center: აგრო-ბირჟა + მარცვლეული */}
+                {/* აგრო-ბირჟა + მარცვლეული */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   {/* 🍇 აგრო-ბირჟა */}
                   <div className="bg-white/[0.03] backdrop-blur-3xl rounded-[30px] border border-white/10 p-5 flex flex-col items-center group relative overflow-hidden transition-all hover:border-purple-500/30 shadow-xl h-[300px]">
@@ -974,18 +962,6 @@ export default function HomePageClient({
                     <p className="mt-auto pt-3 text-[11px] text-yellow-200 font-black text-center tracking-wide">თქვენი ფასი გამოჩნდება ამ ფანჯარაში</p>
                   </div>
                 </div>
-
-                {/* Right: AdminSideFrame */}
-                <div className="w-full bg-gradient-to-br from-amber-900/40 via-black/50 to-amber-700/20 backdrop-blur-sm rounded-[24px] border border-amber-500/30 shadow-[0_0_20px_4px_rgba(255,191,0,0.1)] p-4 ring-1 ring-amber-400/20 relative">
-                  <AdminSideFrame
-                    post={getPostByPos('right_top')}
-                    position="right_top"
-                    isAdmin={isAdmin}
-                    onRefresh={fetchAdminPosts}
-                  />
-                </div>
-
-              </div>
             </div>
 
             {/* ── Community Feature Cards ── */}

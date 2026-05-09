@@ -283,7 +283,7 @@ export default function AdminSideFrame({ post, position, isAdmin, onRefresh }: A
     : 'relative z-10 w-full h-32 object-cover rounded-[20px] shadow-2xl shadow-indigo-900/50 border-2 border-amber-500/40 hover:border-amber-500/60 transition-all duration-300';
 
   // Fixed height based on position
-  const heightClass = position === 'left_top' || position === 'right_top' ? 'min-h-[240px]' : 'h-auto';
+  const heightClass = position === 'left_top' || position === 'right_top' ? 'h-full' : 'h-auto';
 
   const openLightbox = (url: string, isVideo: boolean) => {
     setLightbox({ open: true, media: [url], currentIndex: 0, isVideo });

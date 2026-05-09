@@ -1,9 +1,11 @@
 'use client';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
+import Image from 'next/image';
 import Link from 'next/link';
 import { supabase } from '@/app/lib/supabase';
 import AuthForm from '@/app/components/auth/AuthForm';
+import type { Ad } from '@/app/lib/types';
 
 type SiteSettingRow = { key: string; value: string | null };
 
@@ -17,7 +19,15 @@ const DEFAULT_BANNER_DIRECTION = 'left';
 const DEFAULT_BANNER_BG = '';
 const DEFAULT_BANNER_BG_OPACITY = 0.2;
 
-export default function Navbar() {
+export default function Navbar({
+  searchTerm,
+  setSearchTerm,
+  filteredAds,
+}: {
+  searchTerm?: string;
+  setSearchTerm?: (v: string) => void;
+  filteredAds?: Ad[];
+}) {
   const [showRegister, setShowRegister] = useState(false);
   const [showLogin, setShowLogin] = useState(false);
   const [isMounted, setIsMounted] = useState(false);
@@ -110,6 +120,11 @@ export default function Navbar() {
     };
   }, []);
 
+  const searchRef = useRef<HTMLDivElement>(null);
+  const [searchFocused, setSearchFocused] = useState(false);
+  const showSearch = searchTerm !== undefined && setSearchTerm !== undefined;
+  const showResults = showSearch && Boolean(searchTerm) && (searchFocused || Boolean(searchTerm));
+
   const bannerStyle = { color: bannerColor };
   const showBanner = isBannerReady && Boolean(bannerText) && bannerEnabled;
 
@@ -165,36 +180,134 @@ export default function Navbar() {
           : null}
       </div>
       
-      {/* Test Mode Message */}
-      <div className="w-full sm:flex-1 flex justify-center items-center px-2 sm:px-4">
-        <div className="text-center">
-          {showBanner && bannerMode === 'marquee' ? (
-            <div
-              className="w-full max-w-full sm:max-w-[520px] marquee-outer rounded-full px-3 py-1"
-              style={bannerBgStyle}
-            >
-              <span
-                className={`marquee-inner font-black uppercase tracking-widest ${bannerSizeClass}`}
-                style={{
-                  ...bannerStyle,
-                  animationDuration: `${bannerSpeed}s`,
-                  animationDirection: bannerDirection === 'right' ? 'reverse' : 'normal',
-                }}
-              >
-                {bannerText}
-              </span>
+      {/* Center: Search + Banner */}
+      <div className="w-full sm:flex-1 flex flex-col justify-center items-center px-2 sm:px-6 gap-1 relative" ref={searchRef}>
+        {/* Search bar */}
+        {showSearch && (
+          <div className="w-full max-w-xl relative">
+            <div className={`flex items-center bg-white/[0.06] border rounded-2xl px-4 py-2 gap-2 transition-colors duration-200 ${
+              searchFocused ? 'border-amber-400/40 bg-white/[0.09]' : 'border-white/10'
+            }`}>
+              <span className="text-amber-400/60 shrink-0 text-sm">🔍</span>
+              <input
+                type="text"
+                placeholder="რას ეძებთ კახეთში?"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                onFocus={() => setSearchFocused(true)}
+                onBlur={() => setTimeout(() => setSearchFocused(false), 150)}
+                className="w-full bg-transparent text-[11px] sm:text-xs font-black uppercase italic tracking-[0.12em] text-white placeholder:text-white/20 outline-none"
+              />
+              {searchTerm && (
+                <button
+                  type="button"
+                  onClick={() => setSearchTerm('')}
+                  className="shrink-0 text-white/40 hover:text-white text-xs transition-colors"
+                >
+                  ✕
+                </button>
+              )}
             </div>
-          ) : (
-            showBanner && (
+
+            {/* Results dropdown */}
+            {showResults && filteredAds && (
+              <div className="absolute top-full left-0 right-0 mt-2 z-[9999] bg-[#0a0a1f]/97 backdrop-blur-3xl border border-white/10 rounded-[22px] shadow-[0_20px_70px_rgba(0,0,0,0.9)] max-h-[380px] overflow-y-auto animate-in zoom-in-95 fade-in duration-150">
+                <div className="p-3 flex flex-col gap-2">
+                  <div className="flex justify-between items-center px-2 py-1">
+                    <span className="text-[9px] font-black uppercase text-white/30 tracking-widest">
+                      ნაპოვნია {filteredAds.length} შედეგი
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => setSearchTerm('')}
+                      className="text-[9px] font-black uppercase text-amber-500 hover:text-white transition-colors"
+                    >
+                      ✕ გასუფთავება
+                    </button>
+                  </div>
+                  {filteredAds.length > 0 ? (
+                    filteredAds.slice(0, 8).map((ad) => (
+                      <Link
+                        key={ad.id}
+                        href={`/announcements/${ad.id}`}
+                        onClick={() => setSearchTerm('')}
+                        className="flex items-center gap-3 p-2.5 bg-white/5 rounded-xl border border-white/5 hover:border-amber-500/30 transition-all group/item"
+                      >
+                        <div className="w-12 h-12 rounded-lg overflow-hidden shrink-0 bg-white/5">
+                          {ad.image_url ? (
+                            <Image
+                              src={ad.image_url}
+                              alt=""
+                              width={48}
+                              height={48}
+                              className="w-full h-full object-cover"
+                            />
+                          ) : (
+                            <div className="w-full h-full flex items-center justify-center text-white/20 text-lg">📷</div>
+                          )}
+                        </div>
+                        <div className="flex-grow min-w-0">
+                          <h4 className="text-[11px] font-black uppercase italic text-white group-hover/item:text-amber-400 transition-colors line-clamp-1">
+                            {ad.title}
+                          </h4>
+                          <div className="flex gap-2 items-center mt-0.5">
+                            {ad.price && ad.price !== '0' && (
+                              <span className="text-amber-500 font-black text-xs">
+                                {ad.price} {ad.currency === 'USD' ? '$' : '₾'}
+                              </span>
+                            )}
+                            {ad.location && (
+                              <span className="text-[9px] font-black text-white/25 uppercase tracking-widest truncate">
+                                {ad.location}
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                        <span className="text-white/20 group-hover/item:text-amber-400 group-hover/item:translate-x-0.5 transition-all text-sm shrink-0">➔</span>
+                      </Link>
+                    ))
+                  ) : (
+                    <div className="py-6 text-center text-white/30 text-xs font-black uppercase italic tracking-widest">
+                      შედეგი ვერ მოიძებნა
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Banner (shown below search if both exist) */}
+        {showBanner && (
+          <div className="text-center">
+            {bannerMode === 'marquee' ? (
               <div
-                className={`inline-flex items-center justify-center rounded-full px-3 py-1 font-black uppercase tracking-widest ${bannerSizeClass} ${bannerMode === 'blink' ? 'animate-pulse' : ''}`}
+                className="w-full max-w-full sm:max-w-[480px] marquee-outer rounded-full px-3 py-0.5"
+                style={bannerBgStyle}
+              >
+                <span
+                  className={`marquee-inner font-black uppercase tracking-widest ${bannerSizeClass}`}
+                  style={{
+                    ...bannerStyle,
+                    animationDuration: `${bannerSpeed}s`,
+                    animationDirection: bannerDirection === 'right' ? 'reverse' : 'normal',
+                  }}
+                >
+                  {bannerText}
+                </span>
+              </div>
+            ) : (
+              <div
+                className={`inline-flex items-center justify-center rounded-full px-3 py-0.5 font-black uppercase tracking-widest ${bannerSizeClass} ${
+                  bannerMode === 'blink' ? 'animate-pulse' : ''
+                }`}
                 style={{ ...bannerStyle, ...bannerBgStyle }}
               >
                 {bannerText}
               </div>
-            )
-          )}
-        </div>
+            )}
+          </div>
+        )}
       </div>
       
       <div className="relative flex flex-col items-center sm:items-start gap-1 shrink-0 w-full sm:w-auto">
