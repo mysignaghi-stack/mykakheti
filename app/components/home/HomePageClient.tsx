@@ -25,6 +25,7 @@ import AnnouncementCard from '@/app/components/home/AnnouncementCard';
 import RegistryFeatureCards from '@/app/components/home/RegistryFeatureCards';
 import RecentAnnouncementsSection from '@/app/components/home/RecentAnnouncementsSection';
 import ServiceProvidersSection from '@/app/components/home/ServiceProvidersSection';
+import FavoritesDropdown from '@/app/components/home/FavoritesDropdown';
 import type { CommunityCounts, CommunityDataset } from '@/app/lib/homeData';
 
 type AdminPost = Tables<'admin_posts'>;
@@ -798,6 +799,7 @@ export default function HomePageClient({
       </div>
 
       <Navbar searchTerm={searchTerm} setSearchTerm={setSearchTerm} filteredAds={filteredAds} />
+      <FavoritesDropdown />
 
 
       {/* Informational grid section, now outside header for independent styling */}

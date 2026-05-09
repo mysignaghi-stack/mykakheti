@@ -38,12 +38,9 @@ export default function MasterDetailsPage() {
     if (!id) return;
     const fetchOne = async () => {
       setLoading(true);
-      const { data } = await (supabase as any)
-        .from("masters")
-        .select("*")
-        .eq("id", id)
-        .maybeSingle();
-      const master = data as MasterRow | null;
+      const response = await fetch(`/api/masters/${id}`, { cache: "no-store" });
+      const result = await response.json().catch(() => ({}));
+      const master = response.ok ? result.service as MasterRow : null;
       setItem(master ?? null);
       if (master) {
         setEditForm({

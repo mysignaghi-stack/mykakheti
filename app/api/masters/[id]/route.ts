@@ -20,16 +20,7 @@ const ALLOWED_FIELDS = new Set([
   'service_area',
 ]);
 
-export async function PATCH(request: Request, { params }: Props) {
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-  const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-
-  if (!supabaseUrl || !supabaseAnonKey || !serviceRoleKey) {
-    return NextResponse.json({ error: 'Server misconfiguration' }, { status: 500 });
-  }
-
-  const { id } = await params;
+const getAuthedUser = async (supabaseUrl: string, supabaseAnonKey: string) => {
   const cookieStore = await cookies();
   const authClient = createServerClient<Database>(supabaseUrl, supabaseAnonKey, {
     cookies: {
@@ -46,6 +37,52 @@ export async function PATCH(request: Request, { params }: Props) {
   });
 
   const { data: { user } } = await authClient.auth.getUser();
+  return user ?? null;
+};
+
+export async function GET(_request: Request, { params }: Props) {
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+  const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+  if (!supabaseUrl || !supabaseAnonKey || !serviceRoleKey) {
+    return NextResponse.json({ error: 'Server misconfiguration' }, { status: 500 });
+  }
+
+  const { id } = await params;
+  const [user, serviceClient] = await Promise.all([
+    getAuthedUser(supabaseUrl, supabaseAnonKey),
+    Promise.resolve(createClient<Database>(supabaseUrl, serviceRoleKey, { auth: { persistSession: false } })),
+  ]);
+
+  const { data, error } = await serviceClient
+    .from('masters')
+    .select('*')
+    .eq('id', id)
+    .single();
+
+  if (error || !data) {
+    return NextResponse.json({ error: 'Service not found' }, { status: 404 });
+  }
+
+  if (!data.is_approved && data.user_id !== user?.id) {
+    return NextResponse.json({ error: 'Service not found' }, { status: 404 });
+  }
+
+  return NextResponse.json({ service: data });
+}
+
+export async function PATCH(request: Request, { params }: Props) {
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+  const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+  if (!supabaseUrl || !supabaseAnonKey || !serviceRoleKey) {
+    return NextResponse.json({ error: 'Server misconfiguration' }, { status: 500 });
+  }
+
+  const { id } = await params;
+  const user = await getAuthedUser(supabaseUrl, supabaseAnonKey);
   if (!user) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
