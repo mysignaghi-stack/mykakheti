@@ -5,7 +5,7 @@ import AnnouncementCard from './AnnouncementCard';
 import { Ad } from '@/app/lib/types';
 import { ANNOUNCEMENT_CATEGORIES, LOCATIONS } from '@/app/lib/constants';
 
-const COMMUNITY_CATEGORIES = ['სამძიმარი', 'დაკარგული/ნაპოვნი', 'ოსტატი', 'მილოცვა'] as const;
+const COMMUNITY_CATEGORIES = ['დაკარგული/ნაპოვნი', 'ოსტატი'] as const;
 const PAGE_SIZE = 12;
 
 type SortOption = 'newest' | 'oldest' | 'price_asc' | 'price_desc';

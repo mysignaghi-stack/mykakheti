@@ -7,7 +7,7 @@ import { useRouter } from "next/navigation";
 import { supabase } from "../../lib/supabase";
 
 type Mode = "login" | "signup";
-const AUTH_LANDING_PATH = "/profile";
+const AUTH_LANDING_PATH = "/";
 
 interface AuthFormProps {
   initialMode?: Mode;

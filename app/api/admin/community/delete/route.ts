@@ -5,7 +5,7 @@ import { createClient } from '@supabase/supabase-js';
 import type { Database } from '../../../../../types/supabase';
 import { isAdminUser } from '../../../../lib/adminAuth';
 
-const ALLOWED_TABLES = new Set(['congratulations', 'lost_found', 'masters', 'obituaries']);
+const ALLOWED_TABLES = new Set(['lost_found', 'masters']);
 
 export async function POST(request: Request) {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;

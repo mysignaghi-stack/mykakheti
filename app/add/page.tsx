@@ -19,7 +19,7 @@ const LOCATION_OPTIONS = Array.from(new Set(
     ]),
   ])
 ));
-const AUTH_LANDING_PATH = '/profile';
+const AUTH_LANDING_PATH = '/';
 
 export default function AddPage() {
   const router = useRouter();
@@ -356,7 +356,7 @@ export default function AddPage() {
       const result = await response.json();
       if (!response.ok) throw new Error(result.error);
 
-      setIsSubmitted(true); // ვაჩვენებთ მილოცვას
+      setIsSubmitted(true);
     } catch (err: any) {
       alert(`შეცდომა: ${err.message}`);
     } finally {

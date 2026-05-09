@@ -16,8 +16,6 @@ const PUBLISH_ACTIONS = [
   { title: "ჩვეულებრივი განცხადება", href: "/add", text: "იყიდება, ქირავდება, მომსახურება ან სხვა განცხადება" },
   { title: "სერვისი / მიმწოდებელი", href: "/community/masters/submit", text: "ხელოსანი, ტექნიკოსი, მძღოლი, მასწავლებელი და სხვა" },
   { title: "დაკარგული / ნაპოვნი", href: "/community/lost-found/submit", text: "დაკარგული ან ნაპოვნი ნივთის/ცხოველის ინფორმაცია" },
-  { title: "მილოცვა", href: "/community/congratulations/submit", text: "მისალოცი განცხადება და ფოტო" },
-  { title: "სამძიმარი", href: "/community/obituaries/submit", text: "საზოგადოებრივი განცხადება სამძიმრისთვის" },
 ];
 
 type ProfileContentResponse = {

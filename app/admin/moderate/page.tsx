@@ -20,10 +20,8 @@ export default function ModerateAds() {
   const { isAdmin, loading: authLoading } = useAdminAuth();
 
   const COMMUNITY_CATEGORIES = [
-    { value: 'სამძიმარი', label: 'სამძიმრის გამოქვეყნება' },
     { value: 'დაკარგული/ნაპოვნი', label: 'დაკარგული/ნაპოვნის გამოქვეყნება' },
     { value: 'ოსტატი', label: 'სერვისის გამოქვეყნება' },
-    { value: 'მილოცვა', label: 'მისალოცი ბარათი' },
   ];
 
   const getAnnouncementImages = (ad: AnnouncementRow) => {

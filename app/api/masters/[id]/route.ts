@@ -2,22 +2,22 @@ import { cookies } from 'next/headers';
 import { NextResponse } from 'next/server';
 import { createServerClient } from '@supabase/ssr';
 import { createClient } from '@supabase/supabase-js';
-import type { Database } from '../../../../types/supabase';
+import type { Database } from '@/types/supabase';
 
 type Props = {
   params: Promise<{ id: string }>;
 };
 
 const ALLOWED_FIELDS = new Set([
-  'title',
-  'description',
+  'full_name',
+  'profession',
   'category',
   'location',
-  'price',
-  'currency',
   'phone',
-  'image_url',
-  'all_images',
+  'description',
+  'photo_url',
+  'price_note',
+  'service_area',
 ]);
 
 export async function PATCH(request: Request, { params }: Props) {
@@ -56,32 +56,23 @@ export async function PATCH(request: Request, { params }: Props) {
     return NextResponse.json({ error: 'Missing values' }, { status: 400 });
   }
 
-  const payload: Partial<Database['public']['Tables']['announcements']['Update']> = {};
+  const payload: Partial<Database['public']['Tables']['masters']['Update']> = {};
   for (const [key, value] of Object.entries(values)) {
     if (!ALLOWED_FIELDS.has(key)) continue;
-    if (key === 'all_images') {
-      payload.all_images = Array.isArray(value)
-        ? value.filter((item): item is string => typeof item === 'string' && Boolean(item.trim()))
-        : null;
-      continue;
-    }
     const textValue = typeof value === 'string' ? value.trim() : null;
-    if (key === 'title') payload.title = textValue ?? '';
-    if (key === 'description') payload.description = textValue;
-    if (key === 'category') payload.category = textValue ?? '';
-    if (key === 'location') payload.location = textValue ?? '';
-    if (key === 'price') payload.price = textValue ?? '';
-    if (key === 'currency') payload.currency = textValue;
+    if (key === 'full_name') payload.full_name = textValue ?? '';
+    if (key === 'profession') payload.profession = textValue ?? '';
+    if (key === 'category') payload.category = textValue;
+    if (key === 'location') payload.location = textValue;
     if (key === 'phone') payload.phone = textValue;
-    if (key === 'image_url') payload.image_url = textValue;
+    if (key === 'description') payload.description = textValue;
+    if (key === 'photo_url') payload.photo_url = textValue;
+    if (key === 'price_note') payload.price_note = textValue;
+    if (key === 'service_area') payload.service_area = textValue;
   }
 
-  if (!payload.title || !payload.category || !payload.location || !payload.price) {
+  if (!payload.full_name || !payload.profession) {
     return NextResponse.json({ error: 'Required fields are missing' }, { status: 400 });
-  }
-
-  if (payload.currency && !['GEL', 'USD'].includes(payload.currency)) {
-    payload.currency = 'GEL';
   }
 
   const serviceClient = createClient<Database>(supabaseUrl, serviceRoleKey, {
@@ -89,13 +80,13 @@ export async function PATCH(request: Request, { params }: Props) {
   });
 
   const { data: existing, error: fetchError } = await serviceClient
-    .from('announcements')
+    .from('masters')
     .select('id,user_id')
     .eq('id', id)
     .single();
 
   if (fetchError || !existing) {
-    return NextResponse.json({ error: 'Announcement not found' }, { status: 404 });
+    return NextResponse.json({ error: 'Service not found' }, { status: 404 });
   }
 
   if (existing.user_id !== user.id) {
@@ -103,7 +94,7 @@ export async function PATCH(request: Request, { params }: Props) {
   }
 
   const { data, error } = await serviceClient
-    .from('announcements')
+    .from('masters')
     .update({ ...payload, is_approved: false })
     .eq('id', id)
     .select('*')
@@ -113,5 +104,5 @@ export async function PATCH(request: Request, { params }: Props) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 
-  return NextResponse.json({ success: true, announcement: data });
+  return NextResponse.json({ success: true, service: data });
 }

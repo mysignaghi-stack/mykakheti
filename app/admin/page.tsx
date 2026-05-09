@@ -15,7 +15,7 @@ const ADMIN_SECTIONS = [
     description: 'მომხმარებლის მიერ დამატებული კონტენტის დამტკიცება და მართვა.',
     links: [
       { href: '/admin/announcements', title: 'განცხადებები', desc: 'ჩვეულებრივი განცხადებები, დაგეგმვა, დამტკიცება და წაშლა.', accent: 'amber' },
-      { href: '/admin/community', title: 'სათემო კონტენტი', desc: 'მილოცვები, სამძიმარი, დაკარგული/ნაპოვნი და სერვისები.', accent: 'emerald' },
+      { href: '/admin/community', title: 'სათემო კონტენტი', desc: 'დაკარგული/ნაპოვნი და სერვისები.', accent: 'emerald' },
       { href: '/admin/square', title: 'კახური მოედანი', desc: 'ჩატის შეტყობინებები და დაბლოკილი მომხმარებლები.', accent: 'cyan' },
       { href: '/admin/messages', title: 'შეტყობინებები', desc: 'კონტაქტის ფორმიდან შემოსული წერილები.', accent: 'blue' },
     ],
@@ -45,7 +45,6 @@ const TECHNICAL_LINKS = [
   { href: '/admin/moderation', title: 'მოდერაციის დიაგნოსტიკა', desc: 'pending announcement rows-ის ტექნიკური ნახვა.' },
   { href: '/admin/moderate', title: 'Legacy მოდერაცია', desc: 'ძველი მოდერაციის ეკრანი, დატოვებულია თავსებადობისთვის.' },
   { href: '/admin/businesses', title: 'Business legacy', desc: 'ამჟამად საჯარო UI-ში აქტიურად არ ჩანს, მაგრამ route შენარჩუნებულია.' },
-  { href: '/admin/congratulations', title: 'მილოცვების redirect', desc: 'გადამისამართება სათემო მოდერაციაზე.' },
 ];
 
 type StatsCardProps = {

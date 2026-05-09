@@ -10,7 +10,7 @@ interface SubmissionAuthGateProps {
   heading?: string;
 }
 
-const AUTH_LANDING_PATH = "/profile";
+const AUTH_LANDING_PATH = "/";
 
 export default function SubmissionAuthGate({ children, heading }: SubmissionAuthGateProps) {
   const [session, setSession] = useState<Session | null>(null);

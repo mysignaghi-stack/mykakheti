@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
+import imageCompression from 'browser-image-compression';
 import type { Database } from '@/types/supabase';
 import { supabase } from '../../lib/supabase';
 import { ANNOUNCEMENT_CATEGORIES, LOCATIONS } from '@/app/lib/constants';
@@ -47,6 +48,9 @@ export default function AnnouncementDetailsClient({ initialAd }: { initialAd: An
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const [isEditing, setIsEditing] = useState(false);
   const [savingEdit, setSavingEdit] = useState(false);
+  const [editImages, setEditImages] = useState<string[]>(getImages(initialAd));
+  const [editNewImages, setEditNewImages] = useState<File[]>([]);
+  const [editImagePreviews, setEditImagePreviews] = useState<string[]>([]);
   const [editForm, setEditForm] = useState({
     title: initialAd?.title ?? '',
     description: initialAd?.description ?? '',
@@ -91,6 +95,7 @@ export default function AnnouncementDetailsClient({ initialAd }: { initialAd: An
         if (data) {
           setAd(data);
           setActiveImg(getImages(data)[0] ?? null);
+          setEditImages(getImages(data));
           setEditForm({
             title: data.title ?? '',
             description: data.description ?? '',
@@ -115,14 +120,53 @@ export default function AnnouncementDetailsClient({ initialAd }: { initialAd: An
 
     setSavingEdit(true);
     try {
+      let nextImages = [...editImages];
+      if (editNewImages.length > 0) {
+        const formData = new FormData();
+        for (const file of editNewImages) {
+          const compressed = await imageCompression(file, {
+            maxSizeMB: 0.35,
+            maxWidthOrHeight: 1200,
+            useWebWorker: true,
+            initialQuality: 0.6,
+          });
+          formData.append('file', compressed, file.name.replace(/[^a-zA-Z0-9._-]/g, '_') || 'announcement.jpg');
+        }
+        formData.append('bucket', 'announcements');
+        const uploadResponse = await fetch('/api/upload', { method: 'POST', body: formData });
+        const uploadResult = await uploadResponse.json().catch(() => ({}));
+        if (!uploadResponse.ok) throw new Error(uploadResult?.error || 'ფოტოების ატვირთვა ვერ მოხერხდა');
+        const uploaded = Array.isArray(uploadResult.urls)
+          ? uploadResult.urls.filter((url: unknown): url is string => typeof url === 'string' && Boolean(url))
+          : uploadResult.url ? [uploadResult.url] : [];
+        nextImages = [...nextImages, ...uploaded];
+      }
+
+      if (nextImages.length === 0) {
+        alert('გთხოვთ დატოვოთ ან დაამატოთ მინიმუმ ერთი ფოტო.');
+        setSavingEdit(false);
+        return;
+      }
+
       const response = await fetch(`/api/announcements/${ad.id}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ values: editForm }),
+        body: JSON.stringify({
+          values: {
+            ...editForm,
+            image_url: nextImages[0] ?? null,
+            all_images: nextImages,
+          },
+        }),
       });
       const result = await response.json().catch(() => ({}));
       if (!response.ok) throw new Error(result?.error || 'განცხადების რედაქტირება ვერ მოხერხდა');
       setAd(result.announcement);
+      setEditImages(getImages(result.announcement));
+      editImagePreviews.forEach((preview) => URL.revokeObjectURL(preview));
+      setEditNewImages([]);
+      setEditImagePreviews([]);
+      setActiveImg(getImages(result.announcement)[0] ?? null);
       setIsEditing(false);
       alert('განცხადება განახლდა და გადაგზავნილია მოდერაციაზე.');
     } catch (error) {
@@ -131,6 +175,30 @@ export default function AnnouncementDetailsClient({ initialAd }: { initialAd: An
     } finally {
       setSavingEdit(false);
     }
+  };
+
+  const handleEditImageUpload = (files: FileList | null) => {
+    const nextFiles = Array.from(files ?? []).filter((file) => file.type.startsWith('image/'));
+    if (!nextFiles.length) return;
+    if (editImages.length + editNewImages.length + nextFiles.length > 5) {
+      alert('შეგიძლიათ დატოვოთ მაქსიმუმ 5 ფოტო.');
+      return;
+    }
+    setEditNewImages((current) => [...current, ...nextFiles]);
+    setEditImagePreviews((current) => [...current, ...nextFiles.map((file) => URL.createObjectURL(file))]);
+  };
+
+  const removeExistingEditImage = (url: string) => {
+    setEditImages((current) => current.filter((item) => item !== url));
+  };
+
+  const removeNewEditImage = (index: number) => {
+    setEditNewImages((current) => current.filter((_, itemIndex) => itemIndex !== index));
+    setEditImagePreviews((current) => {
+      const preview = current[index];
+      if (preview) URL.revokeObjectURL(preview);
+      return current.filter((_, itemIndex) => itemIndex !== index);
+    });
   };
 
   // Click outside the content area should navigate back to previous page
@@ -356,6 +424,54 @@ export default function AnnouncementDetailsClient({ initialAd }: { initialAd: An
                 <input value={editForm.phone ?? ''} onChange={(e) => setEditForm({ ...editForm, phone: e.target.value })} className="rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white outline-none focus:border-amber-400" placeholder="ტელეფონი" />
               </div>
               <textarea value={editForm.description ?? ''} onChange={(e) => setEditForm({ ...editForm, description: e.target.value })} rows={5} className="w-full resize-none rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white outline-none focus:border-amber-400" placeholder="აღწერა" />
+              <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-3">
+                <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+                  <span className="text-[11px] font-black uppercase tracking-[0.16em] text-amber-200">ფოტოები</span>
+                  <span className="text-[10px] font-bold text-white/35">{editImages.length + editNewImages.length} / 5</span>
+                </div>
+                <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+                  {editImages.map((img) => (
+                    <div key={img} className="relative aspect-square overflow-hidden rounded-xl border border-white/10 bg-black/30">
+                      <Image src={img} alt="" fill sizes="160px" className="object-cover" />
+                      <button
+                        type="button"
+                        onClick={() => removeExistingEditImage(img)}
+                        className="absolute right-2 top-2 rounded-lg bg-red-600/90 px-2 py-1 text-[10px] font-black uppercase text-white"
+                      >
+                        წაშლა
+                      </button>
+                    </div>
+                  ))}
+                  {editImagePreviews.map((preview, index) => (
+                    <div key={preview} className="relative aspect-square overflow-hidden rounded-xl border border-amber-300/30 bg-black/30">
+                      <Image src={preview} alt="" fill sizes="160px" className="object-cover" />
+                      <button
+                        type="button"
+                        onClick={() => removeNewEditImage(index)}
+                        className="absolute right-2 top-2 rounded-lg bg-red-600/90 px-2 py-1 text-[10px] font-black uppercase text-white"
+                      >
+                        წაშლა
+                      </button>
+                      <span className="absolute bottom-2 left-2 rounded-lg bg-amber-500/90 px-2 py-1 text-[9px] font-black uppercase text-black">
+                        ახალი
+                      </span>
+                    </div>
+                  ))}
+                </div>
+                <label className="mt-3 flex cursor-pointer items-center justify-center rounded-xl border border-dashed border-white/20 bg-white/[0.03] px-4 py-3 text-center text-[11px] font-black uppercase tracking-[0.14em] text-white/55 transition hover:border-amber-300/40 hover:text-amber-100">
+                  ფოტოს დამატება
+                  <input
+                    type="file"
+                    accept="image/*"
+                    multiple
+                    onChange={(event) => {
+                      handleEditImageUpload(event.target.files);
+                      event.target.value = '';
+                    }}
+                    className="hidden"
+                  />
+                </label>
+              </div>
               <button
                 type="button"
                 onClick={saveEdit}

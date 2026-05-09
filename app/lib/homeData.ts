@@ -15,10 +15,8 @@ type WeatherRow = {
   glow?: string | null;
   created_at?: string | null;
 };
-type ObituaryRow = Tables<'obituaries'>;
 type LostFoundRow = Tables<'lost_found'>;
 type MasterRow = Tables<'masters'>;
-type CongratsRow = Tables<'congratulations'>;
 type SiteSettingRow = Tables<'site_settings'>;
 
 type SettledResponse<T> = PromiseSettledResult<{ data: T[] | null; error: unknown }>;
@@ -99,10 +97,8 @@ const buildFallbackWeather = (): WeatherItem[] => (
 );
 
 export interface CommunityDataset {
-  obituaries: ObituaryRow[];
   lostFound: LostFoundRow[];
   masters: MasterRow[];
-  congratulations: CongratsRow[];
 }
 
 export interface CommunityCounts {
@@ -149,10 +145,8 @@ export const fetchHomePageData = async (): Promise<HomePageData> => {
       backgroundUrl: null,
       marqueeText: FALLBACK_MARQUEE,
       community: {
-        obituaries: [],
         lostFound: [],
         masters: [],
-        congratulations: [],
       },
       communityCounts: {
         lostFound: 0,
@@ -182,12 +176,6 @@ export const fetchHomePageData = async (): Promise<HomePageData> => {
       .select('key,value')
       .in('key', ['background_url', 'marquee_text']),
     supabase
-      .from('obituaries')
-      .select('id,full_name,funeral_at,funeral_place,image_url,is_approved,created_at')
-      .eq('is_approved', true)
-      .order('created_at', { ascending: false })
-      .limit(12),
-    supabase
       .from('lost_found')
       .select('id,title,location,image_url,kind,is_approved,created_at')
       .eq('is_approved', true)
@@ -196,12 +184,6 @@ export const fetchHomePageData = async (): Promise<HomePageData> => {
     supabase
       .from('masters')
       .select('id,full_name,profession,category,location,description,phone,photo_url,price_note,service_area,rating_avg,ratings_count,is_approved,created_at')
-      .eq('is_approved', true)
-      .order('created_at', { ascending: false })
-      .limit(12),
-    supabase
-      .from('congratulations')
-      .select('id,sender_name,recipient_name,message,image_url,occasion,created_at,is_approved')
       .eq('is_approved', true)
       .order('created_at', { ascending: false })
       .limit(12),
@@ -223,10 +205,8 @@ export const fetchHomePageData = async (): Promise<HomePageData> => {
     adminPostsResult,
     weatherResult,
     siteSettingsResult,
-    obituariesResult,
     lostFoundResult,
     mastersResult,
-    congratsResult,
     lostFoundCountResult,
     mastersCountResult,
     agroResult,
@@ -249,16 +229,11 @@ export const fetchHomePageData = async (): Promise<HomePageData> => {
     siteSettingsResult as SettledResponse<SiteSettingRow>,
     'site_settings'
   );
-  const obituaries: ObituaryRow[] = extractData<ObituaryRow>(obituariesResult as SettledResponse<ObituaryRow>, 'obituaries');
   const lostFound: LostFoundRow[] = extractData<LostFoundRow>(
     lostFoundResult as SettledResponse<LostFoundRow>,
     'lost_found'
   );
   const masters: MasterRow[] = extractData<MasterRow>(mastersResult as SettledResponse<MasterRow>, 'masters');
-  const congratulations: CongratsRow[] = extractData<CongratsRow>(
-    congratsResult as SettledResponse<CongratsRow>,
-    'congratulations'
-  );
   const lostFoundCount = extractCount(lostFoundCountResult as CountResult, 'lost_found');
   const mastersCount = extractCount(mastersCountResult as CountResult, 'masters');
 
@@ -294,10 +269,8 @@ export const fetchHomePageData = async (): Promise<HomePageData> => {
     backgroundUrl,
     marqueeText,
     community: {
-      obituaries,
       lostFound,
       masters,
-      congratulations,
     },
     communityCounts: {
       lostFound: lostFoundCount,

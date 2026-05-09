@@ -15,7 +15,7 @@ type AnnouncementRow = {
   user_id: string | null;
 };
 
-const COMMUNITY_CATEGORIES = ['სამძიმარი', 'დაკარგული/ნაპოვნი', 'ოსტატი', 'მილოცვა'] as const;
+const COMMUNITY_CATEGORIES = ['დაკარგული/ნაპოვნი', 'ოსტატი'] as const;
 
 export default function AdminModerationPage() {
   return <DiagnosticSector />;

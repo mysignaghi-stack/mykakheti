@@ -1,7 +1,6 @@
 'use client';
 
 import Link from 'next/link';
-import CongratulationsSection from './CongratulationsSection';
 
 interface CommunityEngagementSectionProps {
   className?: string;
@@ -51,7 +50,7 @@ export default function CommunityEngagementSection({ className }: CommunityEngag
     <div className={containerClasses}>
       <h4 className="text-white font-black uppercase tracking-[0.4em] mb-1 w-full text-center">სათემო ჩართულობა</h4>
       <p className="w-full text-white font-bold uppercase tracking-[0.2em] mb-2 leading-tight text-center">
-        გამოქვეყნეთ, გააზიარეთ და მიულოცეთ
+        გამოქვეყნეთ და გააზიარეთ
       </p>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-3 w-full">
         {COMMUNITY_CARDS.map((card) => (
@@ -68,10 +67,6 @@ export default function CommunityEngagementSection({ className }: CommunityEngag
           </Link>
         ))}
       </div>
-
-      {/* <div className="mt-6">
-        <CongratulationsSection />
-      </div> */}
     </div>
   );
 }

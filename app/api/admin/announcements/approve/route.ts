@@ -75,18 +75,7 @@ export async function POST(request: Request) {
 
   const category = announcement.category;
 
-  if (category === 'სამძიმარი') {
-    await serviceClient.from('obituaries').upsert({
-      id: announcement.id,
-      full_name: announcement.title,
-      funeral_place: announcement.location,
-      notes: announcement.description,
-      contacts: announcement.phone,
-      image_url: images[0] || null,
-      is_approved: true,
-      user_id: announcement.user_id,
-    }, { onConflict: 'id' });
-  } else if (category === 'დაკარგული/ნაპოვნი') {
+  if (category === 'დაკარგული/ნაპოვნი') {
     await serviceClient.from('lost_found').upsert({
       id: announcement.id,
       title: announcement.title,
@@ -107,18 +96,6 @@ export async function POST(request: Request) {
       location: announcement.location,
       phone: announcement.phone,
       photo_url: images[0] || null,
-      is_approved: true,
-      user_id: announcement.user_id,
-    }, { onConflict: 'id' });
-  } else if (category === 'მილოცვა') {
-    await serviceClient.from('congratulations').upsert({
-      id: announcement.id,
-      sender_name: 'მომხმარებელი',
-      recipient_name: announcement.title || 'მისალოცი',
-      message: announcement.description || announcement.title || 'მისალოცი',
-      occasion: 'სათემო ჩართულობა',
-      image_url: images[0] || null,
-      all_images: images.length ? images : null,
       is_approved: true,
       user_id: announcement.user_id,
     }, { onConflict: 'id' });

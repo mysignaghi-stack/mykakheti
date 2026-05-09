@@ -48,16 +48,12 @@ export async function POST(request: NextRequest) {
     // Normalize category to expected Georgian labels used in admin panels
     // Canonical categories (use only these four values in DB)
     const categoryMap: Record<string, string> = {
-      condolence: 'სამძიმარი',
-      'სამძიმარი': 'სამძიმარი',
       lost_found: 'დაკარგული/ნაპოვნი',
       'დაკარგული/ნაპოვნი': 'დაკარგული/ნაპოვნი',
       master: 'ოსტატი',
       service: 'ოსტატი',
       'ოსტატი': 'ოსტატი',
       'სერვისი': 'ოსტატი',
-      congratulation: 'მილოცვა',
-      'მილოცვა': 'მილოცვა',
     };
     const normalizedCategory = categoryMap[category] || category;
 
@@ -105,7 +101,7 @@ export async function POST(request: NextRequest) {
     const finalTitle = title || `ახალი ${normalizedCategory}`;
 
     // ვალიდაცია: შევამოწმოთ აუცილებელი ველები
-    const requiresLocationAndPrice = !['სამძიმარი', 'მილოცვა'].includes(normalizedCategory);
+    const requiresLocationAndPrice = true;
     if (!category || (requiresLocationAndPrice && (!location || !price))) {
       return NextResponse.json({ error: 'აუცილებელი ველები არ არის შევსებული: category' + (requiresLocationAndPrice ? ', location, price' : '') }, { status: 400 });
     }

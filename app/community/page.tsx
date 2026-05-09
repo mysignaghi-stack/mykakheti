@@ -27,7 +27,7 @@ export default function CommunityIndex() {
           <Link href="/" className="text-[11px] font-black uppercase italic text-white/50 hover:text-white transition">← მთავარზე დაბრუნება</Link>
         </div>
         <h1 className="text-2xl font-black text-amber-500 uppercase italic mb-3">სათემო ჩართულობა</h1>
-        <p className="text-white/60 text-sm mb-6">გამოქვეყნეთ, გააზიარეთ და მიულოცეთ — აირჩიეთ განყოფილება განცხადებების სანახავად ან დასამატებლად.</p>
+        <p className="text-white/60 text-sm mb-6">გამოქვეყნეთ და გააზიარეთ — აირჩიეთ განყოფილება განცხადებების სანახავად ან დასამატებლად.</p>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           {sections.map(section => (
