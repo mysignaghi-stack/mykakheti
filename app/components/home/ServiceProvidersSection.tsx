@@ -346,7 +346,7 @@ export default function ServiceProvidersSection({ providers = [], count = 0 }: S
             )}
           </div>
 
-          <div ref={serviceCategoryRef} className="relative">
+          <div ref={serviceCategoryRef} className="relative min-w-0">
             <button
               type="button"
               onClick={() => {
@@ -354,9 +354,12 @@ export default function ServiceProvidersSection({ providers = [], count = 0 }: S
                 setShowServiceDropdown(false);
                 setShowServiceLocationDropdown(false);
               }}
-              className="h-full w-full rounded-2xl border border-white/10 bg-[#0b0b15] px-4 py-2.5 text-left text-xs font-black uppercase tracking-[0.15em] text-amber-200 lg:w-[210px] whitespace-nowrap"
+              className="flex h-full w-full max-w-full min-w-0 items-center overflow-hidden rounded-2xl border border-white/10 bg-[#0b0b15] px-4 py-2.5 text-left text-xs font-black uppercase leading-5 tracking-[0.15em] text-amber-200 lg:w-[210px]"
+              title={selectedServiceCategory}
             >
-              {selectedServiceCategory}
+              <span className="block w-full min-w-0 truncate">
+                {selectedServiceCategory}
+              </span>
             </button>
             {showServiceCategoryDropdown && (
               <div className="absolute z-20 top-full mt-2 w-full min-w-64 rounded-[22px] border border-white/10 bg-[#0b0b15] p-2 shadow-[0_20px_60px_rgba(0,0,0,0.7)]">
@@ -370,7 +373,8 @@ export default function ServiceProvidersSection({ providers = [], count = 0 }: S
                         setSelectedService('ყველა სერვისი');
                         setShowServiceCategoryDropdown(false);
                       }}
-                      className={`w-full rounded-xl border px-3 py-2 text-left text-[11px] font-black uppercase tracking-[0.15em] transition ${
+                      title={category}
+                      className={`block w-full truncate rounded-xl border px-3 py-2 text-left text-[11px] font-black uppercase tracking-[0.15em] transition ${
                         selectedServiceCategory === category
                           ? 'border-amber-300/40 bg-amber-500/20 text-amber-200'
                           : 'border-transparent text-white/80 hover:bg-white/5 hover:text-white'
