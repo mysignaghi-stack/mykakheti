@@ -3,6 +3,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import Image from 'next/image';
 import Link from 'next/link';
+import type { User } from '@supabase/supabase-js';
 import { supabase } from '@/app/lib/supabase';
 import AuthForm from '@/app/components/auth/AuthForm';
 import type { Ad } from '@/app/lib/types';
@@ -18,6 +19,20 @@ const DEFAULT_BANNER_ENABLED = true;
 const DEFAULT_BANNER_DIRECTION = 'left';
 const DEFAULT_BANNER_BG = '';
 const DEFAULT_BANNER_BG_OPACITY = 0.2;
+
+const getUserDisplayName = (user: User | null) => {
+  if (!user) return '';
+  const metadata = user.user_metadata ?? {};
+  const fullName = metadata.full_name || metadata.name;
+  const firstName = metadata.first_name;
+  const lastName = metadata.last_name;
+
+  if (typeof fullName === 'string' && fullName.trim()) return fullName;
+  if (typeof firstName === 'string' || typeof lastName === 'string') {
+    return [firstName, lastName].filter(Boolean).join(' ').trim();
+  }
+  return user.email ?? 'პროფილი';
+};
 
 export default function Navbar({
   searchTerm,
@@ -41,6 +56,7 @@ export default function Navbar({
   const [bannerDirection, setBannerDirection] = useState(DEFAULT_BANNER_DIRECTION);
   const [bannerBg, setBannerBg] = useState(DEFAULT_BANNER_BG);
   const [bannerBgOpacity, setBannerBgOpacity] = useState(DEFAULT_BANNER_BG_OPACITY);
+  const [authUser, setAuthUser] = useState<User | null>(null);
 
   const bannerSizeClass = useMemo(() => {
     switch (bannerSize) {
@@ -120,6 +136,27 @@ export default function Navbar({
     };
   }, []);
 
+  useEffect(() => {
+    let active = true;
+
+    supabase.auth.getUser().then(({ data }) => {
+      if (active) setAuthUser(data.user ?? null);
+    });
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setAuthUser(session?.user ?? null);
+      if (session?.user) {
+        setShowLogin(false);
+        setShowRegister(false);
+      }
+    });
+
+    return () => {
+      active = false;
+      subscription.unsubscribe();
+    };
+  }, []);
+
   const searchRef = useRef<HTMLDivElement>(null);
   const [searchFocused, setSearchFocused] = useState(false);
   const showSearch = searchTerm !== undefined && setSearchTerm !== undefined;
@@ -153,16 +190,18 @@ export default function Navbar({
         <Link href="/" className="text-xl md:text-2xl font-black italic tracking-tighter">
           mykakheti<span className="text-amber-500">.ge</span>
         </Link>
-        <button
-          type="button"
-          onClick={() => {
-            setShowRegister((prev) => !prev);
-            setShowLogin(false);
-          }}
-          className="mt-1 inline-flex items-center justify-center rounded-full border border-amber-300/40 bg-white/5 px-2.5 py-0.5 text-[10px] md:text-[11px] font-black uppercase tracking-widest text-amber-300 shadow-[0_6px_16px_rgba(0,0,0,0.2)] backdrop-blur hover:border-amber-200/60 hover:text-amber-200 transition"
-        >
-          რეგისტრაცია
-        </button>
+        {!authUser && (
+          <button
+            type="button"
+            onClick={() => {
+              setShowRegister((prev) => !prev);
+              setShowLogin(false);
+            }}
+            className="mt-1 inline-flex items-center justify-center rounded-full border border-amber-300/40 bg-white/5 px-2.5 py-0.5 text-[10px] md:text-[11px] font-black uppercase tracking-widest text-amber-300 shadow-[0_6px_16px_rgba(0,0,0,0.2)] backdrop-blur hover:border-amber-200/60 hover:text-amber-200 transition"
+          >
+            რეგისტრაცია
+          </button>
+        )}
         {isMounted && showRegister
           ? createPortal(
               <div className="fixed inset-0 z-[9999] flex items-center justify-center px-4" role="dialog" aria-modal="true">
@@ -314,16 +353,26 @@ export default function Navbar({
         <Link href="/add" className="bg-amber-600 text-white px-4 sm:px-6 py-2 rounded-xl font-black uppercase text-[10px] md:text-[11px] italic shadow-2xl hover:scale-105 transition-all">
           განცხადება +
         </Link>
-        <button
-          type="button"
-          onClick={() => {
-            setShowLogin((prev) => !prev);
-            setShowRegister(false);
-          }}
-          className="mx-auto inline-flex items-center justify-center rounded-full border border-amber-300/40 bg-white/5 px-2.5 py-0.5 text-[10px] md:text-[11px] font-black uppercase tracking-widest text-amber-300 shadow-[0_6px_16px_rgba(0,0,0,0.2)] backdrop-blur hover:border-amber-200/60 hover:text-amber-200 transition"
-        >
-          ავტორიზაცია
-        </button>
+        {authUser ? (
+          <Link
+            href="/profile"
+            className="mx-auto max-w-[170px] truncate rounded-full border border-amber-300/40 bg-white/5 px-2.5 py-0.5 text-[10px] md:text-[11px] font-black uppercase tracking-widest text-amber-300 shadow-[0_6px_16px_rgba(0,0,0,0.2)] backdrop-blur transition hover:border-amber-200/60 hover:text-amber-200"
+            title={getUserDisplayName(authUser)}
+          >
+            {getUserDisplayName(authUser)}
+          </Link>
+        ) : (
+          <button
+            type="button"
+            onClick={() => {
+              setShowLogin((prev) => !prev);
+              setShowRegister(false);
+            }}
+            className="mx-auto inline-flex items-center justify-center rounded-full border border-amber-300/40 bg-white/5 px-2.5 py-0.5 text-[10px] md:text-[11px] font-black uppercase tracking-widest text-amber-300 shadow-[0_6px_16px_rgba(0,0,0,0.2)] backdrop-blur hover:border-amber-200/60 hover:text-amber-200 transition"
+          >
+            ავტორიზაცია
+          </button>
+        )}
         {isMounted && showLogin
           ? createPortal(
               <div className="fixed inset-0 z-[9999] flex items-center justify-center px-4" role="dialog" aria-modal="true">
