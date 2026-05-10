@@ -618,6 +618,14 @@ export default function ServiceProvidersSection({ providers = [], count = 0 }: S
             ))}
           </div>
         )}
+        <div className="mt-3 flex flex-col items-stretch justify-end gap-2 sm:flex-row">
+          <Link
+            href="/community/masters/submit"
+            className="inline-flex items-center justify-center rounded-2xl border border-emerald-300/35 bg-emerald-500/12 px-4 py-2.5 text-[10px] font-black uppercase tracking-[0.14em] text-emerald-100 transition hover:border-emerald-300 hover:bg-emerald-500/20"
+          >
+            სერვისის დამატება
+          </Link>
+        </div>
       </div>
     </section>
   );
