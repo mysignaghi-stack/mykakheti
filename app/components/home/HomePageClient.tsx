@@ -114,7 +114,7 @@ const getAgroDisplayPrice = (item: AgroItem) => {
   return detailRate ? formatAgroPrice(detailRate) : formatAgroPrice(priceText);
 };
 
-const COMMUNITY_CATEGORIES = ['დაკარგული/ნაპოვნი', 'ოსტატი'] as const;
+const COMMUNITY_CATEGORIES = ['დაკარგული/ნაპოვნი', 'ოსტატი', 'აგრო-ბირჟის განაცხადი', 'მარცვლეულის განაცხადი'] as const;
 
 interface HomePageClientProps {
   initialAds: Ad[];

@@ -76,6 +76,41 @@ const mapAgroRow = (row: AgroRow): AgroItem => ({
   details: Array.isArray(row.details) ? row.details : null,
 });
 
+const isAgroAnnouncement = (row: AnnouncementRow) => (
+  row.category === 'აგრო-ბირჟის განაცხადი' ||
+  Boolean(row.description?.includes('აგრო-ბირჟა:'))
+);
+
+const isGrainAnnouncement = (row: AnnouncementRow) => (
+  row.category === 'მარცვლეულის განაცხადი' ||
+  Boolean(row.description?.includes('მარცვლეული:'))
+);
+
+const mapAgroAnnouncementRow = (row: AnnouncementRow): AgroItem | null => {
+  const isGrape = isAgroAnnouncement(row);
+  const isGrain = isGrainAnnouncement(row);
+  if (!isGrape && !isGrain) return null;
+
+  const price = row.price ? String(row.price) : '';
+  const currency = row.currency === 'USD' ? '$' : '₾';
+  const rate = price ? `${price} ${currency}` : 'შეთანხმებით';
+
+  return {
+    id: `announcement-${row.id}`,
+    name: row.title ?? '',
+    unit: '',
+    price: rate,
+    color: isGrain ? 'text-yellow-200' : 'text-purple-300',
+    icon: isGrain ? '🌾' : '🍇',
+    category: isGrain ? 'grain' : 'grape',
+    details: [{
+      place: row.location || 'კახეთი',
+      rate,
+      phone: row.phone ?? undefined,
+    }],
+  };
+};
+
 const mapWeatherRow = (row: WeatherRow): WeatherItem => ({
   name: row.name ?? '',
   lat: row.lat ?? 0,
@@ -255,7 +290,14 @@ export const fetchHomePageData = async (): Promise<HomePageData> => {
       return ((post as any).is_published ?? true) && !((post as any).is_archived ?? false) && publishOk;
     });
 
-  const agroData = agroRows.length > 0 ? agroRows.map(mapAgroRow) : DEFAULT_AGRO_DATA;
+  const approvedAgroAnnouncements = rawAnnouncements
+    .filter((row) => (row.is_approved ?? false) && !(row.is_archived ?? false))
+    .map(mapAgroAnnouncementRow)
+    .filter((item): item is AgroItem => Boolean(item));
+  const agroData = [
+    ...(agroRows.length > 0 ? agroRows.map(mapAgroRow) : DEFAULT_AGRO_DATA),
+    ...approvedAgroAnnouncements,
+  ];
   const weatherData = weatherRows.length > 0 ? weatherRows.map(mapWeatherRow) : buildFallbackWeather();
 
   const backgroundUrl = siteSettings.find((row) => row.key === 'background_url')?.value ?? null;
