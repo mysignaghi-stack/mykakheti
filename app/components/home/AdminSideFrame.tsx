@@ -647,59 +647,62 @@ export default function AdminSideFrame({ post, position, isAdmin, onRefresh }: A
       {isMounted && lightbox?.open
         ? createPortal(
             <div
-              className="fixed inset-0 z-[2000] flex items-center justify-center bg-black/95 backdrop-blur-md p-4 sm:p-6 animate-in fade-in duration-300 text-left"
+              className="fixed inset-0 z-[2000] flex items-center justify-center bg-black/95 p-4 text-left backdrop-blur-md animate-in fade-in duration-300 sm:p-6"
               onClick={() => setLightbox(null)}
               role="dialog"
               aria-modal="true"
               aria-label="მედია ნახვა"
             >
               <div
-                className="bg-[#0a0a1f] p-8 sm:p-10 rounded-[40px] sm:rounded-[50px] border border-white/10 w-full max-w-4xl shadow-2xl relative text-center"
+                className="relative w-full max-w-4xl overflow-hidden rounded-[28px] border border-amber-400/20 bg-white/[0.04] text-left shadow-2xl"
                 onClick={(e) => e.stopPropagation()}
               >
                 <button
                   onClick={() => setLightbox(null)}
-                  className="absolute top-6 right-6 sm:top-8 sm:right-8 text-white/30 hover:text-white transition-colors text-xl sm:text-2xl font-black"
+                  className="absolute right-4 top-4 z-20 flex h-10 w-10 items-center justify-center rounded-full border border-white/15 bg-black/70 text-xl font-black text-white/60 transition hover:border-white/35 hover:text-white"
                   aria-label="დახურვა"
                 >
                   ✕
                 </button>
-                <div className="rounded-[24px] overflow-hidden border border-white/10 bg-black/40 flex items-center justify-center">
+                <div className="relative flex h-[320px] items-center justify-center bg-black md:h-[520px]">
                   {lightbox.isVideo ? (
                     <video
-                        src={lightbox.media[lightbox.currentIndex]}
-                        controls
-                        playsInline
-                        preload="auto"
-                        autoPlay
-                        className="w-full max-h-[70vh] object-contain rounded-[24px]"
-                      />
+                      src={lightbox.media[lightbox.currentIndex]}
+                      controls
+                      playsInline
+                      preload="auto"
+                      autoPlay
+                      className="h-full w-full object-contain"
+                    />
                   ) : (
                     <Image
                       src={lightbox.media[lightbox.currentIndex]}
                       alt=""
-                      width={1200}
-                      height={900}
-                      className="w-full max-h-[70vh] object-contain"
+                      fill
+                      sizes="100vw"
+                      className="object-contain"
                     />
                   )}
                 </div>
                 {post && (
-                  <div className="mt-5 rounded-2xl border border-white/10 bg-white/[0.04] p-4 text-left">
+                  <div className="space-y-3 p-5 md:p-7">
+                    {post.category && (
+                      <p className="text-[10px] font-black uppercase tracking-[0.24em] text-amber-300/70">{post.category}</p>
+                    )}
                     <div className="flex flex-wrap items-center gap-2">
-                      <h3 className="text-base font-black uppercase italic text-amber-300">{post.title}</h3>
+                      <h3 className="text-2xl font-black uppercase text-amber-200 md:text-4xl">{post.title}</h3>
                       {post.category && (
-                        <span className="rounded-full bg-purple-600/20 px-2 py-1 text-[10px] font-bold text-purple-300">{post.category}</span>
+                        <span className="rounded-full bg-purple-600/20 px-2 py-1 text-[10px] font-bold text-purple-300 md:hidden">{post.category}</span>
                       )}
                     </div>
                     {post.content && (
-                      <p className="mt-3 text-sm leading-relaxed text-white/80">
+                      <p className="whitespace-pre-line text-sm leading-relaxed text-white/75 md:text-base">
                         {renderAdminPostContent(post.content)}
                       </p>
                     )}
                     {post.link && (
-                      <a href={post.link} target="_blank" rel="noopener noreferrer" className="mt-3 inline-block rounded-xl bg-cyan-600/20 px-3 py-2 text-xs font-bold text-cyan-300 hover:bg-cyan-600 hover:text-white transition-all">
-                        🔗 ბმული
+                      <a href={post.link} target="_blank" rel="noopener noreferrer" className="inline-flex rounded-xl border border-amber-300/35 bg-amber-500/15 px-4 py-2 text-[11px] font-black uppercase tracking-[0.14em] text-amber-100 transition hover:bg-amber-500/25">
+                        ბმულზე გადასვლა
                       </a>
                     )}
                   </div>

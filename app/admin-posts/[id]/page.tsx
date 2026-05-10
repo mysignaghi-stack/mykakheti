@@ -11,6 +11,16 @@ type Props = {
 const SITE_URL = "https://mykakheti.ge";
 
 const isVideoUrl = (url: string) => /\.(mp4|webm|ogg|mov)(\?|#|$)/i.test(url);
+const toAbsoluteUrl = (url: string) => (
+  /^https?:\/\//i.test(url) ? url : `${SITE_URL}${url.startsWith("/") ? url : `/${url}`}`
+);
+
+const getVideoMimeType = (url: string) => {
+  if (/\.webm(\?|#|$)/i.test(url)) return "video/webm";
+  if (/\.ogg(\?|#|$)/i.test(url)) return "video/ogg";
+  if (/\.mov(\?|#|$)/i.test(url)) return "video/quicktime";
+  return "video/mp4";
+};
 
 const getPrimaryMedia = (post: {
   media_url?: string | null;
@@ -54,27 +64,43 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   }
 
   const media = getPrimaryMedia(post);
+  const imageUrl = media.image ? toAbsoluteUrl(media.image) : "";
+  const videoUrl = media.video ? toAbsoluteUrl(media.video) : "";
   const title = post.title || "ადმინისტრაციის განცხადება";
   const description = cleanDescription(post.content || post.category);
+  const openGraphBase = {
+    title,
+    description,
+    url: `${SITE_URL}/admin-posts/${post.id}`,
+    siteName: "MYKAKHETI.GE",
+    images: imageUrl ? [{ url: imageUrl, secureUrl: imageUrl, width: 1200, height: 630, alt: title }] : [],
+    locale: "ka_GE",
+  };
 
   return {
     title: `${title} | MYKAKHETI.GE`,
     description,
-    openGraph: {
-      title,
-      description,
-      url: `${SITE_URL}/admin-posts/${post.id}`,
-      siteName: "MYKAKHETI.GE",
-      images: media.image ? [{ url: media.image, width: 1200, height: 630, alt: title }] : [],
-      videos: media.video ? [{ url: media.video, width: 1280, height: 720 }] : [],
-      locale: "ka_GE",
-      type: "article",
-    },
+    openGraph: videoUrl
+      ? {
+          ...openGraphBase,
+          type: "video.other",
+          videos: [{
+            url: videoUrl,
+            secureUrl: videoUrl,
+            type: getVideoMimeType(videoUrl),
+            width: 1280,
+            height: 720,
+          }],
+        }
+      : {
+          ...openGraphBase,
+          type: "article",
+        },
     twitter: {
-      card: media.image ? "summary_large_image" : "summary",
+      card: imageUrl ? "summary_large_image" : "summary",
       title,
       description,
-      images: media.image ? [media.image] : [],
+      images: imageUrl ? [imageUrl] : [],
     },
   };
 }
