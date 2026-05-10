@@ -25,7 +25,7 @@ const AgroDetailsModal = ({ selectedAgro, onClose }: AgroDetailsModalProps) => {
   };
 
   const shareUrl = typeof window !== 'undefined'
-    ? `${window.location.origin}${window.location.pathname}#${selectedAgro.category === 'grain' ? 'grain-market' : 'agro-birzha'}`
+    ? `${window.location.origin}${window.location.pathname}#agro-item-${encodeURIComponent(String(selectedAgro.id))}`
     : '';
 
   const shareToFacebook = () => {

@@ -1,4 +1,5 @@
 import { cookies } from 'next/headers';
+import { revalidatePath } from 'next/cache';
 import { NextResponse } from 'next/server';
 import { createServerClient } from '@supabase/ssr';
 import { createClient } from '@supabase/supabase-js';
@@ -6,11 +7,11 @@ import type { Database } from '@/types/supabase';
 
 const TYPE_CONFIG = {
   grape: {
-    category: 'აგრო-მიწები',
+    category: 'აგრო-ბირჟის განაცხადი',
     label: 'აგრო-ბირჟა',
   },
   grain: {
-    category: 'მარცვლეული',
+    category: 'მარცვლეულის განაცხადი',
     label: 'მარცვლეული',
   },
 } as const;
@@ -86,6 +87,9 @@ export async function POST(request: Request) {
   if (error) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
+
+  revalidatePath('/admin/moderate');
+  revalidatePath('/admin/announcements');
 
   return NextResponse.json({ success: true, announcement: data });
 }

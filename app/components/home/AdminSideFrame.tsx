@@ -290,11 +290,16 @@ export default function AdminSideFrame({ post, position, isAdmin, onRefresh }: A
     setLightbox({ open: true, media: [url], currentIndex: 0, isVideo });
   };
 
-  const getShareUrl = () => (
-    typeof window === 'undefined'
+  const getPrimaryMediaUrl = () => post?.media_urls?.[0] || (post as any)?.media_url || '';
+
+  const getShareUrl = () => {
+    if (post?.link) return post.link;
+    const mediaUrl = getPrimaryMediaUrl();
+    if (mediaUrl) return mediaUrl;
+    return typeof window === 'undefined'
       ? ''
-      : `${window.location.origin}${window.location.pathname}#admin-${position}`
-  );
+      : `${window.location.origin}${window.location.pathname}#admin-${position}`;
+  };
 
   const shareToFacebook = () => {
     const url = getShareUrl();
@@ -317,7 +322,7 @@ export default function AdminSideFrame({ post, position, isAdmin, onRefresh }: A
   };
 
   const openPostPreview = () => {
-    const url = post?.media_urls?.[0] || (post as any)?.media_url;
+    const url = getPrimaryMediaUrl();
     if (!url) {
       setShowFullContent(true);
       return;

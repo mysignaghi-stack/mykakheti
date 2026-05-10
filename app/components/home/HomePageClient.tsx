@@ -267,9 +267,16 @@ export default function HomePageClient({
     setSnackbar(prev => ({ ...prev, open: false }));
   }, []);
 
-  const shareHomeSection = useCallback(async (label: string, hash: string) => {
-    if (typeof window === 'undefined') return;
-    const url = `${window.location.origin}${window.location.pathname}${hash}`;
+  const buildShareUrl = useCallback((target: string) => {
+    if (typeof window === 'undefined') return '';
+    if (/^https?:\/\//.test(target)) return target;
+    if (target.startsWith('#')) return `${window.location.origin}${window.location.pathname}${target}`;
+    return `${window.location.origin}${target.startsWith('/') ? target : `/${target}`}`;
+  }, []);
+
+  const shareHomeSection = useCallback(async (label: string, target: string) => {
+    const url = buildShareUrl(target);
+    if (!url) return;
     if (navigator.share) {
       try {
         await navigator.share({ title: label, url });
@@ -284,13 +291,13 @@ export default function HomePageClient({
     } catch {
       window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`, 'fb-share', 'width=600,height=400');
     }
-  }, [showSnackbar]);
+  }, [buildShareUrl, showSnackbar]);
 
-  const shareHomeSectionToFacebook = useCallback((hash: string) => {
-    if (typeof window === 'undefined') return;
-    const url = `${window.location.origin}${window.location.pathname}${hash}`;
+  const shareHomeSectionToFacebook = useCallback((target: string) => {
+    const url = buildShareUrl(target);
+    if (!url) return;
     window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`, 'fb-share', 'width=600,height=400');
-  }, []);
+  }, [buildShareUrl]);
 
   const openAgroSubmission = useCallback((type: AgroSubmissionType) => {
     setAgroSubmissionType(type);
@@ -1146,7 +1153,7 @@ export default function HomePageClient({
                 <p className="w-full text-[10px] text-white/40 font-bold uppercase tracking-[0.2em] mb-3 leading-tight">საორიენტაციო ფასები · დააჭირე პროდუქტს</p>
                 <div className="w-full flex-1 space-y-2 overflow-y-auto custom-scrollbar pr-1">
                   {agroData.filter(i => i.category === 'grape').map(item => (
-                    <button key={item.id} onClick={() => setSelectedAgro(item)} className="w-full flex justify-between items-center bg-black/40 p-3 rounded-xl border border-white/5 transition-all group/item hover:bg-white/5">
+                    <button id={`agro-item-${item.id}`} key={item.id} onClick={() => setSelectedAgro(item)} className="w-full flex justify-between items-center bg-black/40 p-3 rounded-xl border border-white/5 transition-all group/item hover:bg-white/5">
                       <span className="text-xs font-black uppercase text-purple-300">{item.name}</span>
                       <span className="text-sm font-black italic">{getAgroDisplayPrice(item)}</span>
                     </button>
@@ -1187,14 +1194,14 @@ export default function HomePageClient({
                   <div className="mt-3 flex flex-wrap gap-2">
                     <button
                       type="button"
-                      onClick={() => shareHomeSectionToFacebook('#lost-found')}
+                      onClick={() => shareHomeSectionToFacebook('/community/lost-found')}
                       className="rounded-xl border border-blue-300/30 bg-blue-500/10 px-3 py-2 text-[10px] font-black uppercase text-blue-100"
                     >
                       Facebook
                     </button>
                     <button
                       type="button"
-                      onClick={() => shareHomeSection('დაკარგული/ნაპოვნი', '#lost-found')}
+                      onClick={() => shareHomeSection('დაკარგული/ნაპოვნი', '/community/lost-found')}
                       className="rounded-xl border border-white/15 bg-white/5 px-3 py-2 text-[10px] font-black uppercase text-white/75"
                     >
                       გაზიარება
@@ -1234,7 +1241,7 @@ export default function HomePageClient({
                 <p className="w-full text-[10px] text-white/40 font-bold uppercase tracking-[0.2em] mb-3 leading-tight">საორიენტაციო ფასები · დააჭირე პროდუქტს</p>
                 <div className="w-full flex-1 space-y-2 overflow-y-auto custom-scrollbar pr-1">
                   {agroData.filter(i => i.category === 'grain').map(item => (
-                    <button key={item.id} onClick={() => setSelectedAgro(item)} className="w-full flex justify-between items-center bg-black/40 p-3 rounded-xl border border-white/5 transition-all group/item hover:bg-white/5">
+                    <button id={`agro-item-${item.id}`} key={item.id} onClick={() => setSelectedAgro(item)} className="w-full flex justify-between items-center bg-black/40 p-3 rounded-xl border border-white/5 transition-all group/item hover:bg-white/5">
                       <span className="text-xs font-black uppercase text-yellow-500">{item.name}</span>
                       <span className="text-sm font-black italic">{getAgroDisplayPrice(item)}</span>
                     </button>
