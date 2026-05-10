@@ -367,7 +367,7 @@ export default function Navbar({
               className="max-w-[150px] truncate rounded-full border border-amber-300/40 bg-white/5 px-2.5 py-0.5 text-[10px] md:text-[11px] font-black uppercase tracking-widest text-amber-300 shadow-[0_6px_16px_rgba(0,0,0,0.2)] backdrop-blur transition hover:border-amber-200/60 hover:text-amber-200"
               title={getUserDisplayName(authUser)}
             >
-              {getUserDisplayName(authUser)}
+              ჩემი კაბინეტი
             </Link>
             <button
               type="button"

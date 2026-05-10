@@ -1082,6 +1082,20 @@ export default function HomePageClient({
                       ))}
                     </div>
                   )}
+                  <div className="mt-3 flex flex-col items-stretch justify-end gap-2 sm:flex-row">
+                    <Link
+                      href="/add"
+                      className="inline-flex items-center justify-center rounded-2xl border border-amber-300/40 bg-amber-500/15 px-4 py-2.5 text-[10px] font-black uppercase tracking-[0.14em] text-amber-100 transition hover:border-amber-300 hover:bg-amber-500/25"
+                    >
+                      განცხადების დამატება
+                    </Link>
+                    <Link
+                      href="/community/masters/submit"
+                      className="inline-flex items-center justify-center rounded-2xl border border-emerald-300/35 bg-emerald-500/12 px-4 py-2.5 text-[10px] font-black uppercase tracking-[0.14em] text-emerald-100 transition hover:border-emerald-300 hover:bg-emerald-500/20"
+                    >
+                      სერვისის დამატება
+                    </Link>
+                  </div>
                 </>
               ) : (
                 <div className="text-center py-10 text-white/60 text-sm">
