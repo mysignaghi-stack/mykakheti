@@ -293,12 +293,13 @@ export default function AdminSideFrame({ post, position, isAdmin, onRefresh }: A
   const getPrimaryMediaUrl = () => post?.media_urls?.[0] || (post as any)?.media_url || '';
 
   const getShareUrl = () => {
-    if (post?.link) return post.link;
-    const mediaUrl = getPrimaryMediaUrl();
-    if (mediaUrl) return mediaUrl;
-    return typeof window === 'undefined'
-      ? ''
-      : `${window.location.origin}${window.location.pathname}#admin-${position}`;
+    if (typeof window === 'undefined') return '';
+    if (post?.id) return `${window.location.origin}/admin-posts/${post.id}`;
+    if (post?.link) {
+      if (/^https?:\/\//.test(post.link)) return post.link;
+      return `${window.location.origin}${post.link.startsWith('/') ? post.link : `/${post.link}`}`;
+    }
+    return `${window.location.origin}${window.location.pathname}#admin-${position}`;
   };
 
   const shareToFacebook = () => {

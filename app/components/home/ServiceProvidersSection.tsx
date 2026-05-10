@@ -230,6 +230,28 @@ export default function ServiceProvidersSection({ providers = [], count = 0 }: S
   const serviceCategoryRef = useRef<HTMLDivElement | null>(null);
   const serviceRef = useRef<HTMLDivElement | null>(null);
   const serviceLocationRef = useRef<HTMLDivElement | null>(null);
+  const buildServiceShareUrl = (providerId: string) => {
+    if (typeof window === 'undefined') return `/community/masters/${providerId}`;
+    return `${window.location.origin}/community/masters/${providerId}`;
+  };
+
+  const shareServiceProvider = async (provider: MasterRow) => {
+    const url = buildServiceShareUrl(provider.id);
+    if (typeof navigator !== 'undefined' && navigator.share) {
+      try {
+        await navigator.share({ title: provider.full_name ?? 'სერვისი', url });
+        return;
+      } catch {
+        // Fall back to clipboard below.
+      }
+    }
+    await navigator.clipboard.writeText(url);
+  };
+
+  const shareServiceProviderToFacebook = (providerId: string) => {
+    const url = buildServiceShareUrl(providerId);
+    window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`, 'fb-share', 'width=600,height=400');
+  };
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -539,43 +561,60 @@ export default function ServiceProvidersSection({ providers = [], count = 0 }: S
         {visibleProviders.length > 0 && (
           <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3">
             {visibleProviders.map((provider) => (
-              <Link
+              <article
                 key={provider.id}
-                href={`/community/masters/${provider.id}`}
                 className="group overflow-hidden rounded-2xl border border-white/10 bg-[#0b0b15]/80 text-left transition hover:border-amber-300/35 hover:bg-white/[0.06]"
               >
-                {provider.photo_url && (
-                  <div className="relative h-28 w-full bg-white/5">
-                    <Image
-                      src={provider.photo_url}
-                      alt={provider.full_name}
-                      fill
-                      sizes="(max-width: 640px) 100vw, (max-width: 1280px) 50vw, 33vw"
-                      className="object-contain p-2 transition duration-300 group-hover:scale-[1.03]"
-                    />
-                  </div>
-                )}
-                <div className="p-4">
-                  <div className="flex items-start justify-between gap-3">
-                    <div>
-                      <h3 className="text-sm font-black text-white">{provider.full_name}</h3>
-                      <p className="mt-1 line-clamp-2 text-[11px] font-black uppercase tracking-[0.12em] text-amber-300">
-                        {provider.profession}
-                      </p>
+                <Link href={`/community/masters/${provider.id}`} className="block">
+                  {provider.photo_url && (
+                    <div className="relative h-28 w-full bg-white/5">
+                      <Image
+                        src={provider.photo_url}
+                        alt={provider.full_name}
+                        fill
+                        sizes="(max-width: 640px) 100vw, (max-width: 1280px) 50vw, 33vw"
+                        className="object-contain p-2 transition duration-300 group-hover:scale-[1.03]"
+                      />
                     </div>
-                    <span className="shrink-0 text-xs font-black text-amber-300">⭐ {provider.rating_avg?.toFixed(1) || '0.0'}</span>
+                  )}
+                  <div className="p-4 pb-2">
+                    <div className="flex items-start justify-between gap-3">
+                      <div>
+                        <h3 className="text-sm font-black text-white">{provider.full_name}</h3>
+                        <p className="mt-1 line-clamp-2 text-[11px] font-black uppercase tracking-[0.12em] text-amber-300">
+                          {provider.profession}
+                        </p>
+                      </div>
+                      <span className="shrink-0 text-xs font-black text-amber-300">⭐ {provider.rating_avg?.toFixed(1) || '0.0'}</span>
+                    </div>
+                    {provider.category && (
+                      <p className="mt-2 line-clamp-1 text-[11px] text-white/45">{provider.category}</p>
+                    )}
+                    {provider.location && (
+                      <p className="mt-1 text-[11px] text-white/45">{provider.location}</p>
+                    )}
+                    {provider.phone && (
+                      <p className="mt-2 text-[11px] font-bold text-white/65">ტელ: {provider.phone}</p>
+                    )}
                   </div>
-                  {provider.category && (
-                    <p className="mt-2 line-clamp-1 text-[11px] text-white/45">{provider.category}</p>
-                  )}
-                  {provider.location && (
-                    <p className="mt-1 text-[11px] text-white/45">{provider.location}</p>
-                  )}
-                  {provider.phone && (
-                    <p className="mt-2 text-[11px] font-bold text-white/65">ტელ: {provider.phone}</p>
-                  )}
+                </Link>
+                <div className="flex flex-wrap gap-2 px-4 pb-4">
+                  <button
+                    type="button"
+                    onClick={() => shareServiceProviderToFacebook(provider.id)}
+                    className="rounded-lg border border-blue-300/30 bg-blue-500/10 px-2.5 py-1.5 text-[10px] font-black uppercase text-blue-100 transition hover:bg-blue-500/20"
+                  >
+                    Facebook
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => shareServiceProvider(provider)}
+                    className="rounded-lg border border-white/15 bg-white/5 px-2.5 py-1.5 text-[10px] font-black uppercase text-white/75 transition hover:text-white"
+                  >
+                    გაზიარება
+                  </button>
                 </div>
-              </Link>
+              </article>
             ))}
           </div>
         )}

@@ -11,7 +11,12 @@ interface ShareButtonsProps {
 export default function ShareButtons({ className, url, title }: ShareButtonsProps) {
   const [copied, setCopied] = useState(false);
 
-  const getShareUrl = () => url || window.location.href;
+  const getShareUrl = () => {
+    if (typeof window === 'undefined') return url || '';
+    if (!url) return window.location.href;
+    if (/^https?:\/\//.test(url)) return url;
+    return `${window.location.origin}${url.startsWith('/') ? url : `/${url}`}`;
+  };
 
   const shareToFacebook = () => {
     const shareUrl = getShareUrl();
