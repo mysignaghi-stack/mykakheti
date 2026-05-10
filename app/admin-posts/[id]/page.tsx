@@ -126,7 +126,15 @@ export default async function AdminPostSharePage({ params }: Props) {
           {media.first && (
             <div className="relative flex h-[320px] items-center justify-center bg-black md:h-[520px]">
               {media.video ? (
-                <video src={media.video} controls playsInline className="h-full w-full object-contain" />
+                <video
+                  src={media.video}
+                  controls
+                  playsInline
+                  preload="auto"
+                  autoPlay
+                  muted
+                  className="h-full w-full object-contain"
+                />
               ) : (
                 <Image src={media.image || media.first} alt={post.title} fill sizes="100vw" className="object-contain" />
               )}

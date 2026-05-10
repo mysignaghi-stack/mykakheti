@@ -672,6 +672,7 @@ export default function AdminSideFrame({ post, position, isAdmin, onRefresh }: A
                       playsInline
                       preload="auto"
                       autoPlay
+                      muted
                       className="h-full w-full object-contain"
                     />
                   ) : (
