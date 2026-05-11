@@ -246,12 +246,8 @@ export default function AdminAgroPanel({ showCategory }: { showCategory?: 'grape
                   </div>
                   <div className="flex items-center gap-2">
                     <div className="text-sm font-black">{it.price}</div>
-                    {it.source !== 'announcement' && (
-                      <>
-                        <button onClick={() => openEdit(it)} className="px-3 py-1 bg-amber-600 rounded text-xs font-black">Edit</button>
-                        <button onClick={() => handleDelete(it.id)} className="px-3 py-1 bg-red-600 rounded text-xs font-black">Delete</button>
-                      </>
-                    )}
+                    <button onClick={() => openEdit(it)} className="px-3 py-1 bg-amber-600 rounded text-xs font-black">Edit</button>
+                    <button onClick={() => handleDelete(it.id)} className="px-3 py-1 bg-red-600 rounded text-xs font-black">Delete</button>
                   </div>
                 </div>
               ))}
@@ -275,12 +271,8 @@ export default function AdminAgroPanel({ showCategory }: { showCategory?: 'grape
                   </div>
                   <div className="flex items-center gap-2">
                     <div className="text-sm font-black">{it.price}</div>
-                    {it.source !== 'announcement' && (
-                      <>
-                        <button onClick={() => openEdit(it)} className="px-3 py-1 bg-amber-600 rounded text-xs font-black">Edit</button>
-                        <button onClick={() => handleDelete(it.id)} className="px-3 py-1 bg-red-600 rounded text-xs font-black">Delete</button>
-                      </>
-                    )}
+                    <button onClick={() => openEdit(it)} className="px-3 py-1 bg-amber-600 rounded text-xs font-black">Edit</button>
+                    <button onClick={() => handleDelete(it.id)} className="px-3 py-1 bg-red-600 rounded text-xs font-black">Delete</button>
                   </div>
                 </div>
               ))}
@@ -295,7 +287,7 @@ export default function AdminAgroPanel({ showCategory }: { showCategory?: 'grape
           item={{ name: editItem.name }}
           newName={newName}
           newPrice={newPrice}
-          showPriceInput={false}
+          showPriceInput
           onChangeName={setNewName}
           onChange={setNewPrice}
           details={editDetails}

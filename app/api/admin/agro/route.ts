@@ -82,7 +82,7 @@ export async function POST(request: Request) {
 
       const { data: approvedSubmissions } = await serviceClient
         .from('announcements')
-        .select('id,title,price,currency,location,category,description,is_archived')
+        .select('id,title,price,currency,location,category,description,is_archived,phone')
         .eq('is_approved', true)
         .or('is_archived.is.null,is_archived.eq.false');
 
@@ -105,6 +105,7 @@ export async function POST(request: Request) {
               {
                 place: row.location || 'მითითებული ლოკაცია',
                 rate: formattedPrice || 'ფასი შეთანხმებით',
+                phone: row.phone || '',
               },
             ],
             source: 'announcement',
@@ -157,16 +158,56 @@ export async function POST(request: Request) {
     if (action === 'delete') {
       const id = body?.id;
       if (!id) return NextResponse.json({ error: 'Missing id for delete' }, { status: 400 });
+
+      if (String(id).startsWith('announcement-')) {
+        const announcementId = String(id).replace(/^announcement-/, '');
+        const { error } = await serviceClient
+          .from('announcements')
+          .update({ is_archived: true })
+          .eq('id', announcementId);
+        if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+        revalidatePath('/');
+        revalidatePath('/admin/agro');
+        revalidatePath('/admin/grain');
+        return NextResponse.json({ data: { id } });
+      }
+
       const { error } = await serviceClient.from('agro_prices').delete().eq('id', id);
       if (error) return NextResponse.json({ error: error.message }, { status: 500 });
       revalidatePath('/');
       revalidatePath('/admin/agro');
+      revalidatePath('/admin/grain');
       return NextResponse.json({ data: { id } });
     }
 
     // upsert / insert / update
     const payload = body?.payload;
     if (!payload) return NextResponse.json({ error: 'Missing payload' }, { status: 400 });
+
+    if (String(payload.id || '').startsWith('announcement-')) {
+      const announcementId = String(payload.id).replace(/^announcement-/, '');
+      const firstDetail = Array.isArray(payload.details) ? payload.details[0] : null;
+      const price = String(payload.price ?? firstDetail?.rate ?? '').trim();
+      const location = String(firstDetail?.place ?? '').trim();
+      const phone = String(firstDetail?.phone ?? '').trim();
+      const updatePayload: Record<string, string | null> = {
+        title: String(payload.name ?? '').trim(),
+        price: price || null,
+      };
+      if (location) updatePayload.location = location;
+      updatePayload.phone = phone || null;
+
+      const { data, error } = await serviceClient
+        .from('announcements')
+        .update(updatePayload)
+        .eq('id', announcementId)
+        .select('*');
+      if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+      revalidatePath('/');
+      revalidatePath('/admin/agro');
+      revalidatePath('/admin/grain');
+      return NextResponse.json({ data });
+    }
 
     if (String(payload.id || '').startsWith('new-')) {
       const { id, ...insertPayload } = payload;
@@ -195,6 +236,7 @@ export async function POST(request: Request) {
       if (error) return NextResponse.json({ error: error.message }, { status: 500 });
       revalidatePath('/');
       revalidatePath('/admin/agro');
+      revalidatePath('/admin/grain');
       return NextResponse.json({ data });
     }
   } catch (err: any) {
