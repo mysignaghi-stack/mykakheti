@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef } from "react";
+import { useEffect, useRef } from "react";
 
 const getVideoMimeType = (url: string) => {
   if (/\.webm(\?|#|$)/i.test(url)) return "video/webm";
@@ -17,6 +17,20 @@ type StableVideoPlayerProps = {
 export default function StableVideoPlayer({ src, className = "h-full w-full object-contain" }: StableVideoPlayerProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const lastRecoveryRef = useRef(0);
+  const playAttemptsRef = useRef(0);
+
+  const requestPlay = () => {
+    const video = videoRef.current;
+    if (!video) return;
+    video.muted = true;
+    video.play().catch(() => undefined);
+  };
+
+  useEffect(() => {
+    playAttemptsRef.current = 0;
+    const timers = [120, 500, 1200].map((delay) => window.setTimeout(requestPlay, delay));
+    return () => timers.forEach((timer) => window.clearTimeout(timer));
+  }, [src]);
 
   const recoverPlayback = () => {
     const video = videoRef.current;
@@ -34,8 +48,14 @@ export default function StableVideoPlayer({ src, className = "h-full w-full obje
       } catch {
         // Some mobile browsers reject restoring time until metadata is loaded.
       }
-      video.play().catch(() => undefined);
+      requestPlay();
     });
+  };
+
+  const handleReadyToPlay = () => {
+    if (playAttemptsRef.current > 4) return;
+    playAttemptsRef.current += 1;
+    requestPlay();
   };
 
   return (
@@ -43,9 +63,13 @@ export default function StableVideoPlayer({ src, className = "h-full w-full obje
       ref={videoRef}
       key={src}
       controls
+      autoPlay
+      muted
       playsInline
       preload="auto"
       className={className}
+      onLoadedData={handleReadyToPlay}
+      onCanPlay={handleReadyToPlay}
       onWaiting={recoverPlayback}
       onStalled={recoverPlayback}
       onSuspend={recoverPlayback}
@@ -55,4 +79,3 @@ export default function StableVideoPlayer({ src, className = "h-full w-full obje
     </video>
   );
 }
-
