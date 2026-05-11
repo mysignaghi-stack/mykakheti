@@ -14,6 +14,7 @@ import 'swiper/css/autoplay';
 import { supabase } from '../../lib/supabase';
 import { renderAdminPostContent, stripAdminPostContent } from '@/app/lib/adminPostContent';
 import NativeVideoShareButton from '@/app/components/share/NativeVideoShareButton';
+import StableVideoPlayer from '@/app/components/media/StableVideoPlayer';
 // წავშალეთ AdminPost იმპორტი lib/types-დან კონფლიქტის თავიდან ასაცილებლად
 import type { Database } from '@/types/supabase';
 
@@ -626,16 +627,7 @@ export default function AdminSideFrame({ post, position, isAdmin, onRefresh }: A
                 </button>
                 <div className="relative flex h-[320px] items-center justify-center bg-black md:h-[520px]">
                   {lightbox.isVideo ? (
-                    <video
-                      key={lightbox.media[lightbox.currentIndex]}
-                      src={lightbox.media[lightbox.currentIndex]}
-                      controls
-                      playsInline
-                      preload="auto"
-                      autoPlay
-                      muted
-                      className="h-full w-full object-contain"
-                    />
+                    <StableVideoPlayer src={lightbox.media[lightbox.currentIndex]} />
                   ) : (
                     <Image
                       src={lightbox.media[lightbox.currentIndex]}

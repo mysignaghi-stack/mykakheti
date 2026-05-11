@@ -4,6 +4,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getSupabaseAdmin } from "@/app/lib/supabaseAdmin";
 import NativeVideoShareButton from "@/app/components/share/NativeVideoShareButton";
+import StableVideoPlayer from "@/app/components/media/StableVideoPlayer";
 
 type Props = {
   params: Promise<{ id: string }>;
@@ -127,15 +128,7 @@ export default async function AdminPostSharePage({ params }: Props) {
           {media.first && (
             <div className="relative flex h-[320px] items-center justify-center bg-black md:h-[520px]">
               {media.video ? (
-                <video
-                  src={media.video}
-                  controls
-                  playsInline
-                  preload="auto"
-                  autoPlay
-                  muted
-                  className="h-full w-full object-contain"
-                />
+                <StableVideoPlayer src={media.video} />
               ) : (
                 <Image src={media.image || media.first} alt={post.title} fill sizes="100vw" className="object-contain" />
               )}
