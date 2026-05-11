@@ -6,6 +6,7 @@ import { createClient } from '@supabase/supabase-js';
 import type { Database } from '../../../../types/supabase';
 import { isAdminUser } from '../../../lib/adminAuth';
 import { DEFAULT_AGRO_DATA } from '../../../lib/constants';
+import { getAgroSubmissionType } from '../../../lib/specialAnnouncements';
 
 export async function POST(request: Request) {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -78,7 +79,40 @@ export async function POST(request: Request) {
     if (action === 'list') {
       const { data, error } = await serviceClient.from('agro_prices').select('*').order('id', { ascending: true });
       if (error) return NextResponse.json({ error: error.message }, { status: 500 });
-      return NextResponse.json({ data });
+
+      const { data: approvedSubmissions } = await serviceClient
+        .from('announcements')
+        .select('id,title,price,currency,location,category,description,is_archived')
+        .eq('is_approved', true)
+        .or('is_archived.is.null,is_archived.eq.false');
+
+      const submissionItems = (approvedSubmissions ?? [])
+        .map((row: any) => {
+          const type = getAgroSubmissionType(row);
+          if (!type) return null;
+          const price = String(row.price ?? '').trim();
+          const currency = String(row.currency ?? '').trim();
+          const formattedPrice = price ? (!currency || price.includes(currency) ? price : `${price} ${currency}`) : null;
+          return {
+            id: `announcement-${row.id}`,
+            name: row.title,
+            unit: null,
+            price: formattedPrice,
+            color: type === 'grain' ? 'text-yellow-200' : 'text-amber-400',
+            icon: type === 'grain' ? '🌾' : '🍇',
+            category: type,
+            details: [
+              {
+                place: row.location || 'მითითებული ლოკაცია',
+                rate: formattedPrice || 'ფასი შეთანხმებით',
+              },
+            ],
+            source: 'announcement',
+          };
+        })
+        .filter(Boolean);
+
+      return NextResponse.json({ data: [...(data ?? []), ...submissionItems] });
     }
 
     const getNextId = async () => {

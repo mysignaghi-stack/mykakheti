@@ -7,6 +7,7 @@ import type { Database } from '@/types/supabase';
 import { supabase } from '../../lib/supabase';
 import { useAdminAuth } from '../../hooks/useAdminAuth';
 import AdminNav from '../../components/admin/AdminNav';
+import { isAgroSubmission } from '../../lib/specialAnnouncements';
 
 type Announcement = Database['public']['Tables']['announcements']['Row'];
 
@@ -54,8 +55,8 @@ export default function AdminAnnouncements() {
       if (pendingRes.error) console.error('Pending ads fetch error', pendingRes.error);
       if (liveRes.error) console.error('Live ads fetch error', liveRes.error);
 
-      if (pendingRes.data) setPendingAds(pendingRes.data);
-      if (liveRes.data) setLiveAds(liveRes.data);
+      if (pendingRes.data) setPendingAds(pendingRes.data.filter((ad: Announcement) => !isAgroSubmission(ad)));
+      if (liveRes.data) setLiveAds(liveRes.data.filter((ad: Announcement) => !isAgroSubmission(ad)));
     } catch (error) {
       console.error('Fetch Error:', error);
     } finally {
@@ -78,7 +79,7 @@ export default function AdminAnnouncements() {
 
     const adToApprove = pendingAds.find(a => a.id === id);
     setPendingAds(prev => prev.filter(a => a.id !== id));
-    if (adToApprove) setLiveAds(prev => [{ ...adToApprove, is_approved: true }, ...prev]);
+    if (adToApprove && !isAgroSubmission(adToApprove)) setLiveAds(prev => [{ ...adToApprove, is_approved: true }, ...prev]);
   }
 
   async function deleteAd(id: string) {
@@ -124,7 +125,7 @@ export default function AdminAnnouncements() {
       if (approveOnSave) {
         const adToApprove = pendingAds.find(a => a.id === id);
         setPendingAds(prev => prev.filter(a => a.id !== id));
-        if (adToApprove) setLiveAds(prev => [adToApprove, ...prev]);
+        if (adToApprove && !isAgroSubmission(adToApprove)) setLiveAds(prev => [adToApprove, ...prev]);
       } else {
         fetchAllAds();
       }
@@ -137,8 +138,17 @@ export default function AdminAnnouncements() {
     if (!bulkFrom || !bulkTo) return alert('აირჩიეთ პერიოდი');
     if (!bulkPublishAt && !bulkExpireAt) return alert('აირჩიეთ გამოქვეყნების ან წაშლის დრო');
 
-    const fromIso = new Date(bulkFrom).toISOString();
-    const toIso = new Date(bulkTo).toISOString();
+    const fromTime = new Date(bulkFrom).getTime();
+    const toTime = new Date(bulkTo).getTime();
+    const targetIds = [...pendingAds, ...liveAds]
+      .filter((ad) => {
+        const createdTime = new Date(ad.created_at ?? '').getTime();
+        return Number.isFinite(createdTime) && createdTime >= fromTime && createdTime <= toTime && !isAgroSubmission(ad);
+      })
+      .map((ad) => ad.id);
+
+    if (targetIds.length === 0) return alert('ამ პერიოდში ჩვეულებრივი განცხადებები ვერ მოიძებნა');
+
     const payload: Record<string, string | boolean> = {};
 
     if (bulkPublishAt) payload.publish_at = new Date(bulkPublishAt).toISOString();
@@ -151,8 +161,7 @@ export default function AdminAnnouncements() {
     const { error } = await (supabase as any)
       .from('announcements')
       .update(payload)
-      .gte('created_at', fromIso)
-      .lte('created_at', toIso);
+      .in('id', targetIds);
 
     if (error) {
       alert('მასიური დაგეგმვა ვერ მოხერხდა');

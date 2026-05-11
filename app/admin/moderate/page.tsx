@@ -8,6 +8,12 @@ import type { Database } from '../../../types/supabase';
 import { supabase } from '../../lib/supabase';
 import { useAdminAuth } from '../../hooks/useAdminAuth';
 import AdminNav from '../../components/admin/AdminNav';
+import {
+  AGRO_SUBMISSION_CATEGORY,
+  GRAIN_SUBMISSION_CATEGORY,
+  isAgroSubmission,
+  isCommunityAnnouncement,
+} from '../../lib/specialAnnouncements';
 
 type AnnouncementRow = Database['public']['Tables']['announcements']['Row'];
 
@@ -20,8 +26,12 @@ export default function ModerateAds() {
   const { isAdmin, loading: authLoading } = useAdminAuth();
 
   const COMMUNITY_CATEGORIES = [
+    { value: AGRO_SUBMISSION_CATEGORY, label: 'აგრო-ბირჟის განაცხადები' },
+    { value: GRAIN_SUBMISSION_CATEGORY, label: 'მარცვლეულის განაცხადები' },
     { value: 'დაკარგული/ნაპოვნი', label: 'დაკარგული/ნაპოვნის გამოქვეყნება' },
-    { value: 'ოსტატი', label: 'სერვისის გამოქვეყნება' },
+    { value: 'ოსტატი/სპეციალისტი', label: 'სერვისის გამოქვეყნება' },
+    { value: 'ოსტატი', label: 'ოსტატის ძველი განაცხადები' },
+    { value: 'სერვისი', label: 'სერვისის ძველი განაცხადები' },
   ];
 
   const getAnnouncementImages = (ad: AnnouncementRow) => {
@@ -246,7 +256,7 @@ export default function ModerateAds() {
         ) : (
           <div className="space-y-10">
             <div className="space-y-6">
-              <h3 className="text-sm font-black uppercase text-white/50 tracking-[0.3em]">ქომუნითი მოდერაცია (announcements)</h3>
+              <h3 className="text-sm font-black uppercase text-white/50 tracking-[0.3em]">სპეციალური შემომავალი</h3>
               <div className="grid grid-cols-1 gap-6">
                 {COMMUNITY_CATEGORIES.map(cat => {
                   const ads = pendingAds.filter(ad => ad.category === cat.value && (ad.is_approved === false || ad.is_approved === null));
@@ -281,7 +291,7 @@ export default function ModerateAds() {
             </div>
 
             <div className="grid grid-cols-1 gap-8">
-              {pendingAds.map(ad => (
+              {pendingAds.filter(ad => !isAgroSubmission(ad) && !isCommunityAnnouncement(ad)).map(ad => (
                 <AnnouncementCard
                   key={ad.id}
                   ad={ad}

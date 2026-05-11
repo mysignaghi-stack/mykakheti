@@ -10,6 +10,7 @@ type AgroRow = {
   price?: string | null;
   category?: string | null;
   details?: any;
+  source?: string | null;
 };
 
 export default function AdminAgroPanel({ showCategory }: { showCategory?: 'grape' | 'grain' }) {
@@ -237,11 +238,20 @@ export default function AdminAgroPanel({ showCategory }: { showCategory?: 'grape
             <div className="space-y-2">
               {filteredItems.filter(i => i.category === 'grape').map(it => (
                 <div key={String(it.id)} className="flex justify-between items-center bg-black/40 p-2 rounded-lg border border-white/5">
-                  <div className="text-sm font-bold text-purple-300">{it.name}</div>
+                  <div>
+                    <div className="text-sm font-bold text-purple-300">{it.name}</div>
+                    {it.source === 'announcement' && (
+                      <div className="mt-1 text-[10px] font-black uppercase tracking-widest text-white/35">მოდერაციით დამატებული</div>
+                    )}
+                  </div>
                   <div className="flex items-center gap-2">
                     <div className="text-sm font-black">{it.price}</div>
-                    <button onClick={() => openEdit(it)} className="px-3 py-1 bg-amber-600 rounded text-xs font-black">Edit</button>
-                    <button onClick={() => handleDelete(it.id)} className="px-3 py-1 bg-red-600 rounded text-xs font-black">Delete</button>
+                    {it.source !== 'announcement' && (
+                      <>
+                        <button onClick={() => openEdit(it)} className="px-3 py-1 bg-amber-600 rounded text-xs font-black">Edit</button>
+                        <button onClick={() => handleDelete(it.id)} className="px-3 py-1 bg-red-600 rounded text-xs font-black">Delete</button>
+                      </>
+                    )}
                   </div>
                 </div>
               ))}
@@ -257,11 +267,20 @@ export default function AdminAgroPanel({ showCategory }: { showCategory?: 'grape
             <div className="space-y-2">
               {filteredItems.filter(i => i.category === 'grain').map(it => (
                 <div key={String(it.id)} className="flex justify-between items-center bg-black/40 p-2 rounded-lg border border-white/5">
-                  <div className="text-sm font-bold text-yellow-400">{it.name}</div>
+                  <div>
+                    <div className="text-sm font-bold text-yellow-400">{it.name}</div>
+                    {it.source === 'announcement' && (
+                      <div className="mt-1 text-[10px] font-black uppercase tracking-widest text-white/35">მოდერაციით დამატებული</div>
+                    )}
+                  </div>
                   <div className="flex items-center gap-2">
                     <div className="text-sm font-black">{it.price}</div>
-                    <button onClick={() => openEdit(it)} className="px-3 py-1 bg-amber-600 rounded text-xs font-black">Edit</button>
-                    <button onClick={() => handleDelete(it.id)} className="px-3 py-1 bg-red-600 rounded text-xs font-black">Delete</button>
+                    {it.source !== 'announcement' && (
+                      <>
+                        <button onClick={() => openEdit(it)} className="px-3 py-1 bg-amber-600 rounded text-xs font-black">Edit</button>
+                        <button onClick={() => handleDelete(it.id)} className="px-3 py-1 bg-red-600 rounded text-xs font-black">Delete</button>
+                      </>
+                    )}
                   </div>
                 </div>
               ))}

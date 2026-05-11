@@ -5,6 +5,7 @@ import { createServerClient } from '@supabase/ssr';
 import { createClient } from '@supabase/supabase-js';
 import type { Database } from '../../../../../types/supabase';
 import { isAdminUser } from '../../../../lib/adminAuth';
+import { getAgroSubmissionType } from '../../../../lib/specialAnnouncements';
 
 export async function POST(request: Request) {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -64,7 +65,8 @@ export async function POST(request: Request) {
   if (error) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
-  const announcement = data;
+  const specialAgroType = getAgroSubmissionType(data);
+  const announcement = specialAgroType ? { ...data, is_archived: true } : data;
 
   // Mirror to community tables based on category so cards show approved items
   const images = Array.isArray(announcement.all_images) && announcement.all_images.length > 0
@@ -75,7 +77,46 @@ export async function POST(request: Request) {
 
   const category = announcement.category;
 
-  if (category === 'დაკარგული/ნაპოვნი') {
+  if (specialAgroType) {
+    const formatPrice = () => {
+      const price = String(announcement.price ?? '').trim();
+      const currency = String(announcement.currency ?? '').trim();
+      if (!price) return null;
+      if (!currency || price.includes(currency)) return price;
+      return `${price} ${currency}`;
+    };
+
+    const { data: maxRow } = await (serviceClient as any)
+      .from('agro_prices')
+      .select('id')
+      .order('id', { ascending: false })
+      .limit(1)
+      .single();
+    const rawId = (maxRow as any)?.id;
+    const parsedId = typeof rawId === 'number' ? rawId : Number.parseInt(String(rawId), 10);
+    const nextId = Number.isFinite(parsedId) ? parsedId + 1 : 1;
+
+    await (serviceClient as any).from('agro_prices').insert({
+      id: nextId,
+      name: announcement.title,
+      unit: null,
+      price: formatPrice(),
+      color: specialAgroType === 'grain' ? 'text-yellow-200' : 'text-amber-400',
+      icon: specialAgroType === 'grain' ? '🌾' : '🍇',
+      category: specialAgroType,
+      details: [
+        {
+          place: announcement.location || 'მითითებული ლოკაცია',
+          rate: formatPrice() || 'ფასი შეთანხმებით',
+        },
+      ],
+    });
+
+    await serviceClient
+      .from('announcements')
+      .update({ is_archived: true })
+      .eq('id', announcement.id);
+  } else if (category === 'დაკარგული/ნაპოვნი') {
     await serviceClient.from('lost_found').upsert({
       id: announcement.id,
       title: announcement.title,
@@ -102,6 +143,9 @@ export async function POST(request: Request) {
   }
 
   revalidatePath('/admin/moderate');
+  revalidatePath('/admin/announcements');
+  revalidatePath('/admin/agro');
+  revalidatePath('/admin/grain');
   revalidatePath('/');
   return NextResponse.json({ data: announcement });
 }
