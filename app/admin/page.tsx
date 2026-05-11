@@ -97,6 +97,45 @@ function AdminLinkCard({ link }: { link: { href: string; title: string; desc: st
   );
 }
 
+type PendingQueue = {
+  key: string;
+  title: string;
+  description: string;
+  value: number;
+  href: string;
+  accent: string;
+};
+
+function PendingQueueCard({ queue }: { queue: PendingQueue }) {
+  const accentClass = {
+    amber: 'border-amber-300/35 bg-amber-500/10 text-amber-100 hover:border-amber-300/60',
+    purple: 'border-purple-300/35 bg-purple-500/10 text-purple-100 hover:border-purple-300/60',
+    yellow: 'border-yellow-300/35 bg-yellow-500/10 text-yellow-100 hover:border-yellow-300/60',
+    emerald: 'border-emerald-300/35 bg-emerald-500/10 text-emerald-100 hover:border-emerald-300/60',
+    cyan: 'border-cyan-300/35 bg-cyan-500/10 text-cyan-100 hover:border-cyan-300/60',
+  }[queue.accent] ?? 'border-white/15 bg-white/5 text-white/75 hover:border-white/35';
+
+  return (
+    <Link
+      href={queue.href}
+      className={`group flex h-full flex-col justify-between rounded-2xl border p-5 text-left transition ${accentClass}`}
+    >
+      <div className="flex items-start justify-between gap-3">
+        <div>
+          <h3 className="text-sm font-black uppercase tracking-[0.12em]">{queue.title}</h3>
+          <p className="mt-2 text-xs leading-relaxed text-white/50">{queue.description}</p>
+        </div>
+        <span className={`rounded-2xl px-3 py-2 text-2xl font-black ${queue.value > 0 ? 'bg-white/15 text-white' : 'bg-black/20 text-white/35'}`}>
+          {queue.value}
+        </span>
+      </div>
+      <span className="mt-4 text-[10px] font-black uppercase tracking-[0.18em] text-white/45 transition group-hover:text-white/80">
+        გადასვლა →
+      </span>
+    </Link>
+  );
+}
+
 function ClientSignOutButton() {
   const router = useRouter();
 
@@ -152,6 +191,50 @@ function AdminDashboardContent() {
       </main>
     );
   }
+
+  const pendingQueues: PendingQueue[] = [
+    {
+      key: 'regular',
+      title: 'ჩვეულებრივი განცხადებები',
+      description: 'ყიდვა/გაყიდვა, ქირა და სხვა სტანდარტული განცხადებები.',
+      value: stats?.pendingQueues?.regularAnnouncements ?? 0,
+      href: '/admin/moderate',
+      accent: 'amber',
+    },
+    {
+      key: 'agro',
+      title: 'აგრო ბირჟა',
+      description: 'მომხმარებლის აგრო ფასის განაცხადები.',
+      value: stats?.pendingQueues?.agro ?? 0,
+      href: '/admin/moderate',
+      accent: 'purple',
+    },
+    {
+      key: 'grain',
+      title: 'მარცვლეული',
+      description: 'მარცვლეულის ფასის განაცხადები.',
+      value: stats?.pendingQueues?.grain ?? 0,
+      href: '/admin/moderate',
+      accent: 'yellow',
+    },
+    {
+      key: 'lost-found',
+      title: 'დაკარგული/ნაპოვნი',
+      description: 'სათემო რეესტრში დასამტკიცებელი ჩანაწერები.',
+      value: stats?.pendingQueues?.lostFound ?? 0,
+      href: '/admin/community',
+      accent: 'cyan',
+    },
+    {
+      key: 'services',
+      title: 'სერვისები',
+      description: 'მომსახურების მიმწოდებლების დასამტკიცებელი ჩანაწერები.',
+      value: stats?.pendingQueues?.services ?? 0,
+      href: '/admin/community',
+      accent: 'emerald',
+    },
+  ];
+  const pendingTotal = pendingQueues.reduce((sum, queue) => sum + queue.value, 0);
 
   return (
     <main className="min-h-screen bg-[#050510] p-6 text-white md:p-10">
@@ -209,6 +292,27 @@ function AdminDashboardContent() {
               icon={<span className="text-xl">↗</span>}
             />
           </div>
+        )}
+
+        {stats && (
+          <section className="mb-8 rounded-[28px] border border-amber-300/20 bg-gradient-to-br from-amber-500/10 via-white/[0.035] to-emerald-500/5 p-5 shadow-2xl md:p-6">
+            <div className="mb-4 flex flex-col gap-2 md:flex-row md:items-end md:justify-between">
+              <div>
+                <p className="text-[10px] font-black uppercase tracking-[0.28em] text-amber-300/70">მოდერაციის შემომავალი</p>
+                <h2 className="mt-1 text-xl font-black uppercase text-white">სად არის მოსული დასამტკიცებელი განცხადება</h2>
+                <p className="mt-1 text-sm text-white/45">დააკლიკეთ შესაბამის ფანჯარას და პირდაპირ გადადით იმ განყოფილებაში.</p>
+              </div>
+              <div className="rounded-2xl border border-white/10 bg-black/25 px-4 py-3 text-right">
+                <p className="text-[10px] font-black uppercase tracking-[0.2em] text-white/35">სულ</p>
+                <p className={`text-3xl font-black ${pendingTotal > 0 ? 'text-amber-200' : 'text-white/35'}`}>{pendingTotal}</p>
+              </div>
+            </div>
+            <div className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-5">
+              {pendingQueues.map((queue) => (
+                <PendingQueueCard key={queue.key} queue={queue} />
+              ))}
+            </div>
+          </section>
         )}
 
         <div className="space-y-6">

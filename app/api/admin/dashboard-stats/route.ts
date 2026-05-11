@@ -78,7 +78,14 @@ export async function GET() {
       auth: { persistSession: false },
     });
 
-    const [{ count: usersCount }, { count: activeAnnouncements }, { count: pendingAnnouncements }] = await Promise.all([
+    const [
+      { count: usersCount },
+      { count: activeAnnouncements },
+      { count: pendingAnnouncements },
+      pendingAnnouncementsRows,
+      { count: pendingMasters },
+      { count: pendingLostFound },
+    ] = await Promise.all([
       (serviceClient as any).schema('auth').from('users').select('id', { count: 'exact', head: true }),
       serviceClient
         .from('announcements')
@@ -89,12 +96,41 @@ export async function GET() {
         .from('announcements')
         .select('id', { count: 'exact', head: true })
         .eq('is_approved', false),
+      serviceClient
+        .from('announcements')
+        .select('id,category,description')
+        .eq('is_approved', false),
+      serviceClient
+        .from('masters')
+        .select('id', { count: 'exact', head: true })
+        .or('is_approved.is.null,is_approved.eq.false'),
+      serviceClient
+        .from('lost_found')
+        .select('id', { count: 'exact', head: true })
+        .or('is_approved.is.null,is_approved.eq.false'),
     ]);
+
+    const pendingRows = pendingAnnouncementsRows.data ?? [];
+    const isAgro = (row: { category?: string | null; description?: string | null }) =>
+      row.category === 'აგრო-ბირჟის განაცხადი' || Boolean(row.description?.includes('აგრო-ბირჟა:'));
+    const isGrain = (row: { category?: string | null; description?: string | null }) =>
+      row.category === 'მარცვლეულის განაცხადი' || Boolean(row.description?.includes('მარცვლეული:'));
+    const isLostFound = (row: { category?: string | null }) => row.category === 'დაკარგული/ნაპოვნი';
+    const isService = (row: { category?: string | null }) => row.category === 'ოსტატი/სპეციალისტი' || row.category === 'ოსტატი' || row.category === 'სერვისი';
+
+    const pendingQueues = {
+      regularAnnouncements: pendingRows.filter((row) => !isAgro(row) && !isGrain(row) && !isLostFound(row) && !isService(row)).length,
+      agro: pendingRows.filter(isAgro).length,
+      grain: pendingRows.filter(isGrain).length,
+      lostFound: pendingRows.filter(isLostFound).length + (pendingLostFound ?? 0),
+      services: pendingRows.filter(isService).length + (pendingMasters ?? 0),
+    };
 
     return NextResponse.json({
       usersCount: usersCount ?? 0,
       activeAnnouncements: activeAnnouncements ?? 0,
       pendingAnnouncements: pendingAnnouncements ?? 0,
+      pendingQueues,
       email: user.email ?? null,
     });
   } catch (error) {
