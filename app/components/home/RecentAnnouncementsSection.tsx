@@ -5,7 +5,12 @@ import AnnouncementCard from './AnnouncementCard';
 import { Ad } from '@/app/lib/types';
 import { ANNOUNCEMENT_CATEGORIES, LOCATIONS } from '@/app/lib/constants';
 
-const COMMUNITY_CATEGORIES = ['დაკარგული/ნაპოვნი', 'ოსტატი'] as const;
+const COMMUNITY_CATEGORIES = ['დაკარგული/ნაპოვნი', 'ოსტატი', 'აგრო-ბირჟის განაცხადი', 'მარცვლეულის განაცხადი'] as const;
+const isSpecialAgroAnnouncement = (ad: Ad) => (
+  COMMUNITY_CATEGORIES.includes(ad.category as typeof COMMUNITY_CATEGORIES[number]) ||
+  Boolean(ad.description?.includes('აგრო-ბირჟა:')) ||
+  Boolean(ad.description?.includes('მარცვლეული:'))
+);
 const PAGE_SIZE = 12;
 
 type SortOption = 'newest' | 'oldest' | 'price_asc' | 'price_desc';
@@ -81,7 +86,7 @@ export default function RecentAnnouncementsSection({ ads }: Props) {
       ads.filter(
         (ad) =>
           !ad.is_archived &&
-          !COMMUNITY_CATEGORIES.includes(ad.category as typeof COMMUNITY_CATEGORIES[number])
+          !isSpecialAgroAnnouncement(ad)
       ),
     [ads]
   );

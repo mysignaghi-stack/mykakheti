@@ -115,6 +115,11 @@ const getAgroDisplayPrice = (item: AgroItem) => {
 };
 
 const COMMUNITY_CATEGORIES = ['დაკარგული/ნაპოვნი', 'ოსტატი', 'აგრო-ბირჟის განაცხადი', 'მარცვლეულის განაცხადი'] as const;
+const isSpecialAgroAnnouncement = (ad: Ad) => (
+  COMMUNITY_CATEGORIES.includes(ad.category as typeof COMMUNITY_CATEGORIES[number]) ||
+  Boolean(ad.description?.includes('აგრო-ბირჟა:')) ||
+  Boolean(ad.description?.includes('მარცვლეული:'))
+);
 
 interface HomePageClientProps {
   initialAds: Ad[];
@@ -605,7 +610,7 @@ export default function HomePageClient({
       .filter((loc) => loc !== 'ყველა კახეთი')
       .map((loc) => normalizeText(loc));
     const nextAds = ads.filter(ad => {
-      if (COMMUNITY_CATEGORIES.includes(ad.category as typeof COMMUNITY_CATEGORIES[number])) return false;
+      if (isSpecialAgroAnnouncement(ad)) return false;
       if (ad.is_archived) return false;
       const matchCat = selectedCategories.length === 0 || selectedCategories.includes('ყველა') || selectedCategories.includes(ad.category);
       const adLocation = normalizeText(ad.location);
@@ -703,6 +708,7 @@ export default function HomePageClient({
       new Set(
         ads
           .filter(ad => !ad.is_archived)
+          .filter(ad => !isSpecialAgroAnnouncement(ad))
           .map(ad => ad.category)
           .filter((category): category is string => Boolean(category))
           .filter(category => !COMMUNITY_CATEGORIES.includes(category as typeof COMMUNITY_CATEGORIES[number]))
