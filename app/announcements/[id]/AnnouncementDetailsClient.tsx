@@ -1,7 +1,6 @@
 "use client";
 import { useEffect, useState } from 'react';
 import { useRef } from 'react';
-import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
@@ -61,7 +60,6 @@ export default function AnnouncementDetailsClient({ initialAd }: { initialAd: An
     phone: initialAd?.phone ?? '',
   });
   const contentRef = useRef<HTMLDivElement | null>(null);
-  const router = useRouter();
   const isOwner = Boolean(ad?.user_id && currentUserId && ad.user_id === currentUserId);
 
   // Share URL-ის დაყენება კლიენტის მხარეს
@@ -201,29 +199,6 @@ export default function AnnouncementDetailsClient({ initialAd }: { initialAd: An
     });
   };
 
-  // Click outside the content area should navigate back to previous page
-  useEffect(() => {
-    const handler = (e: MouseEvent) => {
-      if (zoomOpen) return; // don't navigate while zoom modal open
-      if (isEditing) return; // don't navigate while edit modal is open
-      const node = contentRef.current;
-      if (!node) return;
-      if (node.contains(e.target as Node)) return; // clicked inside
-      // clicked outside -> attempt native history.back() so browser restores previous scroll/state
-      try {
-        if (window.history.length > 1) {
-          window.history.back();
-        } else {
-          router.push('/announcements');
-        }
-      } catch {
-        router.push('/announcements');
-      }
-    };
-    document.addEventListener('mousedown', handler);
-    return () => document.removeEventListener('mousedown', handler);
-  }, [router, zoomOpen, isEditing]);
-
   if (!ad) return (
     <div className="min-h-screen bg-[#050510] flex items-center justify-center text-white font-black italic uppercase tracking-widest">
       იტვირთება...
@@ -239,7 +214,7 @@ export default function AnnouncementDetailsClient({ initialAd }: { initialAd: An
       </div>
 
       {/* 🧭 Header */}
-      <nav className="px-6 md:px-10 py-6 md:py-8 border-b border-white/5 flex justify-between items-center bg-slate-950/60 backdrop-blur-3xl sticky top-0 z-[100]">
+      <nav className="px-6 md:px-10 py-3 md:py-4 border-b border-white/5 flex justify-between items-center bg-slate-950/60 backdrop-blur-3xl sticky top-0 z-[100]">
         <Link href="/" className="text-xl md:text-2xl font-black italic tracking-tighter">
           mykakheti<span className="text-amber-500">.ge</span>
         </Link>
@@ -249,7 +224,7 @@ export default function AnnouncementDetailsClient({ initialAd }: { initialAd: An
         </Link>
       </nav>
 
-      <div ref={contentRef} className="max-w-7xl mx-auto mt-6 md:mt-10 px-3 md:px-6 relative z-10">
+      <div ref={contentRef} className="max-w-7xl mx-auto mt-2 md:mt-4 px-3 md:px-6 relative z-10">
         <div className="grid grid-cols-1 gap-10 items-start">
           <div>
             <div className="grid grid-cols-1 lg:grid-cols-[1.1fr_0.9fr] gap-1 md:gap-2">
