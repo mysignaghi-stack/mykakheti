@@ -15,7 +15,6 @@ type ServiceProvidersSectionProps = {
 const SERVICE_DESCRIPTION = 'თუ კახეთში სთავაზობთ რაიმე სახის მომსახურებას — ხართ ხელოსანი, ტექნიკოსი, მძღოლი, მასწავლებელი, ფოტოგრაფი, გიდი, დასუფთავების სპეციალისტი ან სხვა მომსახურების მიმწოდებელი — შეგიძლიათ დარეგისტრირდეთ და განათავსოთ ინფორმაცია თქვენი სერვისის შესახებ.';
 const SERVICE_HINT = 'მიუთითეთ რას სთავაზობთ მომხმარებელს, რომელ მუნიციპალიტეტში მუშაობთ, გაქვთ თუ არა გამოძახებით მომსახურება, საკონტაქტო ნომერი და საჭიროების შემთხვევაში ფოტოები.';
 type ServiceSortOption = 'newest' | 'rating' | 'name';
-const SERVICE_FILTER_PAGE_SIZE = 6;
 
 const SERVICE_GROUPS = [
   {
@@ -223,13 +222,16 @@ export default function ServiceProvidersSection({ providers = [], count = 0 }: S
   const [selectedService, setSelectedService] = useState('ყველა სერვისი');
   const [selectedServiceLocation, setSelectedServiceLocation] = useState('ყველა კახეთი');
   const [serviceSort, setServiceSort] = useState<ServiceSortOption>('newest');
-  const [servicePage, setServicePage] = useState(1);
+  const [serviceSliderIndex, setServiceSliderIndex] = useState(0);
+  const [serviceCardsPerView, setServiceCardsPerView] = useState(3);
   const [showServiceCategoryDropdown, setShowServiceCategoryDropdown] = useState(false);
   const [showServiceDropdown, setShowServiceDropdown] = useState(false);
   const [showServiceLocationDropdown, setShowServiceLocationDropdown] = useState(false);
   const serviceCategoryRef = useRef<HTMLDivElement | null>(null);
   const serviceRef = useRef<HTMLDivElement | null>(null);
   const serviceLocationRef = useRef<HTMLDivElement | null>(null);
+  const serviceSliderRef = useRef<HTMLDivElement | null>(null);
+  const serviceTouchStartX = useRef<number | null>(null);
   const buildServiceShareUrl = (providerId: string) => {
     if (typeof window === 'undefined') return `/community/masters/${providerId}`;
     return `${window.location.origin}/community/masters/${providerId}`;
@@ -272,8 +274,28 @@ export default function ServiceProvidersSection({ providers = [], count = 0 }: S
   }, []);
 
   useEffect(() => {
-    setServicePage(1);
+    setServiceSliderIndex(0);
   }, [selectedService, selectedServiceCategory, selectedServiceLocation, serviceSearch, serviceSort]);
+
+  useEffect(() => {
+    const updateCardsPerView = () => {
+      if (window.innerWidth < 480) setServiceCardsPerView(1);
+      else if (window.innerWidth < 640) setServiceCardsPerView(2);
+      else if (window.innerWidth < 1024) setServiceCardsPerView(3);
+      else if (window.innerWidth < 1280) setServiceCardsPerView(4);
+      else setServiceCardsPerView(5);
+    };
+    updateCardsPerView();
+    window.addEventListener('resize', updateCardsPerView);
+    return () => window.removeEventListener('resize', updateCardsPerView);
+  }, []);
+
+  useEffect(() => {
+    const el = serviceSliderRef.current;
+    if (!el) return;
+    const cardWidth = el.offsetWidth / serviceCardsPerView;
+    el.scrollTo({ left: serviceSliderIndex * cardWidth, behavior: 'smooth' });
+  }, [serviceSliderIndex, serviceCardsPerView]);
 
   const serviceCategories = useMemo(
     () => ['ყველა კატეგ.', ...buildOptions(providers.flatMap((provider) => splitStoredList(provider.category)), SERVICE_CATEGORY_FALLBACKS)],
@@ -324,12 +346,7 @@ export default function ServiceProvidersSection({ providers = [], count = 0 }: S
 
   const showHealthWarning = selectedServiceCategory === 'ჯანმრთელობა და კეთილდღეობა' ||
     SERVICE_GROUPS.find((group) => group.category === 'ჯანმრთელობა და კეთილდღეობა')?.services.includes(selectedService);
-  const serviceTotalPages = Math.max(1, Math.ceil(filteredProviders.length / SERVICE_FILTER_PAGE_SIZE));
-  const serviceSafePage = Math.min(servicePage, serviceTotalPages);
-  const visibleProviders = filteredProviders.slice(
-    (serviceSafePage - 1) * SERVICE_FILTER_PAGE_SIZE,
-    serviceSafePage * SERVICE_FILTER_PAGE_SIZE
-  );
+  const serviceMaxSliderIndex = Math.max(0, filteredProviders.length - serviceCardsPerView);
 
   return (
     <section className="w-full mt-8">
@@ -515,10 +532,11 @@ export default function ServiceProvidersSection({ providers = [], count = 0 }: S
           </select>
 
           <div className="flex items-center justify-end gap-2">
+            <span className="text-[10px] text-white/30">{filteredProviders.length}</span>
             <button
               type="button"
-              onClick={() => setServicePage((page) => Math.max(1, page - 1))}
-              disabled={serviceSafePage === 1}
+              onClick={() => setServiceSliderIndex((index) => Math.max(0, index - serviceCardsPerView))}
+              disabled={serviceSliderIndex === 0}
               aria-label="წინა"
               className="flex items-center justify-center w-9 h-9 rounded-xl border border-white/20 bg-white/10 text-white hover:bg-amber-500/25 hover:border-amber-400/50 active:scale-95 disabled:opacity-30 disabled:cursor-not-allowed transition-all duration-200"
             >
@@ -528,8 +546,8 @@ export default function ServiceProvidersSection({ providers = [], count = 0 }: S
             </button>
             <button
               type="button"
-              onClick={() => setServicePage((page) => Math.min(serviceTotalPages, page + 1))}
-              disabled={serviceSafePage === serviceTotalPages}
+              onClick={() => setServiceSliderIndex((index) => Math.min(index + serviceCardsPerView, serviceMaxSliderIndex))}
+              disabled={serviceSliderIndex >= serviceMaxSliderIndex}
               aria-label="შემდეგი"
               className="flex items-center justify-center w-9 h-9 rounded-xl border border-white/20 bg-white/10 text-white hover:bg-amber-500/25 hover:border-amber-400/50 active:scale-95 disabled:opacity-30 disabled:cursor-not-allowed transition-all duration-200"
             >
@@ -558,9 +576,10 @@ export default function ServiceProvidersSection({ providers = [], count = 0 }: S
           </div>
         )}
 
-        {visibleProviders.length > 0 && (
-          <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3">
-            {visibleProviders.map((provider) => (
+        {filteredProviders.length > 0 && (
+          filteredProviders.length <= serviceCardsPerView ? (
+          <div className="mt-4 grid gap-3" style={{ gridTemplateColumns: `repeat(${serviceCardsPerView}, minmax(0, 1fr))` }}>
+            {filteredProviders.map((provider) => (
               <article
                 key={provider.id}
                 className="group overflow-hidden rounded-2xl border border-white/10 bg-[#0b0b15]/80 text-left transition hover:border-amber-300/35 hover:bg-white/[0.06]"
@@ -617,6 +636,85 @@ export default function ServiceProvidersSection({ providers = [], count = 0 }: S
               </article>
             ))}
           </div>
+          ) : (
+          <div
+            ref={serviceSliderRef}
+            className="mt-4 flex overflow-x-hidden"
+            style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+            onTouchStart={(event) => { serviceTouchStartX.current = event.touches[0].clientX; }}
+            onTouchEnd={(event) => {
+              if (serviceTouchStartX.current === null) return;
+              const diff = serviceTouchStartX.current - event.changedTouches[0].clientX;
+              if (diff > 40) setServiceSliderIndex((index) => Math.min(index + serviceCardsPerView, serviceMaxSliderIndex));
+              else if (diff < -40) setServiceSliderIndex((index) => Math.max(0, index - serviceCardsPerView));
+              serviceTouchStartX.current = null;
+            }}
+          >
+            {filteredProviders.map((provider) => (
+              <div
+                key={provider.id}
+                style={{
+                  minWidth: `calc(100% / ${serviceCardsPerView})`,
+                  maxWidth: `calc(100% / ${serviceCardsPerView})`,
+                  flexShrink: 0,
+                }}
+                className="px-1"
+              >
+                <article className="group h-full overflow-hidden rounded-2xl border border-white/10 bg-[#0b0b15]/80 text-left transition hover:border-amber-300/35 hover:bg-white/[0.06]">
+                  <Link href={`/community/masters/${provider.id}`} className="block">
+                    {provider.photo_url && (
+                      <div className="relative h-28 w-full bg-white/5">
+                        <Image
+                          src={provider.photo_url}
+                          alt={provider.full_name}
+                          fill
+                          sizes="(max-width: 640px) 100vw, (max-width: 1280px) 50vw, 33vw"
+                          className="object-contain p-2 transition duration-300 group-hover:scale-[1.03]"
+                        />
+                      </div>
+                    )}
+                    <div className="p-4 pb-2">
+                      <div className="flex items-start justify-between gap-3">
+                        <div>
+                          <h3 className="text-sm font-black text-white">{provider.full_name}</h3>
+                          <p className="mt-1 line-clamp-2 text-[11px] font-black uppercase tracking-[0.12em] text-amber-300">
+                            {provider.profession}
+                          </p>
+                        </div>
+                        <span className="shrink-0 text-xs font-black text-amber-300">⭐ {provider.rating_avg?.toFixed(1) || '0.0'}</span>
+                      </div>
+                      {provider.category && (
+                        <p className="mt-2 line-clamp-1 text-[11px] text-white/45">{provider.category}</p>
+                      )}
+                      {provider.location && (
+                        <p className="mt-1 text-[11px] text-white/45">{provider.location}</p>
+                      )}
+                      {provider.phone && (
+                        <p className="mt-2 text-[11px] font-bold text-white/65">ტელ: {provider.phone}</p>
+                      )}
+                    </div>
+                  </Link>
+                  <div className="flex flex-wrap gap-2 px-4 pb-4">
+                    <button
+                      type="button"
+                      onClick={() => shareServiceProviderToFacebook(provider.id)}
+                      className="rounded-lg border border-blue-300/30 bg-blue-500/10 px-2.5 py-1.5 text-[10px] font-black uppercase text-blue-100 transition hover:bg-blue-500/20"
+                    >
+                      Facebook
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => shareServiceProvider(provider)}
+                      className="rounded-lg border border-white/15 bg-white/5 px-2.5 py-1.5 text-[10px] font-black uppercase text-white/75 transition hover:text-white"
+                    >
+                      გაზიარება
+                    </button>
+                  </div>
+                </article>
+              </div>
+            ))}
+          </div>
+          )
         )}
         <div className="mt-3 flex flex-col items-stretch justify-end gap-2 sm:flex-row">
           <Link
