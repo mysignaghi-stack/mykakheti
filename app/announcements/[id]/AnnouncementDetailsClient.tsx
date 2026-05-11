@@ -214,7 +214,7 @@ export default function AnnouncementDetailsClient({ initialAd }: { initialAd: An
       </div>
 
       {/* 🧭 Header */}
-      <nav className="px-6 md:px-10 py-3 md:py-4 border-b border-white/5 flex justify-between items-center bg-slate-950/60 backdrop-blur-3xl sticky top-0 z-[100]">
+      <nav className="px-6 md:px-10 py-2 md:py-3 border-b border-white/5 flex justify-between items-center bg-slate-950/60 backdrop-blur-3xl sticky top-0 z-[100]">
         <Link href="/" className="text-xl md:text-2xl font-black italic tracking-tighter">
           mykakheti<span className="text-amber-500">.ge</span>
         </Link>
@@ -224,7 +224,7 @@ export default function AnnouncementDetailsClient({ initialAd }: { initialAd: An
         </Link>
       </nav>
 
-      <div ref={contentRef} className="max-w-7xl mx-auto mt-2 md:mt-4 px-3 md:px-6 relative z-10">
+      <div ref={contentRef} className="max-w-7xl mx-auto mt-0 md:mt-2 px-3 md:px-6 relative z-10">
         <div className="grid grid-cols-1 gap-10 items-start">
           <div>
             <div className="grid grid-cols-1 lg:grid-cols-[1.1fr_0.9fr] gap-1 md:gap-2">
@@ -237,7 +237,7 @@ export default function AnnouncementDetailsClient({ initialAd }: { initialAd: An
                       alt={ad.title}
                       fill
                       sizes="(max-width: 1024px) 100vw, 700px"
-                      className="object-contain transition-all duration-700 group-hover:scale-105 rounded-2xl cursor-zoom-in"
+                      className="object-contain object-top transition-all duration-700 group-hover:scale-105 rounded-2xl cursor-zoom-in"
                       onClick={() => {
                         const images = getImages(ad);
                         const idx = images.findIndex((img) => img === activeImg);
@@ -314,7 +314,7 @@ export default function AnnouncementDetailsClient({ initialAd }: { initialAd: An
                           activeImg === img ? 'border-amber-500 scale-105 shadow-lg shadow-amber-500/20' : 'border-white/10 opacity-60 hover:opacity-100'
                         }`}
                       >
-                        <Image src={img} alt="" width={96} height={96} className="w-full h-full object-contain" />
+                        <Image src={img} alt="" width={96} height={96} className="w-full h-full object-contain object-top" />
                       </button>
                     ))}
                   </div>
