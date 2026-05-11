@@ -13,6 +13,7 @@ import 'swiper/css/effect-fade';
 import 'swiper/css/autoplay';
 import { supabase } from '../../lib/supabase';
 import { renderAdminPostContent, stripAdminPostContent } from '@/app/lib/adminPostContent';
+import NativeVideoShareButton from '@/app/components/share/NativeVideoShareButton';
 // წავშალეთ AdminPost იმპორტი lib/types-დან კონფლიქტის თავიდან ასაცილებლად
 import type { Database } from '@/types/supabase';
 
@@ -444,6 +445,14 @@ export default function AdminSideFrame({ post, position, isAdmin, onRefresh }: A
               >
                 გაზიარება
               </button>
+              {(post.media_type === 'video' || isVideoUrl(getPrimaryMediaUrl())) && (
+                <NativeVideoShareButton
+                  videoUrl={getPrimaryMediaUrl()}
+                  fallbackUrl={getShareUrl()}
+                  title={post.title ?? 'MyKakheti'}
+                  className="rounded-lg border border-emerald-300/30 bg-emerald-500/10 px-2 py-1 text-[10px] font-black uppercase text-emerald-100 hover:bg-emerald-500/20 transition disabled:opacity-60"
+                />
+              )}
             </div>
           )}
         </div>
@@ -705,6 +714,14 @@ export default function AdminSideFrame({ post, position, isAdmin, onRefresh }: A
                       <a href={post.link} target="_blank" rel="noopener noreferrer" className="inline-flex rounded-xl border border-amber-300/35 bg-amber-500/15 px-4 py-2 text-[11px] font-black uppercase tracking-[0.14em] text-amber-100 transition hover:bg-amber-500/25">
                         ბმულზე გადასვლა
                       </a>
+                    )}
+                    {lightbox.isVideo && (
+                      <NativeVideoShareButton
+                        videoUrl={lightbox.media[lightbox.currentIndex]}
+                        fallbackUrl={getShareUrl()}
+                        title={post.title ?? 'MyKakheti'}
+                        className="inline-flex rounded-xl border border-emerald-300/35 bg-emerald-500/15 px-4 py-2 text-[11px] font-black uppercase tracking-[0.14em] text-emerald-100 transition hover:bg-emerald-500/25 disabled:opacity-60"
+                      />
                     )}
                   </div>
                 )}

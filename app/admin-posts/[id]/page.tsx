@@ -3,6 +3,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getSupabaseAdmin } from "@/app/lib/supabaseAdmin";
+import NativeVideoShareButton from "@/app/components/share/NativeVideoShareButton";
 
 type Props = {
   params: Promise<{ id: string }>;
@@ -155,6 +156,14 @@ export default async function AdminPostSharePage({ params }: Props) {
               >
                 ბმულზე გადასვლა
               </a>
+            )}
+            {media.video && (
+              <NativeVideoShareButton
+                videoUrl={media.video}
+                fallbackUrl={`${SITE_URL}/admin-posts/${post.id}`}
+                title={post.title}
+                className="inline-flex rounded-xl border border-emerald-300/35 bg-emerald-500/15 px-4 py-2 text-[11px] font-black uppercase tracking-[0.14em] text-emerald-100 transition hover:bg-emerald-500/25 disabled:opacity-60"
+              />
             )}
           </div>
         </div>
