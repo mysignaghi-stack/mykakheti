@@ -6,6 +6,8 @@ type NativeVideoShareButtonProps = {
   videoUrl: string;
   fallbackUrl: string;
   title: string;
+  description?: string | null;
+  category?: string | null;
   className?: string;
 };
 
@@ -30,9 +32,18 @@ export default function NativeVideoShareButton({
   videoUrl,
   fallbackUrl,
   title,
+  description,
+  category,
   className,
 }: NativeVideoShareButtonProps) {
   const [sharing, setSharing] = useState(false);
+
+  const shareText = [
+    title,
+    category ? `კატეგორია: ${category}` : "",
+    description?.replace(/\s+/g, " ").trim() || "",
+    fallbackUrl,
+  ].filter(Boolean).join("\n\n");
 
   const shareVideoFile = async () => {
     if (!videoUrl || sharing) return;
@@ -47,7 +58,7 @@ export default function NativeVideoShareButton({
       });
       const sharePayload = {
         title,
-        text: title,
+        text: shareText,
         files: [file],
       };
 
@@ -57,7 +68,7 @@ export default function NativeVideoShareButton({
       }
 
       if (navigator.share) {
-        await navigator.share({ title, url: fallbackUrl });
+        await navigator.share({ title, text: shareText, url: fallbackUrl });
         return;
       }
 
@@ -66,7 +77,7 @@ export default function NativeVideoShareButton({
     } catch {
       try {
         if (navigator.share) {
-          await navigator.share({ title, url: fallbackUrl });
+          await navigator.share({ title, text: shareText, url: fallbackUrl });
           return;
         }
         await navigator.clipboard.writeText(fallbackUrl);

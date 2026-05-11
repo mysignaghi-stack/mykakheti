@@ -450,6 +450,8 @@ export default function AdminSideFrame({ post, position, isAdmin, onRefresh }: A
                   videoUrl={getPrimaryMediaUrl()}
                   fallbackUrl={getShareUrl()}
                   title={post.title ?? 'MyKakheti'}
+                  description={post.content ? stripAdminPostContent(post.content) : null}
+                  category={post.category}
                   className="rounded-lg border border-emerald-300/30 bg-emerald-500/10 px-2 py-1 text-[10px] font-black uppercase text-emerald-100 hover:bg-emerald-500/20 transition disabled:opacity-60"
                 />
               )}
@@ -720,6 +722,8 @@ export default function AdminSideFrame({ post, position, isAdmin, onRefresh }: A
                         videoUrl={lightbox.media[lightbox.currentIndex]}
                         fallbackUrl={getShareUrl()}
                         title={post.title ?? 'MyKakheti'}
+                        description={post.content ? stripAdminPostContent(post.content) : null}
+                        category={post.category}
                         className="inline-flex rounded-xl border border-emerald-300/35 bg-emerald-500/15 px-4 py-2 text-[11px] font-black uppercase tracking-[0.14em] text-emerald-100 transition hover:bg-emerald-500/25 disabled:opacity-60"
                       />
                     )}
