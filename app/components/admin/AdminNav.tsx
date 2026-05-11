@@ -12,9 +12,10 @@ type AdminNavProps = {
 
 const PRIMARY_LINKS = [
   { href: '/admin', label: 'პანელი' },
-  { href: '/admin/announcements', label: 'განცხადებები' },
-  { href: '/admin/community', label: 'სათემო' },
-  { href: '/admin/posts', label: 'მთავარი გვერდი' },
+  { href: '/admin/moderate', label: 'მოდერაცია' },
+  { href: '/admin/announcements', label: 'გამოქვეყნებული' },
+  { href: '/admin/community', label: 'სერვისები/სათემო' },
+  { href: '/admin/posts', label: 'ადმინ პოსტები' },
   { href: '/admin/site-settings', label: 'პარამეტრები' },
 ];
 
@@ -23,7 +24,7 @@ const SECONDARY_LINKS = [
   { href: '/admin/grain', label: 'მარცვლეული' },
   { href: '/admin/transport', label: 'ტრანსპორტი' },
   { href: '/admin/square', label: 'მოედანი' },
-  { href: '/admin/health', label: 'აუდიტი' },
+  { href: '/admin/messages', label: 'წერილები' },
 ];
 
 export default function AdminNav({ className = '' }: AdminNavProps) {

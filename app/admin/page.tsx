@@ -11,29 +11,30 @@ const VERCEL_ANALYTICS_URL = 'https://vercel.com/dashboard';
 
 const ADMIN_SECTIONS = [
   {
-    title: 'მოდერაცია',
-    description: 'მომხმარებლის მიერ დამატებული კონტენტის დამტკიცება და მართვა.',
+    title: 'მოდერაცია და შემომავალი',
+    description: 'ყველა ახალი ჩანაწერი, რომელიც დამტკიცებას ან პირველ შემოწმებას ელოდება.',
     links: [
-      { href: '/admin/announcements', title: 'განცხადებები', desc: 'ჩვეულებრივი განცხადებები, დაგეგმვა, დამტკიცება და წაშლა.', accent: 'amber' },
-      { href: '/admin/community', title: 'სათემო კონტენტი', desc: 'დაკარგული/ნაპოვნი და სერვისები.', accent: 'emerald' },
-      { href: '/admin/square', title: 'კახური მოედანი', desc: 'ჩატის შეტყობინებები და დაბლოკილი მომხმარებლები.', accent: 'cyan' },
-      { href: '/admin/messages', title: 'შეტყობინებები', desc: 'კონტაქტის ფორმიდან შემოსული წერილები.', accent: 'blue' },
+      { href: '/admin/moderate', title: 'განცხადებების მოდერაცია', desc: 'ჩვეულებრივი განცხადებები, აგრო-ბირჟა და მარცვლეული ერთ შემოსულში.', accent: 'amber' },
+      { href: '/admin/community', title: 'სერვისები და სათემო ჩანაწერები', desc: 'სერვისული განცხადებები და დაკარგული/ნაპოვნი ჩანაწერები.', accent: 'emerald' },
+      { href: '/admin/messages', title: 'მომხმარებლის წერილები', desc: 'კონტაქტის ფორმიდან შემოსული შეტყობინებები.', accent: 'blue' },
     ],
   },
   {
-    title: 'მთავარი გვერდი და კონტენტი',
-    description: 'იმ ელემენტების მართვა, რომლებიც პირდაპირ ჩანს საიტის მთავარ ეკრანზე.',
+    title: 'გამოქვეყნებული კონტენტი',
+    description: 'უკვე გამოქვეყნებული ან საიტის მთავარ გვერდზე გამოსაჩენი მასალის მართვა.',
     links: [
-      { href: '/admin/posts', title: 'ადმინის ბანერები/პოსტები', desc: 'მთავარი გვერდის ჩარჩოები, მედია, გამოქვეყნება და არქივი.', accent: 'amber' },
+      { href: '/admin/announcements', title: 'გამოქვეყნებული განცხადებები', desc: 'დამტკიცებული განცხადებები, დაგეგმვა, არქივი და წაშლა.', accent: 'amber' },
+      { href: '/admin/posts', title: 'ადმინისტრატორის პოსტები', desc: 'მთავარი გვერდის ჩარჩოები, ფოტო/ვიდეო მასალა და არქივი.', accent: 'purple' },
+      { href: '/admin/square', title: 'კახური მოედანი', desc: 'ჩატის შეტყობინებები და დაბლოკილი მომხმარებლები.', accent: 'cyan' },
+    ],
+  },
+  {
+    title: 'მონაცემები და პარამეტრები',
+    description: 'ფასების, ცხრილების, ტრანსპორტის და საიტის დამხმარე პარამეტრების განახლება.',
+    links: [
       { href: '/admin/site-settings', title: 'საიტის პარამეტრები', desc: 'ფონი, მარკიზი და ჰედერის წარწერა.', accent: 'purple' },
       { href: '/admin/transport', title: 'ტრანსპორტი', desc: 'მარშრუტები და განრიგები.', accent: 'cyan' },
-    ],
-  },
-  {
-    title: 'მონაცემები და ცნობარები',
-    description: 'ფასების, ცხრილების და დამხმარე მონაცემების განახლება.',
-    links: [
-      { href: '/admin/agro', title: 'აგრო-ბირჟა', desc: 'ყურძნისა და აგრო ფასების მართვა.', accent: 'purple' },
+      { href: '/admin/agro', title: 'აგრო-ბირჟა', desc: 'აგრო ფასების და შესაბამისი ცხრილის მართვა.', accent: 'emerald' },
       { href: '/admin/grain', title: 'მარცვლეული', desc: 'მარცვლეულის ფასების მართვა.', accent: 'yellow' },
     ],
   },
@@ -43,8 +44,7 @@ const TECHNICAL_LINKS = [
   { href: '/admin/health', title: 'სისტემური აუდიტი', desc: 'DB/API/Storage შემოწმებები და cleanup ინსტრუმენტები.' },
   { href: '/admin/diagnostic', title: 'ადმინის დიაგნოსტიკა', desc: 'ავტორიზაციის სტატუსი და user metadata.' },
   { href: '/admin/moderation', title: 'მოდერაციის დიაგნოსტიკა', desc: 'pending announcement rows-ის ტექნიკური ნახვა.' },
-  { href: '/admin/moderate', title: 'Legacy მოდერაცია', desc: 'ძველი მოდერაციის ეკრანი, დატოვებულია თავსებადობისთვის.' },
-  { href: '/admin/businesses', title: 'Business legacy', desc: 'ამჟამად საჯარო UI-ში აქტიურად არ ჩანს, მაგრამ route შენარჩუნებულია.' },
+  { href: '/admin/businesses', title: 'ძველი ბიზნეს-მოდული', desc: 'საჯარო UI-ში აქტიურად აღარ ჩანს, მაგრამ route შენარჩუნებულია თავსებადობისთვის.' },
 ];
 
 type StatsCardProps = {
@@ -280,8 +280,8 @@ function AdminDashboardContent() {
             />
             <StatsCard
               title="მოდერაციაზე"
-              value={stats.pendingAnnouncements ?? '—'}
-              description="დამტკიცების მოლოდინში არსებული ჩანაწერები"
+              value={pendingTotal}
+              description="ყველა განყოფილებაში დამტკიცების მოლოდინში არსებული ჩანაწერები"
               icon={<span className="text-xl">⏱</span>}
             />
             <StatsCard
@@ -330,12 +330,14 @@ function AdminDashboardContent() {
             </section>
           ))}
 
-          <section className="rounded-[28px] border border-white/10 bg-white/[0.025] p-5 md:p-6">
-            <div className="mb-4">
-              <h2 className="text-sm font-black uppercase tracking-[0.22em] text-white/45">ტექნიკური და legacy გვერდები</h2>
-              <p className="mt-1 text-sm text-white/35">ეს გვერდები არ წაიშალა, რადგან დიაგნოსტიკისთვის ან თავსებადობისთვის შეიძლება დაგვჭირდეს.</p>
-            </div>
-            <div className="grid grid-cols-1 gap-2 md:grid-cols-2 xl:grid-cols-3">
+          <details className="rounded-[28px] border border-white/10 bg-white/[0.025] p-5 md:p-6">
+            <summary className="cursor-pointer select-none text-sm font-black uppercase tracking-[0.22em] text-white/45 transition hover:text-white/70">
+              ტექნიკური და შენარჩუნებული გვერდები
+            </summary>
+            <p className="mt-3 text-sm text-white/35">
+              ეს გვერდები მთავარ სამუშაო პროცესში აღარ ჩანს, მაგრამ არ წაიშალა, რადგან დიაგნოსტიკისთვის ან თავსებადობისთვის შეიძლება დაგვჭირდეს.
+            </p>
+            <div className="mt-4 grid grid-cols-1 gap-2 md:grid-cols-2 xl:grid-cols-3">
               {TECHNICAL_LINKS.map((link) => (
                 <Link key={link.href} href={link.href} className="rounded-2xl border border-white/10 bg-black/20 p-4 transition hover:border-white/25 hover:bg-white/[0.04]">
                   <h3 className="text-sm font-black uppercase text-white/70">{link.title}</h3>
@@ -343,7 +345,7 @@ function AdminDashboardContent() {
                 </Link>
               ))}
             </div>
-          </section>
+          </details>
         </div>
       </div>
     </main>
