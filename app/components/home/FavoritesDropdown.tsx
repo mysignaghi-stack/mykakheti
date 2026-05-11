@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { supabase } from "@/app/lib/supabase";
@@ -16,6 +16,7 @@ export default function FavoritesDropdown() {
   const [favoriteIds, setFavoriteIds] = useState<string[]>([]);
   const [items, setItems] = useState<AnnouncementRow[]>([]);
   const [loading, setLoading] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
 
   const favoriteKey = useMemo(() => favoriteIds.join(","), [favoriteIds]);
 
@@ -50,6 +51,19 @@ export default function FavoritesDropdown() {
   }, []);
 
   useEffect(() => {
+    if (!open) return;
+
+    const handlePointerDown = (event: PointerEvent) => {
+      const target = event.target;
+      if (target instanceof Node && dropdownRef.current?.contains(target)) return;
+      setOpen(false);
+    };
+
+    document.addEventListener("pointerdown", handlePointerDown);
+    return () => document.removeEventListener("pointerdown", handlePointerDown);
+  }, [open]);
+
+  useEffect(() => {
     let active = true;
 
     const loadFavorites = async () => {
@@ -80,7 +94,7 @@ export default function FavoritesDropdown() {
   }, [favoriteKey, favoriteIds]);
 
   return (
-    <div className="fixed right-3 top-3 z-[1100] sm:right-5 sm:top-24">
+    <div ref={dropdownRef} className="fixed right-3 top-3 z-[1100] sm:right-5 sm:top-24">
       <button
         type="button"
         onClick={() => setOpen((value) => !value)}

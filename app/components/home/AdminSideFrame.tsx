@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import Image from 'next/image';
 import imageCompression from 'browser-image-compression';
@@ -227,49 +227,15 @@ export default function AdminSideFrame({ post, position, isAdmin, onRefresh }: A
 
   const isVideoUrl = (url?: string | null) => !!url && /\.(mp4|mov|avi|webm|m4v)$/i.test(url);
 
-  const InlineVideo = ({ src, className, onClick }: { src: string; className?: string; onClick?: () => void }) => {
-    const videoRef = useRef<HTMLVideoElement>(null);
-
-    useEffect(() => {
-      const video = videoRef.current;
-      if (!video) return;
-
-      const observer = new IntersectionObserver(
-        (entries) => {
-          entries.forEach((entry) => {
-            if (entry.isIntersecting) {
-              video.play().catch(() => undefined);
-            } else {
-              video.pause();
-            }
-          });
-        },
-        { threshold: 0.4 }
-      );
-
-      observer.observe(video);
-      return () => observer.disconnect();
-    }, [src]);
-
-    return (
-      <div
-        className={`relative rounded-[20px] overflow-hidden ${className || ''} ${onClick ? 'cursor-pointer' : ''}`}
-        onClick={onClick}
-      >
-        <video
-          ref={videoRef}
-          src={src}
-          autoPlay
-          muted
-          loop
-          playsInline
-          preload="auto"
-          className="w-full h-full object-cover pointer-events-none rounded-[20px] block"
-          style={{ transform: 'translateZ(0)', borderRadius: '20px' }}
-        />
-      </div>
-    );
-  };
+  const PreviewVideo = ({ src, className = 'w-full h-full object-cover' }: { src: string; className?: string }) => (
+    <video
+      src={src}
+      className={className}
+      playsInline
+      muted
+      preload="metadata"
+    />
+  );
 
   const videoWrapperClassName = postVideoBackground
     ? 'relative w-full h-[180px] md:h-[200px] flex items-center justify-center overflow-hidden rounded-[20px]'
@@ -359,8 +325,11 @@ export default function AdminSideFrame({ post, position, isAdmin, onRefresh }: A
                   onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openLightbox((post.media_urls?.[0] || (post as any).media_url)!, true); } }}
                   className="w-full h-full rounded-[18px] overflow-hidden relative cursor-pointer"
                 >
-                  <video src={(post.media_urls?.[0] || (post as any).media_url)!} className="w-full h-full object-cover" playsInline autoPlay muted loop />
+                  <PreviewVideo src={(post.media_urls?.[0] || (post as any).media_url)!} />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent pointer-events-none" />
+                  <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
+                    <span className="flex h-11 w-11 items-center justify-center rounded-full border border-white/25 bg-black/55 pl-0.5 text-sm font-black text-white shadow-2xl">▶</span>
+                  </div>
                 </div>
               ) : post.media_type === 'gallery' ? (
                 <div className="w-full h-full">
@@ -378,7 +347,7 @@ export default function AdminSideFrame({ post, position, isAdmin, onRefresh }: A
                     {(post.media_urls || [(post as any).media_url]).filter(Boolean).map((url: string, idx: number) => (
                       <SwiperSlide key={idx} className="w-full h-full rounded-[18px] overflow-hidden">
                         {isVideoUrl(url) ? (
-                          <video src={url} className="w-full h-full object-cover" playsInline autoPlay muted loop />
+                          <PreviewVideo src={url} />
                         ) : (
                           <Image src={url!} alt="" fill loading="eager" sizes="(max-width: 768px) 100vw, 800px" className="object-cover" />
                         )}
@@ -389,7 +358,7 @@ export default function AdminSideFrame({ post, position, isAdmin, onRefresh }: A
               ) : (
                 <div className="w-full h-full rounded-[18px] overflow-hidden relative cursor-pointer" onClick={() => openLightbox((post.media_urls?.[0] || (post as any).media_url)!, isVideoUrl((post.media_urls?.[0] || (post as any).media_url)!))}>
                   {isVideoUrl((post.media_urls?.[0] || (post as any).media_url)!) ? (
-                    <video src={(post.media_urls?.[0] || (post as any).media_url)!} className="w-full h-full object-cover" playsInline autoPlay muted loop />
+                    <PreviewVideo src={(post.media_urls?.[0] || (post as any).media_url)!} />
                   ) : (
                     <Image src={(post.media_urls?.[0] || (post as any).media_url)!} alt="" fill loading="eager" sizes="(max-width: 768px) 100vw, 800px" className="object-cover" />
                   )}
@@ -658,6 +627,7 @@ export default function AdminSideFrame({ post, position, isAdmin, onRefresh }: A
                 <div className="relative flex h-[320px] items-center justify-center bg-black md:h-[520px]">
                   {lightbox.isVideo ? (
                     <video
+                      key={lightbox.media[lightbox.currentIndex]}
                       src={lightbox.media[lightbox.currentIndex]}
                       controls
                       playsInline

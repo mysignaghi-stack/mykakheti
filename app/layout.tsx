@@ -1,7 +1,6 @@
 import type { Metadata, Viewport } from 'next';
 import { Inter } from 'next/font/google';
 import { Analytics } from '@vercel/analytics/react';
-import GlobalBackButton from './components/layout/GlobalBackButton';
 import './globals.css';
 
 // 1. ფონტის ოპტიმიზაცია
@@ -67,7 +66,6 @@ export default function RootLayout({
       <body className="bg-[#050510] text-white antialiased selection:bg-amber-500 selection:text-white">
         {/* აქ შეგიძლიათ დაამატოთ გლობალური კომპონენტები, მაგ: Navbar ან Footer, თუ ისინი ყველა გვერდზე გინდათ */}
         {children}
-        <GlobalBackButton />
         <Analytics />
       </body>
     </html>
