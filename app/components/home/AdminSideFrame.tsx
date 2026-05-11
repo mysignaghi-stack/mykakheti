@@ -228,15 +228,37 @@ export default function AdminSideFrame({ post, position, isAdmin, onRefresh }: A
 
   const isVideoUrl = (url?: string | null) => !!url && /\.(mp4|mov|avi|webm|m4v)$/i.test(url);
 
-  const PreviewVideo = ({ src, className = 'w-full h-full object-cover' }: { src: string; className?: string }) => (
-    <video
-      src={src}
-      className={className}
-      playsInline
-      muted
-      preload="metadata"
-    />
-  );
+  const PreviewVideo = ({ src, className = 'w-full h-full object-cover' }: { src: string; className?: string }) => {
+    const videoRef = React.useRef<HTMLVideoElement>(null);
+
+    const playPreview = () => {
+      const video = videoRef.current;
+      if (!video) return;
+      video.muted = true;
+      video.play().catch(() => undefined);
+    };
+
+    useEffect(() => {
+      const timers = [100, 450, 1100].map((delay) => window.setTimeout(playPreview, delay));
+      return () => timers.forEach((timer) => window.clearTimeout(timer));
+    }, [src]);
+
+    return (
+      <video
+        ref={videoRef}
+        src={src}
+        className={className}
+        playsInline
+        autoPlay
+        muted
+        loop
+        preload="auto"
+        onLoadedData={playPreview}
+        onCanPlay={playPreview}
+        onStalled={playPreview}
+      />
+    );
+  };
 
   const videoWrapperClassName = postVideoBackground
     ? 'relative w-full h-[180px] md:h-[200px] flex items-center justify-center overflow-hidden rounded-[20px]'
