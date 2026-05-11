@@ -80,7 +80,7 @@ export default function FavoritesDropdown() {
   }, [favoriteKey, favoriteIds]);
 
   return (
-    <div className="fixed bottom-20 right-4 z-[1100] sm:bottom-auto sm:right-5 sm:top-24">
+    <div className="fixed right-3 top-3 z-[1100] sm:right-5 sm:top-24">
       <button
         type="button"
         onClick={() => setOpen((value) => !value)}
@@ -97,7 +97,7 @@ export default function FavoritesDropdown() {
       </button>
 
       {open && (
-        <div className="absolute bottom-full right-0 mb-3 w-[min(86vw,22rem)] overflow-hidden rounded-[24px] border border-white/10 bg-[#080812]/95 shadow-[0_24px_80px_rgba(0,0,0,0.75)] backdrop-blur-2xl sm:static sm:mt-3 sm:mb-0">
+        <div className="absolute right-0 top-full mt-3 w-[min(86vw,22rem)] overflow-hidden rounded-[24px] border border-white/10 bg-[#080812]/95 shadow-[0_24px_80px_rgba(0,0,0,0.75)] backdrop-blur-2xl sm:static">
           <div className="flex items-center justify-between border-b border-white/10 px-4 py-3">
             <h3 className="text-[11px] font-black uppercase tracking-[0.18em] text-amber-200">ფავორიტები</h3>
             <button
