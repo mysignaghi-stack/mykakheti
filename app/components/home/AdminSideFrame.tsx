@@ -303,12 +303,6 @@ export default function AdminSideFrame({ post, position, isAdmin, onRefresh }: A
     return `${window.location.origin}${window.location.pathname}#admin-${position}`;
   };
 
-  const shareToFacebook = () => {
-    const url = getShareUrl();
-    if (!url) return;
-    window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`, 'fb-share', 'width=600,height=400');
-  };
-
   const sharePost = async () => {
     const url = getShareUrl();
     if (!url) return;
@@ -430,13 +424,6 @@ export default function AdminSideFrame({ post, position, isAdmin, onRefresh }: A
                 className="rounded-lg border border-amber-300/30 bg-amber-500/10 px-2 py-1 text-[10px] font-black uppercase text-amber-100 hover:bg-amber-500/20 transition"
               >
                 ნახვა
-              </button>
-              <button
-                type="button"
-                onClick={shareToFacebook}
-                className="rounded-lg border border-blue-300/30 bg-blue-500/10 px-2 py-1 text-[10px] font-black uppercase text-blue-100 hover:bg-blue-500/20 transition"
-              >
-                Facebook
               </button>
               <button
                 type="button"
@@ -622,13 +609,6 @@ export default function AdminSideFrame({ post, position, isAdmin, onRefresh }: A
               className="rounded-lg border border-amber-300/30 bg-amber-500/10 px-2 py-1 text-[10px] font-black uppercase text-amber-100 hover:bg-amber-500/20 transition"
             >
               ნახვა
-            </button>
-            <button
-              type="button"
-              onClick={shareToFacebook}
-              className="rounded-lg border border-blue-300/30 bg-blue-500/10 px-2 py-1 text-[10px] font-black uppercase text-blue-100 hover:bg-blue-500/20 transition"
-            >
-              Facebook
             </button>
             <button
               type="button"
