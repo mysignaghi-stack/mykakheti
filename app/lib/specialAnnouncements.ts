@@ -1,6 +1,7 @@
 export const AGRO_SUBMISSION_CATEGORY = 'აგრო-ბირჟის განაცხადი';
 export const GRAIN_SUBMISSION_CATEGORY = 'მარცვლეულის განაცხადი';
 export const LOST_FOUND_ANNOUNCEMENT_CATEGORY = 'დაკარგული/ნაპოვნი';
+export const SERVICE_REQUEST_CATEGORY = 'სერვისის მაძიებელი';
 export const SERVICE_ANNOUNCEMENT_CATEGORIES = ['ოსტატი/სპეციალისტი', 'ოსტატი', 'სერვისი'] as const;
 
 type AnnouncementLike = {
@@ -32,7 +33,10 @@ export function isServiceAnnouncement(row: AnnouncementLike): boolean {
   return SERVICE_ANNOUNCEMENT_CATEGORIES.includes(row.category as typeof SERVICE_ANNOUNCEMENT_CATEGORIES[number]);
 }
 
-export function isCommunityAnnouncement(row: AnnouncementLike): boolean {
-  return isLostFoundAnnouncement(row) || isServiceAnnouncement(row);
+export function isServiceRequestAnnouncement(row: AnnouncementLike): boolean {
+  return row.category === SERVICE_REQUEST_CATEGORY;
 }
 
+export function isCommunityAnnouncement(row: AnnouncementLike): boolean {
+  return isLostFoundAnnouncement(row) || isServiceAnnouncement(row) || isServiceRequestAnnouncement(row);
+}

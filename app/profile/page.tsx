@@ -15,6 +15,7 @@ const FAVORITES_KEY = "favorite_announcements";
 const PUBLISH_ACTIONS = [
   { title: "ჩვეულებრივი განცხადება", href: "/add", text: "იყიდება, ქირავდება, მომსახურება ან სხვა განცხადება" },
   { title: "სერვისი / მიმწოდებელი", href: "/community/masters/submit", text: "ხელოსანი, ტექნიკოსი, მძღოლი, მასწავლებელი და სხვა" },
+  { title: "სერვისის ძიება", href: "/community/service-requests/submit", text: "მიუთითეთ რა მომსახურება გჭირდებათ და სად გჭირდებათ დახმარება" },
   { title: "დაკარგული / ნაპოვნი", href: "/community/lost-found/submit", text: "დაკარგული ან ნაპოვნი ნივთის/ცხოველის ინფორმაცია" },
 ];
 
@@ -184,7 +185,7 @@ export default function ProfilePage() {
                 <h2 className="text-xl font-black uppercase italic">გამოქვეყნება</h2>
                 <p className="mt-1 text-sm text-white/50">აირჩიეთ საიტის ის განყოფილება, სადაც გსურთ ინფორმაციის დამატება.</p>
               </div>
-              <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+              <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
                 {PUBLISH_ACTIONS.map((action) => (
                   <Link
                     key={action.href}

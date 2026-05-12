@@ -4,12 +4,15 @@ import { useMemo, useRef, useState, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import type { Tables } from '@/types/helpers';
+import type { Ad } from '@/app/lib/types';
 
 type MasterRow = Tables<'masters'>;
 
 type ServiceProvidersSectionProps = {
   providers: MasterRow[];
   count?: number;
+  serviceRequests?: Ad[];
+  serviceRequestsCount?: number;
 };
 
 const SERVICE_DESCRIPTION = 'თუ კახეთში სთავაზობთ რაიმე სახის მომსახურებას — ხართ ხელოსანი, ტექნიკოსი, მძღოლი, მასწავლებელი, ფოტოგრაფი, გიდი, დასუფთავების სპეციალისტი ან სხვა მომსახურების მიმწოდებელი — შეგიძლიათ დარეგისტრირდეთ და განათავსოთ ინფორმაცია თქვენი სერვისის შესახებ.';
@@ -216,7 +219,12 @@ function PremiumServiceIconCluster() {
   );
 }
 
-export default function ServiceProvidersSection({ providers = [], count = 0 }: ServiceProvidersSectionProps) {
+export default function ServiceProvidersSection({
+  providers = [],
+  count = 0,
+  serviceRequests = [],
+  serviceRequestsCount = 0,
+}: ServiceProvidersSectionProps) {
   const [serviceSearch, setServiceSearch] = useState('');
   const [selectedServiceCategory, setSelectedServiceCategory] = useState('ყველა კატეგ.');
   const [selectedService, setSelectedService] = useState('ყველა სერვისი');
@@ -724,6 +732,67 @@ export default function ServiceProvidersSection({ providers = [], count = 0 }: S
             სერვისის დამატება
           </Link>
         </div>
+      </div>
+
+      <div className="mt-4 overflow-hidden rounded-[24px] border border-cyan-300/15 bg-gradient-to-br from-cyan-500/10 via-white/[0.035] to-amber-500/5 p-4 text-left shadow-xl sm:p-5">
+        <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+          <div className="min-w-0">
+            <div className="flex flex-wrap items-center gap-2">
+              <h3 className="text-sm font-black uppercase tracking-[0.18em] text-cyan-100">
+                სერვისის მაძიებლები
+              </h3>
+              <span className="rounded-full border border-cyan-300/25 bg-cyan-500/10 px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.14em] text-cyan-100">
+                {serviceRequestsCount} მოთხოვნა
+              </span>
+            </div>
+            <p className="mt-2 max-w-3xl text-sm leading-relaxed text-white/65">
+              თუ კონკრეტულ მომსახურებას ეძებთ, განათავსეთ მოკლე მოთხოვნა კატეგორიით, ლოკაციით და საკონტაქტო ნომრით. სერვისის მიმწოდებლებს მარტივად ექნებათ შესაძლებლობა დაგიკავშირდნენ.
+            </p>
+          </div>
+          <Link
+            href="/community/service-requests/submit"
+            className="inline-flex shrink-0 items-center justify-center rounded-2xl border border-cyan-300/35 bg-cyan-500/15 px-4 py-3 text-[11px] font-black uppercase tracking-[0.14em] text-cyan-100 transition hover:border-cyan-200 hover:bg-cyan-500/25"
+          >
+            ვეძებ სერვისს
+          </Link>
+        </div>
+
+        {serviceRequests.length > 0 ? (
+          <div className="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+            {serviceRequests.slice(0, 4).map((request) => (
+              <Link
+                key={request.id}
+                href={`/announcements/${request.id}`}
+                className="group rounded-2xl border border-white/10 bg-[#0b0b15]/75 p-4 transition hover:border-cyan-300/35 hover:bg-white/[0.06]"
+              >
+                <div className="flex items-start justify-between gap-3">
+                  <div className="min-w-0">
+                    <p className="text-[10px] font-black uppercase tracking-[0.18em] text-cyan-200/80">ეძებს</p>
+                    <h4 className="mt-1 line-clamp-2 text-sm font-black text-white group-hover:text-cyan-100">{request.title}</h4>
+                  </div>
+                  <span className="shrink-0 rounded-full border border-cyan-300/20 bg-cyan-500/10 px-2 py-1 text-[9px] font-black text-cyan-100">
+                    მოთხოვნა
+                  </span>
+                </div>
+                {request.description && (
+                  <p className="mt-3 line-clamp-2 text-xs leading-relaxed text-white/55">{request.description}</p>
+                )}
+                <div className="mt-3 flex flex-wrap items-center gap-2 text-[10px] font-bold text-white/45">
+                  {request.location ? <span>{request.location}</span> : null}
+                  {request.price ? (
+                    <span className="text-amber-200">
+                      {request.price}{request.price === 'შეთანხმებით' ? '' : ` ${request.currency === 'USD' ? '$' : '₾'}`}
+                    </span>
+                  ) : null}
+                </div>
+              </Link>
+            ))}
+          </div>
+        ) : (
+          <div className="mt-4 rounded-2xl border border-white/10 bg-black/20 px-4 py-3 text-xs font-bold text-white/45">
+            სერვისის ძიების მოთხოვნები დამტკიცების შემდეგ აქ გამოჩნდება.
+          </div>
+        )}
       </div>
     </section>
   );

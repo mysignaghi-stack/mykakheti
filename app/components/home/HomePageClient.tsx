@@ -114,7 +114,7 @@ const getAgroDisplayPrice = (item: AgroItem) => {
   return detailRate ? formatAgroPrice(detailRate) : formatAgroPrice(priceText);
 };
 
-const COMMUNITY_CATEGORIES = ['დაკარგული/ნაპოვნი', 'ოსტატი', 'აგრო-ბირჟის განაცხადი', 'მარცვლეულის განაცხადი'] as const;
+const COMMUNITY_CATEGORIES = ['დაკარგული/ნაპოვნი', 'ოსტატი', 'სერვისის მაძიებელი', 'აგრო-ბირჟის განაცხადი', 'მარცვლეულის განაცხადი'] as const;
 const isSpecialAgroAnnouncement = (ad: Ad) => (
   COMMUNITY_CATEGORIES.includes(ad.category as typeof COMMUNITY_CATEGORIES[number]) ||
   Boolean(ad.description?.includes('აგრო-ბირჟა:')) ||
@@ -893,7 +893,12 @@ export default function HomePageClient({
           {/* --- ცენტრალური სვეტი --- */}
 
           <div className="flex flex-col items-center text-center gap-2 lg:gap-6 animate-in fade-in duration-1000 w-full min-w-0">
-            <ServiceProvidersSection providers={initialCommunity.masters} count={initialCommunityCounts.masters} />
+            <ServiceProvidersSection
+              providers={initialCommunity.masters}
+              count={initialCommunityCounts.masters}
+              serviceRequests={initialCommunity.serviceRequests}
+              serviceRequestsCount={initialCommunityCounts.serviceRequests}
+            />
 
             {/* ── Announcements Carousel (cards only) ── */}
             <div className="w-full mt-8 mobile-announcements-spacing">

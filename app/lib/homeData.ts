@@ -1,4 +1,5 @@
 import { DEFAULT_AGRO_DATA, WEATHER_POINTS } from './constants';
+import { SERVICE_REQUEST_CATEGORY } from './serviceCatalog';
 import { getSupabaseAdmin } from './supabaseAdmin';
 import type { Ad, AgroItem, WeatherItem } from './types';
 import type { Tables } from '@/types/helpers';
@@ -134,11 +135,13 @@ const buildFallbackWeather = (): WeatherItem[] => (
 export interface CommunityDataset {
   lostFound: LostFoundRow[];
   masters: MasterRow[];
+  serviceRequests: Ad[];
 }
 
 export interface CommunityCounts {
   lostFound: number;
   masters: number;
+  serviceRequests: number;
 }
 
 export interface HomePageData {
@@ -182,10 +185,12 @@ export const fetchHomePageData = async (): Promise<HomePageData> => {
       community: {
         lostFound: [],
         masters: [],
+        serviceRequests: [],
       },
       communityCounts: {
         lostFound: 0,
         masters: 0,
+        serviceRequests: 0,
       },
     };
   }
@@ -231,6 +236,12 @@ export const fetchHomePageData = async (): Promise<HomePageData> => {
       .select('id', { count: 'exact', head: true })
       .eq('is_approved', true),
     supabase
+      .from('announcements')
+      .select('id', { count: 'exact', head: true })
+      .eq('category', SERVICE_REQUEST_CATEGORY)
+      .eq('is_approved', true)
+      .or('is_archived.is.null,is_archived.eq.false'),
+    supabase
       .from('agro_prices' as any)
       .select('*'),
   ]);
@@ -244,6 +255,7 @@ export const fetchHomePageData = async (): Promise<HomePageData> => {
     mastersResult,
     lostFoundCountResult,
     mastersCountResult,
+    serviceRequestsCountResult,
     agroResult,
   ] = results;
 
@@ -271,6 +283,7 @@ export const fetchHomePageData = async (): Promise<HomePageData> => {
   const masters: MasterRow[] = extractData<MasterRow>(mastersResult as SettledResponse<MasterRow>, 'masters');
   const lostFoundCount = extractCount(lostFoundCountResult as CountResult, 'lost_found');
   const mastersCount = extractCount(mastersCountResult as CountResult, 'masters');
+  const serviceRequestsCount = extractCount(serviceRequestsCountResult as CountResult, 'service_requests');
 
   const now = Date.now();
   const ads = rawAnnouncements
@@ -294,6 +307,11 @@ export const fetchHomePageData = async (): Promise<HomePageData> => {
     .filter((row) => (row.is_approved ?? false) && !(row.is_archived ?? false))
     .map(mapAgroAnnouncementRow)
     .filter((item): item is AgroItem => Boolean(item));
+  const serviceRequests = rawAnnouncements
+    .filter((row) => row.category === SERVICE_REQUEST_CATEGORY)
+    .filter((row) => (row.is_approved ?? false) && !(row.is_archived ?? false))
+    .map(mapAnnouncementRow)
+    .slice(0, 8);
   const agroData = [
     ...(agroRows.length > 0 ? agroRows.map(mapAgroRow) : DEFAULT_AGRO_DATA),
     ...approvedAgroAnnouncements,
@@ -313,10 +331,12 @@ export const fetchHomePageData = async (): Promise<HomePageData> => {
     community: {
       lostFound,
       masters,
+      serviceRequests,
     },
     communityCounts: {
       lostFound: lostFoundCount,
       masters: mastersCount,
+      serviceRequests: serviceRequestsCount,
     },
   };
 };

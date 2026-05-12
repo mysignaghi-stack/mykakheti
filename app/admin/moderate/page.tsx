@@ -11,6 +11,7 @@ import AdminNav from '../../components/admin/AdminNav';
 import {
   AGRO_SUBMISSION_CATEGORY,
   GRAIN_SUBMISSION_CATEGORY,
+  SERVICE_REQUEST_CATEGORY,
   isAgroSubmission,
   isCommunityAnnouncement,
 } from '../../lib/specialAnnouncements';
@@ -30,6 +31,7 @@ export default function ModerateAds() {
     { value: GRAIN_SUBMISSION_CATEGORY, label: 'მარცვლეულის განაცხადები' },
     { value: 'დაკარგული/ნაპოვნი', label: 'დაკარგული/ნაპოვნის გამოქვეყნება' },
     { value: 'ოსტატი/სპეციალისტი', label: 'სერვისის გამოქვეყნება' },
+    { value: SERVICE_REQUEST_CATEGORY, label: 'სერვისის მაძიებლები' },
     { value: 'ოსტატი', label: 'ოსტატის ძველი განაცხადები' },
     { value: 'სერვისი', label: 'სერვისის ძველი განაცხადები' },
   ];
