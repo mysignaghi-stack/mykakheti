@@ -230,17 +230,38 @@ export default function AdminSideFrame({ post, position, isAdmin, onRefresh }: A
 
   const PreviewVideo = ({ src, className = 'w-full h-full object-cover' }: { src: string; className?: string }) => {
     const videoRef = React.useRef<HTMLVideoElement>(null);
+    const hasStartedRef = React.useRef(false);
 
     const playPreview = () => {
       const video = videoRef.current;
       if (!video) return;
       video.muted = true;
-      video.play().catch(() => undefined);
+      if (video.readyState < 2) {
+        video.load();
+      }
+      video.play().then(() => {
+        hasStartedRef.current = true;
+      }).catch(() => undefined);
     };
 
     useEffect(() => {
-      const timers = [100, 450, 1100].map((delay) => window.setTimeout(playPreview, delay));
-      return () => timers.forEach((timer) => window.clearTimeout(timer));
+      const video = videoRef.current;
+      if (!video) return;
+
+      const observer = new IntersectionObserver(
+        ([entry]) => {
+          if (entry?.isIntersecting) {
+            const delays = hasStartedRef.current ? [80] : [100, 500, 1300];
+            delays.forEach((delay) => window.setTimeout(playPreview, delay));
+          } else {
+            video.pause();
+          }
+        },
+        { threshold: 0.55 }
+      );
+
+      observer.observe(video);
+      return () => observer.disconnect();
     }, [src]);
 
     return (
@@ -252,10 +273,9 @@ export default function AdminSideFrame({ post, position, isAdmin, onRefresh }: A
         autoPlay
         muted
         loop
-        preload="auto"
+        preload="metadata"
         onLoadedData={playPreview}
         onCanPlay={playPreview}
-        onStalled={playPreview}
       />
     );
   };
