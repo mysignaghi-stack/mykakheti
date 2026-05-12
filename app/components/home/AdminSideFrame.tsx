@@ -236,9 +236,14 @@ export default function AdminSideFrame({ post, position, isAdmin, onRefresh }: A
       const video = videoRef.current;
       if (!video) return;
       video.muted = true;
+      video.defaultMuted = true;
+      video.setAttribute('muted', '');
+      video.setAttribute('playsinline', '');
+      video.setAttribute('webkit-playsinline', '');
       if (video.readyState < 2) {
         video.load();
       }
+      window.dispatchEvent(new CustomEvent('admin-preview-video-play', { detail: src }));
       video.play().then(() => {
         hasStartedRef.current = true;
       }).catch(() => undefined);
@@ -247,6 +252,19 @@ export default function AdminSideFrame({ post, position, isAdmin, onRefresh }: A
     useEffect(() => {
       const video = videoRef.current;
       if (!video) return;
+      video.defaultMuted = true;
+      video.muted = true;
+      video.setAttribute('muted', '');
+      video.setAttribute('playsinline', '');
+      video.setAttribute('webkit-playsinline', '');
+
+      const pauseOtherPreview = (event: Event) => {
+        const nextSrc = (event as CustomEvent<string>).detail;
+        if (nextSrc !== src) {
+          video.pause();
+        }
+      };
+      window.addEventListener('admin-preview-video-play', pauseOtherPreview as EventListener);
 
       const observer = new IntersectionObserver(
         ([entry]) => {
@@ -257,11 +275,14 @@ export default function AdminSideFrame({ post, position, isAdmin, onRefresh }: A
             video.pause();
           }
         },
-        { threshold: 0.55 }
+        { threshold: 0.18, rootMargin: '120px 0px' }
       );
 
       observer.observe(video);
-      return () => observer.disconnect();
+      return () => {
+        observer.disconnect();
+        window.removeEventListener('admin-preview-video-play', pauseOtherPreview as EventListener);
+      };
     }, [src]);
 
     return (
