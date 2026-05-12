@@ -89,7 +89,7 @@ export default function ProfilePage() {
               .select("*")
               .in("id", favorites)
               .eq("is_approved", true)
-              .eq("is_archived", false)
+              .or("is_archived.is.null,is_archived.eq.false")
           : Promise.resolve({ data: [] as AnnouncementRow[], error: null }),
       ]);
 
@@ -97,7 +97,8 @@ export default function ProfilePage() {
 
       setMyAnnouncements(profileContentResult.announcements ?? []);
       setMyServices(profileContentResult.services ?? []);
-      setFavoriteAnnouncements((favoriteResult.data ?? []) as AnnouncementRow[]);
+      const favoriteRows = (favoriteResult.data ?? []) as AnnouncementRow[];
+      setFavoriteAnnouncements(favorites.map((id) => favoriteRows.find((row) => row.id === id)).filter(Boolean) as AnnouncementRow[]);
     } catch (err) {
       const message = err instanceof Error ? err.message : "უცნობი შეცდომა";
       setError(message);

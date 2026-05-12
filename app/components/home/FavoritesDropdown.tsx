@@ -69,18 +69,25 @@ export default function FavoritesDropdown() {
     const loadFavorites = async () => {
       if (!favoriteIds.length) {
         setItems([]);
+        setLoading(false);
         return;
       }
 
       setLoading(true);
-      const { data } = await supabase
+      const { data, error } = await supabase
         .from("announcements")
         .select("*")
         .in("id", favoriteIds)
         .eq("is_approved", true)
-        .eq("is_archived", false);
+        .or("is_archived.is.null,is_archived.eq.false");
 
       if (!active) return;
+      if (error) {
+        console.error("Favorites fetch error:", error);
+        setItems([]);
+        setLoading(false);
+        return;
+      }
       const rows = (data ?? []) as AnnouncementRow[];
       setItems(favoriteIds.map((id) => rows.find((row) => row.id === id)).filter(Boolean) as AnnouncementRow[]);
       setLoading(false);
@@ -94,7 +101,16 @@ export default function FavoritesDropdown() {
   }, [favoriteKey, favoriteIds]);
 
   return (
-    <div ref={dropdownRef} className="fixed right-3 top-3 z-[1100] sm:right-5 sm:top-24">
+    <div
+      ref={dropdownRef}
+      className="fixed right-3 top-3 z-[1100] sm:right-5 sm:top-24"
+      onMouseEnter={() => {
+        if (window.matchMedia("(hover: hover) and (pointer: fine)").matches) setOpen(true);
+      }}
+      onMouseLeave={() => {
+        if (window.matchMedia("(hover: hover) and (pointer: fine)").matches) setOpen(false);
+      }}
+    >
       <button
         type="button"
         onClick={() => setOpen((value) => !value)}
