@@ -203,7 +203,7 @@ export default function MasterDetailsClient() {
                     onChange={(e) => setEditForm({ ...editForm, notify_by_email: e.target.checked })}
                     className="mt-0.5 h-4 w-4 flex-none accent-amber-500"
                   />
-                  <span>მსურს მივიღო შეტყობინება, როცა მომხმარებელი ჩემს სერვისს მოძებნის.</span>
+                  <span>მსურს მივიღო შეტყობინება, როცა მომხმარებელი „ვეძებ სერვისს“ მოთხოვნას ჩემს კატეგორიაში დაამატებს.</span>
                 </label>
               </div>
               <input value={editForm.service_area ?? ""} onChange={(e) => setEditForm({ ...editForm, service_area: e.target.value })} placeholder="მომსახურების არეალი" className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white outline-none focus:border-amber-400" />

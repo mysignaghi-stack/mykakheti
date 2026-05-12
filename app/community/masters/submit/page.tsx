@@ -302,7 +302,7 @@ export default function MastersSubmit() {
                     onChange={e=>setNotifyByEmail(e.target.checked)}
                     className="mt-0.5 h-4 w-4 flex-none accent-amber-500"
                   />
-                  <span>მსურს მივიღო შეტყობინება, როცა მომხმარებელი ჩემს სერვისს მოძებნის.</span>
+                  <span>მსურს მივიღო შეტყობინება, როცა მომხმარებელი „ვეძებ სერვისს“ მოთხოვნას ჩემს კატეგორიაში დაამატებს.</span>
                 </label>
               </div>
               <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
