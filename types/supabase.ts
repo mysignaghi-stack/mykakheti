@@ -351,10 +351,12 @@ export type Database = {
           category: string | null
           created_at: string | null
           description: string | null
+          email: string | null
           full_name: string
           id: string
           is_approved: boolean | null
           location: string | null
+          notify_by_email: boolean
           phone: string | null
           photo_url: string | null
           price_note: string | null
@@ -368,10 +370,12 @@ export type Database = {
           category?: string | null
           created_at?: string | null
           description?: string | null
+          email?: string | null
           full_name: string
           id?: string
           is_approved?: boolean | null
           location?: string | null
+          notify_by_email?: boolean
           phone?: string | null
           photo_url?: string | null
           price_note?: string | null
@@ -385,10 +389,12 @@ export type Database = {
           category?: string | null
           created_at?: string | null
           description?: string | null
+          email?: string | null
           full_name?: string
           id?: string
           is_approved?: boolean | null
           location?: string | null
+          notify_by_email?: boolean
           phone?: string | null
           photo_url?: string | null
           price_note?: string | null
@@ -399,6 +405,51 @@ export type Database = {
           user_id?: string | null
         }
         Relationships: []
+      }
+      service_request_notification_logs: {
+        Row: {
+          created_at: string | null
+          email: string | null
+          error_message: string | null
+          id: string
+          provider_id: string | null
+          service_request_id: string | null
+          status: string
+        }
+        Insert: {
+          created_at?: string | null
+          email?: string | null
+          error_message?: string | null
+          id?: string
+          provider_id?: string | null
+          service_request_id?: string | null
+          status: string
+        }
+        Update: {
+          created_at?: string | null
+          email?: string | null
+          error_message?: string | null
+          id?: string
+          provider_id?: string | null
+          service_request_id?: string | null
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "service_request_notification_logs_provider_id_fkey"
+            columns: ["provider_id"]
+            isOneToOne: false
+            referencedRelation: "masters"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "service_request_notification_logs_service_request_id_fkey"
+            columns: ["service_request_id"]
+            isOneToOne: false
+            referencedRelation: "announcements"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       obituaries: {
         Row: {

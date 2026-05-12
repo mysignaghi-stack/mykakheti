@@ -370,6 +370,23 @@ function AnnouncementCard({ ad, getAnnouncementImages, approveAd, deleteAd, sche
           {ad.description}
         </p>
 
+        {ad.category === 'სერვისის მაძიებელი' && (ad as any).notification_summary && (
+          <div className="grid grid-cols-3 gap-2 rounded-2xl border border-cyan-300/15 bg-cyan-500/10 p-3 text-center">
+            <div>
+              <div className="text-lg font-black text-cyan-100">{(ad as any).notification_summary.total ?? 0}</div>
+              <div className="text-[9px] font-black uppercase tracking-widest text-white/35">გაგზავნა</div>
+            </div>
+            <div>
+              <div className="text-lg font-black text-emerald-200">{(ad as any).notification_summary.sent ?? 0}</div>
+              <div className="text-[9px] font-black uppercase tracking-widest text-white/35">წარმატებით</div>
+            </div>
+            <div>
+              <div className="text-lg font-black text-red-200">{(ad as any).notification_summary.failed ?? 0}</div>
+              <div className="text-[9px] font-black uppercase tracking-widest text-white/35">შეცდომა</div>
+            </div>
+          </div>
+        )}
+
         <div className="pt-4 border-t border-white/5 flex flex-wrap justify-center md:justify-start gap-4">
           <span className="text-[10px] font-black text-white/30 uppercase tracking-widest italic">📞 {ad.phone}</span>
           <span className="text-[10px] font-black text-white/30 uppercase tracking-widest italic">📍 {ad.location}</span>

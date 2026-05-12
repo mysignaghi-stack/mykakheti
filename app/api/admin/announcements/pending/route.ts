@@ -55,5 +55,32 @@ export async function GET() {
     return NextResponse.json({ error: 'Failed to fetch pending announcements' }, { status: 500 });
   }
 
-  return NextResponse.json({ data }, { headers: { 'Cache-Control': 'no-store' } });
+  const ids = (data ?? []).map((row) => row.id);
+  const { data: notificationLogs, error: logsError } = ids.length
+    ? await supabaseAdmin
+        .from('service_request_notification_logs')
+        .select('service_request_id,status')
+        .in('service_request_id', ids)
+    : { data: [], error: null };
+
+  if (logsError) {
+    console.warn('Notification logs fetch error:', logsError.message);
+  }
+
+  const summaries = new Map<string, { total: number; sent: number; failed: number }>();
+  for (const log of notificationLogs ?? []) {
+    if (!log.service_request_id) continue;
+    const current = summaries.get(log.service_request_id) ?? { total: 0, sent: 0, failed: 0 };
+    current.total += 1;
+    if (log.status === 'sent') current.sent += 1;
+    if (log.status === 'failed') current.failed += 1;
+    summaries.set(log.service_request_id, current);
+  }
+
+  const rowsWithSummaries = (data ?? []).map((row) => ({
+    ...row,
+    notification_summary: summaries.get(row.id) ?? { total: 0, sent: 0, failed: 0 },
+  }));
+
+  return NextResponse.json({ data: rowsWithSummaries }, { headers: { 'Cache-Control': 'no-store' } });
 }

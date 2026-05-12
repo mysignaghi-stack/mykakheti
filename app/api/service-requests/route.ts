@@ -88,9 +88,14 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 
-  notifyMatchingServiceProviders({
+  const requestUrl = data?.id
+    ? new URL(`/announcements/${data.id}`, request.url).toString()
+    : undefined;
+  const notificationSummary = await notifyMatchingServiceProviders({
     supabase: serviceClient,
     requestId: data?.id ?? null,
+    requesterEmail: user.email ?? null,
+    requestUrl,
     category,
     services: selectedServices,
     location,
@@ -99,11 +104,12 @@ export async function POST(request: Request) {
     description,
   }).catch((notifyError) => {
     console.warn('[service-requests] provider notification failed', notifyError);
+    return { matched: 0, sent: 0, failed: 0 };
   });
 
   revalidatePath('/');
   revalidatePath('/admin/moderate');
   revalidatePath('/profile');
 
-  return NextResponse.json({ success: true, id: data?.id ?? null });
+  return NextResponse.json({ success: true, id: data?.id ?? null, notificationSummary });
 }

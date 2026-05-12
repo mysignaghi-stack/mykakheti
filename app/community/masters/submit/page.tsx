@@ -99,6 +99,8 @@ export default function MastersSubmit() {
   const [municipality, setMunicipality] = useState('');
   const [settlement, setSettlement] = useState('');
   const [phone, setPhone] = useState('');
+  const [email, setEmail] = useState('');
+  const [notifyByEmail, setNotifyByEmail] = useState(true);
   const [description, setDescription] = useState('');
   const [photo_url, setPhotoUrl] = useState('');
   const [photoFile, setPhotoFile] = useState<File | null>(null);
@@ -124,6 +126,7 @@ export default function MastersSubmit() {
   const submit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!full_name || selectedServices.length === 0) return alert('სახელი, გვარი და მინიმუმ ერთი სერვისის არჩევა აუცილებელია');
+    if (notifyByEmail && !email.trim()) return alert('შეტყობინებების მისაღებად მიუთითეთ ელფოსტა.');
     setSubmitting(true);
     const { data: { session } } = await supabase.auth.getSession();
     if (!session) {
@@ -179,6 +182,8 @@ export default function MastersSubmit() {
             full_name,
             profession,
             category,
+            email: email.trim() || null,
+            notify_by_email: notifyByEmail,
             phone: phone || null,
             location: location || null,
             description: details || null,
@@ -281,6 +286,24 @@ export default function MastersSubmit() {
               <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                 <input value={price_note} onChange={e=>setPriceNote(e.target.value)} placeholder="ფასი ან შეთანხმებით" className="bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-sm text-white" />
                 <input value={phone} onChange={e=>setPhone(e.target.value)} placeholder="საკონტაქტო ტელეფონი" className="bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-sm text-white" />
+              </div>
+              <div className="rounded-xl border border-amber-300/20 bg-amber-500/10 p-3">
+                <input
+                  type="email"
+                  value={email}
+                  onChange={e=>setEmail(e.target.value)}
+                  placeholder="ელფოსტა შეტყობინებებისთვის"
+                  className="w-full rounded-xl border border-white/10 bg-[#0b0b15] px-3 py-2 text-sm text-white outline-none placeholder:text-white/30"
+                />
+                <label className="mt-3 flex items-start gap-3 text-sm font-bold leading-relaxed text-white/75">
+                  <input
+                    type="checkbox"
+                    checked={notifyByEmail}
+                    onChange={e=>setNotifyByEmail(e.target.checked)}
+                    className="mt-0.5 h-4 w-4 flex-none accent-amber-500"
+                  />
+                  <span>მსურს მივიღო შეტყობინება, როცა მომხმარებელი ჩემს სერვისს მოძებნის.</span>
+                </label>
               </div>
               <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                 <input value={messenger} onChange={e=>setMessenger(e.target.value)} placeholder="WhatsApp/Viber" className="bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-sm text-white" />

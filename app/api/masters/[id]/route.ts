@@ -12,6 +12,8 @@ const ALLOWED_FIELDS = new Set([
   'full_name',
   'profession',
   'category',
+  'email',
+  'notify_by_email',
   'location',
   'phone',
   'description',
@@ -96,10 +98,15 @@ export async function PATCH(request: Request, { params }: Props) {
   const payload: Partial<Database['public']['Tables']['masters']['Update']> = {};
   for (const [key, value] of Object.entries(values)) {
     if (!ALLOWED_FIELDS.has(key)) continue;
+    if (key === 'notify_by_email') {
+      payload.notify_by_email = value === true;
+      continue;
+    }
     const textValue = typeof value === 'string' ? value.trim() : null;
     if (key === 'full_name') payload.full_name = textValue ?? '';
     if (key === 'profession') payload.profession = textValue ?? '';
     if (key === 'category') payload.category = textValue;
+    if (key === 'email') payload.email = textValue;
     if (key === 'location') payload.location = textValue;
     if (key === 'phone') payload.phone = textValue;
     if (key === 'description') payload.description = textValue;

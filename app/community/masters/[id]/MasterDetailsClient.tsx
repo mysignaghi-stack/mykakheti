@@ -27,6 +27,8 @@ export default function MasterDetailsClient() {
     profession: "",
     category: "",
     location: "",
+    email: "",
+    notify_by_email: false,
     phone: "",
     description: "",
     price_note: "",
@@ -48,6 +50,8 @@ export default function MasterDetailsClient() {
           profession: master.profession ?? "",
           category: master.category ?? "",
           location: master.location ?? "",
+          email: master.email ?? "",
+          notify_by_email: master.notify_by_email ?? false,
           phone: master.phone ?? "",
           description: master.description ?? "",
           price_note: master.price_note ?? "",
@@ -81,6 +85,10 @@ export default function MasterDetailsClient() {
     if (!item || saving) return;
     if (!editForm.full_name || !editForm.profession) {
       alert("გთხოვთ შეავსოთ სახელი/გვარი და სერვისი.");
+      return;
+    }
+    if (editForm.notify_by_email && !editForm.email.trim()) {
+      alert("შეტყობინებების მისაღებად მიუთითეთ ელფოსტა.");
       return;
     }
 
@@ -185,6 +193,18 @@ export default function MasterDetailsClient() {
               <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                 <input value={editForm.price_note ?? ""} onChange={(e) => setEditForm({ ...editForm, price_note: e.target.value })} placeholder="ფასი ან შეთანხმებით" className="rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white outline-none focus:border-amber-400" />
                 <input value={editForm.phone ?? ""} onChange={(e) => setEditForm({ ...editForm, phone: e.target.value })} placeholder="ტელეფონი" className="rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white outline-none focus:border-amber-400" />
+              </div>
+              <div className="rounded-2xl border border-amber-300/20 bg-amber-500/10 p-3">
+                <input value={editForm.email ?? ""} type="email" onChange={(e) => setEditForm({ ...editForm, email: e.target.value })} placeholder="ელფოსტა შეტყობინებებისთვის" className="w-full rounded-xl border border-white/10 bg-[#0b0b15] px-4 py-3 text-sm text-white outline-none focus:border-amber-400" />
+                <label className="mt-3 flex items-start gap-3 text-sm font-bold leading-relaxed text-white/75">
+                  <input
+                    type="checkbox"
+                    checked={editForm.notify_by_email}
+                    onChange={(e) => setEditForm({ ...editForm, notify_by_email: e.target.checked })}
+                    className="mt-0.5 h-4 w-4 flex-none accent-amber-500"
+                  />
+                  <span>მსურს მივიღო შეტყობინება, როცა მომხმარებელი ჩემს სერვისს მოძებნის.</span>
+                </label>
               </div>
               <input value={editForm.service_area ?? ""} onChange={(e) => setEditForm({ ...editForm, service_area: e.target.value })} placeholder="მომსახურების არეალი" className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white outline-none focus:border-amber-400" />
               <textarea value={editForm.description ?? ""} onChange={(e) => setEditForm({ ...editForm, description: e.target.value })} rows={5} placeholder="აღწერა" className="w-full resize-none rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white outline-none focus:border-amber-400" />
