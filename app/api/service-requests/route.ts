@@ -4,6 +4,7 @@ import { NextResponse } from 'next/server';
 import { createServerClient } from '@supabase/ssr';
 import { createClient } from '@supabase/supabase-js';
 import { SERVICE_REQUEST_CATEGORY } from '@/app/lib/serviceCatalog';
+import { notifyMatchingServiceProviders } from '@/app/lib/serviceRequestNotifications';
 import type { Database } from '@/types/supabase';
 
 export async function POST(request: Request) {
@@ -86,6 +87,19 @@ export async function POST(request: Request) {
   if (error) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
+
+  notifyMatchingServiceProviders({
+    supabase: serviceClient,
+    requestId: data?.id ?? null,
+    category,
+    services: selectedServices,
+    location,
+    budget: budget || 'შეთანხმებით',
+    phone,
+    description,
+  }).catch((notifyError) => {
+    console.warn('[service-requests] provider notification failed', notifyError);
+  });
 
   revalidatePath('/');
   revalidatePath('/admin/moderate');
