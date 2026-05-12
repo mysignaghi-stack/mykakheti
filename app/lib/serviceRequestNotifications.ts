@@ -41,11 +41,11 @@ const escapeHtml = (value: string) => (
 const masterMatchesRequest = (master: MasterRow, category: string, services: string[]) => {
   const masterCategories = splitStoredList(master.category).map(normalizeListText);
   const masterServices = splitStoredList(master.profession).map(normalizeListText);
-  const normalizedCategory = normalizeListText(category);
+  const normalizedCategories = splitStoredList(category).map(normalizeListText);
   const normalizedServices = services.map(normalizeListText).filter((service) => service !== normalizeListText('ყველა სერვისი'));
 
   return (
-    masterCategories.includes(normalizedCategory) ||
+    normalizedCategories.some((categoryItem) => masterCategories.includes(categoryItem)) ||
     normalizedServices.some((service) => masterServices.includes(service))
   );
 };
