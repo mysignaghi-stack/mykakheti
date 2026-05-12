@@ -96,6 +96,7 @@ const findServiceGroup = (service: string) => (
 export default function MastersSubmit() {
   const [full_name, setFullName] = useState('');
   const [selectedServices, setSelectedServices] = useState<string[]>([]);
+  const [serviceSearch, setServiceSearch] = useState('');
   const [municipality, setMunicipality] = useState('');
   const [settlement, setSettlement] = useState('');
   const [phone, setPhone] = useState('');
@@ -114,6 +115,18 @@ export default function MastersSubmit() {
 
   const profession = selectedServices.join(', ');
   const category = Array.from(new Set(selectedServices.map(findServiceGroup).filter(Boolean))).join(', ');
+  const normalizedServiceSearch = serviceSearch.toLowerCase().replace(/\s+/g, ' ').trim();
+  const filteredServiceGroups = normalizedServiceSearch
+    ? SERVICE_GROUPS
+        .map((group) => {
+          const groupMatches = group.label.toLowerCase().includes(normalizedServiceSearch);
+          const services = groupMatches
+            ? group.services
+            : group.services.filter((service) => service.toLowerCase().includes(normalizedServiceSearch));
+          return { ...group, services };
+        })
+        .filter((group) => group.services.length > 0)
+    : SERVICE_GROUPS;
 
   const toggleService = (service: string) => {
     setSelectedServices((current) => (
@@ -244,8 +257,28 @@ export default function MastersSubmit() {
                     </button>
                   )}
                 </div>
+                <div className="mb-3 flex items-center gap-2 rounded-xl border border-white/10 bg-[#0b0b15] px-3 py-2">
+                  <span className="text-sm text-amber-300/70">🔎</span>
+                  <input
+                    type="text"
+                    value={serviceSearch}
+                    onChange={(event) => setServiceSearch(event.target.value)}
+                    placeholder="მოძებნე კატეგორია ან სერვისი..."
+                    className="w-full bg-transparent text-xs font-bold text-white outline-none placeholder:text-white/30"
+                  />
+                  {serviceSearch ? (
+                    <button
+                      type="button"
+                      onClick={() => setServiceSearch('')}
+                      className="text-xs font-black text-white/35 transition hover:text-white"
+                      aria-label="სერვისების ძიების გასუფთავება"
+                    >
+                      ✕
+                    </button>
+                  ) : null}
+                </div>
                 <div className="max-h-72 space-y-3 overflow-y-auto pr-1 custom-scrollbar">
-                  {SERVICE_GROUPS.map((group) => (
+                  {filteredServiceGroups.length > 0 ? filteredServiceGroups.map((group) => (
                     <div key={group.label} className="rounded-xl border border-white/10 bg-[#0b0b15]/80 p-3">
                       <div className="mb-2 text-[10px] font-black uppercase tracking-[0.18em] text-amber-200">
                         {group.label}
@@ -274,7 +307,11 @@ export default function MastersSubmit() {
                         })}
                       </div>
                     </div>
-                  ))}
+                  )) : (
+                    <div className="rounded-xl border border-white/10 bg-[#0b0b15]/80 px-3 py-4 text-center text-xs font-bold text-white/45">
+                      ამ სიტყვით კატეგორია ან სერვისი ვერ მოიძებნა.
+                    </div>
+                  )}
                 </div>
               </div>
               <input value={category} readOnly placeholder="მომსახურების ტიპი" className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-sm text-white/70" />
