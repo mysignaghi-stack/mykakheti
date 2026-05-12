@@ -19,6 +19,7 @@ export default function FavoritesDropdown() {
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   const favoriteKey = useMemo(() => favoriteIds.join(","), [favoriteIds]);
+  const visibleFavoritesCount = items.length;
 
   useEffect(() => {
     let active = true;
@@ -119,9 +120,9 @@ export default function FavoritesDropdown() {
         aria-label="ფავორიტები"
       >
         ★
-        {favoriteIds.length > 0 && (
+        {visibleFavoritesCount > 0 && (
           <span className="absolute -right-1 -top-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-amber-500 px-1 text-[10px] font-black text-black">
-            {favoriteIds.length}
+            {visibleFavoritesCount}
           </span>
         )}
       </button>
