@@ -16,6 +16,8 @@ const MUNICIPALITIES = [
   'საგარეჯო',
 ];
 
+const ALL_SERVICES_LABEL = 'ყველა სერვისი';
+
 export default function ServiceRequestSubmitPage() {
   const [selectedCategory, setSelectedCategory] = useState(SERVICE_CATALOG[0]?.label ?? '');
   const [selectedServices, setSelectedServices] = useState<string[]>([]);
@@ -38,7 +40,13 @@ export default function ServiceRequestSubmitPage() {
     setSelectedServices((current) => (
       current.includes(service)
         ? current.filter((item) => item !== service)
-        : [...current, service]
+        : [...current.filter((item) => item !== ALL_SERVICES_LABEL), service]
+    ));
+  };
+
+  const toggleAllServices = () => {
+    setSelectedServices((current) => (
+      current.includes(ALL_SERVICES_LABEL) ? [] : [ALL_SERVICES_LABEL]
     ));
   };
 
@@ -151,6 +159,22 @@ export default function ServiceRequestSubmitPage() {
                   </div>
 
                   <div className="rounded-3xl border border-white/10 bg-[#0b0b15]/80 p-4">
+                    <label
+                      className={`mb-3 flex cursor-pointer items-center justify-between gap-3 rounded-2xl border px-4 py-3 text-xs font-black uppercase tracking-[0.12em] transition ${
+                        selectedServices.includes(ALL_SERVICES_LABEL)
+                          ? 'border-cyan-300/50 bg-cyan-500/18 text-cyan-50'
+                          : 'border-cyan-300/20 bg-cyan-500/8 text-cyan-100/80 hover:border-cyan-300/35 hover:bg-cyan-500/12'
+                      }`}
+                    >
+                      <span>{ALL_SERVICES_LABEL}</span>
+                      <input
+                        type="checkbox"
+                        checked={selectedServices.includes(ALL_SERVICES_LABEL)}
+                        onChange={toggleAllServices}
+                        className="h-4 w-4 flex-none accent-cyan-400"
+                      />
+                    </label>
+
                     <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
                       <label className="text-[10px] font-black uppercase tracking-[0.18em] text-cyan-100/80">
                         რომელი სერვისი გჭირდებათ
@@ -168,19 +192,23 @@ export default function ServiceRequestSubmitPage() {
                     <div className="grid max-h-72 gap-2 overflow-y-auto pr-1 sm:grid-cols-2">
                       {activeServices.map((service) => {
                         const checked = selectedServices.includes(service);
+                        const allSelected = selectedServices.includes(ALL_SERVICES_LABEL);
                         return (
                           <label
                             key={service}
                             className={`flex cursor-pointer items-center gap-2 rounded-xl border px-3 py-2 text-xs font-bold transition ${
                               checked
                                 ? 'border-cyan-300/45 bg-cyan-500/15 text-cyan-50'
-                                : 'border-white/10 bg-white/[0.03] text-white/70 hover:border-white/20 hover:bg-white/[0.06]'
+                                : allSelected
+                                  ? 'border-white/5 bg-white/[0.02] text-white/30'
+                                  : 'border-white/10 bg-white/[0.03] text-white/70 hover:border-white/20 hover:bg-white/[0.06]'
                             }`}
                           >
                             <input
                               type="checkbox"
                               checked={checked}
                               onChange={() => toggleService(service)}
+                              disabled={allSelected}
                               className="h-4 w-4 flex-none accent-cyan-400"
                             />
                             <span>{service}</span>
