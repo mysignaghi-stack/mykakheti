@@ -29,15 +29,6 @@ const splitStoredList = (value: string | null | undefined) => (
     .filter(Boolean)
 );
 
-const normalizePhoneForWhatsApp = (value: string | null | undefined) => {
-  const digits = (value ?? '').replace(/\D/g, '');
-  if (!digits) return null;
-  if (digits.startsWith('995') && digits.length >= 12) return digits;
-  if (digits.length === 9 && digits.startsWith('5')) return `995${digits}`;
-  if (digits.length === 10 && digits.startsWith('0')) return `995${digits.slice(1)}`;
-  return digits.length >= 11 ? digits : null;
-};
-
 const escapeHtml = (value: string) => (
   value
     .replace(/&/g, '&amp;')
@@ -107,36 +98,63 @@ const buildEmailHtml = (input: NotifyServiceRequestInput) => {
   `;
 };
 
-const sendWhatsAppText = async (to: string, message: string) => {
-  const token = process.env.META_WHATSAPP_TOKEN;
-  const phoneNumberId = process.env.META_WHATSAPP_PHONE_NUMBER_ID;
-  if (!token || !phoneNumberId) return false;
+const buildProviderUrl = (master: MasterRow, input: NotifyServiceRequestInput) => {
+  const origin = input.requestUrl
+    ? new URL(input.requestUrl).origin
+    : process.env.NEXT_PUBLIC_SITE_URL || 'https://mykakheti.ge';
+  return new URL(`/community/masters/${master.id}`, origin).toString();
+};
 
-  const response = await fetch(`https://graph.facebook.com/v20.0/${phoneNumberId}/messages`, {
-    method: 'POST',
-    headers: {
-      Authorization: `Bearer ${token}`,
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({
-      messaging_product: 'whatsapp',
-      recipient_type: 'individual',
-      to,
-      type: 'text',
-      text: {
-        preview_url: false,
-        body: message,
-      },
-    }),
-  });
+const buildRequesterEmailText = (input: NotifyServiceRequestInput, masters: MasterRow[]) => {
+  const providerLines = masters.map((master, index) => (
+    `${index + 1}. ${master.full_name} - ${master.profession}\n${buildProviderUrl(master, input)}`
+  ));
 
-  if (!response.ok) {
-    const payload = await response.text().catch(() => '');
-    console.warn('[service-request-notifications] WhatsApp send failed', response.status, payload);
-    return false;
-  }
+  return [
+    'გამარჯობა,',
+    '',
+    'თქვენი სერვისის მოთხოვნა MyKakheti.ge-ზე მიღებულია.',
+    '',
+    `სერვისი: ${input.services.join(', ')}`,
+    `მუნიციპალიტეტი: ${input.location}`,
+    '',
+    'ამავე კატეგორიაში რეგისტრირებული სერვისის მიმწოდებლები:',
+    '',
+    ...providerLines,
+    '',
+    'პატივისცემით,',
+    'MyKakheti.ge',
+  ].join('\n');
+};
 
-  return true;
+const buildRequesterEmailHtml = (input: NotifyServiceRequestInput, masters: MasterRow[]) => {
+  const providerItems = masters.map((master) => {
+    const url = buildProviderUrl(master, input);
+    return `
+      <li style="margin:0 0 14px;">
+        <div style="font-weight:700;color:#111827;">${escapeHtml(master.full_name)}</div>
+        <div style="font-size:13px;color:#4b5563;margin:3px 0 7px;">${escapeHtml(master.profession)}</div>
+        <a href="${escapeHtml(url)}" style="color:#a47516;font-weight:700;text-decoration:none;">პროფილის ნახვა</a>
+      </li>
+    `;
+  }).join('');
+
+  return `
+    <div style="font-family: Arial, sans-serif; background:#f6f7fb; color:#111827; padding:24px;">
+      <div style="max-width:640px; margin:0 auto; border:1px solid #e5e7eb; border-radius:16px; padding:24px; background:#ffffff;">
+        <div style="font-size:13px; letter-spacing:0.08em; text-transform:uppercase; color:#a47516; font-weight:700;">MyKakheti.ge</div>
+        <h1 style="font-size:22px; margin:10px 0 16px; color:#111827;">შესაბამისი სერვისის მიმწოდებლები</h1>
+        <p style="font-size:15px; line-height:1.7; color:#374151;">თქვენი სერვისის მოთხოვნა მიღებულია.</p>
+        <div style="margin:18px 0; border:1px solid #eef0f4; border-radius:12px; padding:16px; background:#fafafa;">
+          <p style="margin:0 0 8px; font-size:14px;"><strong>სერვისი:</strong> ${escapeHtml(input.services.join(', '))}</p>
+          <p style="margin:0; font-size:14px;"><strong>მუნიციპალიტეტი:</strong> ${escapeHtml(input.location)}</p>
+        </div>
+        <p style="font-size:15px; line-height:1.7; color:#374151;">ამავე კატეგორიაში რეგისტრირებული სერვისის მიმწოდებლები:</p>
+        <ul style="padding-left:20px;margin:16px 0;">${providerItems}</ul>
+        <p style="margin-top:22px; font-size:14px; color:#374151;">პატივისცემით,<br />MyKakheti.ge</p>
+      </div>
+    </div>
+  `;
 };
 
 const sendWebhookNotification = async (masters: MasterRow[], message: string, input: NotifyServiceRequestInput) => {
@@ -246,13 +264,33 @@ const sendEmailNotifications = async (supabase: SupabaseClient<Database>, master
   return { sent, failed };
 };
 
+const sendRequesterProviderSuggestions = async (masters: MasterRow[], input: NotifyServiceRequestInput) => {
+  const apiKey = process.env.RESEND_API_KEY;
+  if (!apiKey || !input.requesterEmail || masters.length === 0) return false;
+
+  const resend = new Resend(apiKey);
+  const providers = masters.slice(0, 10);
+  const { error } = await resend.emails.send({
+    from: 'MyKakheti <no-reply@mykakheti.ge>',
+    to: input.requesterEmail,
+    subject: 'MyKakheti.ge - შესაბამისი სერვისის მიმწოდებლები',
+    text: buildRequesterEmailText(input, providers),
+    html: buildRequesterEmailHtml(input, providers),
+  });
+
+  if (error) {
+    console.warn('[service-request-notifications] requester email failed', error.message);
+    return false;
+  }
+
+  return true;
+};
+
 export const notifyMatchingServiceProviders = async (input: NotifyServiceRequestInput) => {
   const { data, error } = await input.supabase
     .from('masters')
     .select('id,full_name,profession,category,email,notify_by_email,phone,location,user_id,is_approved')
     .eq('is_approved', true)
-    .eq('notify_by_email', true)
-    .not('email', 'is', null)
     .limit(500);
 
   if (error) {
@@ -260,13 +298,21 @@ export const notifyMatchingServiceProviders = async (input: NotifyServiceRequest
     return { matched: 0, sent: 0 };
   }
 
-  const matchingMasters = (data ?? [])
-    .filter((master) => master.email && master.notify_by_email && masterMatchesRequest(master as MasterRow, input.category, input.services))
-    .slice(0, 25) as MasterRow[];
+  const matchingMasters = ((data ?? []) as MasterRow[])
+    .filter((master) => masterMatchesRequest(master, input.category, input.services));
 
   if (matchingMasters.length === 0) {
-    return { matched: 0, sent: 0 };
+    return { matched: 0, sent: 0, failed: 0, requesterSent: false };
   }
+
+  const requesterSent = await sendRequesterProviderSuggestions(matchingMasters, input).catch((error) => {
+    console.warn('[service-request-notifications] requester suggestions email error', error);
+    return false;
+  });
+
+  const providerRecipients = matchingMasters
+    .filter((master) => master.email && master.notify_by_email)
+    .slice(0, 25);
 
   const { data: existingLogs } = input.requestId
     ? await input.supabase
@@ -275,10 +321,10 @@ export const notifyMatchingServiceProviders = async (input: NotifyServiceRequest
         .eq('service_request_id', input.requestId)
     : { data: [] as Array<{ provider_id: string | null }> };
   const alreadyNotified = new Set((existingLogs ?? []).map((log) => log.provider_id).filter(Boolean));
-  const pendingMasters = matchingMasters.filter((master) => !alreadyNotified.has(master.id));
+  const pendingMasters = providerRecipients.filter((master) => !alreadyNotified.has(master.id));
 
   if (pendingMasters.length === 0) {
-    return { matched: matchingMasters.length, sent: 0, failed: 0 };
+    return { matched: matchingMasters.length, sent: 0, failed: 0, requesterSent };
   }
 
   const message = buildEmailText(input);
@@ -298,21 +344,5 @@ export const notifyMatchingServiceProviders = async (input: NotifyServiceRequest
     failed += result.failed;
   }
 
-  if (process.env.META_WHATSAPP_TOKEN && process.env.META_WHATSAPP_PHONE_NUMBER_ID) {
-    const uniquePhones = Array.from(new Set(
-      pendingMasters
-        .map((master) => normalizePhoneForWhatsApp(master.phone))
-        .filter((phone): phone is string => Boolean(phone))
-    ));
-
-    for (const phone of uniquePhones) {
-      const ok = await sendWhatsAppText(phone, message).catch((error) => {
-        console.warn('[service-request-notifications] WhatsApp error', error);
-        return false;
-      });
-      if (ok) sent += 1;
-    }
-  }
-
-  return { matched: matchingMasters.length, sent, failed };
+  return { matched: matchingMasters.length, sent, failed, requesterSent };
 };
