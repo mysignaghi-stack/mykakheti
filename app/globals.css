@@ -126,10 +126,10 @@ body {
   width: 5px;
 }
 ::-webkit-scrollbar-track {
-  background: rgba(255, 255, 255, 0.02);
+  background: rgba(255, 255, 255, 0.05);
 }
 ::-webkit-scrollbar-thumb {
-  background: rgba(245, 158, 11, 0.2);
+  background: rgba(245, 158, 11, 0.46);
   border-radius: 10px;
 }
 ::-webkit-scrollbar-thumb:hover {
@@ -139,7 +139,7 @@ body {
 /* კლასი კონკრეტული დივებისთვის (თუ დაგჭირდებათ) */
 .custom-scrollbar {
   scrollbar-width: thin;
-  scrollbar-color: var(--accent-amber) transparent;
+  scrollbar-color: rgba(245, 158, 11, 0.72) rgba(255, 255, 255, 0.05);
 }
 
 /* 🚫 No-Scrollbar Utility */
