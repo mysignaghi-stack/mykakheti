@@ -223,9 +223,16 @@ export default function MastersSubmit() {
 
   if (submitted) return (
     <main className="min-h-screen bg-[#050510] p-6 md:p-10 text-white">
-      <div className="max-w-3xl mx-auto text-center">
-        <h1 className="text-2xl font-black text-amber-500 uppercase italic mb-4">გმადლობთ!</h1>
-        <p className="text-white/80">ჩანაწერი გაიგზავნა მოდერაციაზე და გამოჩნდება დამტკიცების შემდეგ.</p>
+      <div className="max-w-3xl mx-auto rounded-[32px] border border-amber-300/20 bg-amber-500/10 p-6 text-center shadow-2xl sm:p-8">
+        <p className="text-[11px] font-black uppercase tracking-[0.24em] text-amber-100">გაგზავნილია</p>
+        <h1 className="mt-3 text-2xl font-black text-white uppercase italic">გმადლობთ!</h1>
+        <p className="mt-3 text-sm leading-relaxed text-white/70">ჩანაწერი გაიგზავნა მოდერაციაზე და გამოჩნდება დამტკიცების შემდეგ.</p>
+        <Link
+          href="/"
+          className="mt-6 inline-flex rounded-2xl border border-amber-300/35 bg-amber-500/15 px-5 py-3 text-[11px] font-black uppercase tracking-[0.14em] text-amber-100 transition hover:bg-amber-500/25"
+        >
+          მთავარი გვერდი
+        </Link>
       </div>
     </main>
   );
