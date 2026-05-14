@@ -4,10 +4,12 @@ import React, { useState, useMemo, useRef, useEffect } from 'react';
 import AnnouncementCard from './AnnouncementCard';
 import { Ad } from '@/app/lib/types';
 import { ANNOUNCEMENT_CATEGORIES, LOCATIONS } from '@/app/lib/constants';
+import { isCommunityAnnouncement } from '@/app/lib/specialAnnouncements';
 
-const COMMUNITY_CATEGORIES = ['დაკარგული/ნაპოვნი', 'ოსტატი', 'აგრო-ბირჟის განაცხადი', 'მარცვლეულის განაცხადი'] as const;
+const COMMUNITY_CATEGORIES = ['დაკარგული/ნაპოვნი', 'ოსტატი', 'სერვისის მაძიებელი', 'აგრო-ბირჟის განაცხადი', 'მარცვლეულის განაცხადი'] as const;
 const isSpecialAgroAnnouncement = (ad: Ad) => (
   COMMUNITY_CATEGORIES.includes(ad.category as typeof COMMUNITY_CATEGORIES[number]) ||
+  isCommunityAnnouncement(ad) ||
   Boolean(ad.description?.includes('აგრო-ბირჟა:')) ||
   Boolean(ad.description?.includes('მარცვლეული:'))
 );

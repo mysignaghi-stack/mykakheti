@@ -7,7 +7,7 @@ import type { Database } from '@/types/supabase';
 import { supabase } from '../../lib/supabase';
 import { useAdminAuth } from '../../hooks/useAdminAuth';
 import AdminNav from '../../components/admin/AdminNav';
-import { isAgroSubmission } from '../../lib/specialAnnouncements';
+import { isAgroSubmission, isCommunityAnnouncement } from '../../lib/specialAnnouncements';
 
 type Announcement = Database['public']['Tables']['announcements']['Row'];
 
@@ -55,8 +55,8 @@ export default function AdminAnnouncements() {
       if (pendingRes.error) console.error('Pending ads fetch error', pendingRes.error);
       if (liveRes.error) console.error('Live ads fetch error', liveRes.error);
 
-      if (pendingRes.data) setPendingAds(pendingRes.data.filter((ad: Announcement) => !isAgroSubmission(ad)));
-      if (liveRes.data) setLiveAds(liveRes.data.filter((ad: Announcement) => !isAgroSubmission(ad)));
+      if (pendingRes.data) setPendingAds(pendingRes.data.filter((ad: Announcement) => !isAgroSubmission(ad) && !isCommunityAnnouncement(ad)));
+      if (liveRes.data) setLiveAds(liveRes.data.filter((ad: Announcement) => !isAgroSubmission(ad) && !isCommunityAnnouncement(ad)));
     } catch (error) {
       console.error('Fetch Error:', error);
     } finally {
@@ -143,7 +143,7 @@ export default function AdminAnnouncements() {
     const targetIds = [...pendingAds, ...liveAds]
       .filter((ad) => {
         const createdTime = new Date(ad.created_at ?? '').getTime();
-        return Number.isFinite(createdTime) && createdTime >= fromTime && createdTime <= toTime && !isAgroSubmission(ad);
+        return Number.isFinite(createdTime) && createdTime >= fromTime && createdTime <= toTime && !isAgroSubmission(ad) && !isCommunityAnnouncement(ad);
       })
       .map((ad) => ad.id);
 

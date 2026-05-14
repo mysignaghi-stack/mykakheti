@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '@/app/lib/supabase';
 import type { Tables } from '@/types/helpers';
+import { isAgroSubmission, isCommunityAnnouncement } from '@/app/lib/specialAnnouncements';
 
 type Announcement = Tables<'announcements'>;
 
@@ -54,7 +55,9 @@ export default function PublishedAnnouncements() {
         if (data) {
           // Group announcements by category and get stats
           const stats: CategoryStats = {};
-          data.forEach((announcement: Announcement) => {
+          data
+            .filter((announcement: Announcement) => !isAgroSubmission(announcement) && !isCommunityAnnouncement(announcement))
+            .forEach((announcement: Announcement) => {
             const category = announcement.category;
             if (!stats[category]) {
               stats[category] = {

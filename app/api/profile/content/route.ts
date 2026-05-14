@@ -2,6 +2,7 @@ import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 import { createServerClient } from "@supabase/ssr";
 import { createClient } from "@supabase/supabase-js";
+import { isAgroSubmission, isCommunityAnnouncement } from "@/app/lib/specialAnnouncements";
 import type { Database } from "@/types/supabase";
 
 export async function GET() {
@@ -58,7 +59,7 @@ export async function GET() {
   }
 
   return NextResponse.json({
-    announcements: announcementsResult.data ?? [],
+    announcements: (announcementsResult.data ?? []).filter((row) => !isAgroSubmission(row) && !isCommunityAnnouncement(row)),
     services: servicesResult.data ?? [],
   });
 }

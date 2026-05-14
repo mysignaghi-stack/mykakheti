@@ -1,6 +1,7 @@
 import { useState, useCallback, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
 import { Ad } from '../lib/types';
+import { isAgroSubmission, isCommunityAnnouncement } from '../lib/specialAnnouncements';
 import type { Tables } from '@/types/helpers';
 
 type AnnouncementRow = Tables<'announcements'>;
@@ -61,7 +62,7 @@ export function useAdsData(initialAds: Ad[] = []) {
           const publishAt = extra.publish_at;
           const publishOk = !publishAt || new Date(publishAt).getTime() <= now;
           // Note: expires_at column doesn't exist in the table, so we skip expiration filtering
-          return publishOk;
+          return publishOk && !isAgroSubmission(row) && !isCommunityAnnouncement(row);
         });
         setAds(filtered.map(mapRowToAd));
       }

@@ -4,6 +4,7 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { supabase } from '@/app/lib/supabase';
 import type { Tables } from '@/types/helpers';
 import { ANNOUNCEMENT_CATEGORIES } from '@/app/lib/constants';
+import { isAgroSubmission, isCommunityAnnouncement } from '@/app/lib/specialAnnouncements';
 import AnnouncementCard from './AnnouncementCard';
 
 type Announcement = Tables<'announcements'>;
@@ -87,7 +88,7 @@ export default function AnnouncementsSection() {
             const isArchived = announcement.is_archived ?? false;
             const publishAt = announcement.publish_at ? new Date(announcement.publish_at).getTime() : null;
             const isPublished = !publishAt || publishAt <= now;
-            return !isArchived && isPublished;
+            return !isArchived && isPublished && !isAgroSubmission(announcement) && !isCommunityAnnouncement(announcement);
           });
           setAnnouncements(visible);
         }

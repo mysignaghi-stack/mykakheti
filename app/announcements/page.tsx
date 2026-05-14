@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { supabase } from '../lib/supabase';
 import { formatGeorgianDate } from '../lib/utils';
 import { ANNOUNCEMENT_CATEGORIES } from '../lib/constants';
+import { isAgroSubmission, isCommunityAnnouncement } from '../lib/specialAnnouncements';
 import AnnouncementCard from '../components/home/AnnouncementCard';
 
 interface Announcement {
@@ -75,7 +76,7 @@ export default function AnnouncementsPage() {
         .order('created_at', { ascending: false });
       const now = Date.now();
       const visible = ((data || []) as Announcement[]).filter((item) => {
-        if (item.is_archived) return false;
+        if (item.is_archived || isAgroSubmission(item) || isCommunityAnnouncement(item)) return false;
         const publishAt = item.publish_at ? new Date(item.publish_at).getTime() : null;
         return !publishAt || publishAt <= now;
       });
@@ -407,5 +408,4 @@ export default function AnnouncementsPage() {
     </main>
   );
 }
-
 
