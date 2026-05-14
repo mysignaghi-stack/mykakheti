@@ -3,6 +3,7 @@ import { NextResponse } from 'next/server';
 import { createServerClient } from '@supabase/ssr';
 import { createClient as createServiceClient } from '@supabase/supabase-js';
 import { isAdminUser } from '@/app/lib/adminAuth';
+import { SERVICE_REQUEST_CATEGORY } from '@/app/lib/specialAnnouncements';
 import type { Database } from '@/types/supabase';
 
 export async function GET() {
@@ -117,13 +118,15 @@ export async function GET() {
       row.category === 'მარცვლეულის განაცხადი' || Boolean(row.description?.includes('მარცვლეული:'));
     const isLostFound = (row: { category?: string | null }) => row.category === 'დაკარგული/ნაპოვნი';
     const isService = (row: { category?: string | null }) => row.category === 'ოსტატი/სპეციალისტი' || row.category === 'ოსტატი' || row.category === 'სერვისი';
+    const isServiceRequest = (row: { category?: string | null }) => row.category === SERVICE_REQUEST_CATEGORY;
 
     const pendingQueues = {
-      regularAnnouncements: pendingRows.filter((row) => !isAgro(row) && !isGrain(row) && !isLostFound(row) && !isService(row)).length,
+      regularAnnouncements: pendingRows.filter((row) => !isAgro(row) && !isGrain(row) && !isLostFound(row) && !isService(row) && !isServiceRequest(row)).length,
       agro: pendingRows.filter(isAgro).length,
       grain: pendingRows.filter(isGrain).length,
       lostFound: pendingRows.filter(isLostFound).length + (pendingLostFound ?? 0),
       services: pendingRows.filter(isService).length + (pendingMasters ?? 0),
+      serviceRequests: pendingRows.filter(isServiceRequest).length,
     };
 
     return NextResponse.json({

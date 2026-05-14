@@ -24,6 +24,7 @@ const ADMIN_SECTIONS = [
     description: 'უკვე გამოქვეყნებული ან საიტის მთავარ გვერდზე გამოსაჩენი მასალის მართვა.',
     links: [
       { href: '/admin/announcements', title: 'გამოქვეყნებული განცხადებები', desc: 'დამტკიცებული განცხადებები, დაგეგმვა, არქივი და წაშლა.', accent: 'amber' },
+      { href: '/admin/service-requests', title: 'სერვისის მაძიებლები', desc: '„ვეძებ სერვისს“ განცხადებების რედაქტირება, გამოქვეყნება და წაშლა.', accent: 'cyan' },
       { href: '/admin/posts', title: 'ადმინისტრატორის პოსტები', desc: 'მთავარი გვერდის ჩარჩოები, ფოტო/ვიდეო მასალა და არქივი.', accent: 'purple' },
       { href: '/admin/square', title: 'კახური მოედანი', desc: 'ჩატის შეტყობინებები და დაბლოკილი მომხმარებლები.', accent: 'cyan' },
     ],
@@ -232,6 +233,14 @@ function AdminDashboardContent() {
       value: stats?.pendingQueues?.services ?? 0,
       href: '/admin/community',
       accent: 'emerald',
+    },
+    {
+      key: 'service-requests',
+      title: 'სერვისის მაძიებლები',
+      description: '„ვეძებ სერვისს“ მოთხოვნები, რომლებიც მოდერაციას ელოდება.',
+      value: stats?.pendingQueues?.serviceRequests ?? 0,
+      href: '/admin/service-requests',
+      accent: 'cyan',
     },
   ];
   const pendingTotal = pendingQueues.reduce((sum, queue) => sum + queue.value, 0);
