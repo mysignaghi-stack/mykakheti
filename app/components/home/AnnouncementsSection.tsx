@@ -43,6 +43,7 @@ export default function AnnouncementsSection() {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [cardsPerView, setCardsPerView] = useState(3);
   const sliderRef = useRef<HTMLDivElement>(null);
+  const touchStartX = useRef<number | null>(null);
 
   useEffect(() => {
     const updateCardsPerView = () => {
@@ -366,6 +367,14 @@ export default function AnnouncementsSection() {
           ref={sliderRef}
           className="w-full flex overflow-x-auto gap-0 scrollbar-none"
           style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+          onTouchStart={(event) => { touchStartX.current = event.touches[0].clientX; }}
+          onTouchEnd={(event) => {
+            if (touchStartX.current === null) return;
+            const diff = touchStartX.current - event.changedTouches[0].clientX;
+            if (diff > 40) goNext();
+            else if (diff < -40) goPrev();
+            touchStartX.current = null;
+          }}
         >
           {filteredAnnouncements.map(announcement => (
             <div

@@ -242,6 +242,7 @@ export default function ServiceProvidersSection({
   const serviceLocationRef = useRef<HTMLDivElement | null>(null);
   const serviceSliderRef = useRef<HTMLDivElement | null>(null);
   const serviceTouchStartX = useRef<number | null>(null);
+  const requestTouchStartX = useRef<number | null>(null);
   const buildServiceShareUrl = (providerId: string) => {
     if (typeof window === 'undefined') return `/community/masters/${providerId}`;
     return `${window.location.origin}/community/masters/${providerId}`;
@@ -812,7 +813,17 @@ export default function ServiceProvidersSection({
         </div>
 
         {serviceRequests.length > 0 ? (
-          <div className="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+          <div
+            className="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-4"
+            onTouchStart={(event) => { requestTouchStartX.current = event.touches[0].clientX; }}
+            onTouchEnd={(event) => {
+              if (requestTouchStartX.current === null) return;
+              const diff = requestTouchStartX.current - event.changedTouches[0].clientX;
+              if (diff > 40) setRequestPage((page) => Math.min(requestMaxPage, page + 1));
+              else if (diff < -40) setRequestPage((page) => Math.max(0, page - 1));
+              requestTouchStartX.current = null;
+            }}
+          >
             {visibleServiceRequests.map((request) => (
               <Link
                 key={request.id}

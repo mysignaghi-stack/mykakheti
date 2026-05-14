@@ -39,6 +39,7 @@ export default function RecentAnnouncementsSection({ ads }: Props) {
   const [cardsPerView, setCardsPerView] = useState(2);
   const sliderRef = useRef<HTMLDivElement>(null);
   const touchStartX = useRef<number | null>(null);
+  const pageTouchStartX = useRef<number | null>(null);
   const [isMobile, setIsMobile] = useState(false);
 
   // Close dropdowns on outside click
@@ -425,13 +426,33 @@ export default function RecentAnnouncementsSection({ ads }: Props) {
           {/* Cards */}
           {paginated.length > 0 ? (
             layout === 'grid' ? (
-              <div className="grid grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-2">
+              <div
+                className="grid grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-2"
+                onTouchStart={(event) => { pageTouchStartX.current = event.touches[0].clientX; }}
+                onTouchEnd={(event) => {
+                  if (pageTouchStartX.current === null) return;
+                  const diff = pageTouchStartX.current - event.changedTouches[0].clientX;
+                  if (diff > 40) setPage((p) => Math.min(totalPages, p + 1));
+                  else if (diff < -40) setPage((p) => Math.max(1, p - 1));
+                  pageTouchStartX.current = null;
+                }}
+              >
                 {paginated.map((ad) => (
                   <AnnouncementCard key={ad.id} announcement={ad} layout="grid" />
                 ))}
               </div>
             ) : (
-              <div className="flex flex-col gap-2">
+              <div
+                className="flex flex-col gap-2"
+                onTouchStart={(event) => { pageTouchStartX.current = event.touches[0].clientX; }}
+                onTouchEnd={(event) => {
+                  if (pageTouchStartX.current === null) return;
+                  const diff = pageTouchStartX.current - event.changedTouches[0].clientX;
+                  if (diff > 40) setPage((p) => Math.min(totalPages, p + 1));
+                  else if (diff < -40) setPage((p) => Math.max(1, p - 1));
+                  pageTouchStartX.current = null;
+                }}
+              >
                 {paginated.map((ad) => (
                   <AnnouncementCard key={ad.id} announcement={ad} layout="list" />
                 ))}
