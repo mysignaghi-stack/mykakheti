@@ -17,3 +17,5 @@ create unique index if not exists service_request_notification_logs_unique_provi
   where provider_id is not null;
 
 alter table public.service_request_notification_logs enable row level security;
+
+notify pgrst, 'reload schema';

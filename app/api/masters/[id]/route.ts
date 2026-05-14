@@ -22,6 +22,23 @@ const ALLOWED_FIELDS = new Set([
   'service_area',
 ]);
 
+const isMissingMastersEmailColumnsError = (error: unknown) => {
+  const message = typeof (error as { message?: unknown })?.message === 'string'
+    ? (error as { message: string }).message
+    : '';
+  return message.includes('"email" column of "masters"') ||
+    message.includes('"notify_by_email" column of "masters"') ||
+    message.includes("column masters.email does not exist") ||
+    message.includes("column masters.notify_by_email does not exist");
+};
+
+const stripPendingMastersEmailFields = (payload: Partial<Database['public']['Tables']['masters']['Update']>) => {
+  const nextPayload = { ...payload };
+  delete nextPayload.email;
+  delete nextPayload.notify_by_email;
+  return nextPayload;
+};
+
 const getAuthedUser = async (supabaseUrl: string, supabaseAnonKey: string) => {
   const cookieStore = await cookies();
   const authClient = createServerClient<Database>(supabaseUrl, supabaseAnonKey, {
@@ -145,6 +162,26 @@ export async function PATCH(request: Request, { params }: Props) {
     .single();
 
   if (error) {
+    if (isMissingMastersEmailColumnsError(error)) {
+      console.warn('[masters PATCH] masters email notification columns are not migrated yet; retrying without email fields.');
+      const { data: retryData, error: retryError } = await serviceClient
+        .from('masters')
+        .update({ ...stripPendingMastersEmailFields(payload), is_approved: false })
+        .eq('id', id)
+        .select('*')
+        .single();
+
+      if (!retryError) {
+        return NextResponse.json({
+          success: true,
+          service: retryData,
+          warning: 'masters email notification columns are not migrated yet',
+        });
+      }
+
+      return NextResponse.json({ error: retryError.message }, { status: 500 });
+    }
+
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 

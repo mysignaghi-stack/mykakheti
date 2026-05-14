@@ -6,6 +6,23 @@ import type { Database } from '../../../../types/supabase';
 
 const ALLOWED_TABLES = new Set(['lost_found', 'masters']);
 
+const isMissingMastersEmailColumnsError = (error: unknown) => {
+  const message = typeof (error as { message?: unknown })?.message === 'string'
+    ? (error as { message: string }).message
+    : '';
+  return message.includes('"email" column of "masters"') ||
+    message.includes('"notify_by_email" column of "masters"') ||
+    message.includes("column masters.email does not exist") ||
+    message.includes("column masters.notify_by_email does not exist");
+};
+
+const stripPendingMastersEmailFields = (payload: Record<string, unknown>) => {
+  const nextPayload = { ...payload };
+  delete nextPayload.email;
+  delete nextPayload.notify_by_email;
+  return nextPayload;
+};
+
 export async function POST(request: Request) {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
@@ -64,6 +81,22 @@ export async function POST(request: Request) {
   const { error } = await (serviceClient as any).from(table).insert(payload);
 
   if (error) {
+    if (table === 'masters' && isMissingMastersEmailColumnsError(error)) {
+      console.warn('[community/submit] masters email notification columns are not migrated yet; retrying without email fields.');
+      const { error: retryError } = await (serviceClient as any)
+        .from(table)
+        .insert(stripPendingMastersEmailFields(payload));
+
+      if (!retryError) {
+        return NextResponse.json({
+          success: true,
+          warning: 'masters email notification columns are not migrated yet',
+        });
+      }
+
+      return NextResponse.json({ error: retryError.message }, { status: 500 });
+    }
+
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 
