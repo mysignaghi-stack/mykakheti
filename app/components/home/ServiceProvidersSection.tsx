@@ -232,6 +232,8 @@ export default function ServiceProvidersSection({
   const [serviceSort, setServiceSort] = useState<ServiceSortOption>('newest');
   const [serviceSliderIndex, setServiceSliderIndex] = useState(0);
   const [serviceCardsPerView, setServiceCardsPerView] = useState(3);
+  const [requestPage, setRequestPage] = useState(0);
+  const [requestCardsPerPage, setRequestCardsPerPage] = useState(4);
   const [showServiceCategoryDropdown, setShowServiceCategoryDropdown] = useState(false);
   const [showServiceDropdown, setShowServiceDropdown] = useState(false);
   const [showServiceLocationDropdown, setShowServiceLocationDropdown] = useState(false);
@@ -299,6 +301,21 @@ export default function ServiceProvidersSection({
   }, []);
 
   useEffect(() => {
+    const updateRequestCardsPerPage = () => {
+      if (window.innerWidth < 640) setRequestCardsPerPage(1);
+      else if (window.innerWidth < 1024) setRequestCardsPerPage(2);
+      else setRequestCardsPerPage(4);
+    };
+    updateRequestCardsPerPage();
+    window.addEventListener('resize', updateRequestCardsPerPage);
+    return () => window.removeEventListener('resize', updateRequestCardsPerPage);
+  }, []);
+
+  useEffect(() => {
+    setRequestPage(0);
+  }, [serviceRequests.length, requestCardsPerPage]);
+
+  useEffect(() => {
     const el = serviceSliderRef.current;
     if (!el) return;
     const cardWidth = el.offsetWidth / serviceCardsPerView;
@@ -355,6 +372,12 @@ export default function ServiceProvidersSection({
   const showHealthWarning = selectedServiceCategory === 'ჯანმრთელობა და კეთილდღეობა' ||
     SERVICE_GROUPS.find((group) => group.category === 'ჯანმრთელობა და კეთილდღეობა')?.services.includes(selectedService);
   const serviceMaxSliderIndex = Math.max(0, filteredProviders.length - serviceCardsPerView);
+  const requestMaxPage = Math.max(0, Math.ceil(serviceRequests.length / requestCardsPerPage) - 1);
+  const safeRequestPage = Math.min(requestPage, requestMaxPage);
+  const visibleServiceRequests = serviceRequests.slice(
+    safeRequestPage * requestCardsPerPage,
+    safeRequestPage * requestCardsPerPage + requestCardsPerPage
+  );
 
   return (
     <section className="w-full mt-8">
@@ -749,17 +772,48 @@ export default function ServiceProvidersSection({
               თუ კონკრეტულ მომსახურებას ეძებთ, განათავსეთ მოკლე მოთხოვნა კატეგორიით, ლოკაციით და საკონტაქტო ნომრით. სერვისის მიმწოდებლებს მარტივად ექნებათ შესაძლებლობა დაგიკავშირდნენ.
             </p>
           </div>
-          <Link
-            href="/community/service-requests/submit"
-            className="inline-flex shrink-0 items-center justify-center rounded-2xl border border-cyan-300/35 bg-cyan-500/15 px-4 py-3 text-[11px] font-black uppercase tracking-[0.14em] text-cyan-100 transition hover:border-cyan-200 hover:bg-cyan-500/25"
-          >
-            ვეძებ სერვისს
-          </Link>
+          <div className="flex shrink-0 flex-col gap-2 sm:flex-row sm:items-center">
+            {serviceRequests.length > requestCardsPerPage ? (
+              <div className="flex items-center justify-end gap-2">
+                <span className="text-[10px] font-black uppercase tracking-[0.14em] text-white/35">
+                  {safeRequestPage + 1}/{requestMaxPage + 1}
+                </span>
+                <button
+                  type="button"
+                  onClick={() => setRequestPage((page) => Math.max(0, page - 1))}
+                  disabled={safeRequestPage === 0}
+                  aria-label="წინა სერვისის მოთხოვნები"
+                  className="flex h-9 w-9 items-center justify-center rounded-xl border border-white/20 bg-white/10 text-white transition-all duration-200 hover:border-cyan-300/50 hover:bg-cyan-500/25 active:scale-95 disabled:cursor-not-allowed disabled:opacity-30"
+                >
+                  <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M15 18l-6-6 6-6" />
+                  </svg>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setRequestPage((page) => Math.min(requestMaxPage, page + 1))}
+                  disabled={safeRequestPage >= requestMaxPage}
+                  aria-label="შემდეგი სერვისის მოთხოვნები"
+                  className="flex h-9 w-9 items-center justify-center rounded-xl border border-white/20 bg-white/10 text-white transition-all duration-200 hover:border-cyan-300/50 hover:bg-cyan-500/25 active:scale-95 disabled:cursor-not-allowed disabled:opacity-30"
+                >
+                  <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M9 18l6-6-6-6" />
+                  </svg>
+                </button>
+              </div>
+            ) : null}
+            <Link
+              href="/community/service-requests/submit"
+              className="inline-flex items-center justify-center rounded-2xl border border-cyan-300/35 bg-cyan-500/15 px-4 py-3 text-[11px] font-black uppercase tracking-[0.14em] text-cyan-100 transition hover:border-cyan-200 hover:bg-cyan-500/25"
+            >
+              ვეძებ სერვისს
+            </Link>
+          </div>
         </div>
 
         {serviceRequests.length > 0 ? (
           <div className="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-4">
-            {serviceRequests.slice(0, 4).map((request) => (
+            {visibleServiceRequests.map((request) => (
               <Link
                 key={request.id}
                 href={`/announcements/${request.id}`}
