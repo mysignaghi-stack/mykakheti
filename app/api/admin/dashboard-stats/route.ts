@@ -6,6 +6,49 @@ import { isAdminUser } from '@/app/lib/adminAuth';
 import { SERVICE_REQUEST_CATEGORY } from '@/app/lib/specialAnnouncements';
 import type { Database } from '@/types/supabase';
 
+type AuthUsersCounterClient = {
+  auth: {
+    admin: {
+      listUsers: (params: { page: number; perPage: number }) => Promise<{
+        data: { users?: unknown[]; total?: unknown; lastPage?: unknown } | null;
+        error: Error | null;
+      }>;
+    };
+  };
+};
+
+async function countAuthUsers(client: AuthUsersCounterClient) {
+  const perPage = 1000;
+  let page = 1;
+  let countedUsers = 0;
+
+  while (page <= 100) {
+    const { data, error } = await client.auth.admin.listUsers({ page, perPage });
+    if (error) throw error;
+
+    const users = data?.users ?? [];
+    const reportedTotal = typeof (data as { total?: unknown })?.total === 'number'
+      ? (data as { total: number }).total
+      : 0;
+
+    if (reportedTotal > 0) return reportedTotal;
+
+    countedUsers += users.length;
+
+    const lastPage = typeof (data as { lastPage?: unknown })?.lastPage === 'number'
+      ? (data as { lastPage: number }).lastPage
+      : 0;
+
+    if (users.length < perPage || (lastPage > 0 && page >= lastPage)) {
+      return countedUsers;
+    }
+
+    page += 1;
+  }
+
+  return countedUsers;
+}
+
 export async function GET() {
   try {
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -80,14 +123,14 @@ export async function GET() {
     });
 
     const [
-      { count: usersCount },
+      usersCount,
       { count: activeAnnouncements },
       { count: pendingAnnouncements },
       pendingAnnouncementsRows,
       { count: pendingMasters },
       { count: pendingLostFound },
     ] = await Promise.all([
-      (serviceClient as any).schema('auth').from('users').select('id', { count: 'exact', head: true }),
+      countAuthUsers(serviceClient),
       serviceClient
         .from('announcements')
         .select('id', { count: 'exact', head: true })

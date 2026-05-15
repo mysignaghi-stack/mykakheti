@@ -13,6 +13,49 @@ export type AdminDashboardStats = {
   email: string | null;
 };
 
+type AuthUsersCounterClient = {
+  auth: {
+    admin: {
+      listUsers: (params: { page: number; perPage: number }) => Promise<{
+        data: { users?: unknown[]; total?: unknown; lastPage?: unknown } | null;
+        error: Error | null;
+      }>;
+    };
+  };
+};
+
+async function countAuthUsers(client: AuthUsersCounterClient) {
+  const perPage = 1000;
+  let page = 1;
+  let countedUsers = 0;
+
+  while (page <= 100) {
+    const { data, error } = await client.auth.admin.listUsers({ page, perPage });
+    if (error) throw error;
+
+    const users = data?.users ?? [];
+    const reportedTotal = typeof (data as { total?: unknown })?.total === 'number'
+      ? (data as { total: number }).total
+      : 0;
+
+    if (reportedTotal > 0) return reportedTotal;
+
+    countedUsers += users.length;
+
+    const lastPage = typeof (data as { lastPage?: unknown })?.lastPage === 'number'
+      ? (data as { lastPage: number }).lastPage
+      : 0;
+
+    if (users.length < perPage || (lastPage > 0 && page >= lastPage)) {
+      return countedUsers;
+    }
+
+    page += 1;
+  }
+
+  return countedUsers;
+}
+
 export async function getAdminDashboardStats(): Promise<AdminDashboardStats | null> {
   try {
     const authClient = await createClient();
@@ -51,8 +94,8 @@ export async function getAdminDashboardStats(): Promise<AdminDashboardStats | nu
       auth: { persistSession: false },
     });
 
-    const [{ count: usersCount }, { count: activeAnnouncements }, { count: pendingAnnouncements }] = await Promise.all([
-      serviceClient.schema('auth').from('users').select('id', { count: 'exact', head: true }),
+    const [usersCount, { count: activeAnnouncements }, { count: pendingAnnouncements }] = await Promise.all([
+      countAuthUsers(serviceClient),
       serviceClient
         .from('announcements')
         .select('id', { count: 'exact', head: true })
