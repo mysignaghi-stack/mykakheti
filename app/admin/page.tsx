@@ -11,15 +11,6 @@ const VERCEL_ANALYTICS_URL = 'https://vercel.com/dashboard';
 
 const ADMIN_SECTIONS = [
   {
-    title: 'მოდერაცია და შემომავალი',
-    description: 'ყველა ახალი ჩანაწერი, რომელიც დამტკიცებას ან პირველ შემოწმებას ელოდება.',
-    links: [
-      { href: '/admin/moderate', title: 'განცხადებების მოდერაცია', desc: 'ჩვეულებრივი განცხადებები, აგრო-ბირჟა და მარცვლეული ერთ შემოსულში.', accent: 'amber' },
-      { href: '/admin/community', title: 'სერვისები და სათემო ჩანაწერები', desc: 'სერვისული განცხადებები და დაკარგული/ნაპოვნი ჩანაწერები.', accent: 'emerald' },
-      { href: '/admin/messages', title: 'მომხმარებლის წერილები', desc: 'კონტაქტის ფორმიდან შემოსული შეტყობინებები.', accent: 'blue' },
-    ],
-  },
-  {
     title: 'გამოქვეყნებული კონტენტი',
     description: 'იგივე ძირითადი განყოფილებები, რაც მოდერაციის შემომავალშია, უკვე გამოქვეყნებული ჩანაწერების სამართავად.',
     links: [
@@ -37,6 +28,7 @@ const ADMIN_SECTIONS = [
     links: [
       { href: '/admin/posts', title: 'ადმინისტრატორის პოსტები', desc: 'მთავარი გვერდის ჩარჩოები, ფოტო/ვიდეო მასალა და არქივი.', accent: 'purple' },
       { href: '/admin/square', title: 'კახური მოედანი', desc: 'ჩატის შეტყობინებები და დაბლოკილი მომხმარებლები.', accent: 'cyan' },
+      { href: '/admin/messages', title: 'შემოსული წერილები', desc: 'კონტაქტის ფორმის მართვა.', accent: 'blue' },
     ],
   },
   {
