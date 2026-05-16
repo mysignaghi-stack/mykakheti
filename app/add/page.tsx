@@ -126,10 +126,14 @@ export default function AddPage() {
       }),
     }))
     .filter((group) => group.categories.length > 0);
+  const categorySuggestions = visibleCategoryGroups.flatMap((group) =>
+    group.categories.map((category) => ({ category, groupTitle: group.title }))
+  ).slice(0, 10);
   const normalizedLocationSearch = locationSearch.trim().toLowerCase();
   const visibleLocationOptions = LOCATION_OPTIONS.filter((location) =>
     !normalizedLocationSearch || location.toLowerCase().includes(normalizedLocationSearch)
   );
+  const locationSuggestions = visibleLocationOptions.slice(0, 10);
 
   const setAuthRedirectCookie = useCallback((target: string) => {
     try {
@@ -701,6 +705,28 @@ export default function AddPage() {
                     value={categorySearch}
                     onChange={(e: ChangeEvent<HTMLInputElement>) => setCategorySearch(e.target.value)}
                   />
+                  {categorySearch.trim() && categorySuggestions.length > 0 && (
+                    <div className="max-h-56 overflow-y-auto rounded-2xl border border-amber-300/20 bg-black/80 p-2 shadow-2xl">
+                      {categorySuggestions.map((suggestion) => (
+                        <button
+                          key={`${suggestion.groupTitle}-${suggestion.category}`}
+                          type="button"
+                          onClick={() => {
+                            setFormData({ ...formData, category: suggestion.category });
+                            setCategorySearch(suggestion.category);
+                          }}
+                          className={`mb-1 w-full rounded-xl px-3 py-2 text-left transition last:mb-0 ${
+                            formData.category === suggestion.category ? 'bg-amber-500/20 text-amber-100' : 'bg-white/5 text-white/75 hover:bg-white/10 hover:text-white'
+                          }`}
+                        >
+                          <span className="block text-[11px] font-black uppercase tracking-[0.16em] text-amber-200/55">
+                            {suggestion.groupTitle === 'საყოფაცხოვრებო ნივთები' ? 'გასაყიდი საქონელი' : suggestion.groupTitle}
+                          </span>
+                          <span className="mt-0.5 block text-sm font-black">{suggestion.category}</span>
+                        </button>
+                      ))}
+                    </div>
+                  )}
                   <select required className="w-full p-5 bg-white text-slate-950 border-none rounded-2xl font-black text-[11px] uppercase italic cursor-pointer shadow-lg outline-none" value={formData.category} onChange={(e: ChangeEvent<HTMLSelectElement>) => setFormData({...formData, category: e.target.value})}>
                     <option value="">აირჩიეთ კატეგორია...</option>
                     {visibleCategoryGroups.map((group) => (
@@ -720,6 +746,25 @@ export default function AddPage() {
                     value={locationSearch}
                     onChange={(e: ChangeEvent<HTMLInputElement>) => setLocationSearch(e.target.value)}
                   />
+                  {locationSearch.trim() && locationSuggestions.length > 0 && (
+                    <div className="max-h-56 overflow-y-auto rounded-2xl border border-amber-300/20 bg-black/80 p-2 shadow-2xl">
+                      {locationSuggestions.map((location) => (
+                        <button
+                          key={location}
+                          type="button"
+                          onClick={() => {
+                            setFormData({ ...formData, location });
+                            setLocationSearch(location);
+                          }}
+                          className={`mb-1 w-full rounded-xl px-3 py-2 text-left text-sm font-black transition last:mb-0 ${
+                            formData.location === location ? 'bg-amber-500/20 text-amber-100' : 'bg-white/5 text-white/75 hover:bg-white/10 hover:text-white'
+                          }`}
+                        >
+                          {location}
+                        </button>
+                      ))}
+                    </div>
+                  )}
                   <select className="w-full p-5 bg-white text-slate-950 border-none rounded-2xl font-black text-[11px] uppercase italic cursor-pointer shadow-lg outline-none" value={formData.location} onChange={(e: ChangeEvent<HTMLSelectElement>) => setFormData({...formData, location: e.target.value})}>
                     {visibleLocationOptions.map(loc => <option key={loc} value={loc}>{loc}</option>)}
                   </select>
