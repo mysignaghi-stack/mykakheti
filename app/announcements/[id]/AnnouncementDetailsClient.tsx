@@ -336,15 +336,15 @@ export default function AnnouncementDetailsClient({ initialAd }: { initialAd: An
                     </div>
                   </div>
 
-                  <h1 className="text-3xl md:text-4xl font-black uppercase italic leading-tight mb-3 md:mb-4 relative z-10 drop-shadow-2xl">
+                  <h1 className="text-xl md:text-2xl font-black uppercase italic leading-tight mb-2 md:mb-3 relative z-10 drop-shadow-2xl">
                     {ad.title}
                   </h1>
 
-                  <div className="text-3xl md:text-4xl font-black text-amber-500 italic mb-6 md:mb-8 relative z-10 tracking-tighter drop-shadow-xl">
+                  <div className="text-xl md:text-2xl font-black text-amber-500 italic mb-4 md:mb-5 relative z-10 tracking-tight drop-shadow-xl">
                     {ad.price} {ad.currency === 'USD' ? '$' : '₾'}
                   </div>
 
-                  <p className="text-white/80 leading-relaxed italic text-sm md:text-lg mb-6 md:mb-8 whitespace-pre-wrap relative z-10 font-medium">
+                  <p className="text-white/75 leading-relaxed italic text-xs md:text-sm mb-4 md:mb-5 whitespace-pre-wrap relative z-10 font-medium">
                     {ad.description}
                   </p>
 
