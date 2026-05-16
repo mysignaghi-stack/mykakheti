@@ -1076,6 +1076,16 @@ export default function HomePageClient({
                     </div>
                   )}
                   <div className="mt-3 flex flex-col items-stretch justify-end gap-2 sm:flex-row">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setShowAllFilters(true);
+                        setModalAnnouncementsPage(0);
+                      }}
+                      className="inline-flex items-center justify-center rounded-2xl border border-white/15 bg-white/5 px-4 py-2.5 text-[10px] font-black uppercase tracking-[0.14em] text-white/80 transition hover:border-amber-300/40 hover:bg-white/10 hover:text-amber-100"
+                    >
+                      ყველა განცხადება
+                    </button>
                     <Link
                       href="/add"
                       className="inline-flex items-center justify-center rounded-2xl border border-amber-300/40 bg-amber-500/15 px-4 py-2.5 text-[10px] font-black uppercase tracking-[0.14em] text-amber-100 transition hover:border-amber-300 hover:bg-amber-500/25"
@@ -1585,29 +1595,24 @@ export default function HomePageClient({
               </div>
 
               <div className="bg-white/5 border border-white/10 rounded-2xl p-4">
-                <div className="text-[10px] font-black uppercase tracking-[0.3em] text-white/40 mb-3">
-                  განცხადებები
+                <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+                  <div className="text-[10px] font-black uppercase tracking-[0.3em] text-white/40">
+                    განცხადებები
+                  </div>
+                  <span className="rounded-full border border-white/10 bg-black/30 px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.14em] text-white/45">
+                    {filteredAds.length}
+                  </span>
                 </div>
-                {modalVisibleAds.length > 0 ? (
-                  <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-2">
-                    {modalVisibleAds.map((ad) => (
-                      <AnnouncementCard key={ad.id} announcement={ad} />
-                    ))}
+                {filteredAds.length > 0 ? (
+                  <div className="max-h-[58vh] overflow-y-auto pr-1 custom-scrollbar">
+                    <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-2">
+                      {filteredAds.map((ad) => (
+                        <AnnouncementCard key={ad.id} announcement={ad} />
+                      ))}
+                    </div>
                   </div>
                 ) : (
                   <div className="text-white/50 text-sm">განცხადებები ვერ მოიძებნა</div>
-                )}
-
-                {filteredAds.length > modalPageSize && (
-                  <div className="mt-4 flex justify-center">
-                    <button
-                      type="button"
-                      onClick={() => setModalAnnouncementsPage((p) => (p >= modalMaxPage ? 0 : p + 1))}
-                      className="px-4 py-2 rounded-full border border-amber-300/50 bg-amber-500/20 text-amber-200 font-black uppercase tracking-[0.2em] text-xs hover:bg-amber-500/30 transition"
-                    >
-                      შემდეგი
-                    </button>
-                  </div>
                 )}
               </div>
             </div>
