@@ -179,6 +179,7 @@ export default function Navbar({
 
   const searchRef = useRef<HTMLDivElement>(null);
   const [searchFocused, setSearchFocused] = useState(false);
+  const [searchResultsOpen, setSearchResultsOpen] = useState(false);
   const showSearch = searchTerm !== undefined && setSearchTerm !== undefined;
   const normalizedSearch = (searchTerm ?? '').toLowerCase().replace(/\s+/g, ' ').trim();
   const headerSearchResults = useMemo<HeaderSearchResult[]>(() => {
@@ -245,7 +246,24 @@ export default function Navbar({
 
     return [...announcementResults, ...providerResults, ...requestResults].slice(0, 12);
   }, [filteredAds, normalizedSearch, serviceProviders, serviceRequests]);
-  const showResults = showSearch && Boolean(normalizedSearch) && (searchFocused || Boolean(searchTerm));
+  const showResults = showSearch && Boolean(normalizedSearch) && searchResultsOpen;
+
+  useEffect(() => {
+    const handlePointerDown = (event: MouseEvent | TouchEvent) => {
+      const target = event.target as Node | null;
+      if (target && searchRef.current && !searchRef.current.contains(target)) {
+        setSearchFocused(false);
+        setSearchResultsOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handlePointerDown);
+    document.addEventListener('touchstart', handlePointerDown);
+    return () => {
+      document.removeEventListener('mousedown', handlePointerDown);
+      document.removeEventListener('touchstart', handlePointerDown);
+    };
+  }, []);
 
   const bannerStyle = { color: bannerColor };
   const showBanner = isBannerReady && Boolean(bannerText) && bannerEnabled;
@@ -324,15 +342,24 @@ export default function Navbar({
                 type="text"
                 placeholder="რას ეძებთ კახეთში?"
                 value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                onFocus={() => setSearchFocused(true)}
+                onChange={(e) => {
+                  setSearchTerm(e.target.value);
+                  setSearchResultsOpen(Boolean(e.target.value.trim()));
+                }}
+                onFocus={() => {
+                  setSearchFocused(true);
+                  setSearchResultsOpen(Boolean(searchTerm?.trim()));
+                }}
                 onBlur={() => setTimeout(() => setSearchFocused(false), 150)}
                 className="w-full bg-transparent text-[11px] sm:text-xs font-black uppercase italic tracking-[0.12em] text-white placeholder:text-white/20 outline-none"
               />
               {searchTerm && (
                 <button
                   type="button"
-                  onClick={() => setSearchTerm('')}
+                  onClick={() => {
+                    setSearchTerm('');
+                    setSearchResultsOpen(false);
+                  }}
                   className="shrink-0 text-white/40 hover:text-white text-xs transition-colors"
                 >
                   ✕
@@ -350,7 +377,10 @@ export default function Navbar({
                     </span>
                     <button
                       type="button"
-                      onClick={() => setSearchTerm('')}
+                      onClick={() => {
+                        setSearchTerm('');
+                        setSearchResultsOpen(false);
+                      }}
                       className="text-[9px] font-black uppercase text-amber-500 hover:text-white transition-colors"
                     >
                       ✕ გასუფთავება
@@ -361,7 +391,10 @@ export default function Navbar({
                       <Link
                         key={item.id}
                         href={item.href}
-                        onClick={() => setSearchTerm('')}
+                        onClick={() => {
+                          setSearchTerm('');
+                          setSearchResultsOpen(false);
+                        }}
                         className="flex items-center gap-3 p-2.5 bg-white/[0.045] rounded-xl border border-white/10 hover:border-amber-500/30 transition-all group/item"
                       >
                         <div className="w-12 h-12 rounded-lg overflow-hidden shrink-0 bg-white/5">
