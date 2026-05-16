@@ -64,6 +64,34 @@ export default function RootLayout({
   return (
     <html lang="ka" className={`${inter.variable} scroll-smooth`}>
       <body className="bg-[#050510] text-white antialiased selection:bg-amber-500 selection:text-white">
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              (function () {
+                try {
+                  var path = window.location.pathname;
+                  if (path === '/auth/reset') return;
+
+                  var hash = window.location.hash || '';
+                  var search = window.location.search || '';
+                  var hashParams = new URLSearchParams(hash.replace(/^#/, ''));
+                  var queryParams = new URLSearchParams(search.replace(/^\\?/, ''));
+                  var isRecovery =
+                    hashParams.get('type') === 'recovery' ||
+                    queryParams.get('type') === 'recovery' ||
+                    Boolean(queryParams.get('token_hash') && queryParams.get('type') === 'recovery');
+
+                  if (!isRecovery) return;
+
+                  var target = '/auth/reset' + search + hash;
+                  window.location.replace(target);
+                } catch (error) {
+                  // Keep normal navigation if URL parsing is not available.
+                }
+              })();
+            `,
+          }}
+        />
         {/* აქ შეგიძლიათ დაამატოთ გლობალური კომპონენტები, მაგ: Navbar ან Footer, თუ ისინი ყველა გვერდზე გინდათ */}
         {children}
         <Analytics />
