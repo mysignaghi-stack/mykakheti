@@ -27,14 +27,10 @@ const ALL_CATEGORIES = [
   { id: 'ავტო', name: 'ავტო', icon: '🚗', color: 'from-red-500/20 to-red-600/20' },
   { id: 'დასაქმება', name: 'დასაქმება', icon: '💼', color: 'from-green-500/20 to-green-600/20' },
   { id: 'სოფლის მეურნეობა', name: 'სოფლის მეურნეობა', icon: '🌾', color: 'from-yellow-500/20 to-yellow-600/20' },
-  { id: 'სამშენებლო', name: 'სამშენებლო', icon: '🏗️', color: 'from-gray-500/20 to-gray-600/20' },
-  { id: 'მომსახურება', name: 'მომსახურება', icon: '🛠️', color: 'from-purple-500/20 to-purple-600/20' },
-  { id: 'განათლება', name: 'განათლება', icon: '📚', color: 'from-indigo-500/20 to-indigo-600/20' },
-  { id: 'სამედიცინო', name: 'სამედიცინო', icon: '🏥', color: 'from-pink-500/20 to-pink-600/20' },
   { id: 'ვაკანსიები', name: 'ვაკანსიები', icon: '👔', color: 'from-teal-500/20 to-teal-600/20' },
   { id: 'ღვინო და მარნები', name: 'ღვინო და მარნები', icon: '🍷', color: 'from-amber-500/20 to-amber-600/20' },
   { id: 'ადგილობრივი პროდუქტები', name: 'ადგილობრივი პროდუქტები', icon: '🧀', color: 'from-emerald-500/20 to-emerald-600/20' },
-  { id: 'გადაზიდვები', name: 'გადაზიდვები', icon: '🚛', color: 'from-orange-500/20 to-orange-600/20' }
+  { id: 'ელექტრონიკა', name: 'ელექტრონიკა', icon: '🔌', color: 'from-orange-500/20 to-orange-600/20' }
 ];
 
 export default function PublishedAnnouncements() {
