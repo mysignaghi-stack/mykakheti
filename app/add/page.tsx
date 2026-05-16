@@ -67,6 +67,7 @@ export default function AddPage() {
   const [showResetModal, setShowResetModal] = useState(false);
   const [resetEmail, setResetEmail] = useState('');
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const [categorySearch, setCategorySearch] = useState('');
   
   // ✨ Added 'currency' to form state (default: GEL)
   const [formData, setFormData] = useState<AnnouncementFormData>({
@@ -91,6 +92,16 @@ export default function AddPage() {
   });
   const isAuthenticated = Boolean(session);
   const isAnimalSaleCategory = ANIMAL_SALE_CATEGORIES.includes(formData.category as typeof ANIMAL_SALE_CATEGORIES[number]);
+  const visibleCategoryGroups = ANNOUNCEMENT_CATEGORY_GROUPS
+    .map((group) => ({
+      ...group,
+      categories: group.categories.filter((category) =>
+        !categorySearch.trim() ||
+        category.toLowerCase().includes(categorySearch.trim().toLowerCase()) ||
+        group.title.toLowerCase().includes(categorySearch.trim().toLowerCase())
+      ),
+    }))
+    .filter((group) => group.categories.length > 0);
 
   const setAuthRedirectCookie = useCallback((target: string) => {
     try {
@@ -655,14 +666,25 @@ export default function AddPage() {
               <input required className="w-full p-5 bg-white/5 border border-white/10 rounded-2xl outline-none focus:border-amber-500 text-white font-bold transition-all placeholder:text-white/20" placeholder="განცხადების სათაური" onChange={(e: ChangeEvent<HTMLInputElement>) => setFormData({...formData, title: e.target.value})} />
               
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <select required className="p-5 bg-white text-slate-950 border-none rounded-2xl font-black text-[11px] uppercase italic cursor-pointer shadow-lg outline-none" value={formData.category} onChange={(e: ChangeEvent<HTMLSelectElement>) => setFormData({...formData, category: e.target.value})}>
-                  <option value="">აირჩიეთ კატეგორია...</option>
-                  {ANNOUNCEMENT_CATEGORY_GROUPS.map((group) => (
-                    <optgroup key={group.title} label={group.title === 'საყოფაცხოვრებო ნივთები' ? 'გასაყიდი საქონელი — საყოფაცხოვრებო ნივთები' : group.title}>
-                      {group.categories.map(c => <option key={c} value={c}>{c}</option>)}
-                    </optgroup>
-                  ))}
-                </select>
+                <div className="space-y-2">
+                  <input
+                    className="w-full p-4 bg-white/5 border border-white/10 rounded-2xl outline-none focus:border-amber-500 text-white font-bold transition-all placeholder:text-white/25"
+                    placeholder="კატეგორიის ძებნა..."
+                    value={categorySearch}
+                    onChange={(e: ChangeEvent<HTMLInputElement>) => setCategorySearch(e.target.value)}
+                  />
+                  <select required className="w-full p-5 bg-white text-slate-950 border-none rounded-2xl font-black text-[11px] uppercase italic cursor-pointer shadow-lg outline-none" value={formData.category} onChange={(e: ChangeEvent<HTMLSelectElement>) => setFormData({...formData, category: e.target.value})}>
+                    <option value="">აირჩიეთ კატეგორია...</option>
+                    {visibleCategoryGroups.map((group) => (
+                      <optgroup key={group.title} label={group.title === 'საყოფაცხოვრებო ნივთები' ? 'გასაყიდი საქონელი — საყოფაცხოვრებო ნივთები' : group.title}>
+                        {group.categories.map(c => <option key={c} value={c}>{c}</option>)}
+                      </optgroup>
+                    ))}
+                  </select>
+                  {visibleCategoryGroups.length === 0 && (
+                    <p className="text-[11px] font-bold text-amber-200/80">კატეგორია ვერ მოიძებნა.</p>
+                  )}
+                </div>
                 <select className="p-5 bg-white text-slate-950 border-none rounded-2xl font-black text-[11px] uppercase italic cursor-pointer shadow-lg outline-none" onChange={(e: ChangeEvent<HTMLSelectElement>) => setFormData({...formData, location: e.target.value})}>
                   {LOCATION_OPTIONS.map(loc => <option key={loc} value={loc}>{loc}</option>)}
                 </select>
