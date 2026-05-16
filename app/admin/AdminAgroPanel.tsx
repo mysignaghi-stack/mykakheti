@@ -13,6 +13,14 @@ type AgroRow = {
   source?: string | null;
 };
 
+const cleanAgroPriceText = (value?: string | null) =>
+  String(value ?? '')
+    .trim()
+    .replace(/\s*ლ\s*(?=$|GEL|gel|₾)/g, ' ')
+    .replace(/(\d)\s*ლ\b/g, '$1')
+    .replace(/\s{2,}/g, ' ')
+    .trim();
+
 export default function AdminAgroPanel({ showCategory }: { showCategory?: 'grape' | 'grain' }) {
   const [items, setItems] = useState<AgroRow[]>([]);
   const [loading, setLoading] = useState(false);
@@ -245,7 +253,7 @@ export default function AdminAgroPanel({ showCategory }: { showCategory?: 'grape
                     )}
                   </div>
                   <div className="flex items-center gap-2">
-                    <div className="text-sm font-black">{it.price}</div>
+                    <div className="text-sm font-black">{cleanAgroPriceText(it.price)}</div>
                     <button onClick={() => openEdit(it)} className="px-3 py-1 bg-amber-600 rounded text-xs font-black">Edit</button>
                     <button onClick={() => handleDelete(it.id)} className="px-3 py-1 bg-red-600 rounded text-xs font-black">Delete</button>
                   </div>
@@ -270,7 +278,7 @@ export default function AdminAgroPanel({ showCategory }: { showCategory?: 'grape
                     )}
                   </div>
                   <div className="flex items-center gap-2">
-                    <div className="text-sm font-black">{it.price}</div>
+                    <div className="text-sm font-black">{cleanAgroPriceText(it.price)}</div>
                     <button onClick={() => openEdit(it)} className="px-3 py-1 bg-amber-600 rounded text-xs font-black">Edit</button>
                     <button onClick={() => handleDelete(it.id)} className="px-3 py-1 bg-red-600 rounded text-xs font-black">Delete</button>
                   </div>

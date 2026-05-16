@@ -8,6 +8,14 @@ import { isAdminUser } from '../../../lib/adminAuth';
 import { DEFAULT_AGRO_DATA } from '../../../lib/constants';
 import { getAgroSubmissionType } from '../../../lib/specialAnnouncements';
 
+const cleanAgroPriceText = (value: unknown) =>
+  String(value ?? '')
+    .trim()
+    .replace(/\s*ლ\s*(?=$|GEL|gel|₾)/g, ' ')
+    .replace(/(\d)\s*ლ\b/g, '$1')
+    .replace(/\s{2,}/g, ' ')
+    .trim();
+
 export async function POST(request: Request) {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
@@ -90,7 +98,7 @@ export async function POST(request: Request) {
         .map((row: any) => {
           const type = getAgroSubmissionType(row);
           if (!type) return null;
-          const price = String(row.price ?? '').trim();
+          const price = cleanAgroPriceText(row.price);
           const currency = String(row.currency ?? '').trim();
           const formattedPrice = price ? (!currency || price.includes(currency) ? price : `${price} ${currency}`) : null;
           return {

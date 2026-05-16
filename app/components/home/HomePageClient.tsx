@@ -89,10 +89,17 @@ const normalizeAgroText = (value: string | number | null | undefined) => {
   return String(value).trim();
 };
 
+const removeGeorgianLariLetter = (value: string) =>
+  value
+    .replace(/\s*ლ\s*(?=$|GEL|gel|₾)/g, ' ')
+    .replace(/(\d)\s*ლ\b/g, '$1')
+    .replace(/\s{2,}/g, ' ')
+    .trim();
+
 const formatAgroPrice = (value?: string | number | null) => {
-  const text = normalizeAgroText(value ?? '');
+  const text = removeGeorgianLariLetter(normalizeAgroText(value ?? ''));
   if (!text) return '';
-  return text.includes('₾') ? text : `${text} ₾`;
+  return text.includes('₾') || /\bGEL\b/i.test(text) ? text : `${text} ₾`;
 };
 
 const pickDetailRate = (details: AgroItem['details']) => {
@@ -389,8 +396,9 @@ export default function HomePageClient({
   const [factIndex, setFactIndex] = useState(0);
 
   const formatAgroPrice = useCallback((price?: string | null) => {
-    if (!price) return '';
-    return price.includes('₾') ? price : `${price} ₾`;
+    const text = removeGeorgianLariLetter(normalizeAgroText(price));
+    if (!text) return '';
+    return text.includes('₾') || /\bGEL\b/i.test(text) ? text : `${text} ₾`;
   }, []);
 
   useEffect(() => {
