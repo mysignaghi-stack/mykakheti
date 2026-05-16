@@ -25,6 +25,8 @@ export default function AuthForm({ initialMode = "login", onClose, compact = fal
   const [resetLoading, setResetLoading] = useState(false);
   const [resetError, setResetError] = useState("");
   const [resetMessage, setResetMessage] = useState("");
+  const [showResetModal, setShowResetModal] = useState(false);
+  const [resetEmail, setResetEmail] = useState("");
   const router = useRouter();
 
   const upsertProfile = async (user: User) => {
@@ -79,16 +81,16 @@ export default function AuthForm({ initialMode = "login", onClose, compact = fal
     }
   };
 
-  const handlePasswordReset = async () => {
+  const handlePasswordReset = async (emailToReset: string) => {
     setResetError("");
     setResetMessage("");
-    if (!email) {
+    if (!emailToReset) {
       setResetError("გთხოვთ შეიყვანოთ ელ.ფოსტა პაროლის აღსადგენად.");
       return;
     }
     setResetLoading(true);
     try {
-      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      const { error } = await supabase.auth.resetPasswordForEmail(emailToReset, {
         redirectTo: `${window.location.origin}/auth/reset?redirect=${encodeURIComponent(AUTH_LANDING_PATH)}`,
       });
       if (error) throw error;
@@ -179,18 +181,64 @@ export default function AuthForm({ initialMode = "login", onClose, compact = fal
           <div className="space-y-2 pt-2">
             <button
               type="button"
-              onClick={handlePasswordReset}
+              onClick={() => {
+                setShowResetModal(true);
+                setResetError("");
+                setResetMessage("");
+                setResetEmail(email);
+              }}
               disabled={resetLoading}
               className="w-full rounded-2xl border border-white/20 text-white/80 font-black uppercase italic py-2 text-[11px] hover:text-white hover:border-white/40 transition disabled:opacity-60"
             >
-              {resetLoading ? "იტვირთება..." : "პაროლის აღდგენა"}
+              პაროლის აღდგენა
             </button>
-            {resetError && <p className="text-red-400 text-xs font-bold">{resetError}</p>}
-            {resetMessage && <p className="text-emerald-300 text-xs font-bold">{resetMessage}</p>}
           </div>
         )}
 
       </form>
+      {showResetModal && (
+        <div
+          className="fixed inset-0 z-[130] flex items-center justify-center bg-black/70 px-4 backdrop-blur-sm"
+          onClick={() => setShowResetModal(false)}
+        >
+          <div
+            className="w-full max-w-sm rounded-2xl border border-white/10 bg-[#0b0b15]/95 p-5 shadow-2xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="mb-3 text-center">
+              <h4 className="text-sm font-black uppercase tracking-wide text-white">პაროლის აღდგენა</h4>
+              <p className="text-[11px] text-white/60">შეიყვანეთ ელფოსტა ბმულის მისაღებად</p>
+            </div>
+            <input
+              className="w-full rounded-xl border border-white/10 bg-white/10 p-3 text-[12px] text-white outline-none placeholder:text-white/40 focus:border-amber-500"
+              placeholder="ელფოსტა"
+              type="email"
+              value={resetEmail}
+              onChange={(e) => setResetEmail(e.target.value)}
+              autoFocus
+            />
+            <div className="mt-3 space-y-2">
+              <button
+                type="button"
+                onClick={() => handlePasswordReset(resetEmail)}
+                disabled={resetLoading}
+                className="w-full rounded-xl bg-amber-600 py-2.5 text-[11px] font-black uppercase text-white transition hover:bg-amber-500 disabled:opacity-60"
+              >
+                {resetLoading ? "იგზავნება..." : "ბმულის გაგზავნა"}
+              </button>
+              <button
+                type="button"
+                onClick={() => setShowResetModal(false)}
+                className="w-full rounded-xl border border-white/20 py-2 text-[10px] font-black uppercase text-white/70 transition hover:border-white/40 hover:text-white"
+              >
+                დახურვა
+              </button>
+              {resetError && <p className="text-xs font-bold text-red-400">{resetError}</p>}
+              {resetMessage && <p className="text-xs font-bold text-emerald-300">{resetMessage}</p>}
+            </div>
+          </div>
+        </div>
+      )}
       <div className="text-center text-[11px] text-white/40">
         <Link href="/" className="hover:text-amber-400">
           მთავარი
