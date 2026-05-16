@@ -33,10 +33,9 @@ const ADMIN_SECTIONS = [
   },
   {
     title: 'მონაცემები და პარამეტრები',
-    description: 'ფასების, ცხრილების, ტრანსპორტის და საიტის დამხმარე პარამეტრების განახლება.',
+    description: 'საიტის დამხმარე პარამეტრების განახლება.',
     links: [
       { href: '/admin/site-settings', title: 'საიტის პარამეტრები', desc: 'ფონი, მარკიზი და ჰედერის წარწერა.', accent: 'purple' },
-      { href: '/admin/transport', title: 'ტრანსპორტი', desc: 'მარშრუტები და განრიგები.', accent: 'cyan' },
     ],
   },
 ];

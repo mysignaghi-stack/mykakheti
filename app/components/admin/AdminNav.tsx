@@ -23,7 +23,6 @@ const PRIMARY_LINKS = [
 const SECONDARY_LINKS = [
   { href: '/admin/agro', label: 'აგრო' },
   { href: '/admin/grain', label: 'მარცვლეული' },
-  { href: '/admin/transport', label: 'ტრანსპორტი' },
   { href: '/admin/square', label: 'მოედანი' },
   { href: '/admin/messages', label: 'წერილები' },
 ];
