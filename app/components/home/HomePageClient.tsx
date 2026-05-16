@@ -609,6 +609,9 @@ export default function HomePageClient({
     () => ads.filter((ad) => !ad.is_archived && !isSpecialAgroAnnouncement(ad)),
     [ads]
   );
+  const adsVisibleRows = 2;
+  const adsColumnCount = Math.ceil(filteredAds.length / adsVisibleRows);
+  const adsMaxSliderIndex = Math.max(0, adsColumnCount - adsCardsPerView);
 
   const selectCategory = (category: string) => {
     if (category === 'ყველა') {
@@ -1029,8 +1032,8 @@ export default function HomePageClient({
                       </button>
                       <button
                         type="button"
-                        onClick={() => setAdsSliderIndex(i => Math.min(i + adsCardsPerView, Math.max(0, filteredAds.length - adsCardsPerView)))}
-                        disabled={adsSliderIndex >= Math.max(0, filteredAds.length - adsCardsPerView)}
+                        onClick={() => setAdsSliderIndex(i => Math.min(i + adsCardsPerView, adsMaxSliderIndex))}
+                        disabled={adsSliderIndex >= adsMaxSliderIndex}
                         aria-label="შემდეგი"
                         className="flex items-center justify-center w-9 h-9 rounded-xl border border-white/20 bg-white/10 text-white hover:bg-amber-500/25 hover:border-amber-400/50 active:scale-95 disabled:opacity-30 disabled:cursor-not-allowed transition-all duration-200"
                       >
@@ -1041,40 +1044,30 @@ export default function HomePageClient({
                     </div>
                   </div>
 
-                  {/* If few cards, use a simple grid; otherwise carousel */}
-                  {filteredAds.length <= adsCardsPerView ? (
-                    <div className="grid gap-2" style={{ gridTemplateColumns: `repeat(${adsCardsPerView}, 1fr)` }}>
-                      {filteredAds.map((ad) => (
-                        <AnnouncementCard key={ad.id} announcement={ad} compact />
-                      ))}
-                    </div>
-                  ) : (
-                    // Scrollable track
-                    <div
-                      ref={adsSliderRef}
-                      className="flex overflow-x-hidden"
-                      style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
-                      onTouchStart={(e) => { adsTouchStartX.current = e.touches[0].clientX; }}
-                      onTouchEnd={(e) => {
-                        if (adsTouchStartX.current === null) return;
-                        const diff = adsTouchStartX.current - e.changedTouches[0].clientX;
-                        const maxIdx = Math.max(0, filteredAds.length - adsCardsPerView);
-                        if (diff > 40) setAdsSliderIndex(i => Math.min(i + adsCardsPerView, maxIdx));
-                        else if (diff < -40) setAdsSliderIndex(i => Math.max(0, i - adsCardsPerView));
-                        adsTouchStartX.current = null;
-                      }}
-                    >
-                      {filteredAds.map((ad) => (
-                        <div
-                          key={ad.id}
-                          style={{ minWidth: `calc(100% / ${adsCardsPerView})`, maxWidth: `calc(100% / ${adsCardsPerView})`, flexShrink: 0 }}
-                          className="px-1"
-                        >
-                          <AnnouncementCard announcement={ad} compact />
-                        </div>
-                      ))}
-                    </div>
-                  )}
+                  <div
+                    ref={adsSliderRef}
+                    className="grid grid-flow-col gap-2 overflow-x-hidden"
+                    style={{
+                      gridTemplateRows: `repeat(${adsVisibleRows}, minmax(0, 1fr))`,
+                      gridAutoColumns: `calc(100% / ${adsCardsPerView})`,
+                      scrollbarWidth: 'none',
+                      msOverflowStyle: 'none',
+                    }}
+                    onTouchStart={(e) => { adsTouchStartX.current = e.touches[0].clientX; }}
+                    onTouchEnd={(e) => {
+                      if (adsTouchStartX.current === null) return;
+                      const diff = adsTouchStartX.current - e.changedTouches[0].clientX;
+                      if (diff > 40) setAdsSliderIndex(i => Math.min(i + adsCardsPerView, adsMaxSliderIndex));
+                      else if (diff < -40) setAdsSliderIndex(i => Math.max(0, i - adsCardsPerView));
+                      adsTouchStartX.current = null;
+                    }}
+                  >
+                    {filteredAds.map((ad) => (
+                      <div key={ad.id} className="min-w-0 px-1">
+                        <AnnouncementCard announcement={ad} compact />
+                      </div>
+                    ))}
+                  </div>
                   <div className="mt-3 flex flex-col items-stretch justify-end gap-2 sm:flex-row">
                     <button
                       type="button"

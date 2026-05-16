@@ -69,7 +69,9 @@ export default function RecentAnnouncementsSection({ ads }: Props) {
       setIsMobile(w < 640);
       if (w < 480) setCardsPerView(2);
       else if (w < 640) setCardsPerView(3);
-      else setCardsPerView(4);
+      else if (w < 1024) setCardsPerView(4);
+      else if (w < 1280) setCardsPerView(5);
+      else setCardsPerView(6);
     };
     update();
     window.addEventListener('resize', update);
@@ -376,8 +378,8 @@ export default function RecentAnnouncementsSection({ ads }: Props) {
             <div className="flex items-center justify-end gap-2">
               <button
                 type="button"
-                onClick={() => setPage((p) => Math.max(1, p - 1))}
-                disabled={safePage === 1}
+                onClick={() => setSliderIndex((i) => Math.max(0, i - cardsPerView))}
+                disabled={sliderIndex === 0}
                 aria-label="წინა"
                 className="flex items-center justify-center w-9 h-9 rounded-xl border border-white/20 bg-white/10 text-white hover:bg-amber-500/25 hover:border-amber-400/50 active:scale-95 disabled:opacity-30 disabled:cursor-not-allowed transition-all duration-200"
               >
@@ -387,8 +389,8 @@ export default function RecentAnnouncementsSection({ ads }: Props) {
               </button>
               <button
                 type="button"
-                onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-                disabled={safePage === totalPages}
+                onClick={() => setSliderIndex((i) => Math.min(i + cardsPerView, maxSliderIdx))}
+                disabled={sliderIndex >= maxSliderIdx}
                 aria-label="შემდეგი"
                 className="flex items-center justify-center w-9 h-9 rounded-xl border border-white/20 bg-white/10 text-white hover:bg-amber-500/25 hover:border-amber-400/50 active:scale-95 disabled:opacity-30 disabled:cursor-not-allowed transition-all duration-200"
               >
@@ -424,90 +426,47 @@ export default function RecentAnnouncementsSection({ ads }: Props) {
           )}
 
           {/* Cards */}
-          {paginated.length > 0 ? (
-            layout === 'grid' ? (
-              <div
-                className="grid grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-2"
-                onTouchStart={(event) => { pageTouchStartX.current = event.touches[0].clientX; }}
-                onTouchEnd={(event) => {
-                  if (pageTouchStartX.current === null) return;
-                  const diff = pageTouchStartX.current - event.changedTouches[0].clientX;
-                  if (diff > 40) setPage((p) => Math.min(totalPages, p + 1));
-                  else if (diff < -40) setPage((p) => Math.max(1, p - 1));
-                  pageTouchStartX.current = null;
-                }}
-              >
-                {paginated.map((ad) => (
+          {filtered.length > 0 ? (
+            filtered.length <= cardsPerView ? (
+              <div className="grid gap-2" style={{ gridTemplateColumns: `repeat(${cardsPerView}, 1fr)` }}>
+                {filtered.map((ad) => (
                   <AnnouncementCard key={ad.id} announcement={ad} layout="grid" />
                 ))}
               </div>
             ) : (
               <div
-                className="flex flex-col gap-2"
+                ref={sliderRef}
+                className="flex overflow-hidden"
+                style={{ scrollbarWidth: 'none', msOverflowStyle: 'none', flexWrap: 'nowrap' }}
                 onTouchStart={(event) => { pageTouchStartX.current = event.touches[0].clientX; }}
                 onTouchEnd={(event) => {
                   if (pageTouchStartX.current === null) return;
                   const diff = pageTouchStartX.current - event.changedTouches[0].clientX;
-                  if (diff > 40) setPage((p) => Math.min(totalPages, p + 1));
-                  else if (diff < -40) setPage((p) => Math.max(1, p - 1));
+                  if (diff > 40) setSliderIndex((i) => Math.min(i + cardsPerView, maxSliderIdx));
+                  else if (diff < -40) setSliderIndex((i) => Math.max(0, i - cardsPerView));
                   pageTouchStartX.current = null;
                 }}
               >
-                {paginated.map((ad) => (
-                  <AnnouncementCard key={ad.id} announcement={ad} layout="list" />
+                {filtered.map((ad) => (
+                  <div
+                    key={ad.id}
+                    style={{
+                      minWidth: `calc(100% / ${cardsPerView})`,
+                      maxWidth: `calc(100% / ${cardsPerView})`,
+                      width: `calc(100% / ${cardsPerView})`,
+                      flexShrink: 0,
+                      flexGrow: 0,
+                    }}
+                    className="px-1"
+                  >
+                    <AnnouncementCard announcement={ad} layout="grid" />
+                  </div>
                 ))}
               </div>
             )
           ) : (
             <div className="text-center py-12 text-white/40 text-sm tracking-widest uppercase">
               განცხადებები ვერ მოიძებნა
-            </div>
-          )}
-
-          {/* Pagination */}
-          {totalPages > 1 && (
-            <div className="flex items-center justify-center gap-2 mt-6">
-              <button
-                type="button"
-                onClick={() => setPage((p) => Math.max(1, p - 1))}
-                disabled={safePage === 1}
-                className="w-9 h-9 rounded-xl border border-white/20 bg-white/5 text-white text-sm hover:bg-amber-500/20 hover:border-amber-400/40 disabled:opacity-30 disabled:cursor-not-allowed transition"
-              >
-                ‹
-              </button>
-              {Array.from({ length: totalPages }, (_, i) => i + 1)
-                .filter((p) => p === 1 || p === totalPages || Math.abs(p - safePage) <= 2)
-                .reduce<(number | '...')[]>((acc, p, idx, arr) => {
-                  if (idx > 0 && p - (arr[idx - 1] as number) > 1) acc.push('...');
-                  acc.push(p);
-                  return acc;
-                }, [])
-                .map((item, idx) =>
-                  item === '...' ? (
-                    <span key={`dots-${idx}`} className="text-white/30 text-xs px-1">…</span>
-                  ) : (
-                    <button
-                      key={item}
-                      type="button"
-                      onClick={() => setPage(item as number)}
-                      className={`w-9 h-9 rounded-xl border text-xs font-black transition ${
-                        safePage === item
-                          ? 'border-amber-400/50 bg-amber-500/20 text-amber-200'
-                          : 'border-white/10 bg-white/5 text-white/60 hover:border-white/30 hover:text-white'
-                      }`}
-                    >
-                      {item}
-                    </button>
-                  )
-                )}
-              <button
-                type="button"
-                onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-                disabled={safePage === totalPages}
-                className="w-9 h-9 rounded-xl border border-white/20 bg-white/5 text-white text-sm hover:bg-amber-500/20 hover:border-amber-400/40 disabled:opacity-30 disabled:cursor-not-allowed transition"
-              >
-                ›
-              </button>
             </div>
           )}
         </>
