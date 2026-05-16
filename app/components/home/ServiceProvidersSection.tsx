@@ -407,7 +407,7 @@ export default function ServiceProvidersSection({
             <PremiumServiceIconCluster />
             <Link
               href="/community/masters/submit"
-              className="inline-flex w-full items-center justify-center rounded-xl border border-amber-400/40 bg-amber-500/15 px-4 py-3 text-[11px] font-black uppercase tracking-[0.14em] text-amber-100 transition hover:border-amber-300 hover:bg-amber-500/25 sm:w-auto"
+              className="inline-flex w-full items-center justify-center whitespace-nowrap rounded-xl border border-amber-400/40 bg-amber-500/15 px-4 py-3 text-[10px] font-black uppercase tracking-[0.08em] text-amber-100 transition hover:border-amber-300 hover:bg-amber-500/25 sm:w-auto sm:text-[11px] lg:px-5"
             >
               დაამატე შენი სერვისი
             </Link>
