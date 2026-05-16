@@ -7,7 +7,7 @@ import { useParams } from 'next/navigation';
 import imageCompression from 'browser-image-compression';
 import type { Database } from '@/types/supabase';
 import { supabase } from '../../lib/supabase';
-import { ANNOUNCEMENT_CATEGORIES, LOCATIONS } from '@/app/lib/constants';
+import { ANNOUNCEMENT_CATEGORY_GROUPS, ANNOUNCEMENT_CATEGORIES, LOCATIONS } from '@/app/lib/constants';
 import FavoriteButton from '@/app/components/announcements/FavoriteButton';
 import ClientButtons from './ClientButtons';
 import { CommunitySideWidget } from '../../components/community/CommunityWidgets';
@@ -384,7 +384,11 @@ export default function AnnouncementDetailsClient({ initialAd }: { initialAd: An
               <input value={editForm.title} onChange={(e) => setEditForm({ ...editForm, title: e.target.value })} className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white outline-none focus:border-amber-400" placeholder="სათაური" />
               <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                 <select value={editForm.category} onChange={(e) => setEditForm({ ...editForm, category: e.target.value })} className="rounded-xl border border-white/10 bg-[#0b0b15] px-4 py-3 text-sm text-white outline-none focus:border-amber-400">
-                  {ANNOUNCEMENT_CATEGORIES.map((category) => <option key={category} value={category}>{category}</option>)}
+                  {ANNOUNCEMENT_CATEGORY_GROUPS.map((group) => (
+                    <optgroup key={group.title} label={group.title === 'საყოფაცხოვრებო ნივთები' ? 'გასაყიდი საქონელი — საყოფაცხოვრებო ნივთები' : group.title}>
+                      {group.categories.map((category) => <option key={category} value={category}>{category}</option>)}
+                    </optgroup>
+                  ))}
                 </select>
                 <select value={editForm.location} onChange={(e) => setEditForm({ ...editForm, location: e.target.value })} className="rounded-xl border border-white/10 bg-[#0b0b15] px-4 py-3 text-sm text-white outline-none focus:border-amber-400">
                   {LOCATION_OPTIONS.map((location) => <option key={location} value={location}>{location}</option>)}

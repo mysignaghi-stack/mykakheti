@@ -5,7 +5,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { supabase } from '../lib/supabase';
 import { formatGeorgianDate } from '../lib/utils';
-import { ANNOUNCEMENT_CATEGORIES } from '../lib/constants';
+import { ANNOUNCEMENT_CATEGORY_GROUPS } from '../lib/constants';
 import { isAgroSubmission, isCommunityAnnouncement } from '../lib/specialAnnouncements';
 import AnnouncementCard from '../components/home/AnnouncementCard';
 
@@ -46,6 +46,30 @@ const CATEGORY_ICONS: Record<string, string> = {
   'ტურიზმი': '✈️',
   'ტურისტული': '🌄',
   'ცხოველები': '🐾',
+  'ავეჯი': '🪑',
+  'საყოფაცხოვრებო ტექნიკა': '🔌',
+  'სამშენებლო ხელსაწყო': '🛠️',
+  'ელექტრო ხელსაწყო': '🔧',
+  'თესლი': '🌱',
+  'ნერგი': '🌿',
+  'აგროქიმია': '🧪',
+  'ავტონაწილები': '⚙️',
+  'საბურავები': '🛞',
+  'ძაღლი': '🐕',
+  'ლეკვი': '🐕',
+  'კატა': '🐈',
+  'კნუტი': '🐈',
+  'ძროხა': '🐄',
+  'ხბო': '🐄',
+  'ცხენი': '🐎',
+  'ცხვარი': '🐑',
+  'თხა': '🐐',
+  'ღორი': '🐖',
+  'ქათამი': '🐔',
+  'ინდაური': '🦃',
+  'იხვი': '🦆',
+  'ფუტკრის ოჯახი': '🐝',
+  'სკა': '🐝',
   'სხვა': '📦',
 };
 
@@ -218,21 +242,31 @@ export default function AnnouncementsPage() {
               <span className="text-[10px] text-white/30">{items.length}</span>
             </button>
             {/* Categories */}
-            {ANNOUNCEMENT_CATEGORIES.filter(c => c !== 'სათემო ჩართულობა').map(cat => {
-              const count = categoryCounts[cat] || 0;
-              if (count === 0) return null;
+            {ANNOUNCEMENT_CATEGORY_GROUPS.map((group) => {
+              const visibleCategories = group.categories.filter((cat) => (categoryCounts[cat] || 0) > 0);
+              if (visibleCategories.length === 0) return null;
               return (
-                <button
-                  key={cat}
-                  onClick={() => { setSelectedCategory(cat); setSidebarOpen(false); setPage(1); }}
-                  className={`w-full flex items-center justify-between px-3 py-2 rounded-lg text-sm transition-all ${selectedCategory === cat ? 'bg-amber-500/15 text-amber-300 border border-amber-400/25' : 'text-white/60 hover:bg-white/5 hover:text-white'}`}
-                >
-                  <span className="flex items-center gap-2 text-left">
-                    <span className="text-base">{CATEGORY_ICONS[cat] || '📦'}</span>
-                    <span className="line-clamp-1">{cat}</span>
-                  </span>
-                  <span className="text-[10px] text-white/30 flex-shrink-0 ml-1">{count}</span>
-                </button>
+                <div key={group.title} className="pt-2">
+                  <div className="px-2 pb-1 text-[9px] font-black uppercase tracking-[0.18em] text-amber-200/45">
+                    {group.title === 'საყოფაცხოვრებო ნივთები' ? 'გასაყიდი საქონელი' : group.title}
+                  </div>
+                  {visibleCategories.map(cat => {
+                    const count = categoryCounts[cat] || 0;
+                    return (
+                      <button
+                        key={cat}
+                        onClick={() => { setSelectedCategory(cat); setSidebarOpen(false); setPage(1); }}
+                        className={`w-full flex items-center justify-between px-3 py-2 rounded-lg text-sm transition-all ${selectedCategory === cat ? 'bg-amber-500/15 text-amber-300 border border-amber-400/25' : 'text-white/60 hover:bg-white/5 hover:text-white'}`}
+                      >
+                        <span className="flex items-center gap-2 text-left">
+                          <span className="text-base">{CATEGORY_ICONS[cat] || '📦'}</span>
+                          <span className="line-clamp-1">{cat}</span>
+                        </span>
+                        <span className="text-[10px] text-white/30 flex-shrink-0 ml-1">{count}</span>
+                      </button>
+                    );
+                  })}
+                </div>
               );
             })}
           </div>
@@ -408,4 +442,3 @@ export default function AnnouncementsPage() {
     </main>
   );
 }
-

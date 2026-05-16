@@ -7,7 +7,7 @@ import { useRouter } from 'next/navigation';
 import imageCompression from 'browser-image-compression';
 import type { Session } from '@supabase/supabase-js';
 import { supabase } from '../lib/supabase';
-import { LOCATIONS, ANNOUNCEMENT_CATEGORIES } from '../lib/constants';
+import { ANIMAL_SALE_CATEGORIES, ANNOUNCEMENT_CATEGORIES, ANNOUNCEMENT_CATEGORY_GROUPS, LOCATIONS } from '../lib/constants';
 
 // Flatten nested municipalities → cities → villages into unique label strings for select options.
 const LOCATION_OPTIONS = Array.from(new Set(
@@ -20,6 +20,27 @@ const LOCATION_OPTIONS = Array.from(new Set(
   ])
 ));
 const AUTH_LANDING_PATH = '/';
+
+type AnnouncementFormData = {
+  title: string;
+  description: string;
+  price: string;
+  phone: string;
+  location: string;
+  category: string;
+  currency: string;
+  itemName: string;
+  whatsappViber: string;
+  condition: string;
+  quantity: string;
+  delivery: string;
+  animalKind: string;
+  breed: string;
+  age: string;
+  gender: string;
+  vetInfo: string;
+  documentInfo: string;
+};
 
 export default function AddPage() {
   const router = useRouter();
@@ -48,10 +69,28 @@ export default function AddPage() {
   const [isSubmitted, setIsSubmitted] = useState(false);
   
   // ✨ Added 'currency' to form state (default: GEL)
-  const [formData, setFormData] = useState({ 
-    title: '', description: '', price: '', phone: '', location: LOCATION_OPTIONS[0] ?? '', category: ANNOUNCEMENT_CATEGORIES[0], currency: 'GEL' 
+  const [formData, setFormData] = useState<AnnouncementFormData>({
+    title: '',
+    description: '',
+    price: '',
+    phone: '',
+    location: LOCATION_OPTIONS[0] ?? '',
+    category: ANNOUNCEMENT_CATEGORIES[0],
+    currency: 'GEL',
+    itemName: '',
+    whatsappViber: '',
+    condition: '',
+    quantity: '',
+    delivery: '',
+    animalKind: '',
+    breed: '',
+    age: '',
+    gender: '',
+    vetInfo: '',
+    documentInfo: '',
   });
   const isAuthenticated = Boolean(session);
+  const isAnimalSaleCategory = ANIMAL_SALE_CATEGORIES.includes(formData.category as typeof ANIMAL_SALE_CATEGORIES[number]);
 
   const setAuthRedirectCookie = useCallback((target: string) => {
     try {
@@ -340,7 +379,23 @@ export default function AddPage() {
       const data = new FormData();
       images.forEach((file) => data.append('file', file));
       data.append('title', formData.title);
-      data.append('description', formData.description);
+      const extraDetails = [
+        formData.itemName ? `რას ყიდით: ${formData.itemName}` : '',
+        formData.whatsappViber ? `WhatsApp/Viber: ${formData.whatsappViber}` : '',
+        formData.condition ? `მდგომარეობა: ${formData.condition}` : '',
+        formData.quantity ? `რაოდენობა: ${formData.quantity}` : '',
+        formData.delivery ? `მიწოდება/ტრანსპორტირება: ${formData.delivery}` : '',
+        isAnimalSaleCategory ? 'ცხოველების უსაფრთხოების გაფრთხილება: საიტზე დასაშვებია მხოლოდ კანონიერად ნებადართული შინაური ცხოველებისა და სასოფლო-სამეურნეო პირუტყვის განთავსება. აკრძალულია დაცული, ველური ან უკანონოდ მოპოვებული სახეობების გაყიდვა.' : '',
+        isAnimalSaleCategory && formData.animalKind ? `ცხოველის / ფრინველის სახეობა: ${formData.animalKind}` : '',
+        isAnimalSaleCategory && formData.breed ? `ჯიში: ${formData.breed}` : '',
+        isAnimalSaleCategory && formData.age ? `ასაკი: ${formData.age}` : '',
+        isAnimalSaleCategory && formData.gender ? `სქესი: ${formData.gender}` : '',
+        isAnimalSaleCategory && formData.vetInfo ? `აცრები / ვეტერინარული ინფორმაცია: ${formData.vetInfo}` : '',
+        isAnimalSaleCategory && formData.documentInfo ? `დოკუმენტი / პასპორტი: ${formData.documentInfo}` : '',
+      ].filter(Boolean).join('\n');
+      const description = [formData.description, extraDetails].filter(Boolean).join('\n\n');
+
+      data.append('description', description);
       data.append('category', formData.category);
       data.append('location', formData.location);
       data.append('price', formData.price);
@@ -600,9 +655,13 @@ export default function AddPage() {
               <input required className="w-full p-5 bg-white/5 border border-white/10 rounded-2xl outline-none focus:border-amber-500 text-white font-bold transition-all placeholder:text-white/20" placeholder="განცხადების სათაური" onChange={(e: ChangeEvent<HTMLInputElement>) => setFormData({...formData, title: e.target.value})} />
               
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <select required className="p-5 bg-white text-slate-950 border-none rounded-2xl font-black text-[11px] uppercase italic cursor-pointer shadow-lg outline-none" onChange={(e: ChangeEvent<HTMLSelectElement>) => setFormData({...formData, category: e.target.value})}>
+                <select required className="p-5 bg-white text-slate-950 border-none rounded-2xl font-black text-[11px] uppercase italic cursor-pointer shadow-lg outline-none" value={formData.category} onChange={(e: ChangeEvent<HTMLSelectElement>) => setFormData({...formData, category: e.target.value})}>
                   <option value="">აირჩიეთ კატეგორია...</option>
-                  {ANNOUNCEMENT_CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
+                  {ANNOUNCEMENT_CATEGORY_GROUPS.map((group) => (
+                    <optgroup key={group.title} label={group.title === 'საყოფაცხოვრებო ნივთები' ? 'გასაყიდი საქონელი — საყოფაცხოვრებო ნივთები' : group.title}>
+                      {group.categories.map(c => <option key={c} value={c}>{c}</option>)}
+                    </optgroup>
+                  ))}
                 </select>
                 <select className="p-5 bg-white text-slate-950 border-none rounded-2xl font-black text-[11px] uppercase italic cursor-pointer shadow-lg outline-none" onChange={(e: ChangeEvent<HTMLSelectElement>) => setFormData({...formData, location: e.target.value})}>
                   {LOCATION_OPTIONS.map(loc => <option key={loc} value={loc}>{loc}</option>)}
@@ -613,10 +672,10 @@ export default function AddPage() {
                 {/* ✨ განახლებული ფასის ველი ვალუტის არჩევით */}
                 <div className="relative flex items-center bg-white/5 border border-white/10 rounded-2xl focus-within:border-amber-500 transition-all overflow-hidden">
                    <input 
-                     required 
-                     type="number" 
+                     required
+                     type="text"
                      className="w-full p-5 bg-transparent outline-none font-bold text-white placeholder:text-white/20" 
-                     placeholder="ფასი" 
+                     placeholder="ფასი ან შეთანხმებით"
                      onChange={(e: ChangeEvent<HTMLInputElement>) => setFormData({...formData, price: e.target.value})} 
                    />
                    <div className="flex bg-black/30 p-1 m-1 rounded-xl">
@@ -639,6 +698,45 @@ export default function AddPage() {
 
                 <input required className="p-5 bg-white/5 border border-white/10 rounded-2xl outline-none focus:border-amber-500 font-bold text-white placeholder:text-white/20" placeholder="ტელეფონი" onChange={(e: ChangeEvent<HTMLInputElement>) => setFormData({...formData, phone: e.target.value})} />
               </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <input className="p-5 bg-white/5 border border-white/10 rounded-2xl outline-none focus:border-amber-500 font-bold text-white placeholder:text-white/20" placeholder="რას ყიდით?" value={formData.itemName} onChange={(e: ChangeEvent<HTMLInputElement>) => setFormData({...formData, itemName: e.target.value})} />
+                <input className="p-5 bg-white/5 border border-white/10 rounded-2xl outline-none focus:border-amber-500 font-bold text-white placeholder:text-white/20" placeholder="WhatsApp/Viber" value={formData.whatsappViber} onChange={(e: ChangeEvent<HTMLInputElement>) => setFormData({...formData, whatsappViber: e.target.value})} />
+                <select className="p-5 bg-white text-slate-950 border-none rounded-2xl font-black text-[11px] uppercase italic cursor-pointer shadow-lg outline-none" value={formData.condition} onChange={(e: ChangeEvent<HTMLSelectElement>) => setFormData({...formData, condition: e.target.value})}>
+                  <option value="">მდგომარეობა</option>
+                  <option value="ახალი">ახალი</option>
+                  <option value="მეორადი">მეორადი</option>
+                  <option value="სხვა">სხვა</option>
+                </select>
+                <input className="p-5 bg-white/5 border border-white/10 rounded-2xl outline-none focus:border-amber-500 font-bold text-white placeholder:text-white/20" placeholder="რაოდენობა, თუ საჭიროა" value={formData.quantity} onChange={(e: ChangeEvent<HTMLInputElement>) => setFormData({...formData, quantity: e.target.value})} />
+                <select className="p-5 bg-white text-slate-950 border-none rounded-2xl font-black text-[11px] uppercase italic cursor-pointer shadow-lg outline-none sm:col-span-2" value={formData.delivery} onChange={(e: ChangeEvent<HTMLSelectElement>) => setFormData({...formData, delivery: e.target.value})}>
+                  <option value="">მიწოდება/ტრანსპორტირება</option>
+                  <option value="კი">კი</option>
+                  <option value="არა">არა</option>
+                  <option value="შეთანხმებით">შეთანხმებით</option>
+                </select>
+              </div>
+
+              {isAnimalSaleCategory && (
+                <div className="space-y-4 rounded-[28px] border border-amber-300/25 bg-amber-500/10 p-5">
+                  <p className="text-[11px] font-bold leading-relaxed text-amber-50">
+                    საიტზე დასაშვებია მხოლოდ კანონიერად ნებადართული შინაური ცხოველებისა და სასოფლო-სამეურნეო პირუტყვის განთავსება. აკრძალულია დაცული, ველური ან უკანონოდ მოპოვებული სახეობების გაყიდვა.
+                  </p>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <input className="p-4 bg-white/5 border border-white/10 rounded-2xl outline-none focus:border-amber-500 font-bold text-white placeholder:text-white/25" placeholder="ცხოველის / ფრინველის სახეობა" value={formData.animalKind} onChange={(e: ChangeEvent<HTMLInputElement>) => setFormData({...formData, animalKind: e.target.value})} />
+                    <input className="p-4 bg-white/5 border border-white/10 rounded-2xl outline-none focus:border-amber-500 font-bold text-white placeholder:text-white/25" placeholder="ჯიში, თუ ცნობილია" value={formData.breed} onChange={(e: ChangeEvent<HTMLInputElement>) => setFormData({...formData, breed: e.target.value})} />
+                    <input className="p-4 bg-white/5 border border-white/10 rounded-2xl outline-none focus:border-amber-500 font-bold text-white placeholder:text-white/25" placeholder="ასაკი" value={formData.age} onChange={(e: ChangeEvent<HTMLInputElement>) => setFormData({...formData, age: e.target.value})} />
+                    <select className="p-4 bg-white text-slate-950 border-none rounded-2xl font-black text-[11px] uppercase italic cursor-pointer shadow-lg outline-none" value={formData.gender} onChange={(e: ChangeEvent<HTMLSelectElement>) => setFormData({...formData, gender: e.target.value})}>
+                      <option value="">სქესი</option>
+                      <option value="მდედრი">მდედრი</option>
+                      <option value="მამრობითი">მამრობითი</option>
+                      <option value="უცნობია">უცნობია</option>
+                    </select>
+                    <input className="p-4 bg-white/5 border border-white/10 rounded-2xl outline-none focus:border-amber-500 font-bold text-white placeholder:text-white/25" placeholder="აცრები / ვეტერინარული ინფორმაცია" value={formData.vetInfo} onChange={(e: ChangeEvent<HTMLInputElement>) => setFormData({...formData, vetInfo: e.target.value})} />
+                    <input className="p-4 bg-white/5 border border-white/10 rounded-2xl outline-none focus:border-amber-500 font-bold text-white placeholder:text-white/25" placeholder="დოკუმენტი / პასპორტი" value={formData.documentInfo} onChange={(e: ChangeEvent<HTMLInputElement>) => setFormData({...formData, documentInfo: e.target.value})} />
+                  </div>
+                </div>
+              )}
               
               <textarea rows={5} className="w-full p-5 bg-white/5 border border-white/10 rounded-2xl outline-none focus:border-amber-500 italic text-white placeholder:text-white/20 resize-none" placeholder="აღწერეთ დეტალურად..." onChange={(e: ChangeEvent<HTMLTextAreaElement>) => setFormData({...formData, description: e.target.value})} />
             </div>

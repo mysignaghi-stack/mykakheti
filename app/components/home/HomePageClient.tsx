@@ -11,7 +11,7 @@ import { useWeatherData } from '@/app/hooks/useWeatherData';
 import { supabase } from '@/app/lib/supabase';
 import { Ad, AgroItem, WeatherItem } from '@/app/lib/types';
 import type { Tables } from '@/types/helpers';
-import { KAKHETI_FACTS, LOCATIONS, TRANSPORT_SCHEDULE } from '@/app/lib/constants';
+import { ANNOUNCEMENT_CATEGORIES, KAKHETI_FACTS, LOCATIONS, TRANSPORT_SCHEDULE } from '@/app/lib/constants';
 import Navbar from '@/app/components/layout/Navbar';
 import Footer from '@/app/components/layout/Footer';
 import SnackbarWrapper from '@/app/components/layout/SnackbarWrapper';
@@ -43,46 +43,6 @@ interface AgroDetail {
 }
 
 const FALLBACK_MARQUEE = 'საიტი მუშაობს სატესტო რეჟიმში';
-
-const ANNOUNCEMENT_CATEGORIES = [
-  'უძრავი ქონება',
-  'ავტო',
-  'დასაქმება',
-  'სოფლის მეურნეობა',
-  'ღვინო და მარნები',
-  'აგრო-მიწები',
-  'აგრო-ტექნიკა',
-  'გადაზიდვები',
-  'გიდის მომსახურება',
-  'განათლება',
-  'დრიური საწოლი',
-  'ელექტრონიკა',
-  'ვაკანსიები',
-  'ვენახის მოვლა',
-  'ვეტერინარია',
-  'ადგილობრივი პროდუქტები',
-  'კულტურა',
-  'მომსახურება',
-  'მეფუტკრეობა',
-  'ნერგები და თესლები',
-  'რესტორნები',
-  'რთველი',
-  'სამშენებლო',
-  'სამუშაო ჯგუფი',
-  'სამედიცინო',
-  'სარიტუალო მომსახურება',
-  'სასუქები და ქიმიკატები',
-  'სასტუმროები',
-  'სპორტი',
-  'ტექნიკა',
-  'ტრადიციული რეწვა',
-  'ტურიზმი',
-  'ტურისტული',
-  'ცხოველები',
-  'შეშა და სათბობი',
-  'ღვინის ინვენტარი',
-  'სხვა'
-];
 
 const normalizeAgroText = (value: string | number | null | undefined) => {
   if (value === null || value === undefined) return '';
