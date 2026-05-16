@@ -651,8 +651,9 @@ export default function HomePageClient({
   useEffect(() => {
     const el = adsSliderRef.current;
     if (!el) return;
-    const cardWidth = el.offsetWidth / adsCardsPerView;
-    el.scrollTo({ left: adsSliderIndex * cardWidth, behavior: 'smooth' });
+    const columnGap = 8;
+    const cardWidth = (el.offsetWidth - columnGap * (adsCardsPerView - 1)) / adsCardsPerView;
+    el.scrollTo({ left: adsSliderIndex * (cardWidth + columnGap), behavior: 'smooth' });
   }, [adsSliderIndex, adsCardsPerView]);
     const handleToggleLocation = (loc: string) => {
       if (loc === 'ყველა კახეთი') {
@@ -1049,7 +1050,7 @@ export default function HomePageClient({
                     className="grid grid-flow-col gap-2 overflow-x-hidden"
                     style={{
                       gridTemplateRows: `repeat(${adsVisibleRows}, minmax(0, 1fr))`,
-                      gridAutoColumns: `calc(100% / ${adsCardsPerView})`,
+                      gridAutoColumns: `calc((100% - ${(adsCardsPerView - 1) * 0.5}rem) / ${adsCardsPerView})`,
                       scrollbarWidth: 'none',
                       msOverflowStyle: 'none',
                     }}
