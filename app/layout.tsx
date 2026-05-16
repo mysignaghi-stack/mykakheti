@@ -76,10 +76,12 @@ export default function RootLayout({
                   var search = window.location.search || '';
                   var hashParams = new URLSearchParams(hash.replace(/^#/, ''));
                   var queryParams = new URLSearchParams(search.replace(/^\\?/, ''));
+                  var hasRootCode = path === '/' && Boolean(queryParams.get('code'));
                   var isRecovery =
                     hashParams.get('type') === 'recovery' ||
                     queryParams.get('type') === 'recovery' ||
-                    Boolean(queryParams.get('token_hash') && queryParams.get('type') === 'recovery');
+                    Boolean(queryParams.get('token_hash') && queryParams.get('type') === 'recovery') ||
+                    hasRootCode;
 
                   if (!isRecovery) return;
 

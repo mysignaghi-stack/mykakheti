@@ -52,7 +52,10 @@ export default function AuthForm({ initialMode = "login", onClose, compact = fal
         const { data, error } = await supabase.auth.signUp({
           email,
           password,
-          options: { data: { full_name: name } },
+          options: {
+            data: { full_name: name },
+            emailRedirectTo: `${window.location.origin}/auth/callback?redirect=${encodeURIComponent(AUTH_LANDING_PATH)}`,
+          },
         });
         if (error) throw error;
         if (data.user) await upsertProfile(data.user);
