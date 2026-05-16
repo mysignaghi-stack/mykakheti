@@ -609,7 +609,7 @@ export default function HomePageClient({
     () => ads.filter((ad) => !ad.is_archived && !isSpecialAgroAnnouncement(ad)),
     [ads]
   );
-  const adsVisibleRows = 2;
+  const adsVisibleRows = adsCardsPerView < 4 ? 1 : 2;
   const adsColumnCount = Math.ceil(filteredAds.length / adsVisibleRows);
   const adsMaxSliderIndex = Math.max(0, adsColumnCount - adsCardsPerView);
 
