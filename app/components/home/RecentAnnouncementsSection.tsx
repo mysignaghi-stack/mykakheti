@@ -164,10 +164,10 @@ export default function RecentAnnouncementsSection({ ads }: Props) {
       {/* ───── Header ───── */}
       <div className="flex items-center justify-between mb-4">
         <div>
-          <h2 className="text-base font-black uppercase tracking-[0.25em] text-amber-200">
+          <h2 className="text-base sm:text-lg font-black text-amber-200">
             ახალი განცხადებები
           </h2>
-          <p className="text-[10px] text-white/40 mt-0.5 tracking-widest uppercase">
+          <p className="text-[10px] text-white/40 mt-0.5 tracking-[0.12em] uppercase">
             {filtered.length} განცხადება
           </p>
         </div>
