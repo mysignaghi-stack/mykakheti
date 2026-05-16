@@ -21,10 +21,20 @@ const ADMIN_SECTIONS = [
   },
   {
     title: 'გამოქვეყნებული კონტენტი',
-    description: 'უკვე გამოქვეყნებული ან საიტის მთავარ გვერდზე გამოსაჩენი მასალის მართვა.',
+    description: 'იგივე ძირითადი განყოფილებები, რაც მოდერაციის შემომავალშია, უკვე გამოქვეყნებული ჩანაწერების სამართავად.',
     links: [
-      { href: '/admin/announcements', title: 'გამოქვეყნებული განცხადებები', desc: 'დამტკიცებული განცხადებები, დაგეგმვა, არქივი და წაშლა.', accent: 'amber' },
+      { href: '/admin/announcements', title: 'ჩვეულებრივი განცხადებები', desc: 'დამტკიცებული სტანდარტული განცხადებები, დაგეგმვა, არქივი და წაშლა.', accent: 'amber' },
+      { href: '/admin/community', title: 'სერვისები / მომსახურების მიმწოდებლები', desc: 'გამოქვეყნებული მომსახურების მიმწოდებლების ჩანაწერები.', accent: 'emerald' },
       { href: '/admin/service-requests', title: 'სერვისის მაძიებლები', desc: '„ვეძებ სერვისს“ განცხადებების რედაქტირება, გამოქვეყნება და წაშლა.', accent: 'cyan' },
+      { href: '/admin/community', title: 'დაკარგული/ნაპოვნი', desc: 'გამოქვეყნებული დაკარგული/ნაპოვნი სათემო ჩანაწერები.', accent: 'cyan' },
+      { href: '/admin/agro', title: 'აგრო ბირჟა', desc: 'აგრო ბირჟის გამოქვეყნებული მონაცემები და შესაბამისი მართვა.', accent: 'purple' },
+      { href: '/admin/grain', title: 'მარცვლეული', desc: 'მარცვლეულის გამოქვეყნებული მონაცემები და შესაბამისი მართვა.', accent: 'yellow' },
+    ],
+  },
+  {
+    title: 'ადმინისტრატორის კონტენტი',
+    description: 'საიტის ადმინისტრატორის მიერ შექმნილი ან დამხმარე საჯარო კონტენტი.',
+    links: [
       { href: '/admin/posts', title: 'ადმინისტრატორის პოსტები', desc: 'მთავარი გვერდის ჩარჩოები, ფოტო/ვიდეო მასალა და არქივი.', accent: 'purple' },
       { href: '/admin/square', title: 'კახური მოედანი', desc: 'ჩატის შეტყობინებები და დაბლოკილი მომხმარებლები.', accent: 'cyan' },
     ],
@@ -35,8 +45,6 @@ const ADMIN_SECTIONS = [
     links: [
       { href: '/admin/site-settings', title: 'საიტის პარამეტრები', desc: 'ფონი, მარკიზი და ჰედერის წარწერა.', accent: 'purple' },
       { href: '/admin/transport', title: 'ტრანსპორტი', desc: 'მარშრუტები და განრიგები.', accent: 'cyan' },
-      { href: '/admin/agro', title: 'აგრო-ბირჟა', desc: 'აგრო ფასების და შესაბამისი ცხრილის მართვა.', accent: 'emerald' },
-      { href: '/admin/grain', title: 'მარცვლეული', desc: 'მარცვლეულის ფასების მართვა.', accent: 'yellow' },
     ],
   },
 ];
@@ -203,6 +211,30 @@ function AdminDashboardContent() {
       accent: 'amber',
     },
     {
+      key: 'services',
+      title: 'სერვისები / მომსახურების მიმწოდებლები',
+      description: 'მომსახურების მიმწოდებლების დასამტკიცებელი ჩანაწერები.',
+      value: stats?.pendingQueues?.services ?? 0,
+      href: '/admin/community',
+      accent: 'emerald',
+    },
+    {
+      key: 'service-requests',
+      title: 'სერვისის მაძიებლები',
+      description: '„ვეძებ სერვისს“ მოთხოვნები, რომლებიც მოდერაციას ელოდება.',
+      value: stats?.pendingQueues?.serviceRequests ?? 0,
+      href: '/admin/service-requests',
+      accent: 'cyan',
+    },
+    {
+      key: 'lost-found',
+      title: 'დაკარგული/ნაპოვნი',
+      description: 'სათემო რეესტრში დასამტკიცებელი ჩანაწერები.',
+      value: stats?.pendingQueues?.lostFound ?? 0,
+      href: '/admin/community',
+      accent: 'cyan',
+    },
+    {
       key: 'agro',
       title: 'აგრო ბირჟა',
       description: 'მომხმარებლის აგრო ფასის განაცხადები.',
@@ -217,30 +249,6 @@ function AdminDashboardContent() {
       value: stats?.pendingQueues?.grain ?? 0,
       href: '/admin/moderate',
       accent: 'yellow',
-    },
-    {
-      key: 'lost-found',
-      title: 'დაკარგული/ნაპოვნი',
-      description: 'სათემო რეესტრში დასამტკიცებელი ჩანაწერები.',
-      value: stats?.pendingQueues?.lostFound ?? 0,
-      href: '/admin/community',
-      accent: 'cyan',
-    },
-    {
-      key: 'services',
-      title: 'სერვისები',
-      description: 'მომსახურების მიმწოდებლების დასამტკიცებელი ჩანაწერები.',
-      value: stats?.pendingQueues?.services ?? 0,
-      href: '/admin/community',
-      accent: 'emerald',
-    },
-    {
-      key: 'service-requests',
-      title: 'სერვისის მაძიებლები',
-      description: '„ვეძებ სერვისს“ მოთხოვნები, რომლებიც მოდერაციას ელოდება.',
-      value: stats?.pendingQueues?.serviceRequests ?? 0,
-      href: '/admin/service-requests',
-      accent: 'cyan',
     },
   ];
   const pendingTotal = pendingQueues.reduce((sum, queue) => sum + queue.value, 0);
@@ -316,7 +324,7 @@ function AdminDashboardContent() {
                 <p className={`text-3xl font-black ${pendingTotal > 0 ? 'text-amber-200' : 'text-white/35'}`}>{pendingTotal}</p>
               </div>
             </div>
-            <div className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-5">
+            <div className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-6">
               {pendingQueues.map((queue) => (
                 <PendingQueueCard key={queue.key} queue={queue} />
               ))}
