@@ -398,7 +398,7 @@ export default function AddPage() {
     setAuthRedirectCookie(AUTH_LANDING_PATH);
     try {
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${window.location.origin}/auth/reset?redirect=${AUTH_LANDING_PATH}`,
+        redirectTo: `${window.location.origin}/auth/reset?redirect=${encodeURIComponent(AUTH_LANDING_PATH)}`,
       });
       if (error) throw error;
       setResetMessage('პაროლის აღდგენის ბმული გაიგზავნა ელფოსტაზე.');

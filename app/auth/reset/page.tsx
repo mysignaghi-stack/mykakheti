@@ -24,13 +24,49 @@ function ResetPasswordClient() {
   useEffect(() => {
     let active = true;
 
+    const cleanRecoveryUrl = () => {
+      try {
+        const url = new URL(window.location.href);
+        const redirectParam = url.searchParams.get('redirect');
+        url.hash = '';
+        url.search = '';
+        if (redirectParam) url.searchParams.set('redirect', redirectParam);
+        window.history.replaceState(null, '', `${url.pathname}${url.search}`);
+      } catch {
+        // ignore URL cleanup failures
+      }
+    };
+
+    const markSessionReady = () => {
+      if (!active) return;
+      setSessionReady(true);
+      cleanRecoveryUrl();
+    };
+
     const initRecovery = async () => {
       try {
+        const queryError = params?.get('error_description') || params?.get('error');
+        if (queryError) {
+          throw new Error(decodeURIComponent(queryError));
+        }
+
+        const tokenHash = params?.get('token_hash');
+        const type = params?.get('type');
+        if (tokenHash && type === 'recovery') {
+          const { error: verifyError } = await supabase.auth.verifyOtp({
+            type: 'recovery',
+            token_hash: tokenHash,
+          });
+          if (verifyError) throw verifyError;
+          markSessionReady();
+          return;
+        }
+
         const code = params?.get('code');
         if (code) {
           const { error: exchangeError } = await supabase.auth.exchangeCodeForSession(code);
           if (exchangeError) throw exchangeError;
-          if (active) setSessionReady(true);
+          markSessionReady();
           return;
         }
 
@@ -50,14 +86,13 @@ function ResetPasswordClient() {
             refresh_token: refreshToken,
           });
           if (sessionError) throw sessionError;
-          if (active) {
-            setSessionReady(true);
-            try {
-              window.history.replaceState(null, '', window.location.pathname + window.location.search);
-            } catch {
-              // ignore
-            }
-          }
+          markSessionReady();
+          return;
+        }
+
+        const { data: existingSession } = await supabase.auth.getSession();
+        if (existingSession.session) {
+          markSessionReady();
           return;
         }
 
@@ -74,10 +109,17 @@ function ResetPasswordClient() {
       }
     };
 
+    const { data: authListener } = supabase.auth.onAuthStateChange((event, session) => {
+      if ((event === 'PASSWORD_RECOVERY' || event === 'SIGNED_IN') && session) {
+        markSessionReady();
+      }
+    });
+
     initRecovery();
 
     return () => {
       active = false;
+      authListener.subscription.unsubscribe();
     };
   }, [params]);
 
