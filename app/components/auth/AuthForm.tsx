@@ -5,6 +5,7 @@ import type { User } from "@supabase/supabase-js";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { supabase } from "../../lib/supabase";
+import { getAuthErrorMessage } from "../../lib/authErrors";
 
 type Mode = "login" | "signup";
 const AUTH_LANDING_PATH = "/";
@@ -66,8 +67,7 @@ export default function AuthForm({ initialMode = "login", onClose, compact = fal
       }
       router.push(AUTH_LANDING_PATH);
     } catch (err) {
-      const msg = err instanceof Error ? err.message : "Auth error";
-      setError(msg);
+      setError(getAuthErrorMessage(err));
     } finally {
       setLoading(false);
     }
@@ -99,8 +99,7 @@ export default function AuthForm({ initialMode = "login", onClose, compact = fal
       if (error) throw error;
       setResetMessage("პაროლის აღდგენის ბმული გაიგზავნა ელფოსტაზე.");
     } catch (err) {
-      const msg = err instanceof Error ? err.message : "Unknown error";
-      setResetError(msg);
+      setResetError(getAuthErrorMessage(err));
     } finally {
       setResetLoading(false);
     }

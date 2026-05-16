@@ -53,9 +53,9 @@ export default function AnnouncementCard({ announcement, layout = 'grid', compac
         {/* Info */}
         <div className="flex-1 min-w-0 flex flex-col justify-between py-0.5">
           <div>
-            <h3 className="text-sm font-bold text-white line-clamp-1 group-hover:text-amber-300 transition-colors">{announcement.title || '—'}</h3>
+            <h3 className="text-xs font-bold text-white line-clamp-1 group-hover:text-amber-300 transition-colors">{announcement.title || '—'}</h3>
             {announcement.description && (
-              <p className="text-xs text-white/50 line-clamp-1 mt-0.5">{announcement.description}</p>
+              <p className="text-[11px] text-white/50 line-clamp-1 mt-0.5">{announcement.description}</p>
             )}
           </div>
           <div className="flex items-center justify-between gap-2 mt-1">
@@ -71,7 +71,7 @@ export default function AnnouncementCard({ announcement, layout = 'grid', compac
               )}
             </div>
             {hasPrice && (
-              <span className="text-sm font-black text-amber-400 whitespace-nowrap">
+              <span className="text-xs font-black text-amber-400 whitespace-nowrap">
                 {announcement.price} {currencySymbol}
               </span>
             )}
@@ -105,7 +105,7 @@ export default function AnnouncementCard({ announcement, layout = 'grid', compac
         )}
         <FavoriteButton announcementId={announcement.id} compact className="absolute right-2 top-2 z-10" />
         {announcement.category && (
-          <span className="absolute top-2 left-2 max-w-[calc(100%-3rem)] truncate text-[9px] font-bold uppercase bg-black/60 text-amber-300/90 px-2 py-0.5 rounded-full border border-amber-400/20 backdrop-blur-sm">
+          <span className="absolute top-2 left-2 max-w-[calc(100%-3rem)] truncate text-[8px] font-bold uppercase bg-black/60 text-amber-300/90 px-2 py-0.5 rounded-full border border-amber-400/20 backdrop-blur-sm">
             {announcement.category}
           </span>
         )}
@@ -113,25 +113,25 @@ export default function AnnouncementCard({ announcement, layout = 'grid', compac
 
       {/* Content */}
       <div className={`flex flex-col gap-0.5 flex-1 ${compact ? 'p-2' : 'p-1.5'}`}>
-        <h3 className={`${compact ? 'text-[10px]' : 'text-[11px]'} font-bold text-white/90 line-clamp-1 leading-snug group-hover:text-white transition-colors`}>
+        <h3 className={`${compact ? 'text-[9px]' : 'text-[10px]'} font-bold text-white/90 line-clamp-1 leading-snug group-hover:text-white transition-colors`}>
           {announcement.title || '—'}
         </h3>
 
         <div className="mt-auto pt-1 flex items-end justify-between gap-1">
           <div className="flex flex-col gap-0">
             {announcement.location && (
-              <span className="text-[9px] text-white/40 flex items-center gap-0.5">
+              <span className="text-[8px] text-white/40 flex items-center gap-0.5">
                 <svg className="w-2 h-2 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5}><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/><circle cx="12" cy="9" r="2.5"/></svg>
                 <span className="truncate max-w-[70px]">{announcement.location}</span>
               </span>
             )}
           </div>
           {hasPrice ? (
-            <span className="text-[11px] font-black text-amber-400 whitespace-nowrap">
+            <span className="text-[10px] font-black text-amber-400 whitespace-nowrap">
               {announcement.price} {currencySymbol}
             </span>
           ) : (
-            <span className="text-[10px] text-white/30 italic">ფასი შეთანხმებით</span>
+            <span className="text-[9px] text-white/30 italic">ფასი შეთანხმებით</span>
           )}
         </div>
       </div>

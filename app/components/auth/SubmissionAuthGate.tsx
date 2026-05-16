@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState, type ChangeEvent, type FormEvent, type ReactNode } from "react";
 import type { Session } from "@supabase/supabase-js";
 import { supabase } from "../../lib/supabase";
+import { getAuthErrorMessage } from "../../lib/authErrors";
 
 interface SubmissionAuthGateProps {
   redirectPath: string;
@@ -187,7 +188,7 @@ export default function SubmissionAuthGate({ children, heading }: SubmissionAuth
       setRegisterMessage("აქტივაციის ბმული გაიგზავნა თქვენს მითითებულ ელფოსტაზე. გთხოვთ შეამოწმოთ საფოსტო ყუთი.");
       setRegisterData({ firstName: "", lastName: "", email: "", phone: "", password: "" });
     } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : "Unknown error";
+      const message = getAuthErrorMessage(err);
       setRegisterError(`ვერ გაიგზავნა ბმული: ${message}`);
     } finally {
       setRegisterLoading(false);
@@ -215,8 +216,7 @@ export default function SubmissionAuthGate({ children, heading }: SubmissionAuth
       setLoginPassword("");
       window.location.href = AUTH_LANDING_PATH;
     } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : "Unknown error";
-      setLoginError(message);
+      setLoginError(getAuthErrorMessage(err));
     } finally {
       setLoginLoading(false);
     }
@@ -240,8 +240,7 @@ export default function SubmissionAuthGate({ children, heading }: SubmissionAuth
       if (error) throw error;
       setResetMessage("პაროლის აღდგენის ბმული გაიგზავნა ელფოსტაზე.");
     } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : "Unknown error";
-      setResetError(message);
+      setResetError(getAuthErrorMessage(err));
     } finally {
       setResetLoading(false);
     }

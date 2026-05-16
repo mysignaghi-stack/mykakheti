@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { supabase } from '../../lib/supabase';
 import { isAdminUser } from '../../lib/adminAuth';
 import AdminNav from '../../components/admin/AdminNav';
+import { getAuthErrorMessage } from '../../lib/authErrors';
 
 export default function AdminLogin() {
   const [email, setEmail] = useState('');
@@ -45,15 +46,7 @@ export default function AdminLogin() {
 
       if (error) {
         console.error('Login error:', error);
-        if (error.message?.includes('Invalid login credentials')) {
-          setError('არასწორი ელფოსტა ან პაროლი');
-        } else if (error.message?.includes('Email not confirmed')) {
-          setError('ელფოსტა არ არის დადასტურებული');
-        } else if (error.message?.includes('Too many requests')) {
-          setError('ძალიან ბევრი მცდელობა. გთხოვთ მოიცადოთ');
-        } else {
-          setError(`შეცდომა: ${error.message}`);
-        }
+        setError(getAuthErrorMessage(error));
         return;
       }
 
@@ -70,7 +63,7 @@ export default function AdminLogin() {
             console.error('Auth check error:', authError);
             if (authError.message?.includes('refresh_token_not_found') ||
                 authError.message?.includes('Invalid Refresh Token')) {
-              setError('სესიის შეცდომა. გთხოვთ თავიდან შესვლა');
+              setError(getAuthErrorMessage(authError));
               await supabase.auth.signOut();
               return;
             }

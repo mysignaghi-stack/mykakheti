@@ -3,6 +3,7 @@
 import { Suspense, useEffect, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { supabase } from '../../lib/supabase';
+import { getAuthErrorMessage } from '../../lib/authErrors';
 
 function AuthCallbackClient() {
   const router = useRouter();
@@ -43,8 +44,7 @@ function AuthCallbackClient() {
         if (!active) return;
         router.replace(`/auth/complete?redirect=${encodeURIComponent(redirectParam)}`);
       } catch (err: unknown) {
-        const msg = err instanceof Error ? err.message : 'უცნობი შეცდომა';
-        if (active) setError(msg);
+        if (active) setError(getAuthErrorMessage(err));
       }
     };
 

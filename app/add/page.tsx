@@ -8,6 +8,7 @@ import imageCompression from 'browser-image-compression';
 import type { Session } from '@supabase/supabase-js';
 import { supabase } from '../lib/supabase';
 import { ANIMAL_SALE_CATEGORIES, ANNOUNCEMENT_CATEGORIES, ANNOUNCEMENT_CATEGORY_GROUPS, LOCATIONS } from '../lib/constants';
+import { getAuthErrorMessage } from '../lib/authErrors';
 
 // Flatten nested municipalities → cities → villages into unique label strings for select options.
 const LOCATION_OPTIONS = Array.from(new Set(
@@ -195,16 +196,7 @@ export default function AddPage() {
   }, []);
 
   const getErrorMessage = (err: unknown) => {
-    if (err instanceof Error) return err.message;
-    if (typeof err === 'string') return err;
-    if (err && typeof err === 'object' && 'message' in err && typeof (err as { message?: unknown }).message === 'string') {
-      return (err as { message: string }).message;
-    }
-    try {
-      return JSON.stringify(err);
-    } catch {
-      return 'უცნობი შეცდომა';
-    }
+    return getAuthErrorMessage(err);
   };
 
   useEffect(() => {

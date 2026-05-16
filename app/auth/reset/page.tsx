@@ -3,6 +3,7 @@
 import { Suspense, useEffect, useState, type FormEvent } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { supabase } from '../../lib/supabase';
+import { getAuthErrorMessage } from '../../lib/authErrors';
 
 function ResetPasswordClient() {
   const router = useRouter();
@@ -101,10 +102,9 @@ function ResetPasswordClient() {
           setError('ლინკი არასწორია ან ვადა ამოიწურა. გთხოვთ თავიდან სცადოთ.');
         }
       } catch (err: unknown) {
-        const msg = err instanceof Error ? err.message : 'უცნობი შეცდომა';
         if (active) {
           setSessionReady(false);
-          setError(msg);
+          setError(getAuthErrorMessage(err));
         }
       }
     };
@@ -157,8 +157,7 @@ function ResetPasswordClient() {
         router.replace(redirect);
       }, 800);
     } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : 'უცნობი შეცდომა';
-      setError(msg);
+      setError(getAuthErrorMessage(err));
     } finally {
       setLoading(false);
     }
