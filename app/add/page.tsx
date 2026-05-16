@@ -42,6 +42,26 @@ type AnnouncementFormData = {
   documentInfo: string;
 };
 
+const CATEGORY_SEARCH_KEYWORDS: Record<string, string[]> = {
+  'გოჭი': ['გოჭები', 'პატარა ღორი'],
+  'ღორი': ['ღორები'],
+  'ძროხა': ['საქონელი', 'ფური'],
+  'ხბო': ['ხბოები'],
+  'ქათამი': ['ქათმები'],
+  'წიწილა': ['წიწილები'],
+  'ლეკვი': ['ლეკვები'],
+  'ძაღლი': ['ძაღლები'],
+  'კატა': ['კატები'],
+  'კნუტი': ['კნუტები'],
+  'ფუტკრის ოჯახი': ['ფუტკარი', 'ფუტკრები'],
+  'საბურავები': ['საბურავი'],
+  'თესლი': ['თესლები'],
+  'ნერგი': ['ნერგები'],
+  'სამშენებლო ხელსაწყო': ['ხელსაწყო', 'ინსტრუმენტი'],
+  'ელექტრო ხელსაწყო': ['ელექტროხელსაწყო', 'დრელი', 'ბარგალკა'],
+  'ავეჯი': ['მაგიდა', 'სკამი', 'კარადა', 'საწოლი'],
+};
+
 export default function AddPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
@@ -68,6 +88,7 @@ export default function AddPage() {
   const [resetEmail, setResetEmail] = useState('');
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [categorySearch, setCategorySearch] = useState('');
+  const [locationSearch, setLocationSearch] = useState('');
   
   // ✨ Added 'currency' to form state (default: GEL)
   const [formData, setFormData] = useState<AnnouncementFormData>({
@@ -92,16 +113,23 @@ export default function AddPage() {
   });
   const isAuthenticated = Boolean(session);
   const isAnimalSaleCategory = ANIMAL_SALE_CATEGORIES.includes(formData.category as typeof ANIMAL_SALE_CATEGORIES[number]);
+  const normalizedCategorySearch = categorySearch.trim().toLowerCase();
   const visibleCategoryGroups = ANNOUNCEMENT_CATEGORY_GROUPS
     .map((group) => ({
       ...group,
-      categories: group.categories.filter((category) =>
-        !categorySearch.trim() ||
-        category.toLowerCase().includes(categorySearch.trim().toLowerCase()) ||
-        group.title.toLowerCase().includes(categorySearch.trim().toLowerCase())
-      ),
+      categories: group.categories.filter((category) => {
+        if (!normalizedCategorySearch) return true;
+        const keywords = CATEGORY_SEARCH_KEYWORDS[category] ?? [];
+        return category.toLowerCase().includes(normalizedCategorySearch) ||
+          group.title.toLowerCase().includes(normalizedCategorySearch) ||
+          keywords.some((keyword) => keyword.toLowerCase().includes(normalizedCategorySearch));
+      }),
     }))
     .filter((group) => group.categories.length > 0);
+  const normalizedLocationSearch = locationSearch.trim().toLowerCase();
+  const visibleLocationOptions = LOCATION_OPTIONS.filter((location) =>
+    !normalizedLocationSearch || location.toLowerCase().includes(normalizedLocationSearch)
+  );
 
   const setAuthRedirectCookie = useCallback((target: string) => {
     try {
@@ -669,7 +697,7 @@ export default function AddPage() {
                 <div className="space-y-2">
                   <input
                     className="w-full p-4 bg-white/5 border border-white/10 rounded-2xl outline-none focus:border-amber-500 text-white font-bold transition-all placeholder:text-white/25"
-                    placeholder="კატეგორიის ძებნა..."
+                    placeholder="რას ყიდით? მაგ: გოჭი, საბურავი, თესლი..."
                     value={categorySearch}
                     onChange={(e: ChangeEvent<HTMLInputElement>) => setCategorySearch(e.target.value)}
                   />
@@ -685,9 +713,20 @@ export default function AddPage() {
                     <p className="text-[11px] font-bold text-amber-200/80">კატეგორია ვერ მოიძებნა.</p>
                   )}
                 </div>
-                <select className="p-5 bg-white text-slate-950 border-none rounded-2xl font-black text-[11px] uppercase italic cursor-pointer shadow-lg outline-none" onChange={(e: ChangeEvent<HTMLSelectElement>) => setFormData({...formData, location: e.target.value})}>
-                  {LOCATION_OPTIONS.map(loc => <option key={loc} value={loc}>{loc}</option>)}
-                </select>
+                <div className="space-y-2">
+                  <input
+                    className="w-full p-4 bg-white/5 border border-white/10 rounded-2xl outline-none focus:border-amber-500 text-white font-bold transition-all placeholder:text-white/25"
+                    placeholder="ადგილმდებარეობის ძებნა..."
+                    value={locationSearch}
+                    onChange={(e: ChangeEvent<HTMLInputElement>) => setLocationSearch(e.target.value)}
+                  />
+                  <select className="w-full p-5 bg-white text-slate-950 border-none rounded-2xl font-black text-[11px] uppercase italic cursor-pointer shadow-lg outline-none" value={formData.location} onChange={(e: ChangeEvent<HTMLSelectElement>) => setFormData({...formData, location: e.target.value})}>
+                    {visibleLocationOptions.map(loc => <option key={loc} value={loc}>{loc}</option>)}
+                  </select>
+                  {visibleLocationOptions.length === 0 && (
+                    <p className="text-[11px] font-bold text-amber-200/80">ლოკაცია ვერ მოიძებნა.</p>
+                  )}
+                </div>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
