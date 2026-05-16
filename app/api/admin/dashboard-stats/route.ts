@@ -114,6 +114,14 @@ export async function GET() {
         usersCount: 0,
         activeAnnouncements: 0,
         pendingAnnouncements: 0,
+        publishedQueues: {
+          regularAnnouncements: 0,
+          services: 0,
+          serviceRequests: 0,
+          lostFound: 0,
+          agro: 0,
+          grain: 0,
+        },
         email: user.email ?? null,
       });
     }
@@ -129,6 +137,10 @@ export async function GET() {
       pendingAnnouncementsRows,
       { count: pendingMasters },
       { count: pendingLostFound },
+      liveAnnouncementsRows,
+      { count: approvedMasters },
+      { count: approvedLostFound },
+      agroPriceRows,
     ] = await Promise.all([
       countAuthUsers(serviceClient),
       serviceClient
@@ -152,9 +164,27 @@ export async function GET() {
         .from('lost_found')
         .select('id', { count: 'exact', head: true })
         .or('is_approved.is.null,is_approved.eq.false'),
+      serviceClient
+        .from('announcements')
+        .select('id,category,description')
+        .eq('is_approved', true)
+        .or('is_archived.is.null,is_archived.eq.false'),
+      serviceClient
+        .from('masters')
+        .select('id', { count: 'exact', head: true })
+        .eq('is_approved', true),
+      serviceClient
+        .from('lost_found')
+        .select('id', { count: 'exact', head: true })
+        .eq('is_approved', true),
+      (serviceClient as any)
+        .from('agro_prices')
+        .select('id,category'),
     ]);
 
     const pendingRows = pendingAnnouncementsRows.data ?? [];
+    const liveRows = liveAnnouncementsRows.data ?? [];
+    const agroRows = (agroPriceRows.data ?? []) as Array<{ category?: string | null }>;
     const isAgro = (row: { category?: string | null; description?: string | null }) =>
       row.category === 'აგრო-ბირჟის განაცხადი' || Boolean(row.description?.includes('აგრო-ბირჟა:'));
     const isGrain = (row: { category?: string | null; description?: string | null }) =>
@@ -171,12 +201,21 @@ export async function GET() {
       services: pendingRows.filter(isService).length + (pendingMasters ?? 0),
       serviceRequests: pendingRows.filter(isServiceRequest).length,
     };
+    const publishedQueues = {
+      regularAnnouncements: liveRows.filter((row) => !isAgro(row) && !isGrain(row) && !isLostFound(row) && !isService(row) && !isServiceRequest(row)).length,
+      services: liveRows.filter(isService).length + (approvedMasters ?? 0),
+      serviceRequests: liveRows.filter(isServiceRequest).length,
+      lostFound: liveRows.filter(isLostFound).length + (approvedLostFound ?? 0),
+      agro: agroRows.filter((row) => row.category !== 'grain').length,
+      grain: agroRows.filter((row) => row.category === 'grain').length,
+    };
 
     return NextResponse.json({
       usersCount: usersCount ?? 0,
       activeAnnouncements: activeAnnouncements ?? 0,
       pendingAnnouncements: pendingAnnouncements ?? 0,
       pendingQueues,
+      publishedQueues,
       email: user.email ?? null,
     });
   } catch (error) {

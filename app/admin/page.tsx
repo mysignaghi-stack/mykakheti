@@ -14,12 +14,12 @@ const ADMIN_SECTIONS = [
     title: 'გამოქვეყნებული კონტენტი',
     description: 'იგივე ძირითადი განყოფილებები, რაც მოდერაციის შემომავალშია, უკვე გამოქვეყნებული ჩანაწერების სამართავად.',
     links: [
-      { href: '/admin/announcements', title: 'ჩვეულებრივი განცხადებები', desc: 'დამტკიცებული სტანდარტული განცხადებები, დაგეგმვა, არქივი და წაშლა.', accent: 'amber' },
-      { href: '/admin/community', title: 'სერვისები / მომსახურების მიმწოდებლები', desc: 'გამოქვეყნებული მომსახურების მიმწოდებლების ჩანაწერები.', accent: 'emerald' },
-      { href: '/admin/service-requests', title: 'სერვისის მაძიებლები', desc: '„ვეძებ სერვისს“ განცხადებების რედაქტირება, გამოქვეყნება და წაშლა.', accent: 'cyan' },
-      { href: '/admin/community', title: 'დაკარგული/ნაპოვნი', desc: 'გამოქვეყნებული დაკარგული/ნაპოვნი სათემო ჩანაწერები.', accent: 'cyan' },
-      { href: '/admin/agro', title: 'აგრო ბირჟა', desc: 'აგრო ბირჟის გამოქვეყნებული მონაცემები და შესაბამისი მართვა.', accent: 'purple' },
-      { href: '/admin/grain', title: 'მარცვლეული', desc: 'მარცვლეულის გამოქვეყნებული მონაცემები და შესაბამისი მართვა.', accent: 'yellow' },
+      { href: '/admin/announcements', title: 'ჩვეულებრივი განცხადებები', desc: 'დამტკიცებული სტანდარტული განცხადებები, დაგეგმვა, არქივი და წაშლა.', accent: 'amber', countKey: 'regularAnnouncements' },
+      { href: '/admin/community', title: 'სერვისები / მომსახურების მიმწოდებლები', desc: 'გამოქვეყნებული მომსახურების მიმწოდებლების ჩანაწერები.', accent: 'emerald', countKey: 'services' },
+      { href: '/admin/service-requests', title: 'სერვისის მაძიებლები', desc: '„ვეძებ სერვისს“ განცხადებების რედაქტირება, გამოქვეყნება და წაშლა.', accent: 'cyan', countKey: 'serviceRequests' },
+      { href: '/admin/community', title: 'დაკარგული/ნაპოვნი', desc: 'გამოქვეყნებული დაკარგული/ნაპოვნი სათემო ჩანაწერები.', accent: 'cyan', countKey: 'lostFound' },
+      { href: '/admin/agro', title: 'აგრო ბირჟა', desc: 'აგრო ბირჟის გამოქვეყნებული მონაცემები და შესაბამისი მართვა.', accent: 'purple', countKey: 'agro' },
+      { href: '/admin/grain', title: 'მარცვლეული', desc: 'მარცვლეულის გამოქვეყნებული მონაცემები და შესაბამისი მართვა.', accent: 'yellow', countKey: 'grain' },
     ],
   },
   {
@@ -77,7 +77,7 @@ function StatsCard({ title, value, description, icon, href }: StatsCardProps) {
   );
 }
 
-function AdminLinkCard({ link }: { link: { href: string; title: string; desc: string; accent?: string } }) {
+function AdminLinkCard({ link }: { link: { href: string; title: string; desc: string; accent?: string; value?: number } }) {
   const accentClass = {
     amber: 'group-hover:text-amber-300',
     emerald: 'group-hover:text-emerald-300',
@@ -92,7 +92,14 @@ function AdminLinkCard({ link }: { link: { href: string; title: string; desc: st
       href={link.href}
       className="group block rounded-2xl border border-white/10 bg-[#0b0b15]/80 p-5 text-left transition hover:border-amber-400/35 hover:bg-white/[0.07]"
     >
-      <h3 className={`text-base font-black uppercase tracking-[0.08em] text-white transition ${accentClass}`}>{link.title}</h3>
+      <div className="flex items-start justify-between gap-3">
+        <h3 className={`text-base font-black uppercase tracking-[0.08em] text-white transition ${accentClass}`}>{link.title}</h3>
+        {typeof link.value === 'number' && (
+          <span className={`shrink-0 rounded-2xl px-3 py-1 text-xl font-black ${link.value > 0 ? 'bg-white/12 text-white' : 'bg-black/25 text-white/35'}`}>
+            {link.value}
+          </span>
+        )}
+      </div>
       <p className="mt-2 text-sm leading-relaxed text-white/50">{link.desc}</p>
     </Link>
   );
@@ -332,9 +339,13 @@ function AdminDashboardContent() {
                 <p className="mt-1 text-sm text-white/45">{section.description}</p>
               </div>
               <div className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-4">
-                {section.links.map((link) => (
-                  <AdminLinkCard key={link.href} link={link} />
-                ))}
+                {section.links.map((link) => {
+                  const countKey = 'countKey' in link ? link.countKey : null;
+                  const value = section.title === 'გამოქვეყნებული კონტენტი' && countKey
+                    ? stats?.publishedQueues?.[countKey] ?? 0
+                    : undefined;
+                  return <AdminLinkCard key={`${link.href}-${link.title}`} link={{ ...link, value }} />;
+                })}
               </div>
             </section>
           ))}
