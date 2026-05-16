@@ -51,6 +51,8 @@ const normalizeAgroText = (value: string | number | null | undefined) => {
 
 const removeGeorgianLariLetter = (value: string) =>
   value
+    .replace(/₾/g, 'GEL')
+    .replace(/\bgel\b/gi, 'GEL')
     .replace(/\s*ლ\s*(?=$|GEL|gel|₾)/g, ' ')
     .replace(/(\d)\s*ლ\b/g, '$1')
     .replace(/\s{2,}/g, ' ')
@@ -59,7 +61,7 @@ const removeGeorgianLariLetter = (value: string) =>
 const formatAgroPrice = (value?: string | number | null) => {
   const text = removeGeorgianLariLetter(normalizeAgroText(value ?? ''));
   if (!text) return '';
-  return text.includes('₾') || /\bGEL\b/i.test(text) ? text : `${text} ₾`;
+  return /\bGEL\b/i.test(text) ? text : `${text} GEL`;
 };
 
 const pickDetailRate = (details: AgroItem['details']) => {
@@ -358,7 +360,7 @@ export default function HomePageClient({
   const formatAgroPrice = useCallback((price?: string | null) => {
     const text = removeGeorgianLariLetter(normalizeAgroText(price));
     if (!text) return '';
-    return text.includes('₾') || /\bGEL\b/i.test(text) ? text : `${text} ₾`;
+    return /\bGEL\b/i.test(text) ? text : `${text} GEL`;
   }, []);
 
   useEffect(() => {
@@ -1299,7 +1301,7 @@ export default function HomePageClient({
                 <input
                   value={agroSubmissionForm.price}
                   onChange={(event) => setAgroSubmissionForm((form) => ({ ...form, price: event.target.value }))}
-                  placeholder="ფასი ₾"
+                  placeholder="ფასი GEL"
                   className="rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white outline-none focus:border-amber-400"
                 />
                 <input

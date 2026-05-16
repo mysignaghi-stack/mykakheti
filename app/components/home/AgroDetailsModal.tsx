@@ -22,11 +22,13 @@ const AgroDetailsModal = ({ selectedAgro, onClose }: AgroDetailsModalProps) => {
     if (value === null || value === undefined || value === '') return '';
     const text = String(value)
       .trim()
+      .replace(/₾/g, 'GEL')
+      .replace(/\bgel\b/gi, 'GEL')
       .replace(/\s*ლ\s*(?=$|GEL|gel|₾)/g, ' ')
       .replace(/(\d)\s*ლ\b/g, '$1')
       .replace(/\s{2,}/g, ' ')
       .trim();
-    return text.includes('₾') || /\bGEL\b/i.test(text) ? text : `${text} ₾`;
+    return /\bGEL\b/i.test(text) ? text : `${text} GEL`;
   };
 
   const shareUrl = typeof window !== 'undefined'

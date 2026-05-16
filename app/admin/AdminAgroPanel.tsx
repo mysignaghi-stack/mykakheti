@@ -16,6 +16,8 @@ type AgroRow = {
 const cleanAgroPriceText = (value?: string | null) =>
   String(value ?? '')
     .trim()
+    .replace(/₾/g, 'GEL')
+    .replace(/\bgel\b/gi, 'GEL')
     .replace(/\s*ლ\s*(?=$|GEL|gel|₾)/g, ' ')
     .replace(/(\d)\s*ლ\b/g, '$1')
     .replace(/\s{2,}/g, ' ')

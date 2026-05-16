@@ -11,6 +11,8 @@ import { getAgroSubmissionType } from '../../../lib/specialAnnouncements';
 const cleanAgroPriceText = (value: unknown) =>
   String(value ?? '')
     .trim()
+    .replace(/₾/g, 'GEL')
+    .replace(/\bgel\b/gi, 'GEL')
     .replace(/\s*ლ\s*(?=$|GEL|gel|₾)/g, ' ')
     .replace(/(\d)\s*ლ\b/g, '$1')
     .replace(/\s{2,}/g, ' ')
