@@ -13,6 +13,7 @@ const cleanAgroPriceText = (value: unknown) =>
     .trim()
     .replace(/₾/g, 'GEL')
     .replace(/\bgel\b/gi, 'GEL')
+    .replace(/\bGEL(?:\s+GEL)+\b/g, 'GEL')
     .replace(/\s*ლ\s*(?=$|GEL|gel|₾)/g, ' ')
     .replace(/(\d)\s*ლ\b/g, '$1')
     .replace(/\s{2,}/g, ' ')

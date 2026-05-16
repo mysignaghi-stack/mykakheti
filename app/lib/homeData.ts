@@ -92,9 +92,9 @@ const mapAgroAnnouncementRow = (row: AnnouncementRow): AgroItem | null => {
   const isGrain = isGrainAnnouncement(row);
   if (!isGrape && !isGrain) return null;
 
-  const price = row.price ? String(row.price) : '';
+  const price = row.price ? String(row.price).replace(/\bgel\b/gi, 'GEL').replace(/\bGEL(?:\s+GEL)+\b/g, 'GEL').trim() : '';
   const currency = row.currency === 'USD' ? '$' : 'GEL';
-  const rate = price ? `${price} ${currency}` : 'შეთანხმებით';
+  const rate = price ? (price.includes(currency) ? price : `${price} ${currency}`) : 'შეთანხმებით';
 
   return {
     id: `announcement-${row.id}`,
