@@ -602,6 +602,11 @@ export default function HomePageClient({
     return nextAds;
   }, [ads, adsSort, normalizeText, selectedCategories, selectedLocations, searchTerm]);
 
+  const headerSearchAds = useMemo(
+    () => ads.filter((ad) => !ad.is_archived && !isSpecialAgroAnnouncement(ad)),
+    [ads]
+  );
+
   const selectCategory = (category: string) => {
     if (category === 'ყველა') {
       setSelectedCategories(['ყველა']);
@@ -851,7 +856,13 @@ export default function HomePageClient({
         <div className="absolute inset-0 bg-gradient-to-b from-[#0a0a1f]/30 via-[#050510]/10 to-[#050510]/40 backdrop-blur-[2px]" />
       </div>
 
-      <Navbar searchTerm={searchTerm} setSearchTerm={setSearchTerm} filteredAds={filteredAds} />
+      <Navbar
+        searchTerm={searchTerm}
+        setSearchTerm={setSearchTerm}
+        filteredAds={headerSearchAds}
+        serviceProviders={initialCommunity.masters}
+        serviceRequests={initialCommunity.serviceRequests}
+      />
       <FavoritesDropdown />
 
 

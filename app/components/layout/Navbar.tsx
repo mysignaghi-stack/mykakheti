@@ -7,6 +7,7 @@ import type { User } from '@supabase/supabase-js';
 import { supabase } from '@/app/lib/supabase';
 import AuthForm from '@/app/components/auth/AuthForm';
 import type { Ad } from '@/app/lib/types';
+import type { Tables } from '@/types/helpers';
 
 type SiteSettingRow = { key: string; value: string | null };
 
@@ -34,14 +35,33 @@ const getUserDisplayName = (user: User | null) => {
   return user.email ?? 'პროფილი';
 };
 
+type MasterRow = Tables<'masters'>;
+
+type HeaderSearchResult = {
+  id: string;
+  title: string;
+  subtitle?: string | null;
+  meta?: string | null;
+  image?: string | null;
+  href: string;
+  badge: string;
+  accent: string;
+  price?: string | null;
+  currency?: string | null;
+};
+
 export default function Navbar({
   searchTerm,
   setSearchTerm,
   filteredAds,
+  serviceProviders = [],
+  serviceRequests = [],
 }: {
   searchTerm?: string;
   setSearchTerm?: (v: string) => void;
   filteredAds?: Ad[];
+  serviceProviders?: MasterRow[];
+  serviceRequests?: Ad[];
 }) {
   const [showRegister, setShowRegister] = useState(false);
   const [showLogin, setShowLogin] = useState(false);
@@ -160,7 +180,72 @@ export default function Navbar({
   const searchRef = useRef<HTMLDivElement>(null);
   const [searchFocused, setSearchFocused] = useState(false);
   const showSearch = searchTerm !== undefined && setSearchTerm !== undefined;
-  const showResults = showSearch && Boolean(searchTerm) && (searchFocused || Boolean(searchTerm));
+  const normalizedSearch = (searchTerm ?? '').toLowerCase().replace(/\s+/g, ' ').trim();
+  const headerSearchResults = useMemo<HeaderSearchResult[]>(() => {
+    if (!normalizedSearch) return [];
+
+    const includesQuery = (...values: Array<string | null | undefined>) =>
+      values.some((value) => (value ?? '').toLowerCase().replace(/\s+/g, ' ').includes(normalizedSearch));
+
+    const announcementResults = (filteredAds ?? [])
+      .filter((ad) => includesQuery(ad.title, ad.description, ad.location, ad.category, ad.price))
+      .slice(0, 6)
+      .map((ad) => ({
+        id: `announcement-${ad.id}`,
+        title: ad.title || 'განცხადება',
+        subtitle: ad.category,
+        meta: ad.location,
+        image: ad.image_url,
+        href: `/announcements/${ad.id}`,
+        badge: 'განცხადება',
+        accent: 'text-amber-300 border-amber-300/25 bg-amber-500/10',
+        price: ad.price,
+        currency: ad.currency,
+      }));
+
+    const providerResults = serviceProviders
+      .filter((provider) => includesQuery(
+        provider.full_name,
+        provider.profession,
+        provider.category,
+        provider.location,
+        provider.description,
+        provider.service_area,
+        provider.price_note
+      ))
+      .slice(0, 5)
+      .map((provider) => ({
+        id: `provider-${provider.id}`,
+        title: provider.full_name || provider.profession || 'სერვისის მიმწოდებელი',
+        subtitle: provider.profession || provider.category,
+        meta: provider.location,
+        image: provider.photo_url,
+        href: `/community/masters/${provider.id}`,
+        badge: 'მიმწოდებელი',
+        accent: 'text-emerald-200 border-emerald-300/25 bg-emerald-500/10',
+        price: null,
+        currency: null,
+      }));
+
+    const requestResults = serviceRequests
+      .filter((request) => includesQuery(request.title, request.description, request.location, request.category, request.price))
+      .slice(0, 5)
+      .map((request) => ({
+        id: `request-${request.id}`,
+        title: request.title || 'ვეძებ სერვისს',
+        subtitle: request.category,
+        meta: request.location,
+        image: request.image_url,
+        href: `/announcements/${request.id}`,
+        badge: 'ეძებს',
+        accent: 'text-cyan-200 border-cyan-300/25 bg-cyan-500/10',
+        price: request.price,
+        currency: request.currency,
+      }));
+
+    return [...announcementResults, ...providerResults, ...requestResults].slice(0, 12);
+  }, [filteredAds, normalizedSearch, serviceProviders, serviceRequests]);
+  const showResults = showSearch && Boolean(normalizedSearch) && (searchFocused || Boolean(searchTerm));
 
   const bannerStyle = { color: bannerColor };
   const showBanner = isBannerReady && Boolean(bannerText) && bannerEnabled;
@@ -256,12 +341,12 @@ export default function Navbar({
             </div>
 
             {/* Results dropdown */}
-            {showResults && filteredAds && (
-              <div className="absolute top-full left-0 right-0 mt-2 z-[9999] bg-[#0a0a1f]/97 backdrop-blur-3xl border border-white/10 rounded-[22px] shadow-[0_20px_70px_rgba(0,0,0,0.9)] max-h-[380px] overflow-y-auto animate-in zoom-in-95 fade-in duration-150">
+            {showResults && (
+              <div className="absolute top-full left-0 right-0 mt-2 z-[9999] bg-[#050510] border border-white/10 rounded-[22px] shadow-[0_20px_70px_rgba(0,0,0,0.95)] max-h-[380px] overflow-y-auto animate-in zoom-in-95 fade-in duration-150">
                 <div className="p-3 flex flex-col gap-2">
                   <div className="flex justify-between items-center px-2 py-1">
                     <span className="text-[9px] font-black uppercase text-white/30 tracking-widest">
-                      ნაპოვნია {filteredAds.length} შედეგი
+                      ნაპოვნია {headerSearchResults.length} შედეგი
                     </span>
                     <button
                       type="button"
@@ -271,18 +356,18 @@ export default function Navbar({
                       ✕ გასუფთავება
                     </button>
                   </div>
-                  {filteredAds.length > 0 ? (
-                    filteredAds.slice(0, 8).map((ad) => (
+                  {headerSearchResults.length > 0 ? (
+                    headerSearchResults.map((item) => (
                       <Link
-                        key={ad.id}
-                        href={`/announcements/${ad.id}`}
+                        key={item.id}
+                        href={item.href}
                         onClick={() => setSearchTerm('')}
-                        className="flex items-center gap-3 p-2.5 bg-white/5 rounded-xl border border-white/5 hover:border-amber-500/30 transition-all group/item"
+                        className="flex items-center gap-3 p-2.5 bg-white/[0.045] rounded-xl border border-white/10 hover:border-amber-500/30 transition-all group/item"
                       >
                         <div className="w-12 h-12 rounded-lg overflow-hidden shrink-0 bg-white/5">
-                          {ad.image_url ? (
+                          {item.image ? (
                             <Image
-                              src={ad.image_url}
+                              src={item.image}
                               alt=""
                               width={48}
                               height={48}
@@ -294,17 +379,25 @@ export default function Navbar({
                         </div>
                         <div className="flex-grow min-w-0">
                           <h4 className="text-[11px] font-black uppercase italic text-white group-hover/item:text-amber-400 transition-colors line-clamp-1">
-                            {ad.title}
+                            {item.title}
                           </h4>
-                          <div className="flex gap-2 items-center mt-0.5">
-                            {ad.price && ad.price !== '0' && (
-                              <span className="text-amber-500 font-black text-xs">
-                                {ad.price} {ad.currency === 'USD' ? '$' : '₾'}
+                          <div className="flex flex-wrap gap-2 items-center mt-0.5">
+                            <span className={`rounded-full border px-1.5 py-0.5 text-[8px] font-black uppercase tracking-widest ${item.accent}`}>
+                              {item.badge}
+                            </span>
+                            {item.subtitle && (
+                              <span className="text-[9px] font-black text-white/45 uppercase tracking-widest truncate">
+                                {item.subtitle}
                               </span>
                             )}
-                            {ad.location && (
+                            {item.price && item.price !== '0' && (
+                              <span className="text-amber-500 font-black text-xs">
+                                {item.price}{item.price === 'შეთანხმებით' ? '' : ` ${item.currency === 'USD' ? '$' : '₾'}`}
+                              </span>
+                            )}
+                            {item.meta && (
                               <span className="text-[9px] font-black text-white/25 uppercase tracking-widest truncate">
-                                {ad.location}
+                                {item.meta}
                               </span>
                             )}
                           </div>
