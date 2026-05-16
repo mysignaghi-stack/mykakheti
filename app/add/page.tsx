@@ -1,5 +1,5 @@
 'use client';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import type { ChangeEvent, FormEvent } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -89,6 +89,10 @@ export default function AddPage() {
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [categorySearch, setCategorySearch] = useState('');
   const [locationSearch, setLocationSearch] = useState('');
+  const [showCategorySuggestions, setShowCategorySuggestions] = useState(false);
+  const [showLocationSuggestions, setShowLocationSuggestions] = useState(false);
+  const categoryPickerRef = useRef<HTMLDivElement | null>(null);
+  const locationPickerRef = useRef<HTMLDivElement | null>(null);
   
   // ✨ Added 'currency' to form state (default: GEL)
   const [formData, setFormData] = useState<AnnouncementFormData>({
@@ -134,6 +138,25 @@ export default function AddPage() {
     !normalizedLocationSearch || location.toLowerCase().includes(normalizedLocationSearch)
   );
   const locationSuggestions = visibleLocationOptions.slice(0, 10);
+
+  useEffect(() => {
+    const handlePointerDown = (event: MouseEvent | TouchEvent) => {
+      const target = event.target as Node | null;
+      if (target && categoryPickerRef.current && !categoryPickerRef.current.contains(target)) {
+        setShowCategorySuggestions(false);
+      }
+      if (target && locationPickerRef.current && !locationPickerRef.current.contains(target)) {
+        setShowLocationSuggestions(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handlePointerDown);
+    document.addEventListener('touchstart', handlePointerDown);
+    return () => {
+      document.removeEventListener('mousedown', handlePointerDown);
+      document.removeEventListener('touchstart', handlePointerDown);
+    };
+  }, []);
 
   const setAuthRedirectCookie = useCallback((target: string) => {
     try {
@@ -698,14 +721,18 @@ export default function AddPage() {
               <input required className="w-full p-5 bg-white/5 border border-white/10 rounded-2xl outline-none focus:border-amber-500 text-white font-bold transition-all placeholder:text-white/20" placeholder="განცხადების სათაური" onChange={(e: ChangeEvent<HTMLInputElement>) => setFormData({...formData, title: e.target.value})} />
               
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="space-y-2">
+                <div ref={categoryPickerRef} className="space-y-2">
                   <input
                     className="w-full p-4 bg-white/5 border border-white/10 rounded-2xl outline-none focus:border-amber-500 text-white font-bold transition-all placeholder:text-white/25"
                     placeholder="რას ყიდით? მაგ: გოჭი, საბურავი, თესლი..."
                     value={categorySearch}
-                    onChange={(e: ChangeEvent<HTMLInputElement>) => setCategorySearch(e.target.value)}
+                    onFocus={() => setShowCategorySuggestions(true)}
+                    onChange={(e: ChangeEvent<HTMLInputElement>) => {
+                      setCategorySearch(e.target.value);
+                      setShowCategorySuggestions(true);
+                    }}
                   />
-                  {categorySearch.trim() && categorySuggestions.length > 0 && (
+                  {showCategorySuggestions && categorySearch.trim() && categorySuggestions.length > 0 && (
                     <div className="max-h-56 overflow-y-auto rounded-2xl border border-amber-300/20 bg-black/80 p-2 shadow-2xl">
                       {categorySuggestions.map((suggestion) => (
                         <button
@@ -714,6 +741,7 @@ export default function AddPage() {
                           onClick={() => {
                             setFormData({ ...formData, category: suggestion.category });
                             setCategorySearch(suggestion.category);
+                            setShowCategorySuggestions(false);
                           }}
                           className={`mb-1 w-full rounded-xl px-3 py-2 text-left transition last:mb-0 ${
                             formData.category === suggestion.category ? 'bg-amber-500/20 text-amber-100' : 'bg-white/5 text-white/75 hover:bg-white/10 hover:text-white'
@@ -727,7 +755,10 @@ export default function AddPage() {
                       ))}
                     </div>
                   )}
-                  <select required className="w-full p-5 bg-white text-slate-950 border-none rounded-2xl font-black text-[11px] uppercase italic cursor-pointer shadow-lg outline-none" value={formData.category} onChange={(e: ChangeEvent<HTMLSelectElement>) => setFormData({...formData, category: e.target.value})}>
+                  <select required className="w-full p-5 bg-white text-slate-950 border-none rounded-2xl font-black text-[11px] uppercase italic cursor-pointer shadow-lg outline-none" value={formData.category} onChange={(e: ChangeEvent<HTMLSelectElement>) => {
+                    setFormData({...formData, category: e.target.value});
+                    setShowCategorySuggestions(false);
+                  }}>
                     <option value="">აირჩიეთ კატეგორია...</option>
                     {visibleCategoryGroups.map((group) => (
                       <optgroup key={group.title} label={group.title === 'საყოფაცხოვრებო ნივთები' ? 'გასაყიდი საქონელი — საყოფაცხოვრებო ნივთები' : group.title}>
@@ -739,14 +770,18 @@ export default function AddPage() {
                     <p className="text-[11px] font-bold text-amber-200/80">კატეგორია ვერ მოიძებნა.</p>
                   )}
                 </div>
-                <div className="space-y-2">
+                <div ref={locationPickerRef} className="space-y-2">
                   <input
                     className="w-full p-4 bg-white/5 border border-white/10 rounded-2xl outline-none focus:border-amber-500 text-white font-bold transition-all placeholder:text-white/25"
                     placeholder="ადგილმდებარეობის ძებნა..."
                     value={locationSearch}
-                    onChange={(e: ChangeEvent<HTMLInputElement>) => setLocationSearch(e.target.value)}
+                    onFocus={() => setShowLocationSuggestions(true)}
+                    onChange={(e: ChangeEvent<HTMLInputElement>) => {
+                      setLocationSearch(e.target.value);
+                      setShowLocationSuggestions(true);
+                    }}
                   />
-                  {locationSearch.trim() && locationSuggestions.length > 0 && (
+                  {showLocationSuggestions && locationSearch.trim() && locationSuggestions.length > 0 && (
                     <div className="max-h-56 overflow-y-auto rounded-2xl border border-amber-300/20 bg-black/80 p-2 shadow-2xl">
                       {locationSuggestions.map((location) => (
                         <button
@@ -755,6 +790,7 @@ export default function AddPage() {
                           onClick={() => {
                             setFormData({ ...formData, location });
                             setLocationSearch(location);
+                            setShowLocationSuggestions(false);
                           }}
                           className={`mb-1 w-full rounded-xl px-3 py-2 text-left text-sm font-black transition last:mb-0 ${
                             formData.location === location ? 'bg-amber-500/20 text-amber-100' : 'bg-white/5 text-white/75 hover:bg-white/10 hover:text-white'
@@ -765,7 +801,10 @@ export default function AddPage() {
                       ))}
                     </div>
                   )}
-                  <select className="w-full p-5 bg-white text-slate-950 border-none rounded-2xl font-black text-[11px] uppercase italic cursor-pointer shadow-lg outline-none" value={formData.location} onChange={(e: ChangeEvent<HTMLSelectElement>) => setFormData({...formData, location: e.target.value})}>
+                  <select className="w-full p-5 bg-white text-slate-950 border-none rounded-2xl font-black text-[11px] uppercase italic cursor-pointer shadow-lg outline-none" value={formData.location} onChange={(e: ChangeEvent<HTMLSelectElement>) => {
+                    setFormData({...formData, location: e.target.value});
+                    setShowLocationSuggestions(false);
+                  }}>
                     {visibleLocationOptions.map(loc => <option key={loc} value={loc}>{loc}</option>)}
                   </select>
                   {visibleLocationOptions.length === 0 && (
