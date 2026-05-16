@@ -141,7 +141,7 @@ function PremiumServiceIconCluster() {
   return (
     <div
       aria-hidden="true"
-      className="pointer-events-none relative mx-auto h-20 w-full max-w-[15.5rem] shrink-0 md:mx-0 md:h-32 md:w-[19rem] md:max-w-none lg:h-36 lg:w-[21rem]"
+      className="pointer-events-none relative mx-auto h-20 w-full max-w-[15.5rem] shrink md:mx-0 md:h-28 md:w-[16rem] md:max-w-none xl:h-32 xl:w-[18rem] 2xl:h-36 2xl:w-[21rem]"
     >
       <div className="absolute inset-x-8 inset-y-2 rounded-full bg-amber-400/10 blur-2xl md:inset-3" />
       <div className="absolute right-4 top-3 h-16 w-28 rounded-full bg-slate-200/5 blur-2xl md:right-0 md:top-2 md:h-24 md:w-40" />
@@ -403,11 +403,11 @@ export default function ServiceProvidersSection({
               {SERVICE_HINT}
             </p>
           </div>
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between lg:justify-end">
+          <div className="flex min-w-0 max-w-full flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:justify-end lg:max-w-[34rem] xl:max-w-[36rem] 2xl:max-w-none">
             <PremiumServiceIconCluster />
             <Link
               href="/community/masters/submit"
-              className="inline-flex w-full items-center justify-center whitespace-nowrap rounded-xl border border-amber-400/40 bg-amber-500/15 px-4 py-3 text-[10px] font-black uppercase tracking-[0.08em] text-amber-100 transition hover:border-amber-300 hover:bg-amber-500/25 sm:w-auto sm:text-[11px] lg:px-5"
+              className="inline-flex w-full max-w-full shrink-0 items-center justify-center whitespace-nowrap rounded-xl border border-amber-400/40 bg-amber-500/15 px-3.5 py-3 text-[10px] font-black uppercase tracking-[0.05em] text-amber-100 transition hover:border-amber-300 hover:bg-amber-500/25 sm:w-auto sm:text-[10px] 2xl:px-5 2xl:text-[11px] 2xl:tracking-[0.08em]"
             >
               დაამატე შენი სერვისი
             </Link>
