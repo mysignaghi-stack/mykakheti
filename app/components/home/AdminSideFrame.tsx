@@ -283,16 +283,15 @@ export default function AdminSideFrame({ post, position, isAdmin, onRefresh }: A
     <div id={`admin-${position}`} className={`w-full ${heightClass} overflow-hidden bg-gradient-to-br from-[#1a1205]/95 via-[#07070d]/90 to-[#121827]/95 backdrop-blur-xl rounded-[24px] border border-amber-300/35 shadow-[inset_0_1px_0_rgba(255,255,255,0.08),0_18px_45px_-24px_rgba(245,158,11,0.65)] p-2 ring-1 ring-amber-200/10 relative animate-in fade-in duration-700`}>
       <div className="pointer-events-none absolute inset-x-5 top-0 h-px bg-gradient-to-r from-transparent via-amber-200/60 to-transparent" />
       <div className="pointer-events-none absolute -right-10 -top-12 h-28 w-28 rounded-full bg-amber-400/10 blur-2xl" />
-      {/* Header with controls */}
-      <div className="relative z-10 flex justify-between items-center mb-1">
-        <span className="rounded-full border border-amber-300/30 bg-amber-500/15 px-2 py-0.5 text-[9px] font-black uppercase tracking-[0.16em] text-amber-100">
+      <div className="absolute inset-x-4 top-4 z-30 flex justify-between items-center">
+        <span className="rounded-full border border-amber-300/35 bg-black/65 px-2 py-0.5 text-[9px] font-black uppercase tracking-[0.16em] text-amber-100 shadow-lg backdrop-blur-md">
           VIP
         </span>
         <div className="flex gap-2">
           {isAdmin && (
             <button
               onClick={() => setShowForm(!showForm)}
-              className="px-2 py-1 bg-blue-600/20 text-blue-400 rounded text-xs font-bold hover:bg-blue-600 hover:text-white transition-all"
+              className="px-2 py-1 bg-black/65 text-blue-300 rounded text-xs font-bold shadow-lg backdrop-blur-md hover:bg-blue-600 hover:text-white transition-all"
               title="ახალი კონტენტის დამატება"
             >
               {showForm ? '✕' : '+'}
@@ -303,7 +302,7 @@ export default function AdminSideFrame({ post, position, isAdmin, onRefresh }: A
 
       {/* Media Display - Moved to top */}
       {post && hasPostMedia ? (
-        <div className="mb-1 mt-1">
+        <div className="mb-1">
           {/* Decorative rounded frame with gradient border and inner dark panel */}
           <div className="relative w-full h-[150px] rounded-[20px] p-[2px] bg-gradient-to-br from-amber-300/55 via-white/10 to-cyan-300/20 overflow-hidden shadow-[0_16px_35px_-24px_rgba(251,191,36,0.85)]">
             <div className="absolute inset-0 bg-[#06060b] rounded-[18px] overflow-hidden flex items-center justify-center">
