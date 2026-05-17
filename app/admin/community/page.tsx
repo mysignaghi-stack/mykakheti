@@ -47,8 +47,90 @@ export default function AdminCommunityPage() {
             </>
           )} />
         </div>
+
+        <MasterRatingsPanel />
       </div>
     </main>
+  );
+}
+
+function MasterRatingsPanel() {
+  const [ratings, setRatings] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  const fetchRatings = async () => {
+    setLoading(true);
+    try {
+      const { data, error } = await (supabase as any)
+        .from('master_ratings')
+        .select('id, master_id, stars, comment, created_at, masters(full_name, profession)')
+        .not('comment', 'is', null)
+        .order('created_at', { ascending: false });
+      if (error) throw error;
+      setRatings(data ?? []);
+    } catch (error) {
+      console.error('ratings fetch', error);
+      setRatings([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => { fetchRatings(); }, []);
+
+  const removeRating = async (id: string) => {
+    if (!confirm('ნამდვილად გსურთ ამ კომენტარის/შეფასების წაშლა?')) return;
+    const response = await fetch('/api/admin/master-ratings/delete', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id }),
+    });
+    const payload = await response.json().catch(() => ({}));
+    if (!response.ok) return alert(payload?.error || 'წაშლა ვერ მოხერხდა');
+    fetchRatings();
+  };
+
+  return (
+    <section className="mt-6 rounded-3xl border border-white/10 bg-white/5 p-4">
+      <div className="mb-4 flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
+        <div>
+          <h3 className="text-lg font-black text-amber-400">სერვისების კომენტარები და შეფასებები</h3>
+          <p className="text-xs text-white/45">საჭიროების შემთხვევაში ადმინისტრატორს შეუძლია კომენტარის/შეფასების წაშლა.</p>
+        </div>
+        <button onClick={fetchRatings} className="rounded-xl border border-white/10 bg-white/5 px-4 py-2 text-xs font-black uppercase text-white/65 hover:text-white">
+          განახლება
+        </button>
+      </div>
+
+      {loading ? <div className="text-white/60">იტვირთება...</div> : (
+        <div className="space-y-3">
+          {ratings.map((rating) => {
+            const master = Array.isArray(rating.masters) ? rating.masters[0] : rating.masters;
+            return (
+              <div key={rating.id} className="rounded-2xl border border-white/10 bg-black/40 p-3">
+                <div className="mb-2 flex flex-col gap-1 md:flex-row md:items-start md:justify-between">
+                  <div>
+                    <div className="text-sm font-black text-white">{master?.full_name || 'სერვისი'} — {master?.profession || ''}</div>
+                    <div className="text-[10px] font-black text-amber-300">{'★'.repeat(rating.stars)}{'☆'.repeat(5 - rating.stars)}</div>
+                  </div>
+                  <div className="text-[10px] text-white/35">{rating.created_at ? new Date(rating.created_at).toLocaleString('ka-GE') : ''}</div>
+                </div>
+                <p className="mb-3 whitespace-pre-line text-sm leading-relaxed text-white/70">{rating.comment}</p>
+                <div className="flex gap-2">
+                  <a href={`/community/masters/${rating.master_id}`} target="_blank" rel="noreferrer" className="flex-1 rounded-xl bg-white/5 py-2 text-center text-xs font-black uppercase text-white/65 hover:text-white">
+                    სერვისის ნახვა
+                  </a>
+                  <button onClick={() => removeRating(rating.id)} className="flex-1 rounded-xl bg-red-600 py-2 text-xs font-black uppercase text-white">
+                    წაშლა
+                  </button>
+                </div>
+              </div>
+            );
+          })}
+          {ratings.length === 0 && <div className="py-6 text-center text-white/40">კომენტარები ჯერ არ არის</div>}
+        </div>
+      )}
+    </section>
   );
 }
 

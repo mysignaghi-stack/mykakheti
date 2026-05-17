@@ -89,9 +89,7 @@ function MastersPageContent() {
                 id={`master-${m.id}`}
                 className={m.id === selectedId ? 'highlight-class' : ''}
               >
-                <Link href={`/community/masters/${m.id}`} className="block">
-                  <MasterCard master={m} />
-                </Link>
+                <MasterCard master={m} />
               </div>
             ))}
             {items.length === 0 && (

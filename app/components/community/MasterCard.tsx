@@ -1,7 +1,8 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import Image from 'next/image';
+import Link from 'next/link';
 import { supabase } from '../../lib/supabase';
 
 interface Master {
@@ -19,10 +20,44 @@ interface Master {
   ratings_count: number | null;
 }
 
-export default function MasterCard({ master }: { master: Master }) {
+type Rating = {
+  id: string;
+  master_id: string;
+  stars: number;
+  comment: string | null;
+  created_at: string | null;
+  rater_fingerprint: string | null;
+};
+
+export default function MasterCard({ master, showDetailsLink = true }: { master: Master; showDetailsLink?: boolean }) {
+  const [currentMaster, setCurrentMaster] = useState(master);
+  const [ratings, setRatings] = useState<Rating[]>([]);
   const [stars, setStars] = useState(0);
   const [comment, setComment] = useState('');
   const [submitting, setSubmitting] = useState(false);
+  const [loadingRatings, setLoadingRatings] = useState(false);
+
+  useEffect(() => {
+    setCurrentMaster(master);
+  }, [master]);
+
+  useEffect(() => {
+    let active = true;
+    const fetchRatings = async () => {
+      setLoadingRatings(true);
+      try {
+        const response = await fetch(`/api/masters/${master.id}/ratings`, { cache: 'no-store' });
+        const payload = await response.json().catch(() => ({}));
+        if (active && response.ok) setRatings(payload.ratings ?? []);
+      } finally {
+        if (active) setLoadingRatings(false);
+      }
+    };
+    fetchRatings();
+    return () => {
+      active = false;
+    };
+  }, [master.id]);
 
   const submitRating = async () => {
     if (stars < 1 || stars > 5) return alert('აირჩიეთ 1-5 ვარსკვლავი');
@@ -30,99 +65,78 @@ export default function MasterCard({ master }: { master: Master }) {
 
     setSubmitting(true);
     try {
-      const fingerprint = typeof window !== 'undefined' ? (localStorage.getItem('fingerprint') || (Math.random().toString(36).slice(2))) : 'web';
-      localStorage.setItem('fingerprint', fingerprint);
-
-      console.log('Submitting rating:', { masterId: master.id, stars, comment, fingerprint });
-
-      // First check if this user has already rated this master
-      const { data: existingRating, error: checkError } = await (supabase as any)
-        .from('master_ratings')
-        .select('id')
-        .eq('master_id', master.id)
-        .eq('rater_fingerprint', fingerprint)
-        .single();
-
-      if (checkError && checkError.code !== 'PGRST116') { // PGRST116 is "not found" which is expected
-        throw checkError;
-      }
-
-      if (existingRating) {
-        alert('თქვენ უკვე შეაფასეთ ეს სერვისი');
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        alert('შეფასებისა და კომენტარის დასამატებლად საჭიროა რეგისტრაცია/შესვლა.');
         return;
       }
 
-      const { error: rateErr } = await (supabase as any).from('master_ratings').insert({
-        master_id: master.id,
+      const response = await fetch(`/api/masters/${master.id}/ratings`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
         stars,
         comment,
-        rater_fingerprint: fingerprint
+        }),
       });
-      if (rateErr) throw rateErr;
+      const payload = await response.json().catch(() => ({}));
+      if (!response.ok) throw new Error(payload?.error || 'შეფასების დამატება ვერ მოხერხდა');
 
-      // Note: Skipping masters table update due to RLS restrictions
-      // Ratings will be calculated on-demand when fetching masters
-      // TODO: Implement proper rating aggregation (database function or view)
-
-      alert('მიმოხილვა დამატებულია!');
-      setStars(0); setComment('');
+      if (payload.master) setCurrentMaster(payload.master);
+      if (payload.rating) {
+        setRatings((current) => [payload.rating, ...current.filter((rating) => rating.id !== payload.rating.id)]);
+      }
+      alert('შეფასება დამატებულია!');
+      setStars(0);
+      setComment('');
     } catch (e: unknown) {
-      // Handle Supabase errors specifically
       let message = 'შეცდომა შეფასების დამატებისას';
       if (e && typeof e === 'object' && 'message' in e) {
         message = String((e as any).message);
       } else if (e instanceof Error) {
         message = e.message;
       }
-
-      console.error('Master rating submission error:', {
-        error: e,
-        masterId: master.id,
-        stars,
-        comment,
-        fingerprint: typeof window !== 'undefined' ? localStorage.getItem('fingerprint') : 'web',
-        errorType: typeof e,
-        errorMessage: message,
-        supabaseDetails: e && typeof e === 'object' && 'details' in e ? (e as any).details : 'no details',
-        supabaseHint: e && typeof e === 'object' && 'hint' in e ? (e as any).hint : 'no hint',
-        supabaseCode: e && typeof e === 'object' && 'code' in e ? (e as any).code : 'no code'
-      });
       alert(message);
     } finally {
       setSubmitting(false);
     }
   };
 
-  const hasOnCall = Boolean(master.service_area?.includes('გამოძახებით'));
+  const hasOnCall = Boolean(currentMaster.service_area?.includes('გამოძახებით'));
 
   return (
     <div className="overflow-hidden bg-white/5 rounded-2xl border border-white/10">
-      {master.photo_url && (
+      {currentMaster.photo_url && (
         <div className="relative h-40 w-full bg-white/5">
-          <Image src={master.photo_url} alt={master.full_name} fill sizes="(max-width: 640px) 100vw, 50vw" className="object-contain p-2" />
+          <Image src={currentMaster.photo_url} alt={currentMaster.full_name} fill sizes="(max-width: 640px) 100vw, 50vw" className="object-contain p-2" />
         </div>
       )}
       <div className="p-5 flex justify-between items-start gap-4">
         <div>
           <div className="flex items-center gap-2">
             <div>
-              <h3 className="font-black text-white text-base italic">{master.full_name}</h3>
-              <p className="text-[11px] text-amber-400 uppercase font-black">{master.profession}</p>
+              <h3 className="font-black text-white text-base italic">{currentMaster.full_name}</h3>
+              <p className="text-[11px] text-amber-400 uppercase font-black">{currentMaster.profession}</p>
             </div>
           </div>
           <div className="flex items-center gap-2 mt-1">
           </div>
-          {master.category && (<p className="text-[11px] text-white/50">მომსახურების ტიპი: {master.category}</p>)}
-          {master.location && (<p className="text-[11px] text-white/50">ლოკაცია: {master.location}</p>)}
-          <p className="text-[11px] text-white/50">ფასი: {master.price_note || 'შეთანხმებით'}</p>
+          {currentMaster.category && (<p className="text-[11px] text-white/50">მომსახურების ტიპი: {currentMaster.category}</p>)}
+          {currentMaster.location && (<p className="text-[11px] text-white/50">ლოკაცია: {currentMaster.location}</p>)}
+          <p className="text-[11px] text-white/50">ფასი: {currentMaster.price_note || 'შეთანხმებით'}</p>
           {hasOnCall && (<p className="text-[11px] text-emerald-300/80">გამოძახებით მომსახურება</p>)}
-          {master.phone && (<p className="text-[11px] text-white/50">ტელ: {master.phone}</p>)}
-          {master.service_area && (<p className="text-[11px] text-white/50">{master.service_area}</p>)}
-          {master.description && (<p className="mt-2 whitespace-pre-line text-sm text-white/80">{master.description}</p>)}
+          {currentMaster.phone && (<p className="text-[11px] text-white/50">ტელ: {currentMaster.phone}</p>)}
+          {currentMaster.service_area && (<p className="text-[11px] text-white/50">{currentMaster.service_area}</p>)}
+          {currentMaster.description && (<p className="mt-2 whitespace-pre-line text-sm text-white/80">{currentMaster.description}</p>)}
+          {showDetailsLink && (
+            <Link href={`/community/masters/${currentMaster.id}`} className="mt-3 inline-flex rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-[10px] font-black uppercase text-white/65 transition hover:border-amber-300/35 hover:text-amber-100">
+              დეტალურად ნახვა
+            </Link>
+          )}
         </div>
         <div className="text-right">
-          <div className="text-amber-400 font-black">⭐ {master.rating_avg?.toFixed(1) || '0.0'}</div>
-          <div className="text-[10px] text-white/40">{master.ratings_count} შეფასება</div>
+          <div className="text-amber-400 font-black">⭐ {currentMaster.rating_avg?.toFixed(1) || '0.0'}</div>
+          <div className="text-[10px] text-white/40">{currentMaster.ratings_count ?? 0} შეფასება</div>
         </div>
       </div>
 
@@ -137,6 +151,20 @@ export default function MasterCard({ master }: { master: Master }) {
           <button onClick={submitRating} disabled={submitting} className="bg-amber-600 hover:bg-amber-500 text-white rounded-xl px-4 py-2 font-bold">
             {submitting ? '...' : 'შეფასება'}
           </button>
+        </div>
+        <div className="mt-4 space-y-2">
+          {loadingRatings ? (
+            <div className="text-xs text-white/35">კომენტარები იტვირთება...</div>
+          ) : ratings.length > 0 ? (
+            ratings.slice(0, 3).map((rating) => (
+              <div key={rating.id} className="rounded-xl border border-white/10 bg-black/20 px-3 py-2">
+                <div className="mb-1 text-[10px] font-black text-amber-300">{'★'.repeat(rating.stars)}{'☆'.repeat(5 - rating.stars)}</div>
+                {rating.comment ? <p className="text-xs leading-relaxed text-white/70">{rating.comment}</p> : null}
+              </div>
+            ))
+          ) : (
+            <div className="text-xs text-white/35">კომენტარები ჯერ არ არის.</div>
+          )}
         </div>
       </div>
     </div>

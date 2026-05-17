@@ -175,7 +175,7 @@ export default function MasterDetailsClient() {
           )}
         </div>
         
-        <MasterCard master={item} />
+        <MasterCard master={item} showDetailsLink={false} />
 
         {isOwner && isEditing && (
           <div className="rounded-[28px] border border-white/10 bg-[#0b0b15] p-5 shadow-2xl md:p-6">
