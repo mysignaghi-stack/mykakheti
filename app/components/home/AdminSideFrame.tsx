@@ -321,14 +321,14 @@ export default function AdminSideFrame({ post, position, isAdmin, onRefresh }: A
                   >
                     {postImageMediaUrls.map((url: string, idx: number) => (
                       <SwiperSlide key={idx} className="w-full h-full rounded-[18px] overflow-hidden">
-                        <Image src={url} alt="" fill loading="lazy" sizes="(max-width: 768px) 100vw, 420px" className="rounded-[16px] object-contain p-2" />
+                        <Image src={url} alt="" fill loading="lazy" sizes="(max-width: 768px) 100vw, 420px" className="rounded-[16px] object-cover" />
                       </SwiperSlide>
                     ))}
                   </Swiper>
                 </div>
               ) : (
                 <div className="w-full h-full rounded-[18px] overflow-hidden relative cursor-pointer" onClick={() => openLightbox(postImageMediaUrls[0], false)}>
-                  <Image src={postImageMediaUrls[0]} alt="" fill loading="lazy" sizes="(max-width: 768px) 100vw, 420px" className="rounded-[16px] object-contain p-2" />
+                  <Image src={postImageMediaUrls[0]} alt="" fill loading="lazy" sizes="(max-width: 768px) 100vw, 420px" className="rounded-[16px] object-cover" />
                 </div>
               )}
               <div className="absolute inset-0 bg-gradient-to-t from-black/45 via-transparent to-amber-200/5 pointer-events-none" />
