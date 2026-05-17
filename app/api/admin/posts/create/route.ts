@@ -78,9 +78,12 @@ export async function POST(request: Request) {
     const singleMediaUrl = typeof body.media_url === 'string' && body.media_url.trim()
       ? body.media_url.trim()
       : null;
-    const mediaUrls = rawMediaUrls.length > 0
-      ? rawMediaUrls
-      : (singleMediaUrl ? [singleMediaUrl] : []);
+    const isVideoUrl = (url: string) => /\.(mp4|mov|avi|webm|m4v|mkv)(\?|#|$)/i.test(url);
+    const imageMediaUrls = rawMediaUrls.filter((url: string) => !isVideoUrl(url));
+    const imageSingleMediaUrl = singleMediaUrl && !isVideoUrl(singleMediaUrl) ? singleMediaUrl : null;
+    const mediaUrls = imageMediaUrls.length > 0
+      ? imageMediaUrls
+      : (imageSingleMediaUrl ? [imageSingleMediaUrl] : []);
 
     if ((typeof body.is_published !== 'boolean' || body.is_published) && !body.position) {
       return NextResponse.json({ error: 'Missing position for published post' }, { status: 400 });
@@ -92,10 +95,10 @@ export async function POST(request: Request) {
       category: body.category ?? null,
       priority: body.priority ?? 0,
       link: body.link ?? null,
-      media_url: singleMediaUrl ?? mediaUrls[0] ?? null,
+      media_url: imageSingleMediaUrl ?? mediaUrls[0] ?? null,
       media_urls: mediaUrls.length > 0 ? mediaUrls : null,
-      media_type: body.media_type ?? null,
-      video_background: !!body.video_background,
+      media_type: mediaUrls.length > 1 ? 'gallery' : mediaUrls.length === 1 ? 'image' : null,
+      video_background: false,
       position: body.position ?? null,
       badge_text: body.badge_text ?? null,
       is_published: typeof body.is_published === 'boolean' ? body.is_published : true,
@@ -113,4 +116,3 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: (err as Error)?.message ?? 'Unknown error' }, { status: 500 });
   }
 }
-

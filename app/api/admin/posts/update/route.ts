@@ -74,7 +74,26 @@ export async function PATCH(request: Request) {
     if (!admin) {
       return NextResponse.json({ error: 'Server misconfiguration: missing Supabase admin env vars.' }, { status: 500 });
     }
-    const { data, error } = await admin.from('admin_posts').update(payload).eq('id', id).select().single();
+    const isVideoUrl = (url: string) => /\.(mp4|mov|avi|webm|m4v|mkv)(\?|#|$)/i.test(url);
+    const nextPayload = { ...payload };
+    const rawMediaUrls = Array.isArray(nextPayload.media_urls) ? nextPayload.media_urls.filter(Boolean) : [];
+    const singleMediaUrl = typeof nextPayload.media_url === 'string' && nextPayload.media_url.trim()
+      ? nextPayload.media_url.trim()
+      : null;
+    const imageMediaUrls = rawMediaUrls.filter((url: string) => !isVideoUrl(url));
+    const imageSingleMediaUrl = singleMediaUrl && !isVideoUrl(singleMediaUrl) ? singleMediaUrl : null;
+
+    if ('media_urls' in nextPayload || 'media_url' in nextPayload || 'media_type' in nextPayload || 'video_background' in nextPayload) {
+      const mediaUrls = imageMediaUrls.length > 0
+        ? imageMediaUrls
+        : (imageSingleMediaUrl ? [imageSingleMediaUrl] : []);
+      nextPayload.media_url = imageSingleMediaUrl ?? mediaUrls[0] ?? null;
+      nextPayload.media_urls = mediaUrls.length > 0 ? mediaUrls : null;
+      nextPayload.media_type = mediaUrls.length > 1 ? 'gallery' : mediaUrls.length === 1 ? 'image' : null;
+      nextPayload.video_background = false;
+    }
+
+    const { data, error } = await admin.from('admin_posts').update(nextPayload).eq('id', id).select().single();
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });
 
     return NextResponse.json({ data });

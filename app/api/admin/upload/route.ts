@@ -40,9 +40,13 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Missing file' }, { status: 400 });
     }
 
-    // Check file size (50MB limit)
-    if (file.size > 50 * 1024 * 1024) {
-      return NextResponse.json({ error: 'File too large. Max 50MB allowed.' }, { status: 400 });
+    if (!file.type.startsWith('image/')) {
+      return NextResponse.json({ error: 'VIP posts accept images only.' }, { status: 400 });
+    }
+
+    // Check file size (10MB limit for VIP images)
+    if (file.size > 10 * 1024 * 1024) {
+      return NextResponse.json({ error: 'File too large. Max 10MB allowed.' }, { status: 400 });
     }
 
     // Require an authenticated admin before uploading files.

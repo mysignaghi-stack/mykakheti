@@ -173,23 +173,30 @@ export default function AdminPosts() {
     }
 
     try {
-      const hasMedia = formData.media_urls.length > 0 || !!formData.media_url;
       const mediaTypeFromUrls = (() => {
         const allUrls = [...formData.media_urls, formData.media_url].filter(Boolean) as string[];
         if (allUrls.length === 0) return null;
-        const isVideo = allUrls.some((url) => /\.(mp4|mov|avi|webm)$/i.test(url));
-        if (allUrls.length > 1) return 'gallery';
-        return isVideo ? 'video' : 'image';
+        const imageUrls = allUrls.filter((url) => !isVideoUrl(url));
+        if (imageUrls.length === 0) return null;
+        if (imageUrls.length > 1) return 'gallery';
+        return 'image';
       })();
       const mediaTypeFromFiles = (() => {
         if (selectedFiles.length === 0) return null;
+        const imageFiles = selectedFiles.filter((file) => file.type.startsWith('image/'));
+        if (imageFiles.length === 0) return null;
         if (selectedFiles.length > 1) return 'gallery';
-        return selectedFiles[0].type.startsWith('video/') ? 'video' : 'image';
+        return 'image';
       })();
+      const cleanMediaUrls = formData.media_urls.filter((url) => url && !isVideoUrl(url));
+      const cleanSingleMediaUrl = formData.media_url && !isVideoUrl(formData.media_url) ? formData.media_url : '';
+      const hasMedia = cleanMediaUrls.length > 0 || !!cleanSingleMediaUrl;
 
       const data = {
         ...formData,
-        media_urls: formData.media_urls.length > 0 ? formData.media_urls : null,
+        media_urls: cleanMediaUrls.length > 0 ? cleanMediaUrls : null,
+        media_url: cleanSingleMediaUrl || null,
+        video_background: false,
         publish_at: formData.publish_at ? new Date(formData.publish_at).toISOString() : null,
         media_type: mediaTypeFromFiles ?? mediaTypeFromUrls ?? (hasMedia ? 'image' : null),
       };
@@ -365,7 +372,12 @@ export default function AdminPosts() {
     try {
       const oversized = selectedFiles.find((file) => file.size > 10 * 1024 * 1024);
       if (oversized) {
-        alert('ვიდეოს მაქსიმალური ზომაა 10MB. ამჟამად მხოლოდ მცირე ფაილების ატვირთვაა შესაძლებელი.');
+        alert('ფოტოს მაქსიმალური ზომაა 10MB.');
+        return;
+      }
+      const nonImageFile = selectedFiles.find((file) => !file.type.startsWith('image/'));
+      if (nonImageFile) {
+        alert('VIP განცხადებებში ვიდეო აღარ იტვირთება. გთხოვთ აირჩიოთ მხოლოდ ფოტოები.');
         return;
       }
 
@@ -388,7 +400,7 @@ export default function AdminPosts() {
         // Check file size before upload (10MB limit for API routes)
         const maxSize = 10 * 1024 * 1024; // 10MB
         if (file.size > maxSize) {
-          alert(`ფაილი "${file.name}" ძალიან დიდია. მაქსიმალური ზომაა 10MB. ამჟამად მხოლოდ მცირე ფაილების ატვირთვაა შესაძლებელი.`);
+          alert(`ფაილი "${file.name}" ძალიან დიდია. მაქსიმალური ზომაა 10MB.`);
           continue;
         }
 
@@ -451,9 +463,9 @@ export default function AdminPosts() {
         title: fullPost.title || '',
         content: fullPost.content || '',
         category: fullPost.category || '',
-        media_urls: fullPost.media_urls || [],
-        media_url: fullPost.media_url || '',
-        video_background: fullPost.video_background || false,
+        media_urls: (fullPost.media_urls || []).filter((url) => Boolean(url) && !isVideoUrl(url)),
+        media_url: fullPost.media_url && !isVideoUrl(fullPost.media_url) ? fullPost.media_url : '',
+        video_background: false,
         priority: fullPost.priority || 0,
         link: fullPost.link || '',
         position: fullPost.position || '',
@@ -502,16 +514,16 @@ export default function AdminPosts() {
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = Array.from(e.target.files || []);
+    const files = Array.from(e.target.files || []).filter((file) => file.type.startsWith('image/'));
     setSelectedFiles(prev => [...prev, ...files]);
   };
 
   const isVideoUrl = (url?: string | null) => !!url && /\.(mp4|mov|avi|webm|mkv|m4v)$/i.test(url);
 
   const getPostMedia = (post: AdminPost) => {
-    const allImages = Array.isArray(post.media_urls) ? post.media_urls.filter(Boolean) : [];
+    const allImages = Array.isArray(post.media_urls) ? post.media_urls.filter((url) => Boolean(url) && !isVideoUrl(url)) : [];
     const primary = post.media_url ?? null;
-    const combined = primary ? [primary, ...allImages] : allImages;
+    const combined = primary && !isVideoUrl(primary) ? [primary, ...allImages] : allImages;
     const unique = Array.from(new Set(combined));
 
     if (!availableAdminMedia || availableAdminMedia.size === 0) return unique;
@@ -709,7 +721,7 @@ export default function AdminPosts() {
               </div>
 
               <div>
-                <label className="block text-sm font-bold text-white/60 mb-2">მედია URL</label>
+                <label className="block text-sm font-bold text-white/60 mb-2">ფოტოს URL</label>
                 <input
                   type="url"
                   value={formData.media_url}
@@ -719,11 +731,11 @@ export default function AdminPosts() {
               </div>
 
               <div>
-                <label className="block text-sm font-bold text-white/60 mb-2">ფოტოების და ვიდეოების ატვირთვა</label>
+                <label className="block text-sm font-bold text-white/60 mb-2">VIP ფოტოების ატვირთვა</label>
                 <input
                   type="file"
                   multiple
-                  accept="image/*,video/*"
+                  accept="image/*"
                   onChange={handleFileChange}
                   className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-white mb-2"
                 />
@@ -740,17 +752,6 @@ export default function AdminPosts() {
                     </button>
                   </div>
                 )}
-              </div>
-
-              <div>
-                <label className="flex items-center gap-2">
-                  <input
-                    type="checkbox"
-                    checked={formData.video_background}
-                    onChange={(e) => setFormData(prev => ({ ...prev, video_background: e.target.checked }))}
-                  />
-                  <span className="text-sm font-bold text-white/60">ვიდეო ფონი</span>
-                </label>
               </div>
 
               <div>

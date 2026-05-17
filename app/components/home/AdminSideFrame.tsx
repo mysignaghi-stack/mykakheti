@@ -13,8 +13,6 @@ import 'swiper/css/effect-fade';
 import 'swiper/css/autoplay';
 import { supabase } from '../../lib/supabase';
 import { renderAdminPostContent, stripAdminPostContent } from '@/app/lib/adminPostContent';
-import NativeVideoShareButton from '@/app/components/share/NativeVideoShareButton';
-import StableVideoPlayer from '@/app/components/media/StableVideoPlayer';
 // წავშალეთ AdminPost იმპორტი lib/types-დან კონფლიქტის თავიდან ასაცილებლად
 import type { Database } from '@/types/supabase';
 
@@ -39,8 +37,7 @@ export default function AdminSideFrame({ post, position, isAdmin, onRefresh }: A
     priority: 0,
     link: '',
     files: [] as File[],
-    mediaType: null as 'image' | 'video' | 'gallery' | null,
-    videoBackground: false
+    mediaType: null as 'image' | 'gallery' | null,
   });
   const [loading, setLoading] = useState(false);
   const [showFullContent, setShowFullContent] = useState(false);
@@ -58,7 +55,7 @@ export default function AdminSideFrame({ post, position, isAdmin, onRefresh }: A
   }, []);
 
   const resetForm = () => {
-    setFormData({ title: '', content: '', category: '', priority: 0, link: '', files: [], mediaType: null, videoBackground: false });
+    setFormData({ title: '', content: '', category: '', priority: 0, link: '', files: [], mediaType: null });
     setEditingPost(null);
     setShowForm(false);
   };
@@ -72,8 +69,7 @@ export default function AdminSideFrame({ post, position, isAdmin, onRefresh }: A
       priority: post.priority || 0,
       link: post.link || '',
       files: [],
-      mediaType: (post.media_type as 'image' | 'video' | 'gallery' | null) || null,
-      videoBackground: post.video_background || false
+      mediaType: post.media_type === 'gallery' ? 'gallery' : post.media_type === 'image' ? 'image' : null,
     });
     setShowForm(true);
   };
@@ -84,10 +80,18 @@ export default function AdminSideFrame({ post, position, isAdmin, onRefresh }: A
 
     setLoading(true);
     try {
-      const mediaUrls: string[] = editingPost?.media_urls ? [...editingPost.media_urls] : [];
-      let mediaType = editingPost?.media_type || null;
+      const mediaUrls: string[] = editingPost?.media_urls
+        ? editingPost.media_urls.filter((url) => Boolean(url) && !isVideoUrl(url))
+        : [];
+      let mediaType: 'image' | 'gallery' | null = mediaUrls.length > 1 ? 'gallery' : mediaUrls.length === 1 ? 'image' : null;
 
       if (formData.files.length > 0) {
+        const nonImageFile = formData.files.find((file) => !file.type.startsWith('image/'));
+        if (nonImageFile) {
+          alert('VIP განცხადებებში ვიდეო აღარ იტვირთება. გთხოვთ აირჩიოთ მხოლოდ ფოტოები.');
+          return;
+        }
+
         mediaUrls.length = 0;
         for (const file of formData.files) {
           let processedFile: File | Blob = file;
@@ -116,7 +120,7 @@ export default function AdminSideFrame({ post, position, isAdmin, onRefresh }: A
         }
 
         if (formData.files.length === 1) {
-          mediaType = formData.files[0].type.startsWith('video/') ? 'video' : 'image';
+          mediaType = 'image';
         } else {
           mediaType = 'gallery';
         }
@@ -129,10 +133,11 @@ export default function AdminSideFrame({ post, position, isAdmin, onRefresh }: A
         category: formData.category || null,
         priority: formData.priority,
         link: formData.link || null,
+        media_url: mediaUrls[0] ?? null,
         media_urls: mediaUrls.length > 0 ? mediaUrls : null,
         media_type: mediaType,
         position: position,
-        video_background: formData.videoBackground && mediaType === 'video'
+        video_background: false
       };
 
       if (editingPost) {
@@ -221,98 +226,16 @@ export default function AdminSideFrame({ post, position, isAdmin, onRefresh }: A
   // Safely access post properties with optional chaining
   const postCategory = post?.category;
   const postLink = post?.link;
-  const postMediaUrls = post?.media_urls;
-  const postMediaType = post?.media_type;
-  const postVideoBackground = post?.video_background;
-  const hasPostMedia = Boolean(post && ((post.media_urls && post.media_urls.length > 0) || (post as any).media_url));
-
   const isVideoUrl = (url?: string | null) => !!url && /\.(mp4|mov|avi|webm|m4v)$/i.test(url);
-
-  const PreviewVideo = ({ src, className = 'w-full h-full object-cover' }: { src: string; className?: string }) => {
-    const videoRef = React.useRef<HTMLVideoElement>(null);
-    const hasStartedRef = React.useRef(false);
-
-    const playPreview = () => {
-      const video = videoRef.current;
-      if (!video) return;
-      video.muted = true;
-      video.defaultMuted = true;
-      video.setAttribute('muted', '');
-      video.setAttribute('playsinline', '');
-      video.setAttribute('webkit-playsinline', '');
-      if (video.readyState < 2) {
-        video.load();
-      }
-      window.dispatchEvent(new CustomEvent('admin-preview-video-play', { detail: src }));
-      video.play().then(() => {
-        hasStartedRef.current = true;
-      }).catch(() => undefined);
-    };
-
-    useEffect(() => {
-      const video = videoRef.current;
-      if (!video) return;
-      video.defaultMuted = true;
-      video.muted = true;
-      video.setAttribute('muted', '');
-      video.setAttribute('playsinline', '');
-      video.setAttribute('webkit-playsinline', '');
-
-      const pauseOtherPreview = (event: Event) => {
-        const nextSrc = (event as CustomEvent<string>).detail;
-        if (nextSrc !== src) {
-          video.pause();
-        }
-      };
-      window.addEventListener('admin-preview-video-play', pauseOtherPreview as EventListener);
-
-      const observer = new IntersectionObserver(
-        ([entry]) => {
-          if (entry?.isIntersecting) {
-            const delays = hasStartedRef.current ? [80] : [100, 500, 1300];
-            delays.forEach((delay) => window.setTimeout(playPreview, delay));
-          } else {
-            video.pause();
-          }
-        },
-        { threshold: 0.18, rootMargin: '120px 0px' }
-      );
-
-      observer.observe(video);
-      return () => {
-        observer.disconnect();
-        window.removeEventListener('admin-preview-video-play', pauseOtherPreview as EventListener);
-      };
-    }, [src]);
-
-    return (
-      <video
-        ref={videoRef}
-        src={src}
-        className={className}
-        playsInline
-        autoPlay
-        muted
-        loop
-        preload="metadata"
-        onLoadedData={playPreview}
-        onCanPlay={playPreview}
-      />
-    );
+  const getImageMediaUrls = () => {
+    const urls = [
+      ...(Array.isArray(post?.media_urls) ? post?.media_urls ?? [] : []),
+      (post as any)?.media_url,
+    ].filter(Boolean) as string[];
+    return Array.from(new Set(urls)).filter((url) => !isVideoUrl(url));
   };
-
-  const videoWrapperClassName = postVideoBackground
-    ? 'relative w-full h-[180px] md:h-[200px] flex items-center justify-center overflow-hidden rounded-[20px]'
-    : 'relative w-full h-[180px] md:h-[200px] flex items-center justify-center overflow-hidden rounded-[20px]';
-  const videoOverlayClassName = postVideoBackground
-    ? 'absolute inset-0 bg-black/20 rounded-[20px] pointer-events-none'
-    : 'absolute inset-0 bg-gradient-to-br from-amber-600/20 via-yellow-400/10 to-amber-600/20 rounded-[20px] backdrop-blur-lg shadow-[inset_0_2px_10px_rgba(0,0,0,0.5)] pointer-events-none';
-  const videoFrameClassName = postVideoBackground
-    ? 'relative z-10 w-full h-full object-cover rounded-[20px]'
-    : 'relative z-10 w-full h-full object-cover rounded-[20px] shadow-2xl shadow-indigo-900/40 border-2 border-amber-500/40 cursor-pointer hover:border-amber-500/60 transition-all duration-300';
-  const galleryVideoFrameClassName = postVideoBackground
-    ? 'relative z-10 w-full h-32 object-cover rounded-[20px]'
-    : 'relative z-10 w-full h-32 object-cover rounded-[20px] shadow-2xl shadow-indigo-900/50 border-2 border-amber-500/40 hover:border-amber-500/60 transition-all duration-300';
+  const postImageMediaUrls = getImageMediaUrls();
+  const hasPostMedia = Boolean(post && postImageMediaUrls.length > 0);
 
   // Fixed height based on position
   const heightClass = position === 'left_top' || position === 'right_top' ? 'h-full' : 'h-auto';
@@ -321,7 +244,7 @@ export default function AdminSideFrame({ post, position, isAdmin, onRefresh }: A
     setLightbox({ open: true, media: [url], currentIndex: 0, isVideo });
   };
 
-  const getPrimaryMediaUrl = () => post?.media_urls?.[0] || (post as any)?.media_url || '';
+  const getPrimaryMediaUrl = () => postImageMediaUrls[0] || '';
 
   const getShareUrl = () => {
     if (typeof window === 'undefined') return '';
@@ -353,14 +276,18 @@ export default function AdminSideFrame({ post, position, isAdmin, onRefresh }: A
       setShowFullContent(true);
       return;
     }
-    openLightbox(url, post?.media_type === 'video' || isVideoUrl(url));
+    openLightbox(url, false);
   };
 
   return (
-    <div id={`admin-${position}`} className={`w-full ${heightClass} bg-gradient-to-br from-slate-900/80 via-black/60 to-slate-800/80 backdrop-blur-xl rounded-[24px] border border-amber-500/30 shadow-[inset_0_0_20px_rgba(245,158,11,0.12),0_14px_28px_-12px_rgba(0,0,0,0.5)] p-2 ring-1 ring-white/10 relative animate-in fade-in duration-700`}>
-      {/* Badge removed per request */}
+    <div id={`admin-${position}`} className={`w-full ${heightClass} overflow-hidden bg-gradient-to-br from-[#1a1205]/95 via-[#07070d]/90 to-[#121827]/95 backdrop-blur-xl rounded-[24px] border border-amber-300/35 shadow-[inset_0_1px_0_rgba(255,255,255,0.08),0_18px_45px_-24px_rgba(245,158,11,0.65)] p-2 ring-1 ring-amber-200/10 relative animate-in fade-in duration-700`}>
+      <div className="pointer-events-none absolute inset-x-5 top-0 h-px bg-gradient-to-r from-transparent via-amber-200/60 to-transparent" />
+      <div className="pointer-events-none absolute -right-10 -top-12 h-28 w-28 rounded-full bg-amber-400/10 blur-2xl" />
       {/* Header with controls */}
-      <div className="flex justify-end items-center mb-1">
+      <div className="relative z-10 flex justify-between items-center mb-1">
+        <span className="rounded-full border border-amber-300/30 bg-amber-500/15 px-2 py-0.5 text-[9px] font-black uppercase tracking-[0.16em] text-amber-100">
+          VIP
+        </span>
         <div className="flex gap-2">
           {isAdmin && (
             <button
@@ -378,24 +305,9 @@ export default function AdminSideFrame({ post, position, isAdmin, onRefresh }: A
       {post && hasPostMedia ? (
         <div className="mb-1 mt-1">
           {/* Decorative rounded frame with gradient border and inner dark panel */}
-          <div className="relative w-full h-[150px] rounded-[20px] p-[2px] bg-gradient-to-br from-amber-500/20 via-pink-400/10 to-violet-500/10 overflow-hidden">
+          <div className="relative w-full h-[150px] rounded-[20px] p-[2px] bg-gradient-to-br from-amber-300/55 via-white/10 to-cyan-300/20 overflow-hidden shadow-[0_16px_35px_-24px_rgba(251,191,36,0.85)]">
             <div className="absolute inset-0 bg-[#06060b] rounded-[18px] overflow-hidden flex items-center justify-center">
-              {/* media area */}
-              {post.media_type === 'video' ? (
-                <div
-                  role="button"
-                  tabIndex={0}
-                  onClick={() => openLightbox((post.media_urls?.[0] || (post as any).media_url)!, true)}
-                  onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openLightbox((post.media_urls?.[0] || (post as any).media_url)!, true); } }}
-                  className="w-full h-full rounded-[18px] overflow-hidden relative cursor-pointer"
-                >
-                  <PreviewVideo src={(post.media_urls?.[0] || (post as any).media_url)!} />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent pointer-events-none" />
-                  <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
-                    <span className="flex h-11 w-11 items-center justify-center rounded-full border border-white/25 bg-black/55 pl-0.5 text-sm font-black text-white shadow-2xl">▶</span>
-                  </div>
-                </div>
-              ) : post.media_type === 'gallery' ? (
+              {postImageMediaUrls.length > 1 ? (
                 <div className="w-full h-full">
                   <Swiper
                     modules={[Navigation, Pagination, EffectFade, Autoplay]}
@@ -405,30 +317,22 @@ export default function AdminSideFrame({ post, position, isAdmin, onRefresh }: A
                     pagination={{ clickable: true }}
                     effect="fade"
                     fadeEffect={{ crossFade: true }}
-                    autoplay={{ delay: 3000, disableOnInteraction: false }}
-                  className="w-full h-full rounded-[18px] overflow-hidden"
+                    autoplay={{ delay: 3200, disableOnInteraction: false, pauseOnMouseEnter: true }}
+                    className="w-full h-full rounded-[18px] overflow-hidden"
                   >
-                    {(post.media_urls || [(post as any).media_url]).filter(Boolean).map((url: string, idx: number) => (
+                    {postImageMediaUrls.map((url: string, idx: number) => (
                       <SwiperSlide key={idx} className="w-full h-full rounded-[18px] overflow-hidden">
-                        {isVideoUrl(url) ? (
-                          <PreviewVideo src={url} />
-                        ) : (
-                          <Image src={url!} alt="" fill loading="eager" sizes="(max-width: 768px) 100vw, 800px" className="object-cover" />
-                        )}
+                        <Image src={url} alt="" fill loading="lazy" sizes="(max-width: 768px) 100vw, 420px" className="object-cover" />
                       </SwiperSlide>
                     ))}
                   </Swiper>
                 </div>
               ) : (
-                <div className="w-full h-full rounded-[18px] overflow-hidden relative cursor-pointer" onClick={() => openLightbox((post.media_urls?.[0] || (post as any).media_url)!, isVideoUrl((post.media_urls?.[0] || (post as any).media_url)!))}>
-                  {isVideoUrl((post.media_urls?.[0] || (post as any).media_url)!) ? (
-                    <PreviewVideo src={(post.media_urls?.[0] || (post as any).media_url)!} />
-                  ) : (
-                    <Image src={(post.media_urls?.[0] || (post as any).media_url)!} alt="" fill loading="eager" sizes="(max-width: 768px) 100vw, 800px" className="object-cover" />
-                  )}
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent pointer-events-none" />
+                <div className="w-full h-full rounded-[18px] overflow-hidden relative cursor-pointer" onClick={() => openLightbox(postImageMediaUrls[0], false)}>
+                  <Image src={postImageMediaUrls[0]} alt="" fill loading="lazy" sizes="(max-width: 768px) 100vw, 420px" className="object-cover" />
                 </div>
               )}
+              <div className="absolute inset-0 bg-gradient-to-t from-black/45 via-transparent to-amber-200/5 pointer-events-none" />
             </div>
           </div>
           {isAdmin && post && (
@@ -465,16 +369,6 @@ export default function AdminSideFrame({ post, position, isAdmin, onRefresh }: A
               >
                 გაზიარება
               </button>
-              {(post.media_type === 'video' || isVideoUrl(getPrimaryMediaUrl())) && (
-                <NativeVideoShareButton
-                  videoUrl={getPrimaryMediaUrl()}
-                  fallbackUrl={getShareUrl()}
-                  title={post.title ?? 'MyKakheti'}
-                  description={post.content ? stripAdminPostContent(post.content) : null}
-                  category={post.category}
-                  className="rounded-lg border border-emerald-300/30 bg-emerald-500/10 px-2 py-1 text-[10px] font-black uppercase text-emerald-100 hover:bg-emerald-500/20 transition disabled:opacity-60"
-                />
-              )}
             </div>
           )}
         </div>
@@ -528,26 +422,15 @@ export default function AdminSideFrame({ post, position, isAdmin, onRefresh }: A
                 <input
                   type="file"
                   className="hidden"
-                  accept="image/*,video/*"
+                  accept="image/*"
                   multiple
                   onChange={(e) => {
-                    const files = Array.from(e.target.files || []);
+                    const files = Array.from(e.target.files || []).filter((file) => file.type.startsWith('image/'));
                     setFormData(prev => ({ ...prev, files }));
                   }}
                 />
-                <span>{formData.files.length > 0 ? `${formData.files.length} ფაილი არჩეულია` : '📎 ფოტოები/ვიდეო დართვა'}</span>
+                <span>{formData.files.length > 0 ? `${formData.files.length} ფოტო არჩეულია` : '📎 VIP ფოტოები დართვა'}</span>
               </label>
-              {formData.files.length === 1 && formData.files[0].type.startsWith('video/') && (
-                <label className="flex items-center gap-2 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={formData.videoBackground}
-                    onChange={(e) => setFormData(prev => ({ ...prev, videoBackground: e.target.checked }))}
-                    className="w-4 h-4 accent-blue-500"
-                  />
-                  <span className="text-xs text-white/60">ვიდეო ფონზე გაშვება</span>
-                </label>
-              )}
               <div className="flex gap-2">
                 <button
                   type="submit"
@@ -689,17 +572,13 @@ export default function AdminSideFrame({ post, position, isAdmin, onRefresh }: A
                   ✕
                 </button>
                 <div className="relative flex h-[320px] items-center justify-center bg-black md:h-[520px]">
-                  {lightbox.isVideo ? (
-                    <StableVideoPlayer src={lightbox.media[lightbox.currentIndex]} />
-                  ) : (
-                    <Image
-                      src={lightbox.media[lightbox.currentIndex]}
-                      alt=""
-                      fill
-                      sizes="100vw"
-                      className="object-contain"
-                    />
-                  )}
+                  <Image
+                    src={lightbox.media[lightbox.currentIndex]}
+                    alt=""
+                    fill
+                    sizes="100vw"
+                    className="object-contain"
+                  />
                 </div>
                 {post && (
                   <div className="space-y-3 p-5 md:p-7">
@@ -721,16 +600,6 @@ export default function AdminSideFrame({ post, position, isAdmin, onRefresh }: A
                       <a href={post.link} target="_blank" rel="noopener noreferrer" className="inline-flex rounded-xl border border-amber-300/35 bg-amber-500/15 px-4 py-2 text-[11px] font-black uppercase tracking-[0.14em] text-amber-100 transition hover:bg-amber-500/25">
                         ბმულზე გადასვლა
                       </a>
-                    )}
-                    {lightbox.isVideo && (
-                      <NativeVideoShareButton
-                        videoUrl={lightbox.media[lightbox.currentIndex]}
-                        fallbackUrl={getShareUrl()}
-                        title={post.title ?? 'MyKakheti'}
-                        description={post.content ? stripAdminPostContent(post.content) : null}
-                        category={post.category}
-                        className="inline-flex rounded-xl border border-emerald-300/35 bg-emerald-500/15 px-4 py-2 text-[11px] font-black uppercase tracking-[0.14em] text-emerald-100 transition hover:bg-emerald-500/25 disabled:opacity-60"
-                      />
                     )}
                   </div>
                 )}
