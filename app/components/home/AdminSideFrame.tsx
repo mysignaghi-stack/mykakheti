@@ -237,11 +237,12 @@ export default function AdminSideFrame({ post, position, isAdmin, onRefresh }: A
 
   useEffect(() => {
     if (postImageMediaUrls.length <= 1) return;
+    const slideDelay = position === 'left_top' ? 3100 : 4700;
     const intervalId = window.setInterval(() => {
       setActiveImageIndex((index) => (index + 1) % postImageMediaUrls.length);
-    }, 3200);
+    }, slideDelay);
     return () => window.clearInterval(intervalId);
-  }, [postImageMediaUrls.length]);
+  }, [position, postImageMediaUrls.length]);
 
   // Fixed height based on position
   const heightClass = position === 'left_top' || position === 'right_top' ? 'h-full' : 'h-auto';
