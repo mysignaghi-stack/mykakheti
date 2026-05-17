@@ -41,7 +41,7 @@ export default function AdminSideFrame({ post, position, isAdmin, onRefresh }: A
   });
   const [loading, setLoading] = useState(false);
   const [showFullContent, setShowFullContent] = useState(false);
-  const [lightbox, setLightbox] = useState<{ open: boolean; media: string[]; currentIndex: number; isVideo: boolean } | null>(null);
+  const [lightbox, setLightbox] = useState<{ open: boolean; media: string[]; currentIndex: number } | null>(null);
   const [isMounted, setIsMounted] = useState(false);
 
   // Reset states when the displayed admin post changes
@@ -240,8 +240,10 @@ export default function AdminSideFrame({ post, position, isAdmin, onRefresh }: A
   // Fixed height based on position
   const heightClass = position === 'left_top' || position === 'right_top' ? 'h-full' : 'h-auto';
 
-  const openLightbox = (url: string, isVideo: boolean) => {
-    setLightbox({ open: true, media: [url], currentIndex: 0, isVideo });
+  const openLightbox = (index = 0) => {
+    const media = postImageMediaUrls.length > 0 ? postImageMediaUrls : [];
+    if (media.length === 0) return;
+    setLightbox({ open: true, media, currentIndex: Math.min(Math.max(index, 0), media.length - 1) });
   };
 
   const getPrimaryMediaUrl = () => postImageMediaUrls[0] || '';
@@ -270,13 +272,37 @@ export default function AdminSideFrame({ post, position, isAdmin, onRefresh }: A
     await navigator.clipboard.writeText(url);
   };
 
+  const sharePostToFacebook = () => {
+    const url = getShareUrl();
+    if (!url || typeof window === 'undefined') return;
+    window.open(
+      `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`,
+      '_blank',
+      'noopener,noreferrer,width=720,height=520'
+    );
+  };
+
   const openPostPreview = () => {
     const url = getPrimaryMediaUrl();
     if (!url) {
       setShowFullContent(true);
       return;
     }
-    openLightbox(url, false);
+    openLightbox(0);
+  };
+
+  const goLightboxPrev = () => {
+    setLightbox((current) => current
+      ? { ...current, currentIndex: Math.max(0, current.currentIndex - 1) }
+      : current
+    );
+  };
+
+  const goLightboxNext = () => {
+    setLightbox((current) => current
+      ? { ...current, currentIndex: Math.min(current.media.length - 1, current.currentIndex + 1) }
+      : current
+    );
   };
 
   return (
@@ -319,14 +345,18 @@ export default function AdminSideFrame({ post, position, isAdmin, onRefresh }: A
                     className="w-full h-full rounded-[18px] overflow-hidden"
                   >
                     {postImageMediaUrls.map((url: string, idx: number) => (
-                      <SwiperSlide key={idx} className="w-full h-full rounded-[18px] overflow-hidden">
+                      <SwiperSlide
+                        key={idx}
+                        className="w-full h-full rounded-[18px] overflow-hidden"
+                        onClick={() => openLightbox(idx)}
+                      >
                         <Image src={url} alt="" fill loading="lazy" sizes="(max-width: 768px) 100vw, 420px" className="rounded-[16px] object-cover" />
                       </SwiperSlide>
                     ))}
                   </Swiper>
                 </div>
               ) : (
-                <div className="w-full h-full rounded-[18px] overflow-hidden relative cursor-pointer" onClick={() => openLightbox(postImageMediaUrls[0], false)}>
+                <div className="w-full h-full rounded-[18px] overflow-hidden relative cursor-pointer" onClick={() => openLightbox(0)}>
                   <Image src={postImageMediaUrls[0]} alt="" fill loading="lazy" sizes="(max-width: 768px) 100vw, 420px" className="rounded-[16px] object-cover" />
                 </div>
               )}
@@ -345,6 +375,13 @@ export default function AdminSideFrame({ post, position, isAdmin, onRefresh }: A
                   className="rounded-lg border border-white/20 bg-black/70 px-2.5 py-1.5 text-[10px] font-black uppercase text-white/85 shadow-lg backdrop-blur-md transition hover:bg-white/15 hover:text-white"
                 >
                   გაზიარება
+                </button>
+                <button
+                  type="button"
+                  onClick={sharePostToFacebook}
+                  className="rounded-lg border border-blue-300/30 bg-black/70 px-2.5 py-1.5 text-[10px] font-black uppercase text-blue-100 shadow-lg backdrop-blur-md transition hover:bg-blue-500/25"
+                >
+                  Facebook
                 </button>
               </div>
               {isAdmin && post && (
@@ -529,6 +566,13 @@ export default function AdminSideFrame({ post, position, isAdmin, onRefresh }: A
             >
               გაზიარება
             </button>
+            <button
+              type="button"
+              onClick={sharePostToFacebook}
+              className="rounded-lg border border-blue-300/30 bg-blue-500/10 px-2 py-1 text-[10px] font-black uppercase text-blue-100 transition hover:bg-blue-500/20"
+            >
+              Facebook
+            </button>
           </div>
         </div>
       ) : !post ? (
@@ -575,9 +619,47 @@ export default function AdminSideFrame({ post, position, isAdmin, onRefresh }: A
                     sizes="100vw"
                     className="object-contain"
                   />
+                  {lightbox.media.length > 1 && (
+                    <>
+                      <button
+                        type="button"
+                        onClick={goLightboxPrev}
+                        disabled={lightbox.currentIndex === 0}
+                        className="absolute left-3 top-1/2 z-20 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full border border-white/20 bg-black/65 text-2xl text-white/80 transition hover:bg-black disabled:opacity-30"
+                        aria-label="წინა ფოტო"
+                      >
+                        ‹
+                      </button>
+                      <button
+                        type="button"
+                        onClick={goLightboxNext}
+                        disabled={lightbox.currentIndex >= lightbox.media.length - 1}
+                        className="absolute right-3 top-1/2 z-20 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full border border-white/20 bg-black/65 text-2xl text-white/80 transition hover:bg-black disabled:opacity-30"
+                        aria-label="შემდეგი ფოტო"
+                      >
+                        ›
+                      </button>
+                    </>
+                  )}
                 </div>
                 {post && (
                   <div className="space-y-3 p-5 md:p-7">
+                    {lightbox.media.length > 1 && (
+                      <div className="flex gap-2 overflow-x-auto pb-1">
+                        {lightbox.media.map((url, index) => (
+                          <button
+                            key={`${url}-${index}`}
+                            type="button"
+                            onClick={() => setLightbox((current) => current ? { ...current, currentIndex: index } : current)}
+                            className={`relative h-14 w-20 shrink-0 overflow-hidden rounded-xl border transition ${
+                              lightbox.currentIndex === index ? 'border-amber-300' : 'border-white/15 opacity-70 hover:opacity-100'
+                            }`}
+                          >
+                            <Image src={url} alt="" fill sizes="80px" className="object-cover" />
+                          </button>
+                        ))}
+                      </div>
+                    )}
                     {post.category && (
                       <p className="text-[10px] font-black uppercase tracking-[0.24em] text-amber-300/70">{post.category}</p>
                     )}
@@ -597,6 +679,22 @@ export default function AdminSideFrame({ post, position, isAdmin, onRefresh }: A
                         ბმულზე გადასვლა
                       </a>
                     )}
+                    <div className="flex flex-wrap gap-2">
+                      <button
+                        type="button"
+                        onClick={sharePost}
+                        className="inline-flex rounded-xl border border-white/15 bg-white/5 px-4 py-2 text-[11px] font-black uppercase tracking-[0.14em] text-white/75 transition hover:bg-white/10 hover:text-white"
+                      >
+                        გაზიარება
+                      </button>
+                      <button
+                        type="button"
+                        onClick={sharePostToFacebook}
+                        className="inline-flex rounded-xl border border-blue-300/35 bg-blue-500/15 px-4 py-2 text-[11px] font-black uppercase tracking-[0.14em] text-blue-100 transition hover:bg-blue-500/25"
+                      >
+                        Facebook
+                      </button>
+                    </div>
                   </div>
                 )}
               </div>
