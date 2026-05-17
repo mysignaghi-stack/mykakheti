@@ -17,6 +17,7 @@ const PRIMARY_LINKS = [
   { href: '/admin/community', label: 'სერვისები/სათემო' },
   { href: '/admin/service-requests', label: 'სერვისის მაძიებლები' },
   { href: '/admin/posts', label: 'ადმინ პოსტები' },
+  { href: '/admin/analytics', label: 'ანალიტიკა' },
   { href: '/admin/site-settings', label: 'პარამეტრები' },
 ];
 

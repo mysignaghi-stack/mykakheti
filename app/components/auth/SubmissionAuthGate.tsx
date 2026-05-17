@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState, type ChangeEvent, type FormEvent, typ
 import type { Session } from "@supabase/supabase-js";
 import { supabase } from "../../lib/supabase";
 import { getAuthErrorMessage } from "../../lib/authErrors";
+import { trackEvent } from "../../lib/analytics";
 
 interface SubmissionAuthGateProps {
   redirectPath: string;
@@ -185,6 +186,7 @@ export default function SubmissionAuthGate({ children, heading }: SubmissionAuth
       });
 
       if (error) throw error;
+      trackEvent("sign_up", { method: "email_link", source: "submission_gate" });
       setRegisterMessage("აქტივაციის ბმული გაიგზავნა თქვენს მითითებულ ელფოსტაზე. გთხოვთ შეამოწმოთ საფოსტო ყუთი.");
       setRegisterData({ firstName: "", lastName: "", email: "", phone: "", password: "" });
     } catch (err: unknown) {

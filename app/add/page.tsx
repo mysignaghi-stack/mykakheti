@@ -9,6 +9,7 @@ import type { Session } from '@supabase/supabase-js';
 import { supabase } from '../lib/supabase';
 import { ANIMAL_SALE_CATEGORIES, ANNOUNCEMENT_CATEGORIES, ANNOUNCEMENT_CATEGORY_GROUPS, LOCATIONS } from '../lib/constants';
 import { getAuthErrorMessage } from '../lib/authErrors';
+import { trackEvent } from '../lib/analytics';
 
 // Flatten nested municipalities → cities → villages into unique label strings for select options.
 const LOCATION_OPTIONS = Array.from(new Set(
@@ -339,6 +340,7 @@ export default function AddPage() {
       });
 
       if (error) throw error;
+      trackEvent('sign_up', { method: 'email_link', source: 'add_page' });
       setRegisterMessage('აქტივაციის ბმული გაიგზავნა თქვენს მითითებულ ელფოსტაზე. გთხოვთ შეამოწმოთ საფოსტო ყუთი.');
       setRegisterData({ firstName: '', lastName: '', email: '', phone: '', password: '' });
     } catch (err: unknown) {
@@ -480,6 +482,13 @@ export default function AddPage() {
       const result = await response.json();
       if (!response.ok) throw new Error(result.error);
 
+      trackEvent('add_listing', {
+        category: formData.category,
+        location: formData.location,
+        currency: formData.currency,
+        has_price: Boolean(formData.price),
+        image_count: images.length,
+      });
       setIsSubmitted(true);
     } catch (err: any) {
       alert(`შეცდომა: ${err.message}`);

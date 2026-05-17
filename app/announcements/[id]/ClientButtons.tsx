@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import type { Database } from '@/types/supabase';
+import { trackEvent } from '@/app/lib/analytics';
 
 type Announcement = Database['public']['Tables']['announcements']['Row'];
 
@@ -24,6 +25,7 @@ export default function ClientButtons({ ad, shareUrl }: ClientButtonsProps) {
     if (isMobileDevice() && navigator.share) {
       try {
         await navigator.share({ url: shareUrl, title: ad.title || undefined });
+        trackEvent('share', { method: 'native', content_type: 'announcement', item_id: ad.id });
         return;
       } catch {
         // Fall back to copy on share failure or cancel.
@@ -31,6 +33,7 @@ export default function ClientButtons({ ad, shareUrl }: ClientButtonsProps) {
     }
     try {
       await navigator.clipboard.writeText(shareUrl);
+      trackEvent('copy_link', { content_type: 'announcement', item_id: ad.id });
       setCopied(true);
       alert('ბმული კოპირებულია! ✅'); // დავტოვეთ თქვენი ალერტი
       setTimeout(() => setCopied(false), 2000);
@@ -42,6 +45,7 @@ export default function ClientButtons({ ad, shareUrl }: ClientButtonsProps) {
       textArea.select();
       document.execCommand("copy");
       document.body.removeChild(textArea);
+      trackEvent('copy_link', { content_type: 'announcement', item_id: ad.id, fallback: true });
       setCopied(true);
       alert('ბმული კოპირებულია! ✅');
       setTimeout(() => setCopied(false), 2000);
@@ -50,6 +54,7 @@ export default function ClientButtons({ ad, shareUrl }: ClientButtonsProps) {
 
   // 📱 Facebook Share
   const handleFBShare = () => {
+    trackEvent('facebook_share', { content_type: 'announcement', item_id: ad.id });
     window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`, 'fb-share', 'width=600,height=400');
   };
 
@@ -66,12 +71,14 @@ export default function ClientButtons({ ad, shareUrl }: ClientButtonsProps) {
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <a 
           href={`tel:${ad.phone}`} 
+          onClick={() => trackEvent('phone_click', { content_type: 'announcement', item_id: ad.id })}
           className="bg-white text-slate-950 py-3.5 rounded-[18px] font-black uppercase italic text-center text-[10px] shadow-2xl hover:bg-amber-500 hover:text-white transition-all transform active:scale-95 flex items-center justify-center gap-2"
         >
           📞 დარეკვა: {ad.phone}
         </a>
         <a 
           href={whatsappUrl}
+          onClick={() => trackEvent('phone_click', { method: 'whatsapp', content_type: 'announcement', item_id: ad.id })}
           target="_blank" 
           rel="noopener noreferrer"
           className="bg-green-600/10 border border-green-500/20 text-green-500 py-3.5 rounded-[18px] font-black uppercase italic text-center text-[10px] shadow-2xl hover:bg-green-600 hover:text-white transition-all transform active:scale-95 flex items-center justify-center gap-2"

@@ -6,6 +6,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { supabase } from "../../lib/supabase";
 import { getAuthErrorMessage } from "../../lib/authErrors";
+import { trackEvent } from "../../lib/analytics";
 
 type Mode = "login" | "signup";
 const AUTH_LANDING_PATH = "/";
@@ -60,6 +61,7 @@ export default function AuthForm({ initialMode = "login", onClose, compact = fal
         });
         if (error) throw error;
         if (data.user) await upsertProfile(data.user);
+        trackEvent("sign_up", { method: "email_password", source: "auth_form" });
       } else {
         const { data, error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;

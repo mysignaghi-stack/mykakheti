@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from 'next';
 import { Inter } from 'next/font/google';
 import { Analytics } from '@vercel/analytics/react';
+import MarketingAnalytics from './components/analytics/MarketingAnalytics';
 import './globals.css';
 
 // 1. ფონტის ოპტიმიზაცია
@@ -19,6 +20,8 @@ export const viewport: Viewport = {
 };
 
 // 3. სრულყოფილი SEO მეტამონაცემები
+const googleSiteVerification = process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION;
+
 export const metadata: Metadata = {
   title: {
     default: 'MYKAKHETI.GE - კახეთის ერთიანი ციფრული პლატფორმა',
@@ -54,6 +57,7 @@ export const metadata: Metadata = {
   icons: {
     icon: '/favicon.ico', // დარწმუნდით, რომ ფაილი გაქვთ public საქაღალდეში
   },
+  ...(googleSiteVerification ? { verification: { google: googleSiteVerification } } : {}),
 };
 
 export default function RootLayout({
@@ -95,6 +99,7 @@ export default function RootLayout({
           }}
         />
         {/* აქ შეგიძლიათ დაამატოთ გლობალური კომპონენტები, მაგ: Navbar ან Footer, თუ ისინი ყველა გვერდზე გინდათ */}
+        <MarketingAnalytics />
         {children}
         <Analytics />
       </body>

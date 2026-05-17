@@ -4,6 +4,7 @@ import { useMemo, useState, type FormEvent } from 'react';
 import Link from 'next/link';
 import SubmissionAuthGate from '@/app/components/auth/SubmissionAuthGate';
 import { SERVICE_CATALOG } from '@/app/lib/serviceCatalog';
+import { trackEvent } from '@/app/lib/analytics';
 
 const MUNICIPALITIES = [
   'თელავი',
@@ -116,6 +117,12 @@ export default function ServiceRequestSubmitPage() {
         throw new Error(payload?.error || 'მოთხოვნის გაგზავნა ვერ მოხერხდა');
       }
 
+      trackEvent('service_request', {
+        category,
+        service_count: servicesForSubmit.length,
+        location,
+        has_budget: Boolean(budget),
+      });
       setSubmitted(true);
     } catch (error) {
       const message = error instanceof Error ? error.message : 'უცნობი შეცდომა';

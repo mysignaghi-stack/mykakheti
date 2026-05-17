@@ -5,6 +5,7 @@ import Link from 'next/link';
 import imageCompression from 'browser-image-compression';
 import { supabase } from '../../../lib/supabase';
 import SubmissionAuthGate from '../../../components/auth/SubmissionAuthGate';
+import { trackEvent } from '../../../lib/analytics';
 
 const SERVICE_GROUPS = [
   {
@@ -212,6 +213,13 @@ export default function MastersSubmit() {
         const payload = await response.json().catch(() => ({}));
         return alert('შეცდომა: ' + (payload?.error ?? 'უცნობი შეცდომა'));
       }
+      trackEvent('add_service', {
+        category,
+        service_count: selectedServices.length,
+        location: location || null,
+        has_phone: Boolean(phone),
+        has_email: Boolean(email.trim()),
+      });
       setSubmitted(true);
     } catch (error) {
       const message = error instanceof Error ? error.message : 'უცნობი შეცდომა';
