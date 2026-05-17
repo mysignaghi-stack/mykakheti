@@ -4,13 +4,6 @@ import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import Image from 'next/image';
 import imageCompression from 'browser-image-compression';
-import { Pagination, EffectFade, Autoplay } from 'swiper/modules';
-import { Swiper, SwiperSlide } from 'swiper/react';
-import 'swiper/css';
-import 'swiper/css/navigation';
-import 'swiper/css/pagination';
-import 'swiper/css/effect-fade';
-import 'swiper/css/autoplay';
 import { supabase } from '../../lib/supabase';
 import { renderAdminPostContent, stripAdminPostContent } from '@/app/lib/adminPostContent';
 // წავშალეთ AdminPost იმპორტი lib/types-დან კონფლიქტის თავიდან ასაცილებლად
@@ -43,6 +36,7 @@ export default function AdminSideFrame({ post, position, isAdmin, onRefresh }: A
   const [showFullContent, setShowFullContent] = useState(false);
   const [lightbox, setLightbox] = useState<{ open: boolean; media: string[]; currentIndex: number } | null>(null);
   const [isMounted, setIsMounted] = useState(false);
+  const [activeImageIndex, setActiveImageIndex] = useState(0);
 
   // Reset states when the displayed admin post changes
   useEffect(() => {
@@ -237,6 +231,18 @@ export default function AdminSideFrame({ post, position, isAdmin, onRefresh }: A
   const postImageMediaUrls = getImageMediaUrls();
   const hasPostMedia = Boolean(post && postImageMediaUrls.length > 0);
 
+  useEffect(() => {
+    setActiveImageIndex(0);
+  }, [post?.id, postImageMediaUrls.length]);
+
+  useEffect(() => {
+    if (postImageMediaUrls.length <= 1) return;
+    const intervalId = window.setInterval(() => {
+      setActiveImageIndex((index) => (index + 1) % postImageMediaUrls.length);
+    }, 3200);
+    return () => window.clearInterval(intervalId);
+  }, [postImageMediaUrls.length]);
+
   // Fixed height based on position
   const heightClass = position === 'left_top' || position === 'right_top' ? 'h-full' : 'h-auto';
 
@@ -333,27 +339,36 @@ export default function AdminSideFrame({ post, position, isAdmin, onRefresh }: A
           <div className="relative h-full w-full rounded-[20px] p-[2px] bg-gradient-to-br from-amber-300/55 via-white/10 to-cyan-300/20 overflow-hidden shadow-[0_16px_35px_-24px_rgba(251,191,36,0.85)]">
             <div className="absolute inset-0 bg-[#06060b] rounded-[18px] overflow-hidden flex items-center justify-center">
               {postImageMediaUrls.length > 1 ? (
-                <div className="w-full h-full">
-                  <Swiper
-                    modules={[Pagination, EffectFade, Autoplay]}
-                    spaceBetween={10}
-                    slidesPerView={1}
-                    pagination={{ clickable: true }}
-                    effect="fade"
-                    fadeEffect={{ crossFade: true }}
-                    autoplay={{ delay: 3200, disableOnInteraction: false, pauseOnMouseEnter: true }}
-                    className="w-full h-full rounded-[18px] overflow-hidden"
-                  >
-                    {postImageMediaUrls.map((url: string, idx: number) => (
-                      <SwiperSlide
-                        key={idx}
-                        className="w-full h-full rounded-[18px] overflow-hidden"
-                        onClick={() => openLightbox(idx)}
-                      >
-                        <Image src={url} alt="" fill loading="lazy" sizes="(max-width: 768px) 100vw, 420px" className="rounded-[16px] object-cover" />
-                      </SwiperSlide>
+                <div className="relative h-full w-full cursor-pointer rounded-[18px] overflow-hidden" onClick={() => openLightbox(activeImageIndex)}>
+                  {postImageMediaUrls.map((url: string, idx: number) => (
+                    <Image
+                      key={url}
+                      src={url}
+                      alt=""
+                      fill
+                      loading={idx === 0 ? 'eager' : 'lazy'}
+                      sizes="(max-width: 768px) 100vw, 420px"
+                      className={`rounded-[16px] object-cover transition-opacity duration-700 ${
+                        idx === activeImageIndex ? 'opacity-100' : 'opacity-0'
+                      }`}
+                    />
+                  ))}
+                  <div className="absolute bottom-8 left-1/2 z-20 flex -translate-x-1/2 gap-1">
+                    {postImageMediaUrls.map((url, idx) => (
+                      <button
+                        key={`${url}-dot`}
+                        type="button"
+                        onClick={(event) => {
+                          event.stopPropagation();
+                          setActiveImageIndex(idx);
+                        }}
+                        className={`h-1.5 rounded-full transition-all ${
+                          idx === activeImageIndex ? 'w-4 bg-amber-300' : 'w-1.5 bg-white/40 hover:bg-white/70'
+                        }`}
+                        aria-label={`ფოტო ${idx + 1}`}
+                      />
                     ))}
-                  </Swiper>
+                  </div>
                 </div>
               ) : (
                 <div className="w-full h-full rounded-[18px] overflow-hidden relative cursor-pointer" onClick={() => openLightbox(0)}>
