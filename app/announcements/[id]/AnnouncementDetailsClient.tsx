@@ -41,6 +41,7 @@ export default function AnnouncementDetailsClient({ initialAd }: { initialAd: An
   const [shareUrl, setShareUrl] = useState('');
   const [zoomOpen, setZoomOpen] = useState(false);
   const [zoomImg, setZoomImg] = useState<string | null>(null);
+  const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(false);
   const [zoomIndex, setZoomIndex] = useState(0);
   const [zoomScale, setZoomScale] = useState(1);
   const [zoomOffset, setZoomOffset] = useState({ x: 0, y: 0 });
@@ -63,6 +64,8 @@ export default function AnnouncementDetailsClient({ initialAd }: { initialAd: An
   });
   const contentRef = useRef<HTMLDivElement | null>(null);
   const isOwner = Boolean(ad?.user_id && currentUserId && ad.user_id === currentUserId);
+  const description = ad?.description ?? '';
+  const shouldCollapseDescription = description.length > 260 || description.split(/\r?\n/).length > 5;
 
   // Share URL-ის დაყენება კლიენტის მხარეს
   useEffect(() => {
@@ -110,6 +113,10 @@ export default function AnnouncementDetailsClient({ initialAd }: { initialAd: An
       fetchAd();
     }
   }, [announcementId, initialAd]);
+
+  useEffect(() => {
+    setIsDescriptionExpanded(false);
+  }, [ad?.id]);
 
   const saveEdit = async () => {
     if (!ad || savingEdit) return;
@@ -346,9 +353,32 @@ export default function AnnouncementDetailsClient({ initialAd }: { initialAd: An
                     {ad.price} {ad.currency === 'USD' ? '$' : '₾'}
                   </div>
 
-                  <p className="text-white/75 leading-relaxed italic text-xs md:text-sm mb-4 md:mb-5 whitespace-pre-wrap relative z-10 font-medium">
-                    {ad.description}
-                  </p>
+                  <div className="mb-4 md:mb-5 relative z-10">
+                    <div className="relative">
+                      <p
+                        className={`text-white/75 leading-relaxed italic text-xs md:text-sm whitespace-pre-wrap font-medium transition-[max-height] duration-300 ${
+                          shouldCollapseDescription && !isDescriptionExpanded
+                            ? 'max-h-36 overflow-hidden md:max-h-44'
+                            : 'max-h-none'
+                        }`}
+                      >
+                        {description}
+                      </p>
+                      {shouldCollapseDescription && !isDescriptionExpanded && (
+                        <div className="pointer-events-none absolute inset-x-0 bottom-0 h-16 bg-gradient-to-b from-transparent via-[#071126]/75 to-[#071126]" />
+                      )}
+                    </div>
+
+                    {shouldCollapseDescription && (
+                      <button
+                        type="button"
+                        onClick={() => setIsDescriptionExpanded((value) => !value)}
+                        className="mt-3 rounded-xl border border-amber-300/35 bg-amber-500/15 px-4 py-2 text-[10px] font-black uppercase tracking-[0.14em] text-amber-100 transition hover:bg-amber-500/25"
+                      >
+                        {isDescriptionExpanded ? 'ნაკლების ნახვა' : 'სრულად ნახვა'}
+                      </button>
+                    )}
+                  </div>
 
                   {/* ✅ აქ ვიყენებთ ClientButtons კომპონენტს, რომელსაც უკვე გადავეცით დიზაინი */}
                   <ClientButtons ad={ad} shareUrl={shareUrl} />
