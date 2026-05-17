@@ -302,9 +302,9 @@ export default function AdminSideFrame({ post, position, isAdmin, onRefresh }: A
 
       {/* Media Display - Moved to top */}
       {post && hasPostMedia ? (
-        <div className="mb-1">
+        <div className={showForm ? 'mb-1 h-[150px]' : 'mb-1 h-full'}>
           {/* Decorative rounded frame with gradient border and inner dark panel */}
-          <div className="relative w-full h-[150px] rounded-[20px] p-[2px] bg-gradient-to-br from-amber-300/55 via-white/10 to-cyan-300/20 overflow-hidden shadow-[0_16px_35px_-24px_rgba(251,191,36,0.85)]">
+          <div className="relative h-full w-full rounded-[20px] p-[2px] bg-gradient-to-br from-amber-300/55 via-white/10 to-cyan-300/20 overflow-hidden shadow-[0_16px_35px_-24px_rgba(251,191,36,0.85)]">
             <div className="absolute inset-0 bg-[#06060b] rounded-[18px] overflow-hidden flex items-center justify-center">
               {postImageMediaUrls.length > 1 ? (
                 <div className="w-full h-full">
@@ -347,26 +347,26 @@ export default function AdminSideFrame({ post, position, isAdmin, onRefresh }: A
                   გაზიარება
                 </button>
               </div>
+              {isAdmin && post && (
+                <div className="absolute bottom-2 left-2 z-20 flex gap-1.5">
+                  <button
+                    onClick={() => startEdit(post)}
+                    className="rounded-lg border border-blue-300/25 bg-black/70 px-2 py-1.5 text-xs text-blue-200 shadow-lg backdrop-blur-md transition hover:bg-blue-600 hover:text-white"
+                    title="რედაქტირება"
+                  >
+                    ✏️
+                  </button>
+                  <button
+                    onClick={() => handleHide(post.id)}
+                    className="rounded-lg border border-white/15 bg-black/70 px-2 py-1.5 text-xs text-white/70 shadow-lg backdrop-blur-md transition hover:bg-white/15 hover:text-white"
+                    title="დამალვა"
+                  >
+                    👁️
+                  </button>
+                </div>
+              )}
             </div>
           </div>
-          {isAdmin && post && (
-            <div className="mt-2 flex justify-end gap-1">
-              <button
-                onClick={() => startEdit(post)}
-                className="text-blue-400 hover:text-white text-xs px-2 py-1 rounded hover:bg-blue-600/20 transition-all"
-                title="რედაქტირება"
-              >
-                ✏️
-              </button>
-              <button
-                onClick={() => handleHide(post.id)}
-                className="text-gray-400 hover:text-white text-xs px-2 py-1 rounded hover:bg-gray-600/20 transition-all"
-                title="დამალვა"
-              >
-                👁️
-              </button>
-            </div>
-          )}
         </div>
       ) : null}
 
