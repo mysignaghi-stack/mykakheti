@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import Image from 'next/image';
 import imageCompression from 'browser-image-compression';
-import { Navigation, Pagination, EffectFade, Autoplay } from 'swiper/modules';
+import { Pagination, EffectFade, Autoplay } from 'swiper/modules';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import 'swiper/css';
 import 'swiper/css/navigation';
@@ -310,10 +310,9 @@ export default function AdminSideFrame({ post, position, isAdmin, onRefresh }: A
               {postImageMediaUrls.length > 1 ? (
                 <div className="w-full h-full">
                   <Swiper
-                    modules={[Navigation, Pagination, EffectFade, Autoplay]}
+                    modules={[Pagination, EffectFade, Autoplay]}
                     spaceBetween={10}
                     slidesPerView={1}
-                    navigation
                     pagination={{ clickable: true }}
                     effect="fade"
                     fadeEffect={{ crossFade: true }}
@@ -322,17 +321,33 @@ export default function AdminSideFrame({ post, position, isAdmin, onRefresh }: A
                   >
                     {postImageMediaUrls.map((url: string, idx: number) => (
                       <SwiperSlide key={idx} className="w-full h-full rounded-[18px] overflow-hidden">
-                        <Image src={url} alt="" fill loading="lazy" sizes="(max-width: 768px) 100vw, 420px" className="object-contain p-2" />
+                        <Image src={url} alt="" fill loading="lazy" sizes="(max-width: 768px) 100vw, 420px" className="rounded-[16px] object-contain p-2" />
                       </SwiperSlide>
                     ))}
                   </Swiper>
                 </div>
               ) : (
                 <div className="w-full h-full rounded-[18px] overflow-hidden relative cursor-pointer" onClick={() => openLightbox(postImageMediaUrls[0], false)}>
-                  <Image src={postImageMediaUrls[0]} alt="" fill loading="lazy" sizes="(max-width: 768px) 100vw, 420px" className="object-contain p-2" />
+                  <Image src={postImageMediaUrls[0]} alt="" fill loading="lazy" sizes="(max-width: 768px) 100vw, 420px" className="rounded-[16px] object-contain p-2" />
                 </div>
               )}
               <div className="absolute inset-0 bg-gradient-to-t from-black/45 via-transparent to-amber-200/5 pointer-events-none" />
+              <div className="absolute bottom-2 right-2 z-20 flex flex-wrap justify-end gap-1.5">
+                <button
+                  type="button"
+                  onClick={openPostPreview}
+                  className="rounded-lg border border-amber-300/40 bg-black/70 px-2.5 py-1.5 text-[10px] font-black uppercase text-amber-100 shadow-lg backdrop-blur-md transition hover:bg-amber-500/25"
+                >
+                  ნახვა
+                </button>
+                <button
+                  type="button"
+                  onClick={sharePost}
+                  className="rounded-lg border border-white/20 bg-black/70 px-2.5 py-1.5 text-[10px] font-black uppercase text-white/85 shadow-lg backdrop-blur-md transition hover:bg-white/15 hover:text-white"
+                >
+                  გაზიარება
+                </button>
+              </div>
             </div>
           </div>
           {isAdmin && post && (
@@ -350,24 +365,6 @@ export default function AdminSideFrame({ post, position, isAdmin, onRefresh }: A
                 title="დამალვა"
               >
                 👁️
-              </button>
-            </div>
-          )}
-          {post && (
-            <div className="mt-2 flex flex-wrap justify-end gap-1">
-              <button
-                type="button"
-                onClick={openPostPreview}
-                className="rounded-lg border border-amber-300/30 bg-amber-500/10 px-2 py-1 text-[10px] font-black uppercase text-amber-100 hover:bg-amber-500/20 transition"
-              >
-                ნახვა
-              </button>
-              <button
-                type="button"
-                onClick={sharePost}
-                className="rounded-lg border border-white/15 bg-white/5 px-2 py-1 text-[10px] font-black uppercase text-white/75 hover:text-white transition"
-              >
-                გაზიარება
               </button>
             </div>
           )}
