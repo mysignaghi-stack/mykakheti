@@ -67,6 +67,9 @@ export default function RootLayout({
 }) {
   return (
     <html lang="ka" className={`${inter.variable} scroll-smooth`}>
+      <head>
+        <MarketingAnalytics />
+      </head>
       <body className="bg-[#050510] text-white antialiased selection:bg-amber-500 selection:text-white">
         <script
           dangerouslySetInnerHTML={{
@@ -99,7 +102,6 @@ export default function RootLayout({
           }}
         />
         {/* აქ შეგიძლიათ დაამატოთ გლობალური კომპონენტები, მაგ: Navbar ან Footer, თუ ისინი ყველა გვერდზე გინდათ */}
-        <MarketingAnalytics />
         {children}
         <Analytics />
       </body>
