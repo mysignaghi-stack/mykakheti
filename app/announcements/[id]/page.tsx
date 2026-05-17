@@ -2,6 +2,7 @@ import { supabase } from '../../lib/supabase';
 import { createClient } from '../../lib/supabase-server';
 import { Metadata } from 'next';
 import AnnouncementDetailsClient from './AnnouncementDetailsClient';
+import { buildAnnouncementSeoDescription, extractAnnouncementId, formatAnnouncementPrice, getAnnouncementPath } from '@/app/lib/seo';
 
 // ✅ ტიპების განახლება: params ახლა არის Promise
 type Props = {
@@ -12,19 +13,23 @@ type Props = {
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   // ხარვეზის გასწორება: ჯერ ველოდებით params-ს
   const { id } = await params;
+  const announcementId = extractAnnouncementId(id);
 
   const supabaseServer = await createClient();
   const { data: ad } = await (supabaseServer as any)
     .from('announcements')
     .select('*')
-    .eq('id', id)
+    .eq('id', announcementId)
     .single();
 
   if (!ad) return { title: 'განცხადება | MYKAKHETI.GE' };
 
-  const priceStr = ad.price && ad.price !== '0' ? ` - ${ad.price} ${ad.currency === 'USD' ? '$' : '₾'}` : '';
-  const title = `${ad.title}${priceStr}`;
-  const description = ad.description?.substring(0, 160) || `${ad.category || 'განცხადება'} კახეთში - mykakheti.ge`;
+  const price = formatAnnouncementPrice(ad);
+  const location = ad.location ? ` ${ad.location}` : '';
+  const title = `${ad.title}${location} | MyKakheti.ge`;
+  const description = buildAnnouncementSeoDescription(ad);
+  const canonicalPath = getAnnouncementPath(ad);
+  const canonicalUrl = `https://mykakheti.ge${canonicalPath}`;
 
   // Pick best available image: all_images first, then image_url, then no image
   const allImages: string[] = Array.isArray(ad.all_images) ? ad.all_images.filter(Boolean) : [];
@@ -35,16 +40,26 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     : [];
 
   return {
-    title: `${title} | MYKAKHETI.GE`,
+    title,
     description: description,
+    alternates: {
+      canonical: canonicalPath,
+    },
     openGraph: {
       title: title,
       description: description,
-      url: `https://mykakheti.ge/announcements/${id}`,
+      url: canonicalUrl,
       siteName: 'MYKAKHETI.GE',
       images: ogImages,
       locale: 'ka_GE',
       type: 'article',
+    },
+    other: {
+      'product:price:amount': ad.price ? String(ad.price) : '',
+      'product:price:currency': ad.currency === 'USD' ? 'USD' : 'GEL',
+      'announcement:category': ad.category ?? '',
+      'announcement:location': ad.location ?? '',
+      'announcement:price': price,
     },
     twitter: {
       card: mainImage ? 'summary_large_image' : 'summary',
@@ -58,13 +73,14 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 export default async function Page({ params }: Props) {
   // ხარვეზის გასწორება: აქაც ველოდებით params-ს
   const { id } = await params;
+  const announcementId = extractAnnouncementId(id);
 
   // მონაცემების წამოღება სერვერზე
   const supabaseServer = await createClient();
   const { data: ad } = await (supabaseServer as any)
     .from('announcements')
     .select('*')
-    .eq('id', id)
+    .eq('id', announcementId)
     .single();
 
   return <AnnouncementDetailsClient initialAd={ad} />;

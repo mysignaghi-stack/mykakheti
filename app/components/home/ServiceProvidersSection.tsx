@@ -5,6 +5,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import type { Tables } from '@/types/helpers';
 import type { Ad } from '@/app/lib/types';
+import { getAnnouncementPath } from '@/app/lib/seo';
 
 type MasterRow = Tables<'masters'>;
 
@@ -827,7 +828,7 @@ export default function ServiceProvidersSection({
             {visibleServiceRequests.map((request) => (
               <Link
                 key={request.id}
-                href={`/announcements/${request.id}`}
+                href={getAnnouncementPath(request)}
                 className="group rounded-2xl border border-white/10 bg-[#0b0b15]/75 p-4 transition hover:border-cyan-300/35 hover:bg-white/[0.06]"
               >
                 <div className="flex items-start justify-between gap-3">

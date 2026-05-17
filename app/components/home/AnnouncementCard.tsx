@@ -5,6 +5,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { formatGeorgianDate } from '@/app/lib/utils';
 import FavoriteButton from '@/app/components/announcements/FavoriteButton';
+import { getAnnouncementPath } from '@/app/lib/seo';
 
 type AnnouncementLike = {
   id: string;
@@ -31,11 +32,16 @@ export default function AnnouncementCard({ announcement, layout = 'grid', compac
   const mainImage = images[0] || announcement.image_url || null;
   const hasPrice = Boolean(announcement.price && announcement.price !== '0');
   const currencySymbol = announcement.currency === 'USD' ? '$' : '₾';
+  const announcementHref = getAnnouncementPath({
+    id: announcement.id,
+    title: announcement.title,
+    location: announcement.location,
+  });
 
   if (layout === 'list') {
     return (
       <Link
-        href={`/announcements/${announcement.id}`}
+        href={announcementHref}
         className="group flex gap-4 p-3 rounded-xl bg-white/5 border border-white/10 hover:bg-white/8 hover:border-amber-400/30 transition-all duration-200"
       >
         {/* Thumbnail */}
@@ -84,7 +90,7 @@ export default function AnnouncementCard({ announcement, layout = 'grid', compac
   // grid layout (default)
   return (
     <Link
-      href={`/announcements/${announcement.id}`}
+      href={announcementHref}
       className="group flex flex-col overflow-hidden rounded-xl bg-white/5 border border-white/10 hover:border-amber-400/30 hover:shadow-[0_0_20px_rgba(230,126,34,0.15)] transition-all duration-200"
     >
       {/* Image */}

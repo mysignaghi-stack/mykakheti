@@ -8,6 +8,7 @@ import { supabase } from '@/app/lib/supabase';
 import AuthForm from '@/app/components/auth/AuthForm';
 import type { Ad } from '@/app/lib/types';
 import type { Tables } from '@/types/helpers';
+import { getAnnouncementPath } from '@/app/lib/seo';
 
 type SiteSettingRow = { key: string; value: string | null };
 
@@ -197,7 +198,7 @@ export default function Navbar({
         subtitle: ad.category,
         meta: ad.location,
         image: ad.image_url,
-        href: `/announcements/${ad.id}`,
+        href: getAnnouncementPath(ad),
         badge: 'განცხადება',
         accent: 'text-amber-300 border-amber-300/25 bg-amber-500/10',
         price: ad.price,
@@ -237,7 +238,7 @@ export default function Navbar({
         subtitle: request.category,
         meta: request.location,
         image: request.image_url,
-        href: `/announcements/${request.id}`,
+        href: getAnnouncementPath(request),
         badge: 'ეძებს',
         accent: 'text-cyan-200 border-cyan-300/25 bg-cyan-500/10',
         price: request.price,

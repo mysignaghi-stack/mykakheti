@@ -8,6 +8,7 @@ import { useRouter } from 'next/navigation';
 import type { Ad } from '../../lib/types';
 import { formatGeorgianDate } from '../../lib/utils';
 import CommunityEngagementSection from './CommunityEngagementSection';
+import { getAnnouncementPath } from '@/app/lib/seo';
 
 interface AdsSectionProps {
   ads: Ad[];
@@ -192,7 +193,7 @@ export default function AdsSection({
 
             return (
               <Link 
-                href={`/announcements/${ad.id}`} 
+                href={getAnnouncementPath(ad)} 
                 key={`${ad.id}-${index}`} 
                 className="group bg-slate-900/50 border border-white/10 rounded-[30px] overflow-hidden hover:border-amber-500/50 transition-all hover:shadow-[0_0_30px_rgba(245,158,11,0.15)] flex flex-col relative"
               >
@@ -256,11 +257,11 @@ export default function AdsSection({
                         <>
                           <button onClick={(e) => onRestore(e, ad.id)} className="py-2 bg-green-600/20 text-green-400 rounded-xl text-[10px] font-bold hover:bg-green-600 hover:text-white transition-all">აღდგენა</button>
                           <button onClick={(e) => onDelete(e, ad)} className="py-2 bg-red-600/20 text-red-400 rounded-xl text-[10px] font-bold hover:bg-red-600 hover:text-white transition-all">წაშლა</button>
-                          <button onClick={(e) => { e.stopPropagation(); router.push(`/announcements/${ad.id}`); }} className="py-2 bg-blue-600/20 text-blue-400 rounded-xl text-[10px] font-bold hover:bg-blue-600 hover:text-white transition-all text-center">ნახვა</button>
+                          <button onClick={(e) => { e.stopPropagation(); router.push(getAnnouncementPath(ad)); }} className="py-2 bg-blue-600/20 text-blue-400 rounded-xl text-[10px] font-bold hover:bg-blue-600 hover:text-white transition-all text-center">ნახვა</button>
                         </>
                       ) : (
                         <>
-                          <button onClick={(e) => { e.stopPropagation(); router.push(`/announcements/${ad.id}`); }} className="py-2 bg-blue-600/20 text-blue-400 rounded-xl text-[10px] font-bold hover:bg-blue-600 hover:text-white transition-all text-center">ნახვა</button>
+                          <button onClick={(e) => { e.stopPropagation(); router.push(getAnnouncementPath(ad)); }} className="py-2 bg-blue-600/20 text-blue-400 rounded-xl text-[10px] font-bold hover:bg-blue-600 hover:text-white transition-all text-center">ნახვა</button>
                           <button onClick={(e) => onArchive(e, ad.id)} className="py-2 bg-white/5 text-white/60 rounded-xl text-[10px] font-bold hover:bg-white/10 hover:text-white transition-all">არქივში</button>
                         </>
                       )}

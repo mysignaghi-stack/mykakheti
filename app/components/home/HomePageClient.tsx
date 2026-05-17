@@ -26,6 +26,7 @@ import RecentAnnouncementsSection from '@/app/components/home/RecentAnnouncement
 import ServiceProvidersSection from '@/app/components/home/ServiceProvidersSection';
 import FavoritesDropdown from '@/app/components/home/FavoritesDropdown';
 import type { CommunityCounts, CommunityDataset } from '@/app/lib/homeData';
+import { getAnnouncementPath } from '@/app/lib/seo';
 
 type AdminPost = Tables<'admin_posts'>;
 type SiteSettingRow = Tables<'site_settings'>;
@@ -449,12 +450,12 @@ export default function HomePageClient({
 
   const handleFBShare = (e: React.MouseEvent<HTMLButtonElement>, ad: Ad) => {
     e.preventDefault(); e.stopPropagation();
-    window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(`${window.location.origin}/announcements/${ad.id}`)}`, 'fb-share', 'width=600,height=400');
+    window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(`${window.location.origin}${getAnnouncementPath(ad)}`)}`, 'fb-share', 'width=600,height=400');
   };
 
   const handleCopyShare = async (e: React.MouseEvent<HTMLButtonElement>, ad: Ad) => {
     e.preventDefault(); e.stopPropagation();
-    await navigator.clipboard.writeText(`${window.location.origin}/announcements/${ad.id}`);
+    await navigator.clipboard.writeText(`${window.location.origin}${getAnnouncementPath(ad)}`);
     showSnackbar('ბმული კოპირებულია! ✅', 'success');
   };
 

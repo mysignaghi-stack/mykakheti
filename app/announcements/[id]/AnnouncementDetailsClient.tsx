@@ -11,6 +11,7 @@ import { ANNOUNCEMENT_CATEGORY_GROUPS, ANNOUNCEMENT_CATEGORIES, LOCATIONS } from
 import FavoriteButton from '@/app/components/announcements/FavoriteButton';
 import ClientButtons from './ClientButtons';
 import { CommunitySideWidget } from '../../components/community/CommunityWidgets';
+import { extractAnnouncementId } from '@/app/lib/seo';
 
 type Announcement = Database['public']['Tables']['announcements']['Row'];
 
@@ -26,6 +27,7 @@ const LOCATION_OPTIONS = Array.from(new Set(
 
 export default function AnnouncementDetailsClient({ initialAd }: { initialAd: Announcement | null }) {
   const { id } = useParams<{ id: string }>();
+  const announcementId = extractAnnouncementId(id);
   const [ad, setAd] = useState<Announcement | null>(initialAd);
   const getImages = (item: Announcement | null) => {
     if (!item) return [] as string[];
@@ -89,7 +91,7 @@ export default function AnnouncementDetailsClient({ initialAd }: { initialAd: An
   useEffect(() => {
     if (!initialAd) {
       const fetchAd = async () => {
-        const { data } = await (supabase as any).from('announcements').select('*').eq('id', id).single();
+        const { data } = await (supabase as any).from('announcements').select('*').eq('id', announcementId).single();
         if (data) {
           setAd(data);
           setActiveImg(getImages(data)[0] ?? null);
@@ -107,7 +109,7 @@ export default function AnnouncementDetailsClient({ initialAd }: { initialAd: An
       };
       fetchAd();
     }
-  }, [id, initialAd]);
+  }, [announcementId, initialAd]);
 
   const saveEdit = async () => {
     if (!ad || savingEdit) return;

@@ -4,6 +4,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { supabase } from "@/app/lib/supabase";
+import { getAnnouncementPath } from "@/app/lib/seo";
 import type { Database } from "@/types/supabase";
 
 type AnnouncementRow = Database["public"]["Tables"]["announcements"]["Row"];
@@ -154,7 +155,7 @@ export default function FavoritesDropdown() {
                   return (
                     <Link
                       key={item.id}
-                      href={`/announcements/${item.id}`}
+                      href={getAnnouncementPath(item)}
                       onClick={() => setOpen(false)}
                       className="flex gap-3 rounded-2xl border border-white/10 bg-white/[0.04] p-2 transition hover:border-amber-300/35 hover:bg-white/[0.07]"
                     >
