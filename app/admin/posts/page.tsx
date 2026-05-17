@@ -513,6 +513,70 @@ export default function AdminPosts() {
     }));
   };
 
+  const extractAdminMediaPath = (url: string) => {
+    const marker = '/storage/v1/object/public/admin-media/';
+    const index = url.indexOf(marker);
+    if (index === -1) return null;
+    return decodeURIComponent(url.slice(index + marker.length).split('?')[0]);
+  };
+
+  const removeMediaUrl = async (index: number) => {
+    const url = formData.media_urls[index];
+    if (!url) {
+      setFormData(prev => ({
+        ...prev,
+        media_urls: prev.media_urls.filter((_, i) => i !== index),
+      }));
+      return;
+    }
+
+    if (!confirm('ნამდვილად გსურთ ამ ფოტოს წაშლა?')) return;
+
+    const storagePath = extractAdminMediaPath(url);
+    try {
+      if (storagePath) {
+        const { error } = await supabase.storage.from('admin-media').remove([storagePath]);
+        if (error) throw error;
+      }
+
+      setFormData(prev => {
+        const nextUrls = prev.media_urls.filter((_, i) => i !== index);
+        const nextPrimary = prev.media_url === url ? (nextUrls[0] ?? '') : prev.media_url;
+        return {
+          ...prev,
+          media_urls: nextUrls,
+          media_url: nextPrimary,
+        };
+      });
+    } catch (error) {
+      console.error('Failed to remove admin media:', error);
+      alert('ფოტოს წაშლა ვერ მოხერხდა');
+    }
+  };
+
+  const removePrimaryMediaUrl = async () => {
+    if (!formData.media_url) return;
+    if (!confirm('ნამდვილად გსურთ მთავარი ფოტოს წაშლა?')) return;
+
+    const url = formData.media_url;
+    const storagePath = extractAdminMediaPath(url);
+    try {
+      if (storagePath) {
+        const { error } = await supabase.storage.from('admin-media').remove([storagePath]);
+        if (error) throw error;
+      }
+
+      setFormData(prev => ({
+        ...prev,
+        media_url: '',
+        media_urls: prev.media_urls.filter((item) => item !== url),
+      }));
+    } catch (error) {
+      console.error('Failed to remove primary admin media:', error);
+      alert('მთავარი ფოტოს წაშლა ვერ მოხერხდა');
+    }
+  };
+
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []).filter((file) => file.type.startsWith('image/'));
     setSelectedFiles(prev => [...prev, ...files]);
@@ -722,12 +786,75 @@ export default function AdminPosts() {
 
               <div>
                 <label className="block text-sm font-bold text-white/60 mb-2">ფოტოს URL</label>
-                <input
-                  type="url"
-                  value={formData.media_url}
-                  onChange={(e) => setFormData(prev => ({ ...prev, media_url: e.target.value }))}
-                  className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-white"
-                />
+                <div className="flex gap-2">
+                  <input
+                    type="url"
+                    value={formData.media_url}
+                    onChange={(e) => setFormData(prev => ({ ...prev, media_url: e.target.value }))}
+                    className="min-w-0 flex-1 bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-white"
+                  />
+                  {formData.media_url && (
+                    <button
+                      type="button"
+                      onClick={removePrimaryMediaUrl}
+                      className="rounded-xl border border-red-400/30 bg-red-500/10 px-3 py-2 text-xs font-black text-red-200 hover:bg-red-500/20"
+                    >
+                      წაშლა
+                    </button>
+                  )}
+                </div>
+              </div>
+
+              <div>
+                <div className="mb-2 flex items-center justify-between gap-3">
+                  <label className="block text-sm font-bold text-white/60">ატვირთული ფოტოები</label>
+                  <button
+                    type="button"
+                    onClick={addMediaUrl}
+                    className="rounded-xl border border-white/10 bg-white/5 px-3 py-1.5 text-[11px] font-black text-white/70 hover:bg-white/10"
+                  >
+                    URL დამატება
+                  </button>
+                </div>
+                {formData.media_urls.length > 0 ? (
+                  <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                    {formData.media_urls.map((url, index) => (
+                      <div key={`${url || 'empty'}-${index}`} className="rounded-2xl border border-white/10 bg-black/30 p-3">
+                        {url && (
+                          <div className="relative mb-2 h-28 overflow-hidden rounded-xl border border-white/10 bg-white/5">
+                            <Image
+                              src={url}
+                              alt=""
+                              fill
+                              sizes="220px"
+                              className="object-cover"
+                            />
+                          </div>
+                        )}
+                        <div className="flex gap-2">
+                          <input
+                            type="url"
+                            value={url}
+                            onChange={(e) => updateMediaUrl(index, e.target.value)}
+                            placeholder="ფოტოს URL"
+                            className="min-w-0 flex-1 rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-xs text-white"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => removeMediaUrl(index)}
+                            className="rounded-xl border border-red-400/30 bg-red-500/10 px-3 py-2 text-xs font-black text-red-200 hover:bg-red-500/20"
+                          >
+                            წაშლა
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-xs text-white/40">
+                    ატვირთული ფოტოები არ არის
+                  </p>
+                )}
               </div>
 
               <div>
