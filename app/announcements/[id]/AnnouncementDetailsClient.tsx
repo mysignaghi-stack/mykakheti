@@ -358,8 +358,10 @@ export default function AnnouncementDetailsClient({ initialAd }: { initialAd: An
                       <p
                         className={`text-white/75 leading-relaxed italic text-xs md:text-sm whitespace-pre-wrap font-medium transition-[max-height] duration-300 ${
                           shouldCollapseDescription && !isDescriptionExpanded
-                            ? 'max-h-36 overflow-hidden md:max-h-44'
-                            : 'max-h-none'
+                            ? 'max-h-36 overflow-y-auto overscroll-contain pr-2 custom-scrollbar md:max-h-44'
+                            : shouldCollapseDescription
+                              ? 'max-h-[65vh] overflow-y-auto overscroll-contain pr-2 custom-scrollbar'
+                              : 'max-h-none'
                         }`}
                       >
                         {description}
