@@ -341,21 +341,15 @@ export default function AdminSideFrame({ post, position, isAdmin, onRefresh }: A
             <div className="absolute inset-0 bg-[#06060b] rounded-[18px] overflow-hidden flex items-center justify-center">
               {postImageMediaUrls.length > 1 ? (
                 <div className="relative h-full w-full cursor-pointer rounded-[18px] overflow-hidden" onClick={() => openLightbox(activeImageIndex)}>
-                  {postImageMediaUrls.map((url: string, idx: number) => (
-                    <Image
-                      key={url}
-                      src={url}
-                      alt=""
-                      fill
-                      loading={idx === 0 ? 'eager' : 'lazy'}
-                      sizes="(max-width: 768px) 100vw, 420px"
-                      className={`rounded-[16px] object-cover transition-[opacity,transform,filter] duration-1000 ease-out ${
-                        idx === activeImageIndex
-                          ? 'scale-100 opacity-100 blur-0'
-                          : 'scale-[1.035] opacity-0 blur-[1.5px]'
-                      }`}
-                    />
-                  ))}
+                  <Image
+                    key={postImageMediaUrls[activeImageIndex]}
+                    src={postImageMediaUrls[activeImageIndex]}
+                    alt=""
+                    fill
+                    loading={activeImageIndex === 0 ? 'eager' : 'lazy'}
+                    sizes="(max-width: 768px) 100vw, 420px"
+                    className="vip-slide-image rounded-[16px] object-cover"
+                  />
                   <div className="pointer-events-none absolute inset-0 z-10 bg-[radial-gradient(circle_at_30%_20%,rgba(251,191,36,0.12),transparent_34%),linear-gradient(120deg,transparent_0%,rgba(255,255,255,0.08)_48%,transparent_58%)] opacity-70 mix-blend-screen" />
                   <div className="absolute bottom-8 left-1/2 z-20 flex -translate-x-1/2 gap-1">
                     {postImageMediaUrls.map((url, idx) => (

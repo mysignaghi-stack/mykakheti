@@ -380,9 +380,11 @@ export default function HomePageClient({
     try {
       const { data, error } = await (supabase as any)
         .from('admin_posts')
-        .select('*')
+        .select('id,title,content,category,priority,link,position,media_url,media_urls,media_type,is_published,publish_at,is_archived,created_at')
+        .in('position', ['left_top', 'right_top'])
         .order('priority', { ascending: false })
-        .order('created_at', { ascending: false });
+        .order('created_at', { ascending: false })
+        .limit(8);
       if (error) throw error;
       if (data) {
         const now = Date.now();
@@ -856,7 +858,6 @@ export default function HomePageClient({
               fill
               sizes="100vw"
               className="object-cover opacity-7 transition-opacity duration-500"
-              priority
             />
           )
         )}

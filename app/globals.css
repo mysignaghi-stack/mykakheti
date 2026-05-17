@@ -366,6 +366,32 @@ html { font-size: 16px; }
 nav {
   z-index: var(--z-nav) !important;
 }
+
+@keyframes vip-slide-in {
+  from {
+    opacity: 0.58;
+    filter: blur(1.5px);
+    transform: scale(1.035);
+  }
+  to {
+    opacity: 1;
+    filter: blur(0);
+    transform: scale(1);
+  }
+}
+
+.vip-slide-image {
+  animation: vip-slide-in 1000ms ease-out both;
+  will-change: opacity, transform;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .vip-slide-image {
+    animation: none;
+    will-change: auto;
+  }
+}
+
 .hero-main-overlay {
   z-index: var(--z-overlay) !important;
 }

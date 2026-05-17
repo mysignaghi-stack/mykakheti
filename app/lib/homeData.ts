@@ -203,10 +203,11 @@ export const fetchHomePageData = async (): Promise<HomePageData> => {
       .limit(60),
     supabase
       .from('admin_posts')
-      .select('*')
+      .select('id,title,content,category,priority,link,position,media_url,media_urls,media_type,is_published,publish_at,is_archived,created_at')
+      .in('position', ['left_top', 'right_top'])
       .order('priority', { ascending: false })
       .order('created_at', { ascending: false })
-      .limit(30),
+      .limit(8),
     supabase
       .from('weather' as any)
       .select('*')
