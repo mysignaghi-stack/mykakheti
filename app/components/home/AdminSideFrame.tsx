@@ -361,41 +361,41 @@ export default function AdminSideFrame({ post, position, isAdmin, onRefresh }: A
                 </div>
               )}
               <div className="absolute inset-0 bg-gradient-to-t from-black/45 via-transparent to-amber-200/5 pointer-events-none" />
-              <div className="absolute bottom-2 right-2 z-20 flex flex-wrap justify-end gap-1.5">
+              <div className="absolute bottom-2 left-2 z-20 flex max-w-[calc(100%-1rem)] flex-wrap justify-start gap-1">
                 <button
                   type="button"
                   onClick={openPostPreview}
-                  className="rounded-lg border border-amber-300/40 bg-black/70 px-2.5 py-1.5 text-[10px] font-black uppercase text-amber-100 shadow-lg backdrop-blur-md transition hover:bg-amber-500/25"
+                  className="rounded-md border border-amber-300/40 bg-black/70 px-2 py-1 text-[9px] font-black uppercase text-amber-100 shadow-lg backdrop-blur-md transition hover:bg-amber-500/25"
                 >
                   ნახვა
                 </button>
                 <button
                   type="button"
                   onClick={sharePost}
-                  className="rounded-lg border border-white/20 bg-black/70 px-2.5 py-1.5 text-[10px] font-black uppercase text-white/85 shadow-lg backdrop-blur-md transition hover:bg-white/15 hover:text-white"
+                  className="rounded-md border border-white/20 bg-black/70 px-2 py-1 text-[9px] font-black uppercase text-white/85 shadow-lg backdrop-blur-md transition hover:bg-white/15 hover:text-white"
                 >
                   გაზიარება
                 </button>
                 <button
                   type="button"
                   onClick={sharePostToFacebook}
-                  className="rounded-lg border border-blue-300/30 bg-black/70 px-2.5 py-1.5 text-[10px] font-black uppercase text-blue-100 shadow-lg backdrop-blur-md transition hover:bg-blue-500/25"
+                  className="rounded-md border border-blue-300/30 bg-black/70 px-2 py-1 text-[9px] font-black uppercase text-blue-100 shadow-lg backdrop-blur-md transition hover:bg-blue-500/25"
                 >
                   Facebook
                 </button>
               </div>
               {isAdmin && post && (
-                <div className="absolute bottom-2 left-2 z-20 flex gap-1.5">
+                <div className="absolute bottom-2 right-2 z-20 flex gap-1">
                   <button
                     onClick={() => startEdit(post)}
-                    className="rounded-lg border border-blue-300/25 bg-black/70 px-2 py-1.5 text-xs text-blue-200 shadow-lg backdrop-blur-md transition hover:bg-blue-600 hover:text-white"
+                    className="rounded-md border border-blue-300/25 bg-black/70 px-1.5 py-1 text-[11px] text-blue-200 shadow-lg backdrop-blur-md transition hover:bg-blue-600 hover:text-white"
                     title="რედაქტირება"
                   >
                     ✏️
                   </button>
                   <button
                     onClick={() => handleHide(post.id)}
-                    className="rounded-lg border border-white/15 bg-black/70 px-2 py-1.5 text-xs text-white/70 shadow-lg backdrop-blur-md transition hover:bg-white/15 hover:text-white"
+                    className="rounded-md border border-white/15 bg-black/70 px-1.5 py-1 text-[11px] text-white/70 shadow-lg backdrop-blur-md transition hover:bg-white/15 hover:text-white"
                     title="დამალვა"
                   >
                     👁️
