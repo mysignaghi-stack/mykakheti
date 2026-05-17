@@ -520,6 +520,19 @@ export default function AdminPosts() {
     return decodeURIComponent(url.slice(index + marker.length).split('?')[0]);
   };
 
+  const deleteAdminStorageMedia = async (storagePath: string) => {
+    const response = await fetch('/api/admin/media/delete', {
+      method: 'DELETE',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ path: storagePath }),
+      credentials: 'same-origin',
+    });
+    const json = await response.json().catch(() => ({}));
+    if (!response.ok) {
+      throw new Error(json?.error || 'ფოტოს წაშლა ვერ მოხერხდა');
+    }
+  };
+
   const removeMediaUrl = async (index: number) => {
     const url = formData.media_urls[index];
     if (!url) {
@@ -535,8 +548,7 @@ export default function AdminPosts() {
     const storagePath = extractAdminMediaPath(url);
     try {
       if (storagePath) {
-        const { error } = await supabase.storage.from('admin-media').remove([storagePath]);
-        if (error) throw error;
+        await deleteAdminStorageMedia(storagePath);
       }
 
       setFormData(prev => {
@@ -562,8 +574,7 @@ export default function AdminPosts() {
     const storagePath = extractAdminMediaPath(url);
     try {
       if (storagePath) {
-        const { error } = await supabase.storage.from('admin-media').remove([storagePath]);
-        if (error) throw error;
+        await deleteAdminStorageMedia(storagePath);
       }
 
       setFormData(prev => ({
