@@ -731,16 +731,29 @@ export default function AddPage() {
               
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div ref={categoryPickerRef} className="space-y-2">
-                  <input
-                    className="w-full p-4 bg-white/5 border border-white/10 rounded-2xl outline-none focus:border-amber-500 text-white font-bold transition-all placeholder:text-white/25"
-                    placeholder="ჩაწერეთ საქონლის სიტყვა და მოძებნეთ შესაბამისი კატეგორია..."
-                    value={categorySearch}
-                    onFocus={() => setShowCategorySuggestions(true)}
-                    onChange={(e: ChangeEvent<HTMLInputElement>) => {
-                      setCategorySearch(e.target.value);
-                      setShowCategorySuggestions(true);
-                    }}
-                  />
+                  <div className="overflow-hidden rounded-2xl bg-white shadow-lg">
+                    <input
+                      className="w-full p-4 bg-white text-slate-950 outline-none font-bold transition-all placeholder:text-slate-400"
+                      placeholder="საქონლის დასახელება"
+                      value={categorySearch}
+                      onFocus={() => setShowCategorySuggestions(true)}
+                      onChange={(e: ChangeEvent<HTMLInputElement>) => {
+                        setCategorySearch(e.target.value);
+                        setShowCategorySuggestions(true);
+                      }}
+                    />
+                    <select required className="w-full p-5 bg-white text-slate-950 border-t border-slate-200 rounded-none font-black text-[11px] uppercase italic cursor-pointer outline-none" value={formData.category} onChange={(e: ChangeEvent<HTMLSelectElement>) => {
+                      setFormData({...formData, category: e.target.value});
+                      setShowCategorySuggestions(false);
+                    }}>
+                      <option value="">აირჩიეთ კატეგორია...</option>
+                      {visibleCategoryGroups.map((group) => (
+                        <optgroup key={group.title} label={group.title === 'საყოფაცხოვრებო ნივთები' ? 'გასაყიდი საქონელი — საყოფაცხოვრებო ნივთები' : group.title}>
+                          {group.categories.map(c => <option key={c} value={c}>{c}</option>)}
+                        </optgroup>
+                      ))}
+                    </select>
+                  </div>
                   {showCategorySuggestions && categorySearch.trim() && categorySuggestions.length > 0 && (
                     <div className="max-h-56 overflow-y-auto rounded-2xl border border-amber-300/20 bg-black/80 p-2 shadow-2xl">
                       {categorySuggestions.map((suggestion) => (
@@ -764,32 +777,29 @@ export default function AddPage() {
                       ))}
                     </div>
                   )}
-                  <select required className="w-full p-5 bg-white text-slate-950 border-none rounded-2xl font-black text-[11px] uppercase italic cursor-pointer shadow-lg outline-none" value={formData.category} onChange={(e: ChangeEvent<HTMLSelectElement>) => {
-                    setFormData({...formData, category: e.target.value});
-                    setShowCategorySuggestions(false);
-                  }}>
-                    <option value="">აირჩიეთ კატეგორია...</option>
-                    {visibleCategoryGroups.map((group) => (
-                      <optgroup key={group.title} label={group.title === 'საყოფაცხოვრებო ნივთები' ? 'გასაყიდი საქონელი — საყოფაცხოვრებო ნივთები' : group.title}>
-                        {group.categories.map(c => <option key={c} value={c}>{c}</option>)}
-                      </optgroup>
-                    ))}
-                  </select>
                   {visibleCategoryGroups.length === 0 && (
                     <p className="text-[11px] font-bold text-amber-200/80">კატეგორია ვერ მოიძებნა.</p>
                   )}
                 </div>
                 <div ref={locationPickerRef} className="space-y-2">
-                  <input
-                    className="w-full p-4 bg-white/5 border border-white/10 rounded-2xl outline-none focus:border-amber-500 text-white font-bold transition-all placeholder:text-white/25"
-                    placeholder="ადგილმდებარეობის ძებნა..."
-                    value={locationSearch}
-                    onFocus={() => setShowLocationSuggestions(true)}
-                    onChange={(e: ChangeEvent<HTMLInputElement>) => {
-                      setLocationSearch(e.target.value);
-                      setShowLocationSuggestions(true);
-                    }}
-                  />
+                  <div className="overflow-hidden rounded-2xl bg-white shadow-lg">
+                    <input
+                      className="w-full p-4 bg-white text-slate-950 outline-none font-bold transition-all placeholder:text-slate-400"
+                      placeholder="ადგილმდებარეობის ძებნა"
+                      value={locationSearch}
+                      onFocus={() => setShowLocationSuggestions(true)}
+                      onChange={(e: ChangeEvent<HTMLInputElement>) => {
+                        setLocationSearch(e.target.value);
+                        setShowLocationSuggestions(true);
+                      }}
+                    />
+                    <select className="w-full p-5 bg-white text-slate-950 border-t border-slate-200 rounded-none font-black text-[11px] uppercase italic cursor-pointer outline-none" value={formData.location} onChange={(e: ChangeEvent<HTMLSelectElement>) => {
+                      setFormData({...formData, location: e.target.value});
+                      setShowLocationSuggestions(false);
+                    }}>
+                      {visibleLocationOptions.map(loc => <option key={loc} value={loc}>{loc}</option>)}
+                    </select>
+                  </div>
                   {showLocationSuggestions && locationSearch.trim() && locationSuggestions.length > 0 && (
                     <div className="max-h-56 overflow-y-auto rounded-2xl border border-amber-300/20 bg-black/80 p-2 shadow-2xl">
                       {locationSuggestions.map((location) => (
@@ -810,12 +820,6 @@ export default function AddPage() {
                       ))}
                     </div>
                   )}
-                  <select className="w-full p-5 bg-white text-slate-950 border-none rounded-2xl font-black text-[11px] uppercase italic cursor-pointer shadow-lg outline-none" value={formData.location} onChange={(e: ChangeEvent<HTMLSelectElement>) => {
-                    setFormData({...formData, location: e.target.value});
-                    setShowLocationSuggestions(false);
-                  }}>
-                    {visibleLocationOptions.map(loc => <option key={loc} value={loc}>{loc}</option>)}
-                  </select>
                   {visibleLocationOptions.length === 0 && (
                     <p className="text-[11px] font-bold text-amber-200/80">ლოკაცია ვერ მოიძებნა.</p>
                   )}
