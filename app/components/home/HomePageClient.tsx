@@ -877,7 +877,69 @@ export default function HomePageClient({
 
       {/* Informational grid section, now outside header for independent styling */}
       <section className="layout-shell relative z-10 w-full max-w-full xl:max-w-[1800px] px-4 sm:px-6 md:px-10 mx-auto mt-5 sm:mt-3 overflow-hidden">
+<<<<<<< ours
+<<<<<<< ours
+<<<<<<< ours
+<<<<<<< ours
+<<<<<<< ours
+<<<<<<< ours
         <div className="grid grid-cols-1 gap-4 md:gap-6 xl:gap-8 items-start text-white bg-black/70 backdrop-blur-2xl rounded-[30px] border border-white/10 p-4 sm:p-6 md:p-8 shadow-xl w-full max-w-full overflow-hidden">
+=======
+=======
+>>>>>>> theirs
+=======
+>>>>>>> theirs
+=======
+>>>>>>> theirs
+=======
+>>>>>>> theirs
+=======
+>>>>>>> theirs
+        <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,220px)_minmax(0,1fr)_minmax(0,220px)] xl:grid-cols-[minmax(0,240px)_minmax(0,1fr)_minmax(0,240px)] 2xl:grid-cols-[minmax(0,300px)_minmax(0,1fr)_minmax(0,300px)] gap-4 md:gap-6 xl:gap-8 items-start text-white bg-black/70 backdrop-blur-2xl rounded-[30px] border border-white/10 p-4 sm:p-6 md:p-8 shadow-xl w-full max-w-full overflow-hidden">
+          {/* --- მარცხენა სვეტი (Desktop Only) --- */}
+          <div className="hidden lg:flex flex-col gap-6 sticky top-0 order-1 w-full max-w-full min-w-0">
+            {/* კახური მოედანი (სქროლით) */}
+            {isDesktop !== false && (
+              <div 
+                className="w-full h-[450px] overflow-hidden bg-black/60 backdrop-blur-xl rounded-[30px] border border-white/5 relative"
+              >
+                <KakhetianSquare isAdmin={isAdmin} controlToken={controlToken} />
+              </div>
+            )}
+            {/* 🍇 აგრო-ბირჟა */}
+            <div className="bg-white/[0.03] backdrop-blur-3xl rounded-[30px] border border-white/10 p-5 flex flex-col items-center group relative overflow-hidden transition-all hover:border-purple-500/30 shadow-xl h-[360px]">
+              <div className="flex justify-between w-full items-center mb-4">
+                <h4 className="text-[10px] font-black text-purple-400 uppercase tracking-[0.4em]">🍇 აგრო-ბირჟა</h4>
+              </div>
+              <p className="w-full text-[10px] text-white/40 font-bold uppercase tracking-[0.2em] mb-3 leading-tight">საორიენტაციო ფასები · დააჭირე პროდუქტს რომ ნახო მიმღები ობიექტები</p>
+              <div className="w-full flex-1 space-y-2 overflow-y-auto custom-scrollbar pr-1">
+                {agroData.filter(i => i.category === 'grape').map(item => (
+                  <button key={item.id} onClick={() => setSelectedAgro(item)} className="w-full flex justify-between items-center bg-black/40 p-3 rounded-xl border border-white/5 transition-all group/item hover:bg-white/5">
+                    <span className="text-xs font-black uppercase text-purple-300 flex gap-2">{item.name}</span>
+                    <span className="text-sm font-black italic">{getAgroDisplayPrice(item)}</span>
+                  </button>
+                ))}
+              </div>
+              <p className="mt-auto pt-3 text-[12px] text-white/90 font-black text-center tracking-wide">თქვენი ფასი და საკონტაქტო ნომერი გამოჩნდება ამ ფანჯარაში</p>
+            </div>
+            {/* 🏛️ ადმინისტრაციული განცხადება */}
+            <div className="w-full min-w-[260px] xl:min-w-[300px] bg-gradient-to-br from-amber-900/40 via-black/50 to-amber-700/20 backdrop-blur-sm rounded-[24px] border border-amber-500/30 shadow-[0_0_20px_4px_rgba(255,191,0,0.1)] p-4 ring-1 ring-amber-400/20 relative">
+              <AdminSideFrame 
+                post={getPostByPos('left_top')} 
+                position="left_top" 
+                isAdmin={isAdmin} 
+                onRefresh={fetchAdminPosts}
+              />
+            </div>
+              <div className="w-full min-w-[260px] xl:min-w-[300px] bg-gradient-to-br from-amber-900/40 via-black/50 to-amber-700/20 backdrop-blur-sm rounded-[24px] border border-amber-500/30 shadow-[0_0_20px_4px_rgba(255,191,0,0.1)] p-4 ring-1 ring-amber-400/20 relative">
+                <CommunitySideWidget variant="lostFound" />
+              </div>
+              <div className="w-full min-w-[260px] xl:min-w-[300px] bg-gradient-to-br from-amber-900/40 via-black/50 to-amber-700/20 backdrop-blur-sm rounded-[24px] border border-amber-500/30 shadow-[0_0_20px_4px_rgba(255,191,0,0.1)] p-4 ring-1 ring-amber-400/20 relative">
+                <GuideWidget onMapSearch={handleMapSearch} />
+              </div>
+          </div>
+
+>>>>>>> theirs
           {/* --- ცენტრალური სვეტი --- */}
 
           <div className="flex flex-col items-center text-center gap-2 lg:gap-6 animate-in fade-in duration-1000 w-full min-w-0">
