@@ -705,16 +705,16 @@ export default function AddPage() {
           )}
 
           {isAuthenticated && !isSubmitted && (
-          <form onSubmit={handlePost} className="space-y-6">
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3 mb-8">
+          <form onSubmit={handlePost} className="space-y-4">
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2.5 mb-4">
                {previews.map((src, i) => (
-                 <div key={i} className="aspect-square rounded-2xl overflow-hidden border border-white/20 relative shadow-xl group">
+                 <div key={i} className="aspect-square rounded-xl overflow-hidden border border-white/20 relative shadow-xl group">
                    <Image src={src} alt="" fill sizes="120px" className="object-cover" />
                    <button type="button" onClick={() => removeImage(i)} className="absolute inset-0 bg-red-600/70 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white font-black text-[10px] uppercase">წაშლა</button>
                  </div>
                ))}
                {images.length < 5 && (
-                 <label className="aspect-square bg-white/5 border-2 border-dashed border-white/10 rounded-2xl flex flex-col items-center justify-center cursor-pointer hover:border-amber-500 hover:bg-white/10 transition-all group">
+                 <label className="aspect-square bg-white/5 border-2 border-dashed border-white/10 rounded-xl flex flex-col items-center justify-center cursor-pointer hover:border-amber-500 hover:bg-white/10 transition-all group">
                    <span className="text-2xl text-white/20 group-hover:text-amber-500 transition-colors">+</span>
                    <span className="text-[8px] font-black uppercase text-white/20 mt-1">ფოტო</span>
                    <input type="file" multiple accept="image/*" hidden onChange={handleImageChange} />
@@ -722,16 +722,16 @@ export default function AddPage() {
                )}
             </div>
             
-            <div className="text-[9px] text-white/20 uppercase font-bold text-center mb-6 tracking-widest bg-white/5 py-2 rounded-full">
+            <div className="text-[9px] text-white/25 uppercase font-bold text-center mb-3 tracking-widest bg-white/[0.04] py-1.5 rounded-full">
                ატვირთულია: {images.length} / 5 (ფოტოები ავტომატურად ოპტიმიზირდება)
             </div>
 
-            <div className="space-y-4">
-              <input required className="w-full p-5 bg-white/5 border border-white/10 rounded-2xl outline-none focus:border-amber-500 text-white font-bold transition-all placeholder:text-white/20" placeholder="განცხადების სათაური" onChange={(e: ChangeEvent<HTMLInputElement>) => setFormData({...formData, title: e.target.value})} />
+            <div className="space-y-3">
+              <input required className="w-full px-4 py-3.5 bg-white/[0.06] border border-white/10 rounded-xl outline-none focus:border-amber-500 text-white font-bold transition-all placeholder:text-white/25" placeholder="განცხადების სათაური" onChange={(e: ChangeEvent<HTMLInputElement>) => setFormData({...formData, title: e.target.value})} />
               
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div ref={categoryPickerRef} className="space-y-2">
-                  <div className="overflow-hidden rounded-2xl border border-white/10 bg-white/90 shadow-lg">
+                  <div className="overflow-hidden rounded-xl border border-white/10 bg-white/90 shadow-lg">
                     <input
                       className="w-full px-4 py-3 bg-white/90 text-slate-950 outline-none font-bold transition-all placeholder:text-slate-400"
                       placeholder="საქონლის დასახელება"
@@ -742,7 +742,7 @@ export default function AddPage() {
                         setShowCategorySuggestions(true);
                       }}
                     />
-                    <select required className="w-full px-4 py-4 bg-white/90 text-slate-950 border-t border-slate-200 rounded-none font-black text-[11px] uppercase italic cursor-pointer outline-none" value={formData.category} onChange={(e: ChangeEvent<HTMLSelectElement>) => {
+                    <select required className="w-full px-4 py-3.5 bg-white/90 text-slate-950 border-t border-slate-200 rounded-none font-black text-[11px] uppercase italic cursor-pointer outline-none" value={formData.category} onChange={(e: ChangeEvent<HTMLSelectElement>) => {
                       setFormData({...formData, category: e.target.value});
                       setShowCategorySuggestions(false);
                     }}>
@@ -755,7 +755,7 @@ export default function AddPage() {
                     </select>
                   </div>
                   {showCategorySuggestions && categorySearch.trim() && categorySuggestions.length > 0 && (
-                    <div className="max-h-56 overflow-y-auto rounded-2xl border border-amber-300/20 bg-black/80 p-2 shadow-2xl">
+                    <div className="max-h-56 overflow-y-auto rounded-xl border border-amber-300/20 bg-black/80 p-2 shadow-2xl">
                       {categorySuggestions.map((suggestion) => (
                         <button
                           key={`${suggestion.groupTitle}-${suggestion.category}`}
@@ -782,7 +782,7 @@ export default function AddPage() {
                   )}
                 </div>
                 <div ref={locationPickerRef} className="space-y-2">
-                  <div className="overflow-hidden rounded-2xl border border-white/10 bg-white/90 shadow-lg">
+                  <div className="overflow-hidden rounded-xl border border-white/10 bg-white/90 shadow-lg">
                     <input
                       className="w-full px-4 py-3 bg-white/90 text-slate-950 outline-none font-bold transition-all placeholder:text-slate-400"
                       placeholder="ადგილმდებარეობის ძებნა"
@@ -793,7 +793,7 @@ export default function AddPage() {
                         setShowLocationSuggestions(true);
                       }}
                     />
-                    <select className="w-full px-4 py-4 bg-white/90 text-slate-950 border-t border-slate-200 rounded-none font-black text-[11px] uppercase italic cursor-pointer outline-none" value={formData.location} onChange={(e: ChangeEvent<HTMLSelectElement>) => {
+                    <select className="w-full px-4 py-3.5 bg-white/90 text-slate-950 border-t border-slate-200 rounded-none font-black text-[11px] uppercase italic cursor-pointer outline-none" value={formData.location} onChange={(e: ChangeEvent<HTMLSelectElement>) => {
                       setFormData({...formData, location: e.target.value});
                       setShowLocationSuggestions(false);
                     }}>
@@ -801,7 +801,7 @@ export default function AddPage() {
                     </select>
                   </div>
                   {showLocationSuggestions && locationSearch.trim() && locationSuggestions.length > 0 && (
-                    <div className="max-h-56 overflow-y-auto rounded-2xl border border-amber-300/20 bg-black/80 p-2 shadow-2xl">
+                    <div className="max-h-56 overflow-y-auto rounded-xl border border-amber-300/20 bg-black/80 p-2 shadow-2xl">
                       {locationSuggestions.map((location) => (
                         <button
                           key={location}
@@ -826,13 +826,13 @@ export default function AddPage() {
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 {/* ✨ განახლებული ფასის ველი ვალუტის არჩევით */}
-                <div className="relative flex items-center bg-white/5 border border-white/10 rounded-2xl focus-within:border-amber-500 transition-all overflow-hidden">
+                <div className="relative flex items-center bg-white/[0.06] border border-white/10 rounded-xl focus-within:border-amber-500 transition-all overflow-hidden">
                    <input 
                      required
                      type="text"
-                     className="w-full p-5 bg-transparent outline-none font-bold text-white placeholder:text-white/20" 
+                     className="w-full px-4 py-3.5 bg-transparent outline-none font-bold text-white placeholder:text-white/25"
                      placeholder="ფასი ან შეთანხმებით"
                      onChange={(e: ChangeEvent<HTMLInputElement>) => setFormData({...formData, price: e.target.value})} 
                    />
@@ -854,19 +854,19 @@ export default function AddPage() {
                    </div>
                 </div>
 
-                <input required className="p-5 bg-white/5 border border-white/10 rounded-2xl outline-none focus:border-amber-500 font-bold text-white placeholder:text-white/20" placeholder="ტელეფონი" onChange={(e: ChangeEvent<HTMLInputElement>) => setFormData({...formData, phone: e.target.value})} />
+                <input required className="px-4 py-3.5 bg-white/[0.06] border border-white/10 rounded-xl outline-none focus:border-amber-500 font-bold text-white placeholder:text-white/25" placeholder="ტელეფონი" onChange={(e: ChangeEvent<HTMLInputElement>) => setFormData({...formData, phone: e.target.value})} />
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <input className="p-5 bg-white/5 border border-white/10 rounded-2xl outline-none focus:border-amber-500 font-bold text-white placeholder:text-white/20" placeholder="WhatsApp/Viber" value={formData.whatsappViber} onChange={(e: ChangeEvent<HTMLInputElement>) => setFormData({...formData, whatsappViber: e.target.value})} />
-                <select className="p-5 bg-white text-slate-950 border-none rounded-2xl font-black text-[11px] uppercase italic cursor-pointer shadow-lg outline-none" value={formData.condition} onChange={(e: ChangeEvent<HTMLSelectElement>) => setFormData({...formData, condition: e.target.value})}>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <input className="px-4 py-3.5 bg-white/[0.06] border border-white/10 rounded-xl outline-none focus:border-amber-500 font-bold text-white placeholder:text-white/25" placeholder="WhatsApp/Viber" value={formData.whatsappViber} onChange={(e: ChangeEvent<HTMLInputElement>) => setFormData({...formData, whatsappViber: e.target.value})} />
+                <select className="px-4 py-3.5 bg-white/90 text-slate-950 border border-white/10 rounded-xl font-black text-[11px] uppercase italic cursor-pointer shadow-lg outline-none" value={formData.condition} onChange={(e: ChangeEvent<HTMLSelectElement>) => setFormData({...formData, condition: e.target.value})}>
                   <option value="">მდგომარეობა</option>
                   <option value="ახალი">ახალი</option>
                   <option value="მეორადი">მეორადი</option>
                   <option value="სხვა">სხვა</option>
                 </select>
-                <input className="p-5 bg-white/5 border border-white/10 rounded-2xl outline-none focus:border-amber-500 font-bold text-white placeholder:text-white/20" placeholder="რაოდენობა, თუ საჭიროა" value={formData.quantity} onChange={(e: ChangeEvent<HTMLInputElement>) => setFormData({...formData, quantity: e.target.value})} />
-                <select className="p-5 bg-white text-slate-950 border-none rounded-2xl font-black text-[11px] uppercase italic cursor-pointer shadow-lg outline-none sm:col-span-2" value={formData.delivery} onChange={(e: ChangeEvent<HTMLSelectElement>) => setFormData({...formData, delivery: e.target.value})}>
+                <input className="px-4 py-3.5 bg-white/[0.06] border border-white/10 rounded-xl outline-none focus:border-amber-500 font-bold text-white placeholder:text-white/25" placeholder="რაოდენობა, თუ საჭიროა" value={formData.quantity} onChange={(e: ChangeEvent<HTMLInputElement>) => setFormData({...formData, quantity: e.target.value})} />
+                <select className="px-4 py-3.5 bg-white/90 text-slate-950 border border-white/10 rounded-xl font-black text-[11px] uppercase italic cursor-pointer shadow-lg outline-none sm:col-span-2" value={formData.delivery} onChange={(e: ChangeEvent<HTMLSelectElement>) => setFormData({...formData, delivery: e.target.value})}>
                   <option value="">მიწოდება/ტრანსპორტირება</option>
                   <option value="კი">კი</option>
                   <option value="არა">არა</option>
@@ -875,30 +875,30 @@ export default function AddPage() {
               </div>
 
               {isAnimalSaleCategory && (
-                <div className="space-y-4 rounded-[28px] border border-amber-300/25 bg-amber-500/10 p-5">
+                <div className="space-y-3 rounded-2xl border border-amber-300/25 bg-amber-500/10 p-4">
                   <p className="text-[11px] font-bold leading-relaxed text-amber-50">
                     საიტზე დასაშვებია მხოლოდ კანონიერად ნებადართული შინაური ცხოველებისა და სასოფლო-სამეურნეო პირუტყვის განთავსება. აკრძალულია დაცული, ველური ან უკანონოდ მოპოვებული სახეობების გაყიდვა.
                   </p>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <input className="p-4 bg-white/5 border border-white/10 rounded-2xl outline-none focus:border-amber-500 font-bold text-white placeholder:text-white/25" placeholder="ცხოველის / ფრინველის სახეობა" value={formData.animalKind} onChange={(e: ChangeEvent<HTMLInputElement>) => setFormData({...formData, animalKind: e.target.value})} />
-                    <input className="p-4 bg-white/5 border border-white/10 rounded-2xl outline-none focus:border-amber-500 font-bold text-white placeholder:text-white/25" placeholder="ჯიში, თუ ცნობილია" value={formData.breed} onChange={(e: ChangeEvent<HTMLInputElement>) => setFormData({...formData, breed: e.target.value})} />
-                    <input className="p-4 bg-white/5 border border-white/10 rounded-2xl outline-none focus:border-amber-500 font-bold text-white placeholder:text-white/25" placeholder="ასაკი" value={formData.age} onChange={(e: ChangeEvent<HTMLInputElement>) => setFormData({...formData, age: e.target.value})} />
-                    <select className="p-4 bg-white text-slate-950 border-none rounded-2xl font-black text-[11px] uppercase italic cursor-pointer shadow-lg outline-none" value={formData.gender} onChange={(e: ChangeEvent<HTMLSelectElement>) => setFormData({...formData, gender: e.target.value})}>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <input className="px-4 py-3 bg-white/[0.06] border border-white/10 rounded-xl outline-none focus:border-amber-500 font-bold text-white placeholder:text-white/25" placeholder="ცხოველის / ფრინველის სახეობა" value={formData.animalKind} onChange={(e: ChangeEvent<HTMLInputElement>) => setFormData({...formData, animalKind: e.target.value})} />
+                    <input className="px-4 py-3 bg-white/[0.06] border border-white/10 rounded-xl outline-none focus:border-amber-500 font-bold text-white placeholder:text-white/25" placeholder="ჯიში, თუ ცნობილია" value={formData.breed} onChange={(e: ChangeEvent<HTMLInputElement>) => setFormData({...formData, breed: e.target.value})} />
+                    <input className="px-4 py-3 bg-white/[0.06] border border-white/10 rounded-xl outline-none focus:border-amber-500 font-bold text-white placeholder:text-white/25" placeholder="ასაკი" value={formData.age} onChange={(e: ChangeEvent<HTMLInputElement>) => setFormData({...formData, age: e.target.value})} />
+                    <select className="px-4 py-3 bg-white/90 text-slate-950 border border-white/10 rounded-xl font-black text-[11px] uppercase italic cursor-pointer shadow-lg outline-none" value={formData.gender} onChange={(e: ChangeEvent<HTMLSelectElement>) => setFormData({...formData, gender: e.target.value})}>
                       <option value="">სქესი</option>
                       <option value="მდედრი">მდედრი</option>
                       <option value="მამრობითი">მამრობითი</option>
                       <option value="უცნობია">უცნობია</option>
                     </select>
-                    <input className="p-4 bg-white/5 border border-white/10 rounded-2xl outline-none focus:border-amber-500 font-bold text-white placeholder:text-white/25" placeholder="აცრები / ვეტერინარული ინფორმაცია" value={formData.vetInfo} onChange={(e: ChangeEvent<HTMLInputElement>) => setFormData({...formData, vetInfo: e.target.value})} />
-                    <input className="p-4 bg-white/5 border border-white/10 rounded-2xl outline-none focus:border-amber-500 font-bold text-white placeholder:text-white/25" placeholder="დოკუმენტი / პასპორტი" value={formData.documentInfo} onChange={(e: ChangeEvent<HTMLInputElement>) => setFormData({...formData, documentInfo: e.target.value})} />
+                    <input className="px-4 py-3 bg-white/[0.06] border border-white/10 rounded-xl outline-none focus:border-amber-500 font-bold text-white placeholder:text-white/25" placeholder="აცრები / ვეტერინარული ინფორმაცია" value={formData.vetInfo} onChange={(e: ChangeEvent<HTMLInputElement>) => setFormData({...formData, vetInfo: e.target.value})} />
+                    <input className="px-4 py-3 bg-white/[0.06] border border-white/10 rounded-xl outline-none focus:border-amber-500 font-bold text-white placeholder:text-white/25" placeholder="დოკუმენტი / პასპორტი" value={formData.documentInfo} onChange={(e: ChangeEvent<HTMLInputElement>) => setFormData({...formData, documentInfo: e.target.value})} />
                   </div>
                 </div>
               )}
               
-              <textarea rows={5} className="w-full p-5 bg-white/5 border border-white/10 rounded-2xl outline-none focus:border-amber-500 italic text-white placeholder:text-white/20 resize-none" placeholder="აღწერეთ დეტალურად..." onChange={(e: ChangeEvent<HTMLTextAreaElement>) => setFormData({...formData, description: e.target.value})} />
+              <textarea rows={4} className="w-full px-4 py-3.5 bg-white/[0.06] border border-white/10 rounded-xl outline-none focus:border-amber-500 italic text-white placeholder:text-white/25 resize-none" placeholder="აღწერეთ დეტალურად..." onChange={(e: ChangeEvent<HTMLTextAreaElement>) => setFormData({...formData, description: e.target.value})} />
             </div>
 
-            <button type="submit" disabled={loading || !isAuthenticated} className="w-full py-6 bg-amber-600 text-white rounded-[30px] font-black uppercase italic shadow-[0_20px_40px_-10px_rgba(217,119,6,0.4)] hover:bg-amber-500 transition-all active:scale-95 disabled:bg-gray-700 disabled:cursor-not-allowed">
+            <button type="submit" disabled={loading || !isAuthenticated} className="w-full py-4 bg-amber-600 text-white rounded-2xl font-black uppercase italic shadow-[0_16px_32px_-14px_rgba(217,119,6,0.55)] hover:bg-amber-500 transition-all active:scale-95 disabled:bg-gray-700 disabled:cursor-not-allowed">
               {loading ? 'მიმდინარეობს ატვირთვა...' : isAuthenticated ? 'გამოქვეყნება 🚀' : 'ავტორიზაცია სჭირდება'}
             </button>
           </form>
