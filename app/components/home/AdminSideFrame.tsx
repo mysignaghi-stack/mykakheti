@@ -348,7 +348,7 @@ export default function AdminSideFrame({ post, position, isAdmin, onRefresh }: A
                     fill
                     loading={activeImageIndex === 0 ? 'eager' : 'lazy'}
                     sizes="(max-width: 768px) 100vw, 420px"
-                    className="vip-slide-image rounded-[16px] object-cover"
+                    className="vip-slide-image rounded-[16px] object-contain"
                   />
                   <div className="pointer-events-none absolute inset-0 z-10 bg-[radial-gradient(circle_at_30%_20%,rgba(251,191,36,0.12),transparent_34%),linear-gradient(120deg,transparent_0%,rgba(255,255,255,0.08)_48%,transparent_58%)] opacity-70 mix-blend-screen" />
                   <div className="absolute bottom-8 left-1/2 z-20 flex -translate-x-1/2 gap-1">
@@ -370,7 +370,7 @@ export default function AdminSideFrame({ post, position, isAdmin, onRefresh }: A
                 </div>
               ) : (
                 <div className="w-full h-full rounded-[18px] overflow-hidden relative cursor-pointer" onClick={() => openLightbox(0)}>
-                  <Image src={postImageMediaUrls[0]} alt="" fill loading="lazy" sizes="(max-width: 768px) 100vw, 420px" className="rounded-[16px] object-cover" />
+                  <Image src={postImageMediaUrls[0]} alt="" fill loading="lazy" sizes="(max-width: 768px) 100vw, 420px" className="rounded-[16px] object-contain" />
                 </div>
               )}
               <div className="absolute inset-0 bg-gradient-to-t from-black/45 via-transparent to-amber-200/5 pointer-events-none" />
