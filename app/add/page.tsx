@@ -526,7 +526,7 @@ export default function AddPage() {
         </div>
       </nav>
 
-      <div className="relative z-10 max-w-3xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-12 sm:py-16 lg:py-20">
+      <div className="relative z-10 max-w-3xl mx-auto w-full px-4 sm:px-6 lg:px-8 pt-4 pb-8 sm:pt-6 sm:pb-12 lg:pt-8 lg:pb-14">
         <div className="bg-slate-950/60 backdrop-blur-3xl p-8 md:p-12 rounded-[45px] border border-white/10 shadow-2xl">
           <div className="text-center mb-6">
             <h1 className="text-3xl font-black uppercase italic tracking-widest text-amber-500 drop-shadow-lg">განცხადების დამატება</h1>
