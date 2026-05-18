@@ -313,7 +313,7 @@ export default function AdminSideFrame({ post, position, isAdmin, onRefresh }: A
   };
 
   return (
-    <div id={`admin-${position}`} className={`w-full min-w-0 ${heightClass} overflow-hidden bg-gradient-to-br from-[#1a1205]/95 via-[#07070d]/90 to-[#121827]/95 backdrop-blur-xl rounded-[24px] border border-amber-300/35 shadow-[inset_0_1px_0_rgba(255,255,255,0.08),0_18px_45px_-24px_rgba(245,158,11,0.65)] p-2 ring-1 ring-amber-200/10 relative animate-in fade-in duration-700`}>
+    <div id={`admin-${position}`} className={`w-full ${heightClass} overflow-hidden bg-gradient-to-br from-[#1a1205]/95 via-[#07070d]/90 to-[#121827]/95 backdrop-blur-xl rounded-[24px] border border-amber-300/35 shadow-[inset_0_1px_0_rgba(255,255,255,0.08),0_18px_45px_-24px_rgba(245,158,11,0.65)] p-2 ring-1 ring-amber-200/10 relative animate-in fade-in duration-700`}>
       <div className="pointer-events-none absolute inset-x-5 top-0 h-px bg-gradient-to-r from-transparent via-amber-200/60 to-transparent" />
       <div className="pointer-events-none absolute -right-10 -top-12 h-28 w-28 rounded-full bg-amber-400/10 blur-2xl" />
       <div className="absolute inset-x-4 top-4 z-30 flex justify-between items-center">
@@ -348,7 +348,7 @@ export default function AdminSideFrame({ post, position, isAdmin, onRefresh }: A
                     fill
                     loading={activeImageIndex === 0 ? 'eager' : 'lazy'}
                     sizes="(max-width: 768px) 100vw, 420px"
-                    className="vip-slide-image rounded-[16px] object-contain"
+                    className="vip-slide-image rounded-[16px] object-cover"
                   />
                   <div className="pointer-events-none absolute inset-0 z-10 bg-[radial-gradient(circle_at_30%_20%,rgba(251,191,36,0.12),transparent_34%),linear-gradient(120deg,transparent_0%,rgba(255,255,255,0.08)_48%,transparent_58%)] opacity-70 mix-blend-screen" />
                   <div className="absolute bottom-8 left-1/2 z-20 flex -translate-x-1/2 gap-1">
@@ -370,7 +370,7 @@ export default function AdminSideFrame({ post, position, isAdmin, onRefresh }: A
                 </div>
               ) : (
                 <div className="w-full h-full rounded-[18px] overflow-hidden relative cursor-pointer" onClick={() => openLightbox(0)}>
-                  <Image src={postImageMediaUrls[0]} alt="" fill loading="lazy" sizes="(max-width: 768px) 100vw, 420px" className="rounded-[16px] object-contain" />
+                  <Image src={postImageMediaUrls[0]} alt="" fill loading="lazy" sizes="(max-width: 768px) 100vw, 420px" className="rounded-[16px] object-cover" />
                 </div>
               )}
               <div className="absolute inset-0 bg-gradient-to-t from-black/45 via-transparent to-amber-200/5 pointer-events-none" />
