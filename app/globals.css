@@ -399,12 +399,6 @@ nav {
   z-index: var(--z-modal) !important;
 }
 
-<<<<<<< ours
-<<<<<<< ours
-<<<<<<< ours
-<<<<<<< ours
-<<<<<<< ours
-<<<<<<< ours
 /* Ensure the fixed mobile navigation reserves enough space above the first content block. */
 /* The mobile navbar stacks logo, banner, and action buttons vertically, so it needs a taller offset plus a small breathing gap. */
 @media (max-width: 640px) {
@@ -419,18 +413,6 @@ nav {
   }
 }
 
-=======
->>>>>>> theirs
-=======
->>>>>>> theirs
-=======
->>>>>>> theirs
-=======
->>>>>>> theirs
-=======
->>>>>>> theirs
-=======
->>>>>>> theirs
 @media (max-width: 1023px) {
   .mobile-agro-raise {
     margin-top: 0;
