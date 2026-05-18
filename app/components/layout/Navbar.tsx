@@ -296,7 +296,7 @@ export default function Navbar({
     : undefined;
 
   return (
-    <nav className="sticky sm:fixed top-0 left-0 right-0 z-[100] px-3 sm:px-4 md:px-8 py-2 sm:py-3 flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-0 bg-black/40 backdrop-blur-3xl border-b border-white/5 shadow-2xl">
+    <nav className="fixed top-0 left-0 right-0 z-[100] px-3 sm:px-4 md:px-8 py-2 sm:py-3 flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-0 bg-black/40 backdrop-blur-3xl border-b border-white/5 shadow-2xl">
       <div className="relative flex flex-col items-center sm:items-start shrink-0 w-full sm:w-auto">
         <Link href="/" className="text-xl md:text-2xl font-black italic tracking-tighter">
           mykakheti<span className="text-amber-500">.ge</span>
