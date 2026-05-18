@@ -736,7 +736,7 @@ export default function AddPage() {
                 <div ref={categoryPickerRef} className="space-y-2">
                   <input
                     className="w-full p-4 bg-white/5 border border-white/10 rounded-2xl outline-none focus:border-amber-500 text-white font-bold transition-all placeholder:text-white/25"
-                    placeholder="რას ყიდით? მაგ: გოჭი, საბურავი, თესლი..."
+                    placeholder="ჩაწერეთ საქონლის სიტყვა და მოძებნეთ შესაბამისი კატეგორია..."
                     value={categorySearch}
                     onFocus={() => setShowCategorySuggestions(true)}
                     onChange={(e: ChangeEvent<HTMLInputElement>) => {
@@ -857,7 +857,7 @@ export default function AddPage() {
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <input className="p-5 bg-white/5 border border-white/10 rounded-2xl outline-none focus:border-amber-500 font-bold text-white placeholder:text-white/20" placeholder="რას ყიდით?" value={formData.itemName} onChange={(e: ChangeEvent<HTMLInputElement>) => setFormData({...formData, itemName: e.target.value})} />
+                <input className="p-5 bg-white/5 border border-white/10 rounded-2xl outline-none focus:border-amber-500 font-bold text-white placeholder:text-white/20" placeholder="საქონლის დასახელება" value={formData.itemName} onChange={(e: ChangeEvent<HTMLInputElement>) => setFormData({...formData, itemName: e.target.value})} />
                 <input className="p-5 bg-white/5 border border-white/10 rounded-2xl outline-none focus:border-amber-500 font-bold text-white placeholder:text-white/20" placeholder="WhatsApp/Viber" value={formData.whatsappViber} onChange={(e: ChangeEvent<HTMLInputElement>) => setFormData({...formData, whatsappViber: e.target.value})} />
                 <select className="p-5 bg-white text-slate-950 border-none rounded-2xl font-black text-[11px] uppercase italic cursor-pointer shadow-lg outline-none" value={formData.condition} onChange={(e: ChangeEvent<HTMLSelectElement>) => setFormData({...formData, condition: e.target.value})}>
                   <option value="">მდგომარეობა</option>
