@@ -731,9 +731,9 @@ export default function AddPage() {
               
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div ref={categoryPickerRef} className="space-y-2">
-                  <div className="overflow-hidden rounded-2xl bg-white shadow-lg">
+                  <div className="overflow-hidden rounded-2xl border border-white/10 bg-white/90 shadow-lg">
                     <input
-                      className="w-full p-4 bg-white text-slate-950 outline-none font-bold transition-all placeholder:text-slate-400"
+                      className="w-full px-4 py-3 bg-white/90 text-slate-950 outline-none font-bold transition-all placeholder:text-slate-400"
                       placeholder="საქონლის დასახელება"
                       value={categorySearch}
                       onFocus={() => setShowCategorySuggestions(true)}
@@ -742,7 +742,7 @@ export default function AddPage() {
                         setShowCategorySuggestions(true);
                       }}
                     />
-                    <select required className="w-full p-5 bg-white text-slate-950 border-t border-slate-200 rounded-none font-black text-[11px] uppercase italic cursor-pointer outline-none" value={formData.category} onChange={(e: ChangeEvent<HTMLSelectElement>) => {
+                    <select required className="w-full px-4 py-4 bg-white/90 text-slate-950 border-t border-slate-200 rounded-none font-black text-[11px] uppercase italic cursor-pointer outline-none" value={formData.category} onChange={(e: ChangeEvent<HTMLSelectElement>) => {
                       setFormData({...formData, category: e.target.value});
                       setShowCategorySuggestions(false);
                     }}>
@@ -782,9 +782,9 @@ export default function AddPage() {
                   )}
                 </div>
                 <div ref={locationPickerRef} className="space-y-2">
-                  <div className="overflow-hidden rounded-2xl bg-white shadow-lg">
+                  <div className="overflow-hidden rounded-2xl border border-white/10 bg-white/90 shadow-lg">
                     <input
-                      className="w-full p-4 bg-white text-slate-950 outline-none font-bold transition-all placeholder:text-slate-400"
+                      className="w-full px-4 py-3 bg-white/90 text-slate-950 outline-none font-bold transition-all placeholder:text-slate-400"
                       placeholder="ადგილმდებარეობის ძებნა"
                       value={locationSearch}
                       onFocus={() => setShowLocationSuggestions(true)}
@@ -793,7 +793,7 @@ export default function AddPage() {
                         setShowLocationSuggestions(true);
                       }}
                     />
-                    <select className="w-full p-5 bg-white text-slate-950 border-t border-slate-200 rounded-none font-black text-[11px] uppercase italic cursor-pointer outline-none" value={formData.location} onChange={(e: ChangeEvent<HTMLSelectElement>) => {
+                    <select className="w-full px-4 py-4 bg-white/90 text-slate-950 border-t border-slate-200 rounded-none font-black text-[11px] uppercase italic cursor-pointer outline-none" value={formData.location} onChange={(e: ChangeEvent<HTMLSelectElement>) => {
                       setFormData({...formData, location: e.target.value});
                       setShowLocationSuggestions(false);
                     }}>
